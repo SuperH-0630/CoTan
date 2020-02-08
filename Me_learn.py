@@ -919,21 +919,25 @@ def Machine_learning():
     tkinter.Label(top, text='【行名与列名】', bg=bg, fg=fg, font=FONT, width=width_B*3, height=height_B).grid(column=a_x,
                                                                                                columnspan=3,row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)  # 设置说明
 
-    global replace_Dic,Repalce_RC,replace_List,Date_Inpue,RC_Type
+    global replace_Dic,Repalce_RC,replace_iloc,Date_Input,RC_Type
     a_y += 1
     Repalce_RC = tkinter.IntVar()
-    lable = ['操作行','操作列']#复选框
+    lable = ['(列数据)调整行名','(行数据)调整列名']#复选框
     for i in range(2):
         tkinter.Radiobutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg,text=lable[i],
                             variable=Repalce_RC, value=i).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='植入行(列)号',command=num_withName, font=FONT, width=width_B,height=height_B).\
+        grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     RC_Type = []
-    lable = ['保留原值','保留新值','不刷入新值']#复选框
-    for i in range(3):
+    lable = ['保留原值','保留新值']#复选框
+    for i in range(2):
         RC_Type.append(tkinter.IntVar())
         tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
                             variable=RC_Type[-1]).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='统一行号',command=num_toName, font=FONT, width=width_B,height=height_B).\
+        grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='替换字典:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
@@ -942,29 +946,29 @@ def Machine_learning():
 
     a_y += 1
     tkinter.Label(top, text='替换列(行):', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
-    replace_List = tkinter.Entry(top, width=width_B * 2)
-    replace_List.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    replace_iloc = tkinter.Entry(top, width=width_B * 2)
+    replace_iloc.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换已有列(行)操作', font=FONT, width=width_B*2, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换已有列(行)操作',command=Change_Index, font=FONT, width=width_B*2, height=height_B). \
         grid(column=a_x,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换操作',command=Replace, font=FONT, width=width_B,height=height_B).\
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换操作',command=Replace_Index, font=FONT, width=width_B,height=height_B).\
         grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    label = ['起点','终点','长度','间隔']
-    Date_Inpue = []
-    for i in range(4):
+    label = ['起点','终点','间隔']
+    Date_Input = []
+    for i in range(3):
         a_y += 1
         tkinter.Label(top, text='时间序列'+label[i], bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
-        Date_Inpue.append(tkinter.Entry(top, width=width_B * 2))
-        Date_Inpue[-1].grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+        Date_Input.append(tkinter.Entry(top, width=width_B * 2))
+        Date_Input[-1].grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     global Date_Type
     a_y += 1
     Date_Type = tkinter.IntVar()
-    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Date序列', font=FONT, width=width_B,height=height_B).\
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Date序列',command=Date_Index, font=FONT, width=width_B,height=height_B).\
         grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Time序列', font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Time序列',command=Time_index, font=FONT, width=width_B, height=height_B). \
         grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用间隔',
                         variable=Date_Type).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
@@ -973,21 +977,73 @@ def Machine_learning():
 
 #出现在此下面的函数应转移到上方方便管理！......
 
-def Replace():
-    global replace_Dic, Repalce_RC, replace_List, Replace_Split, Date_Inpue, RC_Type,ML
+def Replace_Index():
+    global replace_Dic, Repalce_RC,ML
+    name = get_Name()
     Dic = eval(replace_Dic.get())
     is_Column = bool(Repalce_RC.get()) #操作行-False，操作列-True
-    name = get_Name()
-    ML.Replace(name,is_Column,Dic)
+    save = bool(RC_Type[0].get())
+
+    ML.Replace_Index(name,is_Column,Dic,save)
     Updat_BOX()
 
-def Replace_BySplit():
-    global replace_Dic, Repalce_RC, replace_List, Replace_Split, Date_Inpue, RC_Type,ML
-    iloc = int(replace_List.get())
-    is_Column = bool(Repalce_RC.get()) #操作行-False，操作列-True
-    name = get_Name()
-    ML.Replace(name,is_Column,iloc)
+def Change_Index():
+    global Repalce_RC, replace_iloc, RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    iloc = int(replace_iloc.get()) # 替换的列号(行号)
+    save = bool(RC_Type[0].get())
+    drop = not bool(RC_Type[1].get())
+
+    ML.Change_Index(name,is_Column,iloc,save,drop)
     Updat_BOX()
+
+def num_toName():
+    global Repalce_RC, replace_iloc, RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    ML.num_toName(name,is_Column,save)
+    Updat_BOX()
+
+def num_withName():
+    global Repalce_RC,RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    ML.num_withName(name,is_Column,save)
+    Updat_BOX()
+
+def DateTime_Index(is_Date=True):
+    global Repalce_RC, RC_Type,ML,Date_Input,Date_Type
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    k = ['start','end','freq']
+    Init = {}
+    for i in range(len(Date_Input)):
+        Input = Date_Input[i].get()
+        if Input == '':continue
+        Init[k[i]] = Input
+    if len(Init) == 3:
+        if bool(Date_Type.get()):#使用间隔
+            del Init['end']
+        else:
+            del Init['freq']
+    if is_Date:
+        ML.Date_Index(name,is_Column,save,**Init)
+    else:
+        ML.Time_Index(name, is_Column, save, **Init)
+    Updat_BOX()
+
+def Date_Index():
+    DateTime_Index(True)
+
+def Time_index():
+    DateTime_Index(False)
 
 if __name__ == '__main__':
     Machine_learning()

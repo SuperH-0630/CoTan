@@ -46,7 +46,7 @@ class Form:
     def __Add_Form(self,Dic,Func,name='',Index=True,**kwargs):#新增表格的核心方式
         try:
             Data = Func(Dic,**kwargs)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError:#找不到编码方式
             return False
         if not Index:
             Data.index = Data.iloc[:,0].tolist()
@@ -60,19 +60,21 @@ class Form:
             k = {}
         return self.__Add_Form(Dic,pd.read_csv,name,Index,sep=Sep,encoding=code,**k)
 
-    def Add_Python(self,Text,sheet_name=''):
-        name = {}
+    def Add_Python(self,Text,sheet_name='') -> pd.DataFrame:
+        name = {'Sheet':self.get_Sheet}
         name.update(globals().copy())
         name.update(locals().copy())
         exec(Text,name)
         exec('get = Creat()',name)
-        if isinstance(name['get'],pd.DataFrame):
-            self.Add_Form(name['get'],sheet_name)
+        if isinstance(name['get'],pd.DataFrame):#已经是DataFram
+            get = name['get']
         else:
             try:
                 get = pd.DataFrame(name['get'])
-                self.Add_Form(get, sheet_name)
-            except:pass
+            except:
+                get = pd.DataFrame([name['get']])
+        self.Add_Form(get, sheet_name)
+        return get
 
     def Add_Html(self,Dic,name='',code='utf-8',str_=True,Index=True):
         if str_:
@@ -144,7 +146,6 @@ class Form:
         else:
             re = []
             loc_list = get.columns.values
-            print(loc_list)
             a = 0
             for i in loc_list:
                 data = get[i].to_list()
@@ -159,7 +160,6 @@ class Form:
         else:
             re = []
             loc_list = get.index.values
-            print(loc_list)
             a = 0
             for i in range(len(loc_list)):
                 l = loc_list[i]
@@ -300,7 +300,7 @@ class Form:
                 for c in Done_Column:
                     try:
                         print(f'r={r},c={c}')
-                        n = eval(f"get.iloc[{r},{c}]")#第一个是行名，然后是列名
+                        n = eval(f"get.iloc[{r},{c}]")#第一个是行号，然后是列号
                         r_h = eval(f"get.iloc[{r}]")
                         c_h = eval(f"get.iloc[:,{c}]")
                         print(f'n={n}')
@@ -1016,7 +1016,7 @@ class Form:
                 column[i] = int(column[i])
             except:
                 pass
-        func_Dic = {'Int': int, 'Float': float, 'Str':str}
+        func_Dic = {'Int': int, 'Float': float, 'Str':str,'Date':pd.Timestamp,'TimeDelta':pd.Timedelta}
         if column != []:
             get.iloc[:, column] = get.iloc[:, column].astype(func_Dic.get(dtype,dtype),errors=wrong)
             print('A')
@@ -1025,14 +1025,107 @@ class Form:
         self.Add_Form(get)
         return get
 
-    def Replace(self,name,is_column,Dic):
+    def Replace_Index(self,name,is_column,Dic,save):
         get = self.get_Sheet(name)
         if is_column:
+            if save:#保存原数据
+                get.loc['column'] = self.get_Column(name, True)
             new = get.rename(columns=Dic)
         else:
+            if save:
+                get.loc[:, 'row'] = self.get_Index(name, True)
             new = get.rename(index=Dic)
         self.Add_Form(new)
         return new
 
-    def Replace_ByList(self,name,is_column,iloc):
-        pass
+    def Change_Index(self,name:str,is_column:bool,iloc:int,save:bool=True,drop:bool=False):
+        get = self.get_Sheet(name).copy()
+        if is_column:#列名
+            Col = self.get_Column(name, True)
+            t = Col.tolist()[slice(iloc,iloc+1)]
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = get.loc[t].values[0] #调整 loc[t]取行数据,否则为DataFrame,不可做为Index
+            if drop:
+                get.drop(t,axis=0,inplace=True)#删除行
+        else:
+            Row = self.get_Index(name, True)
+            t = Row.tolist()[slice(iloc, iloc + 1)]
+            if save:
+                get.loc[:, 'row'] = Row
+            new_index_list = get.loc[:,t].values
+            new_index = []
+            for i in new_index_list:
+                new_index.append(i[0])
+            print(new_index)
+            get.index = new_index  # 调整
+            if drop:
+                get.drop(t,axis=1,inplace=True)#删除行
+        self.Add_Form(get)
+        return get
+
+    def num_toName(self,name,is_column,save):
+        get = self.get_Sheet(name).copy()
+        if is_column:#处理列名
+            Col = self.get_Column(name,True)
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = [i for i in range(len(Col))]
+        else:
+            Row = self.get_Index(name,True)
+            if save:
+                get.loc[:, 'row'] = Row
+            get.index = [i for i in range(len(Row))]
+        self.Add_Form(get)
+        return get
+
+    def num_withName(self,name,is_column,save):
+        get = self.get_Sheet(name).copy()
+        if is_column:#处理列名
+            Col = self.get_Column(name,True)
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = [f'[{i}]{Col[i]}' for i in range(len(Col))]
+        else:
+            Row = self.get_Index(name,True)
+            if save:
+                get.loc[:, 'row'] = Row
+            get.index = [f'[{i}]{Row[i]}' for i in range(len(Row))]
+        self.Add_Form(get)
+        return get
+
+    def Date_Index(self,name,is_column,save,**Date_Init):
+        #Date_Init:start,end,freq 任意两样
+        get = self.get_Sheet(name)
+        if is_column:  # 处理列名
+            Col = self.get_Column(name, True)
+            if save:  # 保存原数据
+                get.loc['column'] = Col
+            Date_Init['periods'] = len(Col)
+            get.columns = pd.date_range(**Date_Init)
+        else:
+            Row = self.get_Index(name, True)
+            if save:
+                get.loc[:, 'row'] = Row
+            Date_Init['periods'] = len(Row)
+            get.index = pd.date_range(**Date_Init)
+        self.Add_Form(get)
+        return get
+
+    def Time_Index(self,name,is_column,save,**Time_Init):
+        #Date_Init:start,end,freq 任意两样
+        get = self.get_Sheet(name)
+        if is_column:  # 处理列名
+            Col = self.get_Column(name, True)
+            if save:  # 保存原数据
+                get.loc['column'] = Col
+            Time_Init['periods'] = len(Col)
+            get.columns = pd.timedelta_range(**Time_Init)
+        else:
+            Row = self.get_Index(name, True)
+            if save:
+                get.loc[:, 'row'] = Row
+            Time_Init['periods'] = len(Row)
+            get.index = pd.timedelta_range(**Time_Init)
+        self.Add_Form(get)
+        return get
