@@ -63,6 +63,75 @@ max_Visual_mapping #映射的最大值
 ......(我太懒了,设置太多不想写了)
 '''
 
+
+def Replace_Index():
+    global replace_Dic, Repalce_RC,ML
+    name = get_Name()
+    Dic = eval(replace_Dic.get())
+    is_Column = bool(Repalce_RC.get()) #操作行-False，操作列-True
+    save = bool(RC_Type[0].get())
+
+    ML.Replace_Index(name,is_Column,Dic,save)
+    Updat_BOX()
+
+def Change_Index():
+    global Repalce_RC, replace_iloc, RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    iloc = int(replace_iloc.get()) # 替换的列号(行号)
+    save = bool(RC_Type[0].get())
+    drop = not bool(RC_Type[1].get())
+
+    ML.Change_Index(name,is_Column,iloc,save,drop)
+    Updat_BOX()
+
+def num_toName():
+    global Repalce_RC, replace_iloc, RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    ML.num_toName(name,is_Column,save)
+    Updat_BOX()
+
+def num_withName():
+    global Repalce_RC,RC_Type,ML
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    ML.num_withName(name,is_Column,save)
+    Updat_BOX()
+
+def DateTime_Index(is_Date=True):
+    global Repalce_RC, RC_Type,ML,Date_Input,Date_Type
+    name = get_Name()  # 名字
+    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
+    save = bool(RC_Type[0].get())
+
+    k = ['start','end','freq']
+    Init = {}
+    for i in range(len(Date_Input)):
+        Input = Date_Input[i].get()
+        if Input == '':continue
+        Init[k[i]] = Input
+    if len(Init) == 3:
+        if bool(Date_Type.get()):#使用间隔
+            del Init['end']
+        else:
+            del Init['freq']
+    if is_Date:
+        ML.Date_Index(name,is_Column,save,**Init)
+    else:
+        ML.Time_Index(name, is_Column, save, **Init)
+    Updat_BOX()
+
+def Date_Index():
+    DateTime_Index(True)
+
+def Time_index():
+    DateTime_Index(False)
+
 def DTYPE():
     global Dtype_Column, Dtype_Input, Dtype_Wrong, Dtype_Func,ML
     type_ = bool(Dtype_Func.get())
@@ -91,15 +160,23 @@ def get_ARGS():#获取画图的args
 
 def Draw():
     global R_Dic,R_BOX
-    Dic = asksaveasfilename(title='选择渲染保存地址',filetypes=[("HTML", ".html")]) + '.html'
-    if Dic == '.html':return False
+    Dic = asksaveasfilename(title='选择渲染保存地址',filetypes=[("HTML", ".html")])
+    if Dic == '':return False
+    try:
+        if Dic[-5:] != '.html':raise Exception
+    except:
+        Dic += '.html'
     webbrowser.open(ML.Draw_Page(get_ARGS(),Dic))
     Update_R_BOX()
 
 def Draw_One():
     global R_Dic, R_BOX
-    Dic = asksaveasfilename(title='选择渲染保存地址', filetypes=[("HTML", ".html")]) + '.html'
-    if Dic == '.html': return False
+    Dic = asksaveasfilename(title='选择渲染保存地址', filetypes=[("HTML", ".html")])
+    if Dic == '': return False
+    try:
+        if Dic[-5:] != '.html': raise Exception
+    except:
+        Dic += '.html'
     list(R_Dic.values())[R_BOX.curselection()[0]].render(Dic)
     webbrowser.open(Dic)
     Update_R_BOX()
@@ -122,10 +199,55 @@ def Render_ToHTML(c,name):
         c.render(f'{PATH}\\{name}.html')
     Update_R_BOX()
 
+def to_Geo():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Geo(name,get_ARGS()), 'Geo地图')
+
+def to_Map():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Map(name,get_ARGS()), 'Map地图')
+
+def to_ScatterGeo():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_ScatterGeo(name,get_ARGS()), 'Geo点地图')
+
+def to_TreeMap():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_TreeMap(name,get_ARGS()), '矩形树图')
+
+def to_Tree():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Tree(name,get_ARGS()), '树状图')
+
+def to_Sankey():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Sankey(name,get_ARGS()), '桑基图')
+
+def to_Sunburst():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Sunburst(name,get_ARGS()), '旭日图')
+
+def to_ThemeRiver():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_ThemeRiver(name,get_ARGS()), '河流图')
+
+def to_Calendar():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_Calendar(name,get_ARGS()), '日历图')
+
 def to_Gauge():
     global ML
     name = get_Name()
-    Render_ToHTML(ML.to_Gauge(name,get_ARGS()),'仪表图')
+    Render_ToHTML(ML.to_Gauge(name, get_ARGS()), '仪表图')
 
 def to_Liquid():
     global ML
@@ -171,6 +293,11 @@ def to_Parallel():
     global ML
     name = get_Name()
     Render_ToHTML(ML.to_Parallel(name,get_ARGS()),'多轴图')
+
+def to_XY_Graph():
+    global ML
+    name = get_Name()
+    Render_ToHTML(ML.to_XY_Graph(name,get_ARGS()),'关系图')
 
 def to_Graph():
     global ML
@@ -825,8 +952,8 @@ def Machine_learning():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='生成漏斗图', command=to_Funnel, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W+tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成关系图', command=to_Graph, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成热力图', command=to_HeatMap, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
     tkinter.Button(top, bg=bbg, fg=fg, text='生成饼图', command=to_Pie, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W+tkinter.S + tkinter.N)
 
@@ -840,14 +967,47 @@ def Machine_learning():
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='生成词云', command=to_WordCloud, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W+tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成热力图', command=to_HeatMap, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成关系图', command=to_Graph, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成XY关系图', command=to_XY_Graph, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='生成水球图', command=to_Liquid, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W+tkinter.S + tkinter.N)
     tkinter.Button(top, bg=bbg, fg=fg, text='生成仪表图', command=to_Gauge, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成日历图', command=to_Calendar, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成河流图', command=to_ThemeRiver, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成旭日图', command=to_Sunburst, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成桑基图', command=to_Sankey, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成树状图', command=to_Tree, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成矩形树图', command=to_TreeMap, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成Map地图', command=to_Map, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成Geo点地图', command=to_ScatterGeo, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成Geo地图', command=to_Geo, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成桑基图', command=to_Sankey, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成树状图', command=to_Tree, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成矩形树图', command=to_TreeMap, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
 
     a_y += 1
@@ -860,10 +1020,10 @@ def Machine_learning():
 
     a_y += 1
     global R_BOX,Args_Input
-    R_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
-    R_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    R_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 2)
+    R_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 3
+    a_y += 2
     global Draw_asWell
     Draw_asWell = tkinter.IntVar()
     tkinter.Button(top, bg=bbg, fg=fg, text='清空渲染', command=Draw, font=FONT, width=width_B,
@@ -874,42 +1034,13 @@ def Machine_learning():
                         variable=Draw_asWell).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
     a_y += 1
     Args_Input = tkinter.Text(top,width=width_B*3,height=height_B*4)
-    Args_Input.grid(column=a_x, row=a_y,columnspan=3,rowspan=6, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
+    Args_Input.grid(column=a_x, row=a_y,columnspan=3,rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
-    a_y += 6
+    a_y += 5
     tkinter.Button(top, bg=bbg, fg=fg, text='查看词典', font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
     tkinter.Button(top, bg=bbg, fg=fg, text='恢复显示', font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,columnspan = 2, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
-
-    global Dtype_Column,Dtype_Input,Dtype_Wrong,Dtype_Func
-    a_y += 1
-    tkinter.Label(top, text='【数据类型管理】', bg=bg, fg=fg, font=FONT, width=width_B*3, height=height_B).grid(column=a_x,
-                                                                                               columnspan=3,row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)  # 设置说明
-
-    a_y += 1
-    tkinter.Label(top, text='修改(列号):', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
-    Dtype_Column = tkinter.Entry(top, width=width_B * 2)
-    Dtype_Column.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='数据类型:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
-    Dtype_Input = tkinter.Entry(top, width=width_B * 2)
-    Dtype_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='错误值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
-    Dtype_Wrong = tkinter.Entry(top, width=width_B * 2)
-    Dtype_Wrong.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行转换',command=DTYPE, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
-    Dtype_Func = tkinter.IntVar()#正，负，0
-    lable = ['硬转换','软转换']#复选框
-    for i in range(2):
-        tkinter.Radiobutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg,text=lable[i],
-                            variable=Dtype_Func, value=i).grid(column=a_x+1+i, row=a_y, sticky=tkinter.W)
 
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x,row=a_y)  # 设置说明
@@ -973,77 +1104,38 @@ def Machine_learning():
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用间隔',
                         variable=Date_Type).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
 
+    global Dtype_Column,Dtype_Input,Dtype_Wrong,Dtype_Func
+    a_y += 1
+    tkinter.Label(top, text='【数据类型管理】', bg=bg, fg=fg, font=FONT, width=width_B*3, height=height_B).grid(column=a_x,
+                                                                                               columnspan=3,row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)  # 设置说明
+
+    a_y += 1
+    tkinter.Label(top, text='修改(列号):', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
+    Dtype_Column = tkinter.Entry(top, width=width_B * 2)
+    Dtype_Column.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='数据类型:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
+    Dtype_Input = tkinter.Entry(top, width=width_B * 2)
+    Dtype_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='错误值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
+    Dtype_Wrong = tkinter.Entry(top, width=width_B * 2)
+    Dtype_Wrong.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行转换',command=DTYPE, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.W+tkinter.S + tkinter.N)
+    Dtype_Func = tkinter.IntVar()#正，负，0
+    lable = ['硬转换','软转换']#复选框
+    for i in range(2):
+        tkinter.Radiobutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg,text=lable[i],
+                            variable=Dtype_Func, value=i).grid(column=a_x+1+i, row=a_y, sticky=tkinter.W)
+
     top.mainloop()
 
 #出现在此下面的函数应转移到上方方便管理！......
-
-def Replace_Index():
-    global replace_Dic, Repalce_RC,ML
-    name = get_Name()
-    Dic = eval(replace_Dic.get())
-    is_Column = bool(Repalce_RC.get()) #操作行-False，操作列-True
-    save = bool(RC_Type[0].get())
-
-    ML.Replace_Index(name,is_Column,Dic,save)
-    Updat_BOX()
-
-def Change_Index():
-    global Repalce_RC, replace_iloc, RC_Type,ML
-    name = get_Name()  # 名字
-    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
-    iloc = int(replace_iloc.get()) # 替换的列号(行号)
-    save = bool(RC_Type[0].get())
-    drop = not bool(RC_Type[1].get())
-
-    ML.Change_Index(name,is_Column,iloc,save,drop)
-    Updat_BOX()
-
-def num_toName():
-    global Repalce_RC, replace_iloc, RC_Type,ML
-    name = get_Name()  # 名字
-    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
-    save = bool(RC_Type[0].get())
-
-    ML.num_toName(name,is_Column,save)
-    Updat_BOX()
-
-def num_withName():
-    global Repalce_RC,RC_Type,ML
-    name = get_Name()  # 名字
-    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
-    save = bool(RC_Type[0].get())
-
-    ML.num_withName(name,is_Column,save)
-    Updat_BOX()
-
-def DateTime_Index(is_Date=True):
-    global Repalce_RC, RC_Type,ML,Date_Input,Date_Type
-    name = get_Name()  # 名字
-    is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
-    save = bool(RC_Type[0].get())
-
-    k = ['start','end','freq']
-    Init = {}
-    for i in range(len(Date_Input)):
-        Input = Date_Input[i].get()
-        if Input == '':continue
-        Init[k[i]] = Input
-    if len(Init) == 3:
-        if bool(Date_Type.get()):#使用间隔
-            del Init['end']
-        else:
-            del Init['freq']
-    if is_Date:
-        ML.Date_Index(name,is_Column,save,**Init)
-    else:
-        ML.Time_Index(name, is_Column, save, **Init)
-    Updat_BOX()
-
-def Date_Index():
-    DateTime_Index(True)
-
-def Time_index():
-    DateTime_Index(False)
 
 if __name__ == '__main__':
     Machine_learning()
