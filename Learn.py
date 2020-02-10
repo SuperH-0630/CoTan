@@ -1,17 +1,19 @@
 import pandas as pd
+import sklearn as sk
+from sklearn.feature_extraction import DictVectorizer
 import re
 import pandas_profiling as pp
-# from multiprocessing import Process
-from threading import Thread
 from pyecharts import options as opts
 from pyecharts.charts import *
 from pyecharts.globals import SymbolType
 from pyecharts.components import Table
-import numpy as np
 from pyecharts.globals import GeoType #地图推荐使用ChartType
+from random import randint
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import *
 
 class Form:
-    def __init__(self):
+    def __init__(self,*args, **kwargs):
         class DEL:pass
         self.Sheet_Dic = {}
         self.Clean_Func = {}
@@ -223,7 +225,7 @@ class Form:
         for i in Row:
             try:
                 get = get.drop(Row_List[int(i)])
-            except:raise
+            except:pass
         if new:
             self.Add_Form(get)
         return get
@@ -398,16 +400,18 @@ class Form:
         args_use['WordCould_Shape'] = args.get('WordCould_Shape', "circle")  # 开启特效
 
         args_use['symbol_Graph'] = args.get('symbol_Graph', 'circle')  # 关系点样式
+        args_use['Repulsion'] = float(args.get('Repulsion', 8000))  # 斥力因子
 
-        args_use['Area_radar'] = bool(args.get('symbol_Graph', True))  # 雷达图面积
+        args_use['Area_radar'] = bool(args.get('Area_radar', True))  # 雷达图面积
 
-        args_use['HTML_Type'] = args.get('HTML_Type', 1)  # 输出Page的面积
+        args_use['HTML_Type'] = args.get('HTML_Type', 2)  # 输出Page的类型
 
         args_use['Map'] = args.get('Map', 'china')  # 输出Page的面积
         args_use['show_Map_Symbol'] = bool(args.get('show_Map_Symbol', False))  # 输出Page的面积
         args_use['Geo_Type'] = {'heatmap':GeoType.HEATMAP,'scatter':'scatter','EFFECT':GeoType.EFFECT_SCATTER
                                 }.get(args.get('Geo_Type', 'heatmap'),GeoType.HEATMAP)  # 输出Page的面积
         args_use['map_Type'] = args.get('map_Type', '2D')  # 输出Page的面积
+        args_use['is_Dark'] = bool(args.get('is_Dark', False))  # 输出Page的面积
         return args_use
 
     #全局设定，返回一个全局设定的字典，解包即可使用
@@ -746,7 +750,7 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Graph(**self.initSetting(args))
-                .add(f"{y_name[0]}", nodes, link, repulsion=8000,**self.y_Label(args))
+                .add(f"{y_name[0]}", nodes, link, repulsion=args['Repulsion'],**self.y_Label(args))
                 .set_global_opts(**self.global_set(args, f"{name}关系图", 0, 100, False,False))
         )
         self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
@@ -783,7 +787,7 @@ class Form:
                     pass
         c = (
             Graph(**self.initSetting(args))
-                .add(f"{y_name[0]}", nodes, link, repulsion=8000,**self.y_Label(args))
+                .add(f"{y_name[0]}", nodes, link, repulsion=args['Repulsion'],**self.y_Label(args))
                 .set_global_opts(**self.global_set(args, f"{name}关系图", 0, 100, False,False))
         )
         self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
@@ -928,7 +932,12 @@ class Form:
         )
         k = self.Per_Seeting(args,'Radar')
         for i in data:
-            c.add(*i,**self.y_Label(args),**k)#对i解包，取得name和data
+            #随机颜色，雷达图默认非随机颜色
+            rgb=[randint(0,255),randint(0,255),randint(0,255)]
+            color = '#'
+            for a in rgb:
+                color += str(hex(a))[-2:].replace('x', '0').upper()#转换为16进制,upper表示小写(规范化)
+            c.add(*i,**self.y_Label(args),color=color,**k)#对i解包，取得name和data 随机颜色
         self.R_Dic[f'{name}雷达图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -1009,7 +1018,7 @@ class Form:
         for i in range(len(x_name)):
             start_Date = data[i][0][0]
             end_Date = data[i][-1][0]
-            c.add(str(x_name[i]), data[i], calendar_opts=opts.CalendarOpts(range_=[start_Date,end_Date]))
+            c.add(str(x_name[i]), data[i], calendar_opts=opts.CalendarOpts(range_=[start_Date,end_Date]), **self.y_Label(args))
         self.R_Dic[f'{name}日历图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -1156,21 +1165,28 @@ class Form:
                             a = -1
                         else:raise Exception
                     except:
-                        data_Type[a] = GeoType.LINES
+                        data_Type[a] = GeoType.LINES#当前变为Line
                 data[a].append((map, v))
         args = self.Parsing_Parameters(text)
         args['show_Visual_mapping'] = True#必须视觉映射
         if y == []:y = [0,100]
+        if args['is_Dark']:
+            g = {'itemstyle_opts':opts.ItemStyleOpts(color="#323c48", border_color="#111")}
+        else:
+            g = {}
         c = (
             Geo()
                 .add_schema(
-                maptype=str(args['Map']),
+                maptype=str(args['Map']),**g
             )
                 .set_global_opts(**self.global_set(args, f"{name}Geo点地图", min(y), max(y), False))#必须要有视觉映射(否则会显示奇怪的数据)
         )
         for i in range(len(data)):
-            print((f'{column[i]}',data[i],data_Type[i]))
-            c.add(f'{column[i]}',data[i],type_=data_Type[i],symbol=args['Symbol'],symbol_size=args['Size'])
+            if data_Type[i] != GeoType.LINES:
+                ka = dict(symbol=args['Symbol'],symbol_size=args['Size'],color='#1E90FF' if args['is_Dark'] else '#0000FF')
+            else:
+                ka = dict(symbol=SymbolType.ARROW, symbol_size=6,effect_opts=opts.EffectOpts(symbol=SymbolType.ARROW, symbol_size=6, color="blue"),linestyle_opts=opts.LineStyleOpts(curve=0.2,color='#FFF8DC' if args['is_Dark'] else '#000000'))
+            c.add(f'{column[i]}',data[i],type_=data_Type[i],**ka)
         c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示数据,必须放在add后面生效
         self.R_Dic[f'{name}Geo点地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
@@ -1209,9 +1225,13 @@ class Form:
         index = self.get_Index(name,True).tolist()
         args = self.Parsing_Parameters(text)
         args['show_Visual_mapping'] = True  # 必须视觉映射
+        if args['is_Dark']:
+            g = {'itemstyle_opts':opts.ItemStyleOpts(color="#323c48", border_color="#111")}
+        else:
+            g = {}
         c = (
             Geo()
-                .add_schema(maptype=str(args['Map']))
+                .add_schema(maptype=str(args['Map']),**g)
             )
         m = []
         for y in column:  # 维度
@@ -1224,17 +1244,29 @@ class Form:
                     try:
                         q = str(value)
                         v = float(value[5:])
-                        if q[:5] == '[##S]':
-                            type_ = 'scatter'
-                        elif q[:5] == '[##E]':
+                        if q[:5] == '[##S]':#点图
+                            type_ = GeoType.SCATTER
+                        elif q[:5] == '[##E]':#带点特效
                             type_ = GeoType.EFFECT_SCATTER
-                        else:raise Exception
+                        else:#画线
+                            v = q.split(';')
+                            c.add_coordinate(name=f'({v[0]},{v[1]})', longitude=float(v[0]), latitude=float(v[1]))
+                            c.add_coordinate(name=f'({x},{y})', longitude=float(x), latitude=float(y))
+                            c.add(f'{name}', [[f'({x},{y})',f'({v[0]},{v[1]})']], type_=GeoType.LINES,
+                                  effect_opts=opts.EffectOpts(symbol=SymbolType.ARROW, symbol_size=6, color="blue"),
+                                  linestyle_opts=opts.LineStyleOpts(curve=0.2, color='#FFF8DC' if args[
+                                      'is_Dark'] else '#000000', ))
+                            c.add(f'{name}_XY', [[f'({x},{y})',5],[f'({v[0]},{v[1]})',5]], type_=GeoType.EFFECT_SCATTER,
+                                  color='#1E90FF' if args['is_Dark'] else '#0000FF', )
+                            raise Exception #continue
                     except:
                         continue
                 try:
                     c.add_coordinate(name=f'({x},{y})', longitude=float(x), latitude=float(y))
                     c.add(f'{name}', [[f'({x},{y})', v]],type_=type_,symbol=args['Symbol'],symbol_size=args['Size'])
-                    c.add(f'{name}_XY', [[f'({x},{y})', v]], type_='scatter')
+                    if type_ == GeoType.HEATMAP:
+                        c.add(f'{name}_XY', [[f'({x},{y})', v]], type_='scatter',
+                              color='#1E90FF' if args['is_Dark'] else '#0000FF',)
                     m.append(v)
                 except:pass
         if m == []:m = [0,100]
@@ -1512,3 +1544,77 @@ class Form:
             get.index = pd.timedelta_range(**Time_Init)
         self.Add_Form(get)
         return get
+
+    def Overlap(self,down,up):
+        Over_Down = self.R_Dic[down]
+        Over_Up = self.R_Dic[up]
+        Over_Down.overlap(Over_Up)
+        return Over_Down
+
+    def DecisionTreeClassifier(self,name):
+        get = self.get_Sheet(name)
+        Dver = DictVectorizer()
+        get_Dic = get.to_dict(orient='records')
+        print(get_Dic)
+        new = Dver.fit_transform(get_Dic).toarray()
+        print(new.shape)
+        print(len(Dver.feature_names_))
+        Dec = pd.DataFrame(new,columns=Dver.feature_names_)
+        self.Add_Form(Dec)
+        return Dec
+
+class Machine_Learner(Form):#机器学习者
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Learner = {}#记录机器
+        self.Learn_Dic = {'Line':LinearRegression,
+                          'Ridge':Ridge,
+                          'Lasso':Lasso,
+                          'LogisticRegression':LogisticRegression
+                          }
+
+    def DecisionTreeClassifier(self, name):#特征提取
+        get = self.get_Sheet(name)
+        Dver = DictVectorizer()
+        get_Dic = get.to_dict(orient='records')
+        print(get_Dic)
+        new = Dver.fit_transform(get_Dic).toarray()
+        print(new.shape)
+        print(len(Dver.feature_names_))
+        Dec = pd.DataFrame(new, columns=Dver.feature_names_)
+        self.Add_Form(Dec)
+        return Dec
+
+    def Add_Learner(self,Learner):
+        get = self.Learn_Dic[Learner]
+        self.Learner[f'Le[{len(self.Learner)}]{Learner}'] = get()
+
+    def Return_Learner(self):
+        return self.Learner.copy()
+
+    def get_Learner(self,name):
+        return self.Learner[name]
+
+    def Fit(self,name,Learner,Score_Only=False):#Score_Only表示仅评分
+        get = self.get_Sheet(name)
+        x = get.to_numpy()
+        y = self.get_Index(name,True)#获取y值(用index作为y)
+        model = self.get_Learner(Learner)
+        if not Score_Only:#
+            train_x,test_x,train_y,test_y = train_test_split(x,y,test_size=0.3)
+            model.fit(train_x,train_y)
+            train_Score = model.score(train_x, train_y)
+            test_Score = model.score(test_x, test_y)
+            return train_Score,test_Score
+        test_Score = model.score(x, y)
+        return 0, test_Score
+
+    def Predict(self,name,Learner):
+        get = self.get_Sheet(name)
+        train_x = get.to_numpy()
+        model = self.get_Learner(Learner)
+        answer = model.predict(train_x)
+        data = pd.DataFrame(train_x,index=answer)
+        self.Add_Form(data)
+        return data
