@@ -1,16 +1,19 @@
 import pandas as pd
+import sklearn as sk
+from sklearn.feature_extraction import DictVectorizer
 import re
 import pandas_profiling as pp
-# from multiprocessing import Process
-from threading import Thread
 from pyecharts import options as opts
 from pyecharts.charts import *
 from pyecharts.globals import SymbolType
 from pyecharts.components import Table
-import numpy as np
+from pyecharts.globals import GeoType #地图推荐使用ChartType
+from random import randint
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import *
 
 class Form:
-    def __init__(self):
+    def __init__(self,*args, **kwargs):
         class DEL:pass
         self.Sheet_Dic = {}
         self.Clean_Func = {}
@@ -46,7 +49,7 @@ class Form:
     def __Add_Form(self,Dic,Func,name='',Index=True,**kwargs):#新增表格的核心方式
         try:
             Data = Func(Dic,**kwargs)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError:#找不到编码方式
             return False
         if not Index:
             Data.index = Data.iloc[:,0].tolist()
@@ -60,19 +63,21 @@ class Form:
             k = {}
         return self.__Add_Form(Dic,pd.read_csv,name,Index,sep=Sep,encoding=code,**k)
 
-    def Add_Python(self,Text,sheet_name=''):
-        name = {}
+    def Add_Python(self,Text,sheet_name='') -> pd.DataFrame:
+        name = {'Sheet':self.get_Sheet}
         name.update(globals().copy())
         name.update(locals().copy())
         exec(Text,name)
         exec('get = Creat()',name)
-        if isinstance(name['get'],pd.DataFrame):
-            self.Add_Form(name['get'],sheet_name)
+        if isinstance(name['get'],pd.DataFrame):#已经是DataFram
+            get = name['get']
         else:
             try:
                 get = pd.DataFrame(name['get'])
-                self.Add_Form(get, sheet_name)
-            except:pass
+            except:
+                get = pd.DataFrame([name['get']])
+        self.Add_Form(get, sheet_name)
+        return get
 
     def Add_Html(self,Dic,name='',code='utf-8',str_=True,Index=True):
         if str_:
@@ -144,7 +149,6 @@ class Form:
         else:
             re = []
             loc_list = get.columns.values
-            print(loc_list)
             a = 0
             for i in loc_list:
                 data = get[i].to_list()
@@ -159,7 +163,6 @@ class Form:
         else:
             re = []
             loc_list = get.index.values
-            print(loc_list)
             a = 0
             for i in range(len(loc_list)):
                 l = loc_list[i]
@@ -222,7 +225,7 @@ class Form:
         for i in Row:
             try:
                 get = get.drop(Row_List[int(i)])
-            except:raise
+            except:pass
         if new:
             self.Add_Form(get)
         return get
@@ -300,7 +303,7 @@ class Form:
                 for c in Done_Column:
                     try:
                         print(f'r={r},c={c}')
-                        n = eval(f"get.iloc[{r},{c}]")#第一个是行名，然后是列名
+                        n = eval(f"get.iloc[{r},{c}]")#第一个是行号，然后是列号
                         r_h = eval(f"get.iloc[{r}]")
                         c_h = eval(f"get.iloc[:,{c}]")
                         print(f'n={n}')
@@ -329,11 +332,13 @@ class Form:
         args = {}#解析到的参数
         exec(text,args)
         args_use = {}#真实的参数
+        #标题设置，global
         args_use['title'] = args.get('title',None)
         args_use['vice_title'] = args.get('vice_title', 'CoTan~机器学习:')
+        #图例设置global
         args_use['show_Legend'] = bool(args.get('show_Legend', True))#是否显示图例
         args_use['ori_Legend'] = args.get('ori_Legend', 'horizontal')#朝向
-
+        #视觉映射设置global
         args_use['show_Visual_mapping'] = bool(args.get('show_Visual_mapping', True))#是否显示视觉映射
         args_use['is_color_Visual_mapping'] = bool(args.get('is_color_Visual_mapping', True))#颜色 or 大小
         args_use['min_Visual_mapping'] = args.get('min_Visual_mapping', None)#最小值(None表示现场计算)
@@ -344,36 +349,39 @@ class Form:
         args_use['is_Subsection'] = bool(args.get('is_Subsection', False))  # 分段类型
         args_use['Subsection_list'] = args.get('Subsection_list', [])  # 分段列表
         args_use['ori_Visual'] = args.get('ori_Visual', 'vertical')  # 朝向
-
+        #工具箱设置global
         args_use['Tool_BOX'] = bool(args.get('Tool_BOX', True))  # 开启工具箱
-
+        #Init设置global
         args_use['Theme'] = args.get('Theme', 'white')  # 设置style
         args_use['BG_Color'] = args.get('BG_Color', None)  # 设置背景颜色
         args_use['width'] = args.get('width', '900px')  # 设置宽度
         args_use['heigh'] = args.get('heigh', '500px') if not bool(args.get('Square', False)) else args.get('width', '900px')  # 设置高度
         args_use['page_Title'] = args.get('page_Title', '')  # 设置HTML标题
         args_use['show_Animation'] = args.get('show_Animation', True)  # 设置HTML标题
-
+        #坐标轴设置，2D坐标图和3D坐标图
         args_use['show_Axis'] = bool(args.get('show_Axis', True))  # 显示坐标轴
         args_use['Axis_Zero'] = bool(args.get('Axis_Zero', False))  # 重叠于原点
         args_use['show_Axis_Scale'] = bool(args.get('show_Axis_Scale', True))  # 显示刻度
-
         args_use['x_type'] = args.get('x_type', None)  # 坐标轴类型
         args_use['y_type'] = args.get('y_type', None)
         args_use['z_type'] = args.get('z_type', None)
-
+        #Mark设置 坐标图专属
         args_use['make_Line'] = args.get('make_Line', [])  # 设置直线
+        #Datazoom设置 坐标图专属
         args_use['Datazoom'] = args.get('Datazoom', 'N')  # 设置Datazoom
 
+        #显示文字设置
         args_use['show_Text'] = bool(args.get('show_Text', False))  # 显示文字
+
+        #统一化的设置
+        args_use['Size'] = args.get('Size', 10)  # Size
+        args_use['Symbol'] = args.get('Symbol', 'circle')  # 散点样式
 
         #Bar设置
         args_use['bar_Stacking'] = bool(args.get('bar_Stacking', False))  # 堆叠(2D和3D)
 
         #散点图设置
         args_use['EffectScatter'] = bool(args.get('EffectScatter', True))  # 开启特效(2D和3D)
-        args_use['symbol_Scatter'] = args.get('EffectScatter', 'circle')  # 散点样式
-        args_use['size_Scatter'] = args.get('size_Scatter', 10)  # 散点图大小
 
         # 折线图设置
         args_use['connect_None'] = bool(args.get('connect_None', False))  # 连接None
@@ -392,14 +400,22 @@ class Form:
         args_use['WordCould_Shape'] = args.get('WordCould_Shape', "circle")  # 开启特效
 
         args_use['symbol_Graph'] = args.get('symbol_Graph', 'circle')  # 关系点样式
+        args_use['Repulsion'] = float(args.get('Repulsion', 8000))  # 斥力因子
 
-        args_use['Area_radar'] = bool(args.get('symbol_Graph', True))  # 雷达图面积
+        args_use['Area_radar'] = bool(args.get('Area_radar', True))  # 雷达图面积
 
-        args_use['HTML_Type'] = args.get('HTML_Type', 1)  # 雷达图面积
+        args_use['HTML_Type'] = args.get('HTML_Type', 2)  # 输出Page的类型
+
+        args_use['Map'] = args.get('Map', 'china')  # 输出Page的面积
+        args_use['show_Map_Symbol'] = bool(args.get('show_Map_Symbol', False))  # 输出Page的面积
+        args_use['Geo_Type'] = {'heatmap':GeoType.HEATMAP,'scatter':'scatter','EFFECT':GeoType.EFFECT_SCATTER
+                                }.get(args.get('Geo_Type', 'heatmap'),GeoType.HEATMAP)  # 输出Page的面积
+        args_use['map_Type'] = args.get('map_Type', '2D')  # 输出Page的面积
+        args_use['is_Dark'] = bool(args.get('is_Dark', False))  # 输出Page的面积
         return args_use
 
     #全局设定，返回一个全局设定的字典，解包即可使用
-    def global_set(self,args_use,title,Min,Max,DataZoom=False,Visual_mapping=True):
+    def global_set(self,args_use,title,Min,Max,DataZoom=False,Visual_mapping=True,axis=()):
         k = {}
         #标题设置
         if args_use['title'] == None:args_use['title'] = title
@@ -438,11 +454,23 @@ class Form:
             elif args_use['Datazoom'] == 'inside_vertical':
                 opts.DataZoomOpts(type_="inside", orient="horizontal")
 
+        # 坐标轴设定，输入设定的坐标轴即可
+        def axis_Seeting(args_use, axis='x'):
+            axis_k = {}
+            if args_use[f'{axis[0]}_type'] == 'Display' or not args_use['show_Axis']:
+                axis_k[f'{axis[0]}axis_opts'] = opts.AxisOpts(is_show=False)
+            else:
+                axis_k[f'{axis[0]}axis_opts'] = opts.AxisOpts(type_=args_use[f'{axis[0]}_type'],
+                                                         axisline_opts=opts.AxisLineOpts(
+                                                             is_on_zero=args_use['Axis_Zero']),
+                                                         axistick_opts=opts.AxisTickOpts(
+                                                             is_show=args_use['show_Axis_Scale']))
+            return axis_k
+        for i in axis:
+            k.update(axis_Seeting(args_use, i))
         return k
 
-    def get_name(self,args_use):
-        return f":{args_use['title']}"
-
+    #初始化设定
     def initSetting(self,args_use):
         k = {}
         #设置标题
@@ -453,7 +481,11 @@ class Form:
                                        animation_opts=opts.AnimationOpts(animation=args_use['show_Animation']))
         return k
 
-    #标记符，包含线标记、点标记以及面积标记
+    #获取title专用
+    def get_name(self,args_use):
+        return f":{args_use['title']}"
+
+    #标记符，包含线标记、点
     def Mark(self,args_use):
         k = {}
         line = []
@@ -471,21 +503,9 @@ class Form:
         k['markline_opts'] = opts.MarkLineOpts(data=line)
         return k
 
-    #坐标轴设定，输入设定的坐标轴即可
-    def axis_Seeting(self,args_use,axis='x'):
-        k = {}
-        if args_use[f'{axis[0]}_type'] == 'Display' or not args_use['show_Axis']:k[f'{axis[0]}axis_opts'] = opts.AxisOpts(is_show=False)
-        else:
-            k[f'{axis[0]}axis_opts'] = opts.AxisOpts(type_=args_use[f'{axis[0]}_type'],axisline_opts=opts.AxisLineOpts(is_on_zero=args_use['Axis_Zero']),
-                                               axistick_opts=opts.AxisTickOpts(is_show=args_use['show_Axis_Scale']))
-        return k
-
     #标签设定，可以放在系列设置中或者坐标轴y轴设置中
-    def Label(self,args_use):
-        return {'label_opts':opts.LabelOpts(is_show=args_use['show_Text'])}
-
-    def y_Label(self,args_use):
-        return {'label_opts':opts.LabelOpts(is_show=args_use['show_Text'],position="inside")}
+    def y_Label(self,args_use,position="inside"):
+        return {'label_opts':opts.LabelOpts(is_show=args_use['show_Text'],position=position)}
 
     #放在不同的图~.add中的设定
     def Per_Seeting(self,args_use,type_):#私人设定
@@ -495,8 +515,8 @@ class Form:
                 k =  {"stack":"stack1"}
         elif type_ == 'Scatter':
             k['Beautiful'] = args_use['EffectScatter']
-            k['symbol'] = args_use['symbol_Scatter']
-            k['symbol_size'] = args_use['size_Scatter']
+            k['symbol'] = args_use['Symbol']
+            k['symbol_size'] = args_use['Size']
         elif type_ == 'Line':
             k['is_connect_nones'] = args_use['connect_None']
             k['is_smooth'] = True if args_use['Smooth_Line'] or args_use['paste_Y'] else False#平滑曲线或连接y轴
@@ -505,17 +525,17 @@ class Form:
                 del k['is_smooth']
                 k['is_step'] = True
         elif type_ == 'PictorialBar':
-            k['symbol_size'] = args_use['size_PictorialBar']
+            k['symbol_size'] = args_use['Size']
         elif type_ == 'Polar':
             return args_use['Polar_units']#回复的是单位制而不是设定
         elif type_ == 'WordCloud':
             k['word_size_range'] = args_use['WordCould_Size']#放到x轴
-            k['shape'] = args_use['WordCould_Shape']  # 放到x轴
+            k['shape'] = args_use['Symbol']  # 放到x轴
         elif type_ == 'Graph':
-            k['symbol_Graph'] = args_use['symbol_Scatter']#放到x轴
-        elif type_ == 'Radar':
-            if args_use['Area_radar']:
-                k['areastyle_opts']=opts.AreaStyleOpts(opacity=0.1)
+            k['symbol_Graph'] = args_use['Symbol']#放到x轴
+        elif type_ == 'Radar':#雷达图
+            k['areastyle_opts']=opts.AreaStyleOpts(opacity=0.1 if args_use['Area_chart'] else 0)
+            k['symbol'] = args_use['Symbol']#雷达图symbol
         return k
 
     #坐标系图像:水平和垂直的数据轴：DataZoom+inside
@@ -525,19 +545,21 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Bar(**self.initSetting(args))
-            .add_xaxis(x)
+            .add_xaxis(list(map(str, x)))#转变为str类型
         )
         y = []
         for i in get.iteritems():#按列迭代
             q = i[1].tolist()#转换为列表
             try:
-                y += q
                 c.add_yaxis(i[0], q,**self.Per_Seeting(args,'Bar'),**self.y_Label(args))#i[0]是名字，i是tuple，其中i[1]是data
+                y += list(map(int, q))  # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
             except:
                 pass
-        c.set_global_opts(**self.global_set(args,f"{name}柱状图",min(y),max(y),True),
-                          **self.axis_Seeting(args,'y'),**self.axis_Seeting(args,'x'))
-        c.set_series_opts(**self.Mark(args),**self.Label(args))
+        if y == []:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            y = [0,100]
+        c.set_global_opts(**self.global_set(args,f"{name}柱状图",min(y),max(y),True,axis=['x','y']))
+        c.set_series_opts(**self.Mark(args))
         self.R_Dic[f'{name}柱状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -548,19 +570,21 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Line(**self.initSetting(args))
-            .add_xaxis(x)
+            .add_xaxis(list(map(str, x)))#转变为str类型
         )
         y = []
         for i in get.iteritems():#按列迭代
             q = i[1].tolist()#转换为列表
             try:
-                y += q#记录最大值最小值
                 c.add_yaxis(i[0], q,**self.Per_Seeting(args,'Line'),**self.y_Label(args))#i[0]是名字，i是tuple，其中i[1]是data
+                y += list(map(int, q))  # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
             except:
                 pass
-        c.set_global_opts(**self.global_set(args, f"{name}折线图", min(y), max(y), True),
-                          **self.axis_Seeting(args, 'y'), **self.axis_Seeting(args, 'x'))
-        c.set_series_opts(**self.Mark(args), **self.Label(args))
+        if y == []:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            y = [0, 100]
+        c.set_global_opts(**self.global_set(args, f"{name}折线图", min(y), max(y), True,axis=['x','y']))
+        c.set_series_opts(**self.Mark(args))
         self.R_Dic[f'{name}折线图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -575,19 +599,21 @@ class Form:
         del type_['Beautiful']
         c = (
             Func(**self.initSetting(args))
-            .add_xaxis(x)
+            .add_xaxis(list(map(str, x)))#转变为str类型
         )
         y = []
         for i in get.iteritems():#按列迭代
             q = i[1].tolist()#转换为列表
             try:
-                y += q
                 c.add_yaxis(i[0], q,**type_,**self.y_Label(args))#i[0]是名字，i是tuple，其中i[1]是data
+                y += list(map(int, q))  # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
             except:
                 pass
-        c.set_global_opts(**self.global_set(args, f"{name}散点图", min(y), max(y), True),
-                          **self.axis_Seeting(args, 'y'), **self.axis_Seeting(args, 'x'))
-        c.set_series_opts(**self.Mark(args), **self.Label(args))
+        if y == []:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            y = [0, 100]
+        c.set_global_opts(**self.global_set(args, f"{name}散点图", min(y), max(y), True,axis=['x','y']))
+        c.set_series_opts(**self.Mark(args))
         self.R_Dic[f'{name}散点图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -598,16 +624,14 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             PictorialBar(**self.initSetting(args))
-                .add_xaxis(x)
+                .add_xaxis(list(map(str, x)))#转变为str类型
                 .reversal_axis()
         )
         y = []
-
         k = self.Per_Seeting(args, 'PictorialBar')
         for i in get.iteritems():#按列迭代
             q = i[1].tolist()#转换为列表
             try:
-                y += q
                 c.add_yaxis(
                 i[0],
                 q,
@@ -615,13 +639,15 @@ class Form:
                 symbol_repeat=True,
                 is_symbol_clip=True,
                 symbol=SymbolType.ROUND_RECT,
-                **k
-            )
+                **k)
+                y += list(map(int, q))  # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
             except:
                 pass
-            c.set_global_opts(**self.global_set(args, f"{name}象形柱状图", min(y), max(y), True),
-                              **self.axis_Seeting(args, 'y'), **self.axis_Seeting(args, 'x'))
-            c.set_series_opts(**self.Mark(args), **self.Label(args))
+        if y == []:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            y = [0, 100]
+        c.set_global_opts(**self.global_set(args, f"{name}象形柱状图", min(y), max(y), True,axis=['x','y']))
+        c.set_series_opts(**self.Mark(args))
         self.R_Dic[f'{name}[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -634,16 +660,17 @@ class Form:
                 .add_xaxis([f'{name}'])
             )
         y = []
-
         for i in get.iteritems():#按列迭代
             q = i[1].tolist()#转换为列表
-            y += q
             try:
                 c.add_yaxis(i[0],[q],**self.y_Label(args))
+                y += list(map(int, q))  # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
             except:
                 pass
-        c.set_global_opts(**self.global_set(args, f"{name}箱形图", min(y), max(y), True),
-                          **self.axis_Seeting(args, 'y'), **self.axis_Seeting(args, 'x'))
+        if y == []:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            y = [0, 100]
+        c.set_global_opts(**self.global_set(args, f"{name}箱形图", min(y), max(y), True,axis=['x','y']))
         c.set_series_opts(**self.Mark(args))
         self.R_Dic[f'{name}箱形图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
@@ -662,14 +689,17 @@ class Form:
                 except:continue
                 q.append(v)
                 value_list.append([c, r, v])
-        MAX,MIN = max(q),min(q)
         args = self.Parsing_Parameters(text)
+        try:
+            MAX,MIN = max(q),min(q)
+        except:
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+            MAX, MIN = 0,100
         c = (
             HeatMap(**self.initSetting(args))
-            .add_xaxis(x)
-            .add_yaxis(f'{name}', y, value_list,**self.y_Label(args))
-            .set_global_opts(**self.global_set(args, f"{name}热力图", MIN, MAX, True),
-                                 **self.axis_Seeting(args, 'y'), **self.axis_Seeting(args, 'x'))
+            .add_xaxis(list(map(str, x)))#转变为str类型
+            .add_yaxis(f'{name}', list(map(str, y)), value_list,**self.y_Label(args))
+            .set_global_opts(**self.global_set(args, f"{name}热力图", MIN, MAX, True,axis=['x','y']))
             .set_series_opts(**self.Mark(args))
         )
         self.R_Dic[f'{name}热力图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
@@ -691,9 +721,8 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Funnel(**self.initSetting(args))
-                .add(f'{name}', value)
+                .add(f'{name}', value,**self.y_Label(args,'top'))
                 .set_global_opts(**self.global_set(args, f"{name}漏斗图", min(y), max(y), True, False))
-                .set_series_opts(**self.Label(args))
         )
         self.R_Dic[f'{name}漏斗图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
@@ -721,10 +750,97 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Graph(**self.initSetting(args))
-                .add(f"{y_name[0]}", nodes, link, repulsion=8000,**self.y_Label(args))
+                .add(f"{y_name[0]}", nodes, link, repulsion=args['Repulsion'],**self.y_Label(args))
                 .set_global_opts(**self.global_set(args, f"{name}关系图", 0, 100, False,False))
         )
         self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_XY_Graph(self,name,text) -> Graph:#XY关系图，新的书写方式
+        get = self.get_Sheet(name)
+        args = self.Parsing_Parameters(text)
+        size = args['Size']*3
+
+        #生成节点信息
+        y_name = self.get_Index(name,True).tolist()#拿行名
+        x_name = self.get_Column(name,True).tolist()#拿列名
+        nodes_list = list(set(y_name + x_name))#处理重复，作为nodes列表
+        nodes = []
+        for i in nodes_list:
+            nodes.append({"name": f"{i}", "symbolSize": size})
+
+        #生成link信息
+        link = []  # 记录连接的信息
+        have = []
+        for y in range(len(y_name)):#按行迭代
+            for x in range(len(x_name)):
+                y_n = y_name[y]#节点1
+                x_n = x_name[x]#节点2
+                if y_n == x_n:continue
+                if  (y_n,x_n) in have or (x_n,y_n) in have :continue
+                else:
+                    have.append((y_n,x_n))
+                try:
+                    v = float(eval(f'get.iloc[{y},{x}]'))#取得value
+                    link.append({"source": y_n, "target": x_n, "value": v})
+                except:
+                    pass
+        c = (
+            Graph(**self.initSetting(args))
+                .add(f"{y_name[0]}", nodes, link, repulsion=args['Repulsion'],**self.y_Label(args))
+                .set_global_opts(**self.global_set(args, f"{name}关系图", 0, 100, False,False))
+        )
+        self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_Sankey(self,name,text):
+        get = self.get_Sheet(name)
+        args = self.Parsing_Parameters(text)
+        size = args['Size']*3
+
+        #生成节点信息
+        y_name = self.get_Index(name,True).tolist()#拿行名
+        x_name = self.get_Column(name,True).tolist()#拿列名
+        nodes_list = list(set(y_name + x_name))#处理重复，作为nodes列表
+        nodes = []
+        source = {}
+        target = {}
+        for i in nodes_list:
+            nodes.append({"name": f"{i}"})
+            source[i] = set()#记录该元素source边连接的节点
+            target[i] = set()#记录改元素target边连接的节点
+
+        #生成link信息
+        link = []  # 记录连接的信息
+        have = []
+        for y in range(len(y_name)):#按行迭代
+            for x in range(len(x_name)):
+                y_n = y_name[y]#节点1
+                x_n = x_name[x]#节点2
+                if y_n == x_n:continue#是否相同
+                if (y_n,x_n) in have or (x_n,y_n) in have :continue#是否重复
+                else:have.append((y_n,x_n))
+                #固定的，y在s而x在t，桑基图不可以绕环形，所以要做检查
+                if source[y_n] & target[x_n] != set():continue
+                try:
+                    v = float(eval(f'get.iloc[{y},{x}]'))#取得value
+                    link.append({"source": y_n, "target": x_n, "value": v})
+                    target[y_n].add(x_n)
+                    source[x_n].add(y_n)
+                except:
+                    pass
+        c = (
+            Sankey()
+                .add(
+                f"{name}",
+                nodes,
+                link,
+                linestyle_opt=opts.LineStyleOpts(opacity=0.2, curve=0.5, color="source"),
+                label_opts=opts.LabelOpts(position="right"),
+            )
+                .set_global_opts(**self.global_set(args, f"{name}桑基图", 0, 100, False, False))
+        )
+        self.R_Dic[f'{name}桑基图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
     def to_Parallel(self,name,text) -> Parallel:
@@ -755,7 +871,7 @@ class Form:
         args = self.Parsing_Parameters(text)
         c = (
             Pie(**self.initSetting(args))
-                .add(f"{name}", data,**self.Label(args))
+                .add(f"{name}", data,**self.y_Label(args,'top'))
                 .set_global_opts(**self.global_set(args, f"{name}饼图", 0, 100, False, False))
                 .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
         )
@@ -816,7 +932,12 @@ class Form:
         )
         k = self.Per_Seeting(args,'Radar')
         for i in data:
-            c.add(*i,**self.y_Label(args),**k)#对i解包，取得name和data
+            #随机颜色，雷达图默认非随机颜色
+            rgb=[randint(0,255),randint(0,255),randint(0,255)]
+            color = '#'
+            for a in rgb:
+                color += str(hex(a))[-2:].replace('x', '0').upper()#转换为16进制,upper表示小写(规范化)
+            c.add(*i,**self.y_Label(args),color=color,**k)#对i解包，取得name和data 随机颜色
         self.R_Dic[f'{name}雷达图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
@@ -825,7 +946,7 @@ class Form:
         data = []
         for i in get.iterrows():  # 按行迭代
             try:
-                data.append([i[0],float(i[1].tolist()[0])])
+                data.append([str(i[0]),float(i[1].tolist()[0])])
             except:pass
         args = self.Parsing_Parameters(text)
         c = (
@@ -872,6 +993,288 @@ class Form:
         self.R_Dic[f'{name}仪表图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
 
+    def to_Calendar(self,name,text) -> Calendar:
+        get = self.get_Sheet(name)
+        data = [[] for i in self.get_Column(name,True)]
+        x_name = self.get_Column(name,True).tolist()
+        y = []
+        for i in get.iterrows():
+            Date = str(i[0])#时间数据
+            q = i[1].tolist()
+            for a in range(len(q)):
+                try:
+                    data[a].append([Date,q[a]])
+                    y.append(float(q[a]))
+                except:
+                    pass
+        args = self.Parsing_Parameters(text)
+        if y == []:
+            y = [0,100]
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+        c = (
+            Calendar(**self.initSetting(args))
+                .set_global_opts(**self.global_set(args,f"{name}日历图",min(y),max(y),True))
+        )
+        for i in range(len(x_name)):
+            start_Date = data[i][0][0]
+            end_Date = data[i][-1][0]
+            c.add(str(x_name[i]), data[i], calendar_opts=opts.CalendarOpts(range_=[start_Date,end_Date]), **self.y_Label(args))
+        self.R_Dic[f'{name}日历图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_ThemeRiver(self,name,text) -> ThemeRiver:
+        get = self.get_Sheet(name)
+        data = []
+        x_name = self.get_Column(name,True).tolist()
+        y = []
+        for i in get.iterrows():
+            Date = str(i[0])
+            q = i[1].tolist()
+            for a in range(len(x_name)):
+                try:
+                    data.append([Date, q[a], x_name[a]])
+                    y.append(float(q[a]))
+                except:
+                    pass
+        args = self.Parsing_Parameters(text)
+        if y == []:
+            y = [0,100]
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
+        c = (
+            ThemeRiver(**self.initSetting(args))
+                .add(x_name,data,singleaxis_opts=opts.SingleAxisOpts(type_=args['x_type'],pos_bottom="10%"))#抑制大小
+                .set_global_opts(**self.global_set(args,f"{name}河流图",min(y),max(y),True,False))
+        )
+        self.R_Dic[f'{name}河流图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_Sunburst(self,name,text) -> Sunburst:
+        get = self.get_Sheet(name)
+        def Done(Iter, name):
+            k = {'name': name, 'children': []}
+            v = 0
+            for i in Iter:
+                content = Iter[i]
+                if isinstance(content, dict):
+                    new_C = Done(content, str(i))
+                    v += new_C['value']
+                    k['children'].append(new_C)
+                else:
+                    try:
+                        q = float(content)
+                    except:
+                        q = len(str(content))
+                    v += q
+                    k['children'].append({'name': f'{i}={content}', 'value': q})
+            k['value'] = v
+            return k
+        data = Done(get.to_dict(),name)['children']
+        args = self.Parsing_Parameters(text)
+        c = (
+            Sunburst()
+                .add(series_name=f'{name}', data_pair=data, radius=[abs(args['Size']-10), "90%"])
+                .set_global_opts(**self.global_set(args, f"{name}旭日图", 0, 100, False, False))
+                .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}"))
+        )
+        self.R_Dic[f'{name}旭日图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_Tree(self,name,text) -> Tree:
+        get = self.get_Sheet(name)
+        def Done(Iter, name):
+            k = {'name': name, 'children': []}
+            for i in Iter:
+                content = Iter[i]
+                if isinstance(content, dict):
+                    new_C = Done(content, str(i))
+                    k['children'].append(new_C)
+                else:
+                    k['children'].append({'name': f'{i}', 'children': [{'name': f'{content}'}]})
+            return k
+        data = [Done(get.to_dict(),name)]
+        args = self.Parsing_Parameters(text)
+        c = (
+            Tree()
+                .add(f"{name}", data)
+                .set_global_opts(**self.global_set(args, f"{name}树状图", 0, 100, False, False))
+        )
+        self.R_Dic[f'{name}树状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_TreeMap(self,name,text) -> TreeMap:
+        get = self.get_Sheet(name)
+        def Done(Iter, name):
+            k = {'name': name, 'children': []}
+            v = 0
+            for i in Iter:
+                content = Iter[i]
+                if isinstance(content, dict):
+                    new_C = Done(content, str(i))
+                    v += new_C['value']
+                    k['children'].append(new_C)
+                else:
+                    try:
+                        q = float(content)
+                    except:
+                        q = len(str(content))
+                    v += q
+                    k['children'].append({'name': f'{i}={content}', 'value': q})
+            k['value'] = v
+            return k
+        data = Done(get.to_dict(),name)['children']
+        args = self.Parsing_Parameters(text)
+        c = (
+            TreeMap()
+                .add(f"{name}", data, label_opts=opts.LabelOpts(is_show=True, position='inside'))
+                .set_global_opts(**self.global_set(args, f"{name}矩形树图", 0, 100, False, False))
+        )
+        self.R_Dic[f'{name}矩形树图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_ScatterGeo(self,name,text) -> Geo:
+        get = self.get_Sheet(name)
+        column = self.get_Column(name,True).tolist()
+        data_Type = ["scatter" for _ in column]
+        data = [[] for _ in column]
+        y = []
+        for i in get.iterrows():  # 按行迭代
+            map = str(i[0])
+            q = i[1].tolist()
+            for a in range(len(q)):
+                try:
+                    v = float(q[a])
+                    y.append(v)
+                except:
+                    v = str(q[a])
+                    try:
+                        if v[:5] == '[##S]':
+                            #特效图
+                            v = float(v[5:])
+                            y.append(v)
+                            column.append(column[a])
+                            data_Type.append(GeoType.EFFECT_SCATTER)
+                            data.append([])
+                            a = -1
+                        elif v[:5] == '[##H]':
+                            # 特效图
+                            v = float(v[5:])
+                            y.append(v)
+                            column.append(column[a])
+                            data_Type.append(GeoType.HEATMAP)
+                            data.append([])
+                            a = -1
+                        else:raise Exception
+                    except:
+                        data_Type[a] = GeoType.LINES#当前变为Line
+                data[a].append((map, v))
+        args = self.Parsing_Parameters(text)
+        args['show_Visual_mapping'] = True#必须视觉映射
+        if y == []:y = [0,100]
+        if args['is_Dark']:
+            g = {'itemstyle_opts':opts.ItemStyleOpts(color="#323c48", border_color="#111")}
+        else:
+            g = {}
+        c = (
+            Geo()
+                .add_schema(
+                maptype=str(args['Map']),**g
+            )
+                .set_global_opts(**self.global_set(args, f"{name}Geo点地图", min(y), max(y), False))#必须要有视觉映射(否则会显示奇怪的数据)
+        )
+        for i in range(len(data)):
+            if data_Type[i] != GeoType.LINES:
+                ka = dict(symbol=args['Symbol'],symbol_size=args['Size'],color='#1E90FF' if args['is_Dark'] else '#0000FF')
+            else:
+                ka = dict(symbol=SymbolType.ARROW, symbol_size=6,effect_opts=opts.EffectOpts(symbol=SymbolType.ARROW, symbol_size=6, color="blue"),linestyle_opts=opts.LineStyleOpts(curve=0.2,color='#FFF8DC' if args['is_Dark'] else '#000000'))
+            c.add(f'{column[i]}',data[i],type_=data_Type[i],**ka)
+        c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示数据,必须放在add后面生效
+        self.R_Dic[f'{name}Geo点地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_Map(self,name,text) -> Map:
+        get = self.get_Sheet(name)
+        column = self.get_Column(name,True).tolist()
+        data = [[] for _ in column]
+        y = []
+        for i in get.iterrows():  # 按行迭代
+            map = str(i[0])
+            q = i[1].tolist()
+            for a in range(len(q)):
+                try:
+                    v = float(q[a])
+                    y.append(v)
+                    data[a].append((map, v))
+                except:
+                    pass
+        args = self.Parsing_Parameters(text)
+        args['show_Visual_mapping'] = True#必须视觉映射
+        if y == []:y = [0,100]
+        if args['map_Type'] == 'GLOBE':
+            Func = MapGlobe
+        else:
+            Func = Map
+        c = Func().set_global_opts(**self.global_set(args, f"{name}Map地图", min(y), max(y), False))#必须要有视觉映射(否则会显示奇怪的数据)
+        for i in range(len(data)):
+            c.add(f'{column[i]}',data[i],str(args['Map']),is_map_symbol_show=args['show_Map_Symbol'],symbol=args['Symbol'],**self.y_Label(args))
+        self.R_Dic[f'{name}Map地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
+    def to_Geo(self,name,text) -> Geo:
+        get = self.get_Sheet(name)
+        column = self.get_Column(name,True).tolist()
+        index = self.get_Index(name,True).tolist()
+        args = self.Parsing_Parameters(text)
+        args['show_Visual_mapping'] = True  # 必须视觉映射
+        if args['is_Dark']:
+            g = {'itemstyle_opts':opts.ItemStyleOpts(color="#323c48", border_color="#111")}
+        else:
+            g = {}
+        c = (
+            Geo()
+                .add_schema(maptype=str(args['Map']),**g)
+            )
+        m = []
+        for y in column:  # 维度
+            for x in index:  # 精度
+                value = get.loc[x, y]
+                try:
+                    v = float(value)  # 数值
+                    type_ = args['Geo_Type']
+                except:
+                    try:
+                        q = str(value)
+                        v = float(value[5:])
+                        if q[:5] == '[##S]':#点图
+                            type_ = GeoType.SCATTER
+                        elif q[:5] == '[##E]':#带点特效
+                            type_ = GeoType.EFFECT_SCATTER
+                        else:#画线
+                            v = q.split(';')
+                            c.add_coordinate(name=f'({v[0]},{v[1]})', longitude=float(v[0]), latitude=float(v[1]))
+                            c.add_coordinate(name=f'({x},{y})', longitude=float(x), latitude=float(y))
+                            c.add(f'{name}', [[f'({x},{y})',f'({v[0]},{v[1]})']], type_=GeoType.LINES,
+                                  effect_opts=opts.EffectOpts(symbol=SymbolType.ARROW, symbol_size=6, color="blue"),
+                                  linestyle_opts=opts.LineStyleOpts(curve=0.2, color='#FFF8DC' if args[
+                                      'is_Dark'] else '#000000', ))
+                            c.add(f'{name}_XY', [[f'({x},{y})',5],[f'({v[0]},{v[1]})',5]], type_=GeoType.EFFECT_SCATTER,
+                                  color='#1E90FF' if args['is_Dark'] else '#0000FF', )
+                            raise Exception #continue
+                    except:
+                        continue
+                try:
+                    c.add_coordinate(name=f'({x},{y})', longitude=float(x), latitude=float(y))
+                    c.add(f'{name}', [[f'({x},{y})', v]],type_=type_,symbol=args['Symbol'],symbol_size=args['Size'])
+                    if type_ == GeoType.HEATMAP:
+                        c.add(f'{name}_XY', [[f'({x},{y})', v]], type_='scatter',
+                              color='#1E90FF' if args['is_Dark'] else '#0000FF',)
+                    m.append(v)
+                except:pass
+        if m == []:m = [0,100]
+        c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))#不显示
+        c.set_global_opts(**self.global_set(args, f"{name}Geo地图", min(m), max(m), False))
+        self.R_Dic[f'{name}Geo地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        return c
+
     def to_Bar3d(self,name,text) -> Bar3D:
         get = self.get_Sheet(name)
         x = self.get_Column(name, True).tolist()  # 图的x轴，下侧，列名
@@ -881,19 +1284,23 @@ class Form:
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = float(eval(f'get.iloc[{r},{c}]'))  # 先行后列
-                except:continue
-                q.append(v)
-                value_list.append([c, r, v])
+                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    value_list.append([c, r, v])
+                    q.append(float(v))
+                except:
+                    pass
         args = self.Parsing_Parameters(text)
+        if q == []:
+            q = [0,100]
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
             Bar3D(**self.initSetting(args))
                 .add(f"{name}",value_list,
-                xaxis3d_opts=opts.Axis3DOpts(x, type_=args["x_type"]),
-                yaxis3d_opts=opts.Axis3DOpts(y, type_=args["y_type"]),
+                xaxis3d_opts=opts.Axis3DOpts(list(map(str,x)), type_=args["x_type"]),
+                yaxis3d_opts=opts.Axis3DOpts(list(map(str,y)), type_=args["y_type"]),
                 zaxis3d_opts=opts.Axis3DOpts(type_=args["z_type"]),
             )
-                .set_global_opts(**self.global_set(args,f"{name}3D柱状图",min(y),max(y),True),
+                .set_global_opts(**self.global_set(args,f"{name}3D柱状图",min(q),max(q),True),
             ))
         if args['bar_Stacking']:c.set_series_opts(**{"stack": "stack"})#层叠
         self.R_Dic[f'{name}3D柱状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
@@ -908,19 +1315,23 @@ class Form:
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = float(eval(f'get.iloc[{r},{c}]'))  # 先行后列
-                except:continue
-                q.append(v)
-                value_list.append([c, r, v])
+                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    value_list.append([c, r, v])
+                    q.append(float(v))
+                except:
+                    pass
         args = self.Parsing_Parameters(text)
+        if q == []:
+            q = [0,100]
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
             Scatter3D(**self.initSetting(args))
                 .add(f"{name}",value_list,
-                xaxis3d_opts=opts.Axis3DOpts(x, type_=args["x_type"]),
-                yaxis3d_opts=opts.Axis3DOpts(y, type_=args["y_type"]),
+                xaxis3d_opts=opts.Axis3DOpts(list(map(str, x)), type_=args["x_type"]),
+                yaxis3d_opts=opts.Axis3DOpts(list(map(str, y)), type_=args["y_type"]),
                 zaxis3d_opts=opts.Axis3DOpts(type_=args["z_type"]),
             )
-                .set_global_opts(**self.global_set(args,f"{name}3D散点图",min(y),max(y),True))
+                .set_global_opts(**self.global_set(args,f"{name}3D散点图",min(q),max(q),True))
         )
         self.R_Dic[f'{name}3D散点图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
@@ -934,20 +1345,24 @@ class Form:
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = float(eval(f'get.iloc[{r},{c}]'))  # 先行后列
-                except:continue
-                q.append(v)
-                value_list.append([c, r, v])
+                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    value_list.append([c, r, v])
+                    q.append(float(v))
+                except:
+                    pass
         args = self.Parsing_Parameters(text)
+        if q == []:
+            q = [0,100]
+            args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
             Line3D(**self.initSetting(args))
                 .add(f"{name}",value_list,
-                xaxis3d_opts=opts.Axis3DOpts(x, type_=args["x_type"]),
-                yaxis3d_opts=opts.Axis3DOpts(y, type_=args["y_type"]),
+                xaxis3d_opts=opts.Axis3DOpts(list(map(str, x)), type_=args["x_type"]),
+                yaxis3d_opts=opts.Axis3DOpts(list(map(str, y)), type_=args["y_type"]),
                 zaxis3d_opts=opts.Axis3DOpts(type_=args["z_type"]),
                 grid3d_opts=opts.Grid3DOpts(width=100, height=100, depth=100),
             )
-                .set_global_opts(**self.global_set(args,f"{name}3D折线图",min(y),max(y),True))
+                .set_global_opts(**self.global_set(args,f"{name}3D折线图",min(q),max(q),True))
             )
         self.R_Dic[f'{name}3D折线图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
         return c
@@ -1016,7 +1431,7 @@ class Form:
                 column[i] = int(column[i])
             except:
                 pass
-        func_Dic = {'Int': int, 'Float': float, 'Str':str}
+        func_Dic = {'Int': int, 'Float': float, 'Str':str,'Date':pd.Timestamp,'TimeDelta':pd.Timedelta}
         if column != []:
             get.iloc[:, column] = get.iloc[:, column].astype(func_Dic.get(dtype,dtype),errors=wrong)
             print('A')
@@ -1025,14 +1440,181 @@ class Form:
         self.Add_Form(get)
         return get
 
-    def Replace(self,name,is_column,Dic):
+    def Replace_Index(self,name,is_column,Dic,save):
         get = self.get_Sheet(name)
         if is_column:
+            if save:#保存原数据
+                get.loc['column'] = self.get_Column(name, True)
             new = get.rename(columns=Dic)
         else:
+            if save:
+                get.loc[:, 'row'] = self.get_Index(name, True)
             new = get.rename(index=Dic)
         self.Add_Form(new)
         return new
 
-    def Replace_ByList(self,name,is_column,iloc):
-        pass
+    def Change_Index(self,name:str,is_column:bool,iloc:int,save:bool=True,drop:bool=False):
+        get = self.get_Sheet(name).copy()
+        if is_column:#列名
+            Col = self.get_Column(name, True)
+            t = Col.tolist()[slice(iloc,iloc+1)]
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = get.loc[t].values[0] #调整 loc[t]取行数据,否则为DataFrame,不可做为Index
+            if drop:
+                get.drop(t,axis=0,inplace=True)#删除行
+        else:
+            Row = self.get_Index(name, True)
+            t = Row.tolist()[slice(iloc, iloc + 1)]
+            if save:
+                get.loc[:, 'row'] = Row
+            new_index_list = get.loc[:,t].values
+            new_index = []
+            for i in new_index_list:
+                new_index.append(i[0])
+            print(new_index)
+            get.index = new_index  # 调整
+            if drop:
+                get.drop(t,axis=1,inplace=True)#删除行
+        self.Add_Form(get)
+        return get
+
+    def num_toName(self,name,is_column,save):
+        get = self.get_Sheet(name).copy()
+        if is_column:#处理列名
+            Col = self.get_Column(name,True)
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = [i for i in range(len(Col))]
+        else:
+            Row = self.get_Index(name,True)
+            if save:
+                get.loc[:, 'row'] = Row
+            get.index = [i for i in range(len(Row))]
+        self.Add_Form(get)
+        return get
+
+    def num_withName(self,name,is_column,save):
+        get = self.get_Sheet(name).copy()
+        if is_column:#处理列名
+            Col = self.get_Column(name,True)
+            if save:#保存原数据
+                get.loc['column'] = Col
+            get.columns = [f'[{i}]{Col[i]}' for i in range(len(Col))]
+        else:
+            Row = self.get_Index(name,True)
+            if save:
+                get.loc[:, 'row'] = Row
+            get.index = [f'[{i}]{Row[i]}' for i in range(len(Row))]
+        self.Add_Form(get)
+        return get
+
+    def Date_Index(self,name,is_column,save,**Date_Init):
+        #Date_Init:start,end,freq 任意两样
+        get = self.get_Sheet(name)
+        if is_column:  # 处理列名
+            Col = self.get_Column(name, True)
+            if save:  # 保存原数据
+                get.loc['column'] = Col
+            Date_Init['periods'] = len(Col)
+            get.columns = pd.date_range(**Date_Init)
+        else:
+            Row = self.get_Index(name, True)
+            if save:
+                get.loc[:, 'row'] = Row
+            Date_Init['periods'] = len(Row)
+            get.index = pd.date_range(**Date_Init)
+        self.Add_Form(get)
+        return get
+
+    def Time_Index(self,name,is_column,save,**Time_Init):
+        #Date_Init:start,end,freq 任意两样
+        get = self.get_Sheet(name)
+        if is_column:  # 处理列名
+            Col = self.get_Column(name, True)
+            if save:  # 保存原数据
+                get.loc['column'] = Col
+            Time_Init['periods'] = len(Col)
+            get.columns = pd.timedelta_range(**Time_Init)
+        else:
+            Row = self.get_Index(name, True)
+            if save:
+                get.loc[:, 'row'] = Row
+            Time_Init['periods'] = len(Row)
+            get.index = pd.timedelta_range(**Time_Init)
+        self.Add_Form(get)
+        return get
+
+    def Overlap(self,down,up):
+        Over_Down = self.R_Dic[down]
+        Over_Up = self.R_Dic[up]
+        Over_Down.overlap(Over_Up)
+        return Over_Down
+
+    def DecisionTreeClassifier(self,name):
+        get = self.get_Sheet(name)
+        Dver = DictVectorizer()
+        get_Dic = get.to_dict(orient='records')
+        print(get_Dic)
+        new = Dver.fit_transform(get_Dic).toarray()
+        print(new.shape)
+        print(len(Dver.feature_names_))
+        Dec = pd.DataFrame(new,columns=Dver.feature_names_)
+        self.Add_Form(Dec)
+        return Dec
+
+class Machine_Learner(Form):#机器学习者
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Learner = {}#记录机器
+        self.Learn_Dic = {'Line':LinearRegression,
+                          'Ridge':Ridge,
+                          'Lasso':Lasso,
+                          'LogisticRegression':LogisticRegression
+                          }
+
+    def DecisionTreeClassifier(self, name):#特征提取
+        get = self.get_Sheet(name)
+        Dver = DictVectorizer()
+        get_Dic = get.to_dict(orient='records')
+        print(get_Dic)
+        new = Dver.fit_transform(get_Dic).toarray()
+        print(new.shape)
+        print(len(Dver.feature_names_))
+        Dec = pd.DataFrame(new, columns=Dver.feature_names_)
+        self.Add_Form(Dec)
+        return Dec
+
+    def Add_Learner(self,Learner):
+        get = self.Learn_Dic[Learner]
+        self.Learner[f'Le[{len(self.Learner)}]{Learner}'] = get()
+
+    def Return_Learner(self):
+        return self.Learner.copy()
+
+    def get_Learner(self,name):
+        return self.Learner[name]
+
+    def Fit(self,name,Learner,Score_Only=False):#Score_Only表示仅评分
+        get = self.get_Sheet(name)
+        x = get.to_numpy()
+        y = self.get_Index(name,True)#获取y值(用index作为y)
+        model = self.get_Learner(Learner)
+        if not Score_Only:#
+            train_x,test_x,train_y,test_y = train_test_split(x,y,test_size=0.3)
+            model.fit(train_x,train_y)
+            train_Score = model.score(train_x, train_y)
+            test_Score = model.score(test_x, test_y)
+            return train_Score,test_Score
+        test_Score = model.score(x, y)
+        return 0, test_Score
+
+    def Predict(self,name,Learner):
+        get = self.get_Sheet(name)
+        train_x = get.to_numpy()
+        model = self.get_Learner(Learner)
+        answer = model.predict(train_x)
+        data = pd.DataFrame(train_x,index=answer)
+        self.Add_Form(data)
+        return data
