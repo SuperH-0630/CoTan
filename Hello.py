@@ -1,53 +1,57 @@
-print('启动')
-from time import time
-print('开始加载')
-start = time()
-import tkinter
-print(f'图形加载完毕...')
-import tkinter.font as tkFont
-print(f'字体加载完毕...')
-from PIL import ImageTk, Image
-print(f'图片加载完毕...')
-import CGB,HSCH,DSGC
-from New_TK import DragWindow
 from multiprocessing import Process
-print(f'加载完毕...{round(time() - start,3)}s')
+
+def painting_board():
+    from CGB import Draw
+    Draw()
 
 def Draw():
     global top,HTB
-    HTB = Process(target=CGB.Draw)
+    HTB = Process(target=painting_board)
     HTB.start()
-    # top.destroy()
-    # CGB.Draw()
-    # Main()
+
+def Data_Science():
+    from Data_Science import Machine_learning
+    Machine_learning()
+
+def SJKX():
+    global top,SJ
+    SJ = Process(target=Data_Science)
+    SJ.start()
+
+def Function_mapping():
+    from HSCH import Func_Control
+    Func_Control()
 
 def Hsch():
     global top,CH
-    CH = Process(target=HSCH.Func_Control)
+    CH = Process(target=Function_mapping)
     CH.start()
-    # top.destroy()
-    # HSCH.Func_Control()
-    # Main()
+
+def Function_factory():
+    from HSCH import Advanced_Control
+    Advanced_Control()
 
 def HSGC():
     global top,HsGC
-    HsGC = Process(target=HSCH.Advanced_Control)
+    HsGC = Process(target=Function_factory)
     HsGC.start()
-    # top.destroy()
-    # HSCH.Advanced_Control()
-    # Main()
+
+def Algebraic_factory():
+    from DSGC import Alg
+    Alg()
 
 def Dsgc():
     global top,DsGC
-    DsGC = Process(target=DSGC.Alg)
+    DsGC = Process(target=Algebraic_factory)
     DsGC.start()
-    # top.destroy()
-    # DSGC.Alg()
-    # Main()
 
 def Main():
     global top
-    # top = tkinter.Tk()  # 设置屏幕
+    import tkinter
+    import tkinter.font as tkFont
+    from PIL import ImageTk, Image
+    from New_TK import DragWindow
+    print('加载完毕')
     top = DragWindow(alpha=0.97,width=1200,height=800)
     ft = tkFont.Font(family='Comic Sans MS', size=20, weight=tkFont.BOLD)
     ft1 = tkFont.Font(family='Comic Sans MS', size=16, weight=tkFont.BOLD)
@@ -82,8 +86,8 @@ def Main():
     tkinter.Button(F1,text='函数测绘',cursor=bc,command=Hsch,height=2,font=ft2,bg=bg,activebackground=abg,bd=0,justify=tkinter.LEFT).grid(column =0,row = 7,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='函数工厂',cursor=bc,command=HSGC, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=8,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='代数工厂',cursor=bc,command=Dsgc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=9,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='机器学习',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=10,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='几何分析',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=11,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='数据科学',cursor=bc,command=SJKX, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=10,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='机器学习',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=11,sticky=tkinter.N + tkinter.E + tkinter.W)
 
     abg='#F5FFFA'
     tkinter.Label(F1, text='物化系统', bg=abg, font=ft1).grid(column=0, row=12, sticky=tkinter.W + tkinter.E)
@@ -108,12 +112,4 @@ def Main():
     top.mainloop()
 
 if __name__ == "__main__":
-    HTB = Process(target=CGB.Draw)
-    CH = Process(target=HSCH.Func_Control)
-    HsGC = Process(target=HSCH.Advanced_Control)
-    DsGC = Process(target=DSGC.Alg)
     Main()
-    # HTB.join()
-    # CH.join()
-    # HsGC.join()
-    # DsGC.join()
