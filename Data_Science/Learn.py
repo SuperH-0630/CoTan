@@ -5,7 +5,7 @@ from pyecharts import options as opts
 from pyecharts.charts import *
 from pyecharts.globals import SymbolType
 from pyecharts.components import Table
-from pyecharts.globals import GeoType #地图推荐使用ChartType
+from pyecharts.globals import GeoType #地图推荐使用GeoType而不是str
 from random import randint
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import *
