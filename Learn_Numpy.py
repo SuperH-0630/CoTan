@@ -7,12 +7,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import *
 from sklearn.neighbors import KNeighborsClassifier,KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier,DecisionTreeRegressor
+from sklearn.ensemble import (RandomForestClassifier,RandomForestRegressor,GradientBoostingClassifier,
+                              GradientBoostingRegressor)
 from sklearn.metrics import accuracy_score
 from sklearn.feature_selection import *
 from sklearn.preprocessing import *
 from sklearn.impute import SimpleImputer
-from sklearn.decomposition import PCA, IncrementalPCA,KernelPCA
+from sklearn.decomposition import PCA, IncrementalPCA,KernelPCA,NMF
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.svm import SVC,SVR#SVC是svm分类，SVR是svm回归
+from sklearn.neural_network import MLPClassifier,MLPRegressor
+from sklearn.manifold import TSNE
 # import sklearn as sk
 
 
@@ -222,6 +227,60 @@ class Tree_Model(Study_MachineBase):
         self.min_samples_split = args_use['min_samples_split']
         self.k = {'criterion':args_use['criterion'],'splitter':args_use['splitter'],'max_features':args_use['max_features'],
                   'max_depth':args_use['max_depth'],'min_samples_split':args_use['min_samples_split']}
+        self.Model_Name = model
+
+class Forest_Model(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(Forest_Model, self).__init__(*args,**kwargs)
+        Model = {'Forest_class':RandomForestClassifier,'Forest':RandomForestRegressor}[model]
+        self.Model = Model(n_estimators=args_use['n_Tree'],criterion=args_use['criterion'],max_features=args_use['max_features']
+                           ,max_depth=args_use['max_depth'],min_samples_split=args_use['min_samples_split'])
+        #记录这两个是为了克隆
+        self.n_estimators = args_use['n_Tree']
+        self.criterion = args_use['criterion']
+        self.max_features = args_use['max_features']
+        self.max_depth = args_use['max_depth']
+        self.min_samples_split = args_use['min_samples_split']
+        self.k = {'n_estimators':args_use['n_Tree'],'criterion':args_use['criterion'],'max_features':args_use['max_features'],
+                  'max_depth':args_use['max_depth'],'min_samples_split':args_use['min_samples_split']}
+        self.Model_Name = model
+
+class GradientTree_Model(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(GradientTree_Model, self).__init__(*args,**kwargs)
+        Model = {'GradientTree_class':GradientBoostingClassifier,'GradientTree':GradientBoostingRegressor}[model]
+        self.Model = Model(n_estimators=args_use['n_Tree'],max_features=args_use['max_features']
+                           ,max_depth=args_use['max_depth'],min_samples_split=args_use['min_samples_split'])
+        #记录这两个是为了克隆
+        self.criterion = args_use['criterion']
+        self.splitter = args_use['splitter']
+        self.max_features = args_use['max_features']
+        self.max_depth = args_use['max_depth']
+        self.min_samples_split = args_use['min_samples_split']
+        self.k = {'criterion':args_use['criterion'],'splitter':args_use['splitter'],'max_features':args_use['max_features'],
+                  'max_depth':args_use['max_depth'],'min_samples_split':args_use['min_samples_split']}
+        self.Model_Name = model
+
+class SVC_Model(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(SVC_Model, self).__init__(*args,**kwargs)
+        self.Model = SVC(C=args_use['C'],gamma=args_use['gamma'],kernel=args_use['kernel'])
+        #记录这两个是为了克隆
+        self.C = args_use['C']
+        self.gamma = args_use['gamma']
+        self.kernel = args_use['kernel']
+        self.k = {'C':args_use['C'],'gamma':args_use['gamma'],'kernel':args_use['kernel']}
+        self.Model_Name = model
+
+class SVR_Model(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(SVR_Model, self).__init__(*args,**kwargs)
+        self.Model = SVR(C=args_use['C'],gamma=args_use['gamma'],kernel=args_use['kernel'])
+        #记录这两个是为了克隆
+        self.C = args_use['C']
+        self.gamma = args_use['gamma']
+        self.kernel = args_use['kernel']
+        self.k = {'C':args_use['C'],'gamma':args_use['gamma'],'kernel':args_use['kernel']}
         self.Model_Name = model
 
 class Variance_Model(prep_Base):
@@ -617,6 +676,56 @@ class LDA_Model(prep_Base):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'LDA'
 
+class NMF_Model(prep_Base):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(NMF_Model, self).__init__(*args, **kwargs)
+        self.Model = NMF(n_components=args_use['n_components'])
+
+        self.n_components = args_use['n_components']
+        self.k = {'n_components':args_use['n_components']}
+        self.Model_Name = 'NFM'
+
+    def Fit(self, x_data,y_data, *args, **kwargs):
+        if not self.have_Fit:  # 不允许第二次训练
+            self.Model.fit(x_data,y_data)
+        return 'None', 'None'
+
+    def Predict(self, x_data):
+        x_Predict = self.Model.transform(x_data)
+        return x_Predict,'NMF'
+
+class TSNE_Model(prep_Base):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(TSNE_Model, self).__init__(*args, **kwargs)
+        self.Model = TSNE(n_components=args_use['n_components'])
+
+        self.n_components = args_use['n_components']
+        self.k = {'n_components':args_use['n_components']}
+        self.Model_Name = 't-SNE'
+
+    def Fit(self, x_data,y_data, *args, **kwargs):
+        return 'None', 'None'
+
+    def Predict(self, x_data):
+        x_Predict = self.Model.fit_transform(x_data)
+        return x_Predict,'SNE'
+
+class MLP_Model(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(MLP_Model, self).__init__(*args,**kwargs)
+        Model = {'MLP':MLPRegressor,'MLP_class':MLPClassifier}[model]
+        self.Model = Model(hidden_layer_sizes=args_use['hidden_size'],activation=args_use['activation'],
+                           solver=args_use['solver'],alpha=args_use['alpha'],max_iter=args_use['max_iter'])
+        #记录这两个是为了克隆
+        self.hidden_layer_sizes = args_use['hidden_size']
+        self.activation = args_use['activation']
+        self.max_iter = args_use['max_iter']
+        self.solver = args_use['solver']
+        self.alpha = args_use['alpha']
+        self.k = {'hidden_layer_sizes':args_use['hidden_size'],'activation':args_use['activation'],'max_iter':args_use['max_iter'],
+                  'solver':args_use['solver'],'alpha':args_use['alpha']}
+        self.Model_Name = model
+
 class Machine_Learner(Learner):#数据处理者
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -629,6 +738,10 @@ class Machine_Learner(Learner):#数据处理者
                           'Knn': Knn_Model,
                           'Tree_class': Tree_Model,
                           'Tree': Tree_Model,
+                          'Forest':Forest_Model,
+                          'Forest_class': Forest_Model,
+                          'GradientTree_class':GradientTree_Model,
+                          'GradientTree': GradientTree_Model,
                           'Variance':Variance_Model,
                           'SelectKBest':SelectKBest_Model,
                           'Z-Score':Standardization_Model,
@@ -649,6 +762,12 @@ class Machine_Learner(Learner):#数据处理者
                           'RPCA':RPCA_Model,
                           'KPCA':KPCA_Model,
                           'LDA':LDA_Model,
+                          'SVC':SVC_Model,
+                          'SVR':SVR_Model,
+                          'MLP':MLP_Model,
+                          'MLP_class': MLP_Model,
+                          'NMF':NMF_Model,
+                          't-SNE':TSNE_Model,
                           }
         self.Learner_Type = {}#记录机器的类型
 
@@ -658,14 +777,20 @@ class Machine_Learner(Learner):#数据处理者
         #输入数据
         exec(Text,args)
         #处理数据
-        args_use['alpha'] = float(args.get('alpha',1.0))#L1和L2正则化用
+        if Type in ('MLP','MLP_class'):
+            args_use['alpha'] = float(args.get('alpha', 0.0001))  # MLP正则化用
+        else:
+            args_use['alpha'] = float(args.get('alpha',1.0))#L1和L2正则化用
         args_use['C'] = float(args.get('C', 1.0))  # L1和L2正则化用
-        args_use['max_iter'] = int(args.get('max_iter', 1000))  # L1和L2正则化用
+        if Type in ('MLP','MLP_class'):
+            args_use['max_iter'] = int(args.get('max_iter', 200))  # L1和L2正则化用
+        else:
+            args_use['max_iter'] = int(args.get('max_iter', 1000))  # L1和L2正则化用
         args_use['n_neighbors'] = int(args.get('K_knn', 5))#knn邻居数 (命名不同)
         args_use['p'] = int(args.get('p', 2))  # 距离计算方式
         args_use['nDim_2'] = bool(args.get('nDim_2', True))  # 数据是否降维
 
-        if Type == 'Tree':
+        if Type in ('Tree','Forest','GradientTree'):
             args_use['criterion'] = 'mse' if bool(args.get('is_MSE', True)) else 'mae'  # 是否使用基尼不纯度
         else:
             args_use['criterion'] = 'gini' if bool(args.get('is_Gini', True)) else 'entropy'  # 是否使用基尼不纯度
@@ -693,7 +818,13 @@ class Machine_Learner(Learner):#数据处理者
         args_use['fill_value'] = args.get('fill_value',None)
 
         args_use['n_components'] = args.get('n_components',1)
-        args_use['kernel'] = args.get('kernel','linear')
+        args_use['kernel'] = args.get('kernel','rbf' if Type in ('SVR','SVR') else 'linear')
+
+        args_use['n_Tree'] = args.get('n_Tree',100)
+        args_use['gamma'] = args.get('gamma',1)
+        args_use['hidden_size'] = tuple(args.get('hidden_size',(100,)))
+        args_use['activation'] = str(args.get('activation','relu'))
+        args_use['solver'] = str(args.get('solver','adam'))
         return args_use
 
     def Add_Learner(self,Learner,Text=''):

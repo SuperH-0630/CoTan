@@ -229,8 +229,14 @@ def Main():
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='LDA', command=Add_LDA, font=FONT, width=width_B, height=height_B).grid(
-        column=a_x, row=a_y,columnspan=3,
+    tkinter.Button(top, bg=bbg, fg=fg, text='LDA降维', command=Add_LDA, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='NMF降维', command=Add_NMF, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x+1, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='t-SNE', command=Add_TSNE, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x+2, row=a_y,
         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
@@ -248,6 +254,17 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='逻辑回归', command=Add_LogisticRegression, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近预测', command=Add_Knn, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 1, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近分类', command=Add_Knn_Class, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='梯度回归树回归', command=Add_GradientTree, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
     tkinter.Button(top, bg=bbg, fg=fg, text='决策树回归',command=Add_Tree, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y,
         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
@@ -256,15 +273,34 @@ def Main():
         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='朴素贝叶斯', font=FONT, width=width_B, height=height_B).grid(
-        column=a_x, row=a_y,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近预测', command=Add_Knn, font=FONT, width=width_B, height=height_B).grid(
-        column=a_x + 1, row=a_y,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近分类', command=Add_Knn_Class, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x + 2, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='梯度回归树分类', command=Add_GradientTree_class, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='随机森林回归', command=Add_Forest, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='随机森林分类',command=Add_Forest_class, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_x += 3
+    tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
+    a_x += 1
+    a_y = 0
+
+    tkinter.Button(top, bg=bbg, fg=fg, text='多层感知机回归', command=Add_MLP, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='多层感知机分类', command=Add_MLP_class, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='随机森林分类',command=Add_Forest_class, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='支持向量机分类:SVC', command=Add_SVC, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x, row=a_y,columnspan=2,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='回归:SVR', command=Add_SVR, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
@@ -368,6 +404,33 @@ def get_Learner(Type=False):
         except:
             return None
 
+def Add_MLP_class():
+    Add_leaner('MLP_class')
+
+def Add_MLP():
+    Add_leaner('MLP')
+
+def Add_SVR():
+    Add_leaner('SVR')
+
+def Add_SVC():
+    Add_leaner('SVC')
+
+def Add_GradientTree():
+    Add_leaner('GradientTree')
+
+def Add_GradientTree_class():
+    Add_leaner('GradientTree_class')
+
+# def Add_NMF():
+#     Add_leaner('NMF')
+
+def Add_TSNE():
+    Add_leaner('t-SNE')
+
+def Add_NMF():
+    Add_leaner('NMF')
+
 def Add_LDA():
     Add_leaner('LDA')
 
@@ -421,6 +484,12 @@ def Add_MinMaxScaler():
 
 def Add_Z_Score():
     Add_leaner('Z-Score')
+
+def Add_Forest():
+    Add_leaner('Forest')
+
+def Add_Forest_class():
+    Add_leaner('Forest_class')
 
 def Add_Tree_Class():
     Add_leaner('Tree_class')
