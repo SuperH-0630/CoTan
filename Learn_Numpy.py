@@ -18,6 +18,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.svm import SVC,SVR#SVC是svm分类，SVR是svm回归
 from sklearn.neural_network import MLPClassifier,MLPRegressor
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
 # import sklearn as sk
 
 
@@ -174,7 +175,18 @@ class prep_Base(Study_MachineBase):
         return x_Predict,'特征工程'
 
     def Score(self, x_data, y_data):
-        return 'None'  # 没有score
+        return 'None' # 没有score
+
+class Unsupervised(prep_Base):
+    def Fit(self, x_data, *args, **kwargs):
+        if not self.have_Fit:  # 不允许第二次训练
+            self.Model.fit(x_data)
+        return 'None', 'None'
+
+class UnsupervisedModel(prep_Base):
+    def Fit(self, x_data, *args, **kwargs):
+        self.Model.fit(x_data)
+        return 'None', 'None'
 
 class Line_Model(Study_MachineBase):
     def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
@@ -283,7 +295,7 @@ class SVR_Model(Study_MachineBase):
         self.k = {'C':args_use['C'],'gamma':args_use['gamma'],'kernel':args_use['kernel']}
         self.Model_Name = model
 
-class Variance_Model(prep_Base):
+class Variance_Model(Unsupervised):#无监督
     def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
         super(Variance_Model, self).__init__(*args,**kwargs)
         self.Model = VarianceThreshold(threshold=(args_use['P'] * (1 - args_use['P'])))
@@ -292,7 +304,7 @@ class Variance_Model(prep_Base):
         self.k = {'threshold':args_use['P']}
         self.Model_Name = model
 
-class SelectKBest_Model(prep_Base):
+class SelectKBest_Model(prep_Base):#有监督
     def __init__(self, args_use, model, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(SelectKBest_Model, self).__init__(*args, **kwargs)
         self.Model = SelectKBest(k=args_use['k'],score_func=args_use['score_func'])
@@ -302,7 +314,7 @@ class SelectKBest_Model(prep_Base):
         self.k = {'k':args_use['k'],'score_func':args_use['score_func']}
         self.Model_Name = model
 
-class SelectFrom_Model(prep_Base):
+class SelectFrom_Model(prep_Base):#有监督
     def __init__(self, args_use, Learner, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(SelectFrom_Model, self).__init__(*args, **kwargs)
 
@@ -314,11 +326,6 @@ class SelectFrom_Model(prep_Base):
         self.k = {'max_features':args_use['k'],'estimator':Learner.Model}
         self.Model_Name = 'SelectFrom_Model'
 
-    def Fit(self, x_data,y_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Select_Model.fit(x_data,y_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         try:
             x_Predict = self.Select_Model.transform(x_data)
@@ -326,7 +333,7 @@ class SelectFrom_Model(prep_Base):
         except:
             return np.array([]),'无结果工程'
 
-class Standardization_Model(prep_Base):#z-score标准化
+class Standardization_Model(Unsupervised):#z-score标准化 无监督
     def __init__(self, args_use, model, *args, **kwargs):
         super(Standardization_Model, self).__init__(*args, **kwargs)
         self.Model = StandardScaler()
@@ -334,7 +341,7 @@ class Standardization_Model(prep_Base):#z-score标准化
         self.k = {}
         self.Model_Name = 'StandardScaler'
 
-class MinMaxScaler_Model(prep_Base):#离差标准化
+class MinMaxScaler_Model(Unsupervised):#离差标准化
     def __init__(self, args_use, model, *args, **kwargs):
         super(MinMaxScaler_Model, self).__init__(*args, **kwargs)
         self.Model = MinMaxScaler(feature_range=args_use['feature_range'])
@@ -365,7 +372,7 @@ class LogScaler_Model(prep_Base):#对数标准化
         x_Predict = (np.log(x_data)/max_logx)
         return x_Predict,'对数变换'
 
-class atanScaler_Model(prep_Base):#对数标准化
+class atanScaler_Model(prep_Base):#atan标准化
     def __init__(self, args_use, model, *args, **kwargs):
         super(atanScaler_Model, self).__init__(*args, **kwargs)
         self.Model = None
@@ -472,7 +479,7 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
         x_Predict = 1 / 2 + (1 / 2) * np.sin(np.pi / (max - min) * (x_data - (max-min) / 2))
         return x_Predict,'映射标准化'
 
-class Regularization_Model(prep_Base):#离差标准化
+class Regularization_Model(Unsupervised):#正则化
     def __init__(self, args_use, model, *args, **kwargs):
         super(Regularization_Model, self).__init__(*args, **kwargs)
         self.Model = Normalizer(norm=args_use['norm'])
@@ -480,7 +487,7 @@ class Regularization_Model(prep_Base):#离差标准化
         self.k = {'norm':args_use['norm']}
         self.Model_Name = 'Regularization'
 
-class Binarizer_Model(prep_Base):#二值化
+class Binarizer_Model(Unsupervised):#二值化
     def __init__(self, args_use, model, *args, **kwargs):
         super(Binarizer_Model, self).__init__(*args, **kwargs)
         self.Model = Binarizer(threshold=args_use['threshold'])
@@ -587,7 +594,7 @@ class OneHotEncoder_Model(prep_Base):#独热编码
             return np.array(new_xPredict),'独热编码'
         return x_Predict,'独热编码'#不需要降维
 
-class Missed_Model(prep_Base):#缺失数据补充
+class Missed_Model(Unsupervised):#缺失数据补充
     def __init__(self, args_use, model, *args, **kwargs):
         super(Missed_Model, self).__init__(*args, **kwargs)
         self.Model = SimpleImputer(missing_values=args_use['miss_value'], strategy=args_use['fill_method'],
@@ -596,16 +603,11 @@ class Missed_Model(prep_Base):#缺失数据补充
         self.k = {}
         self.Model_Name = 'Missed'
 
-    def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'填充缺失'
 
-class PCA_Model(prep_Base):
+class PCA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(PCA_Model, self).__init__(*args, **kwargs)
         self.Model = PCA(n_components=args_use['n_components'])
@@ -614,16 +616,11 @@ class PCA_Model(prep_Base):
         self.k = {'n_components':args_use['n_components']}
         self.Model_Name = 'PCA'
 
-    def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'PCA'
 
-class RPCA_Model(prep_Base):
+class RPCA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(RPCA_Model, self).__init__(*args, **kwargs)
         self.Model = IncrementalPCA(n_components=args_use['n_components'])
@@ -632,16 +629,11 @@ class RPCA_Model(prep_Base):
         self.k = {'n_components': args_use['n_components']}
         self.Model_Name = 'RPCA'
 
-    def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'RPCA'
 
-class KPCA_Model(prep_Base):
+class KPCA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(KPCA_Model, self).__init__(*args, **kwargs)
         self.Model = KernelPCA(n_components=args_use['n_components'], kernel=args_use['kernel'])
@@ -650,16 +642,11 @@ class KPCA_Model(prep_Base):
         self.k = {'n_components': args_use['n_components'],'kernel':args_use['kernel']}
         self.Model_Name = 'KPCA'
 
-    def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'KPCA'
 
-class LDA_Model(prep_Base):
+class LDA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(LDA_Model, self).__init__(*args, **kwargs)
         self.Model = LDA(n_components=args_use['n_components'])
@@ -667,16 +654,11 @@ class LDA_Model(prep_Base):
         self.k = {'n_components': args_use['n_components']}
         self.Model_Name = 'LDA'
 
-    def Fit(self, x_data,y_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data,y_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'LDA'
 
-class NMF_Model(prep_Base):
+class NMF_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(NMF_Model, self).__init__(*args, **kwargs)
         self.Model = NMF(n_components=args_use['n_components'])
@@ -685,16 +667,11 @@ class NMF_Model(prep_Base):
         self.k = {'n_components':args_use['n_components']}
         self.Model_Name = 'NFM'
 
-    def Fit(self, x_data,y_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.Model.fit(x_data,y_data)
-        return 'None', 'None'
-
     def Predict(self, x_data):
         x_Predict = self.Model.transform(x_data)
         return x_Predict,'NMF'
 
-class TSNE_Model(prep_Base):
+class TSNE_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(TSNE_Model, self).__init__(*args, **kwargs)
         self.Model = TSNE(n_components=args_use['n_components'])
@@ -703,15 +680,15 @@ class TSNE_Model(prep_Base):
         self.k = {'n_components':args_use['n_components']}
         self.Model_Name = 't-SNE'
 
-    def Fit(self, x_data,y_data, *args, **kwargs):
+    def Fit(self,*args, **kwargs):
         return 'None', 'None'
 
     def Predict(self, x_data):
         x_Predict = self.Model.fit_transform(x_data)
         return x_Predict,'SNE'
 
-class MLP_Model(Study_MachineBase):
-    def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
+class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学习
+    def __init__(self,args_use,model,*args,**kwargs):
         super(MLP_Model, self).__init__(*args,**kwargs)
         Model = {'MLP':MLPRegressor,'MLP_class':MLPClassifier}[model]
         self.Model = Model(hidden_layer_sizes=args_use['hidden_size'],activation=args_use['activation'],
@@ -725,6 +702,47 @@ class MLP_Model(Study_MachineBase):
         self.k = {'hidden_layer_sizes':args_use['hidden_size'],'activation':args_use['activation'],'max_iter':args_use['max_iter'],
                   'solver':args_use['solver'],'alpha':args_use['alpha']}
         self.Model_Name = model
+
+class kmeans_Model(UnsupervisedModel):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(kmeans_Model, self).__init__(*args, **kwargs)
+        self.Model = KMeans(n_clusters=args_use['n_clusters'])
+
+        self.n_clusters = args_use['n_clusters']
+        self.k = {'n_clusters':args_use['n_clusters']}
+        self.Model_Name = 'k-means'
+
+    def Predict(self, x_data):
+        y_Predict = self.Model.predict(x_data)
+        return y_Predict,'k-means'
+
+class Agglomerative_Model(UnsupervisedModel):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(Agglomerative_Model, self).__init__(*args, **kwargs)
+        self.Model = AgglomerativeClustering(n_clusters=args_use['n_clusters'])#默认为2，不同于k-means
+
+        self.n_clusters = args_use['n_clusters']
+        self.k = {'n_clusters':args_use['n_clusters']}
+        self.Model_Name = 'Agglomerative'
+
+    def Predict(self, x_data):
+        y_Predict = self.Model.fit_predict(x_data)
+        return y_Predict,'Agglomerative'
+
+class DBSCAN_Model(UnsupervisedModel):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(DBSCAN_Model, self).__init__(*args, **kwargs)
+        self.Model = DBSCAN(eps = args_use['eps'], min_samples = args_use['min_samples'])
+        #eps是距离(0.5)，min_samples(5)是簇与噪音分界线(每个簇最小元素数)
+        # min_samples
+        self.eps = args_use['eps']
+        self.min_samples = args_use['min_samples']
+        self.k = {'min_samples':args_use['min_samples'],'eps':args_use['eps']}
+        self.Model_Name = 'DBSCAN'
+
+    def Predict(self, x_data):
+        y_Predict = self.Model.fit_predict(x_data)
+        return y_Predict,'DBSCAN'
 
 class Machine_Learner(Learner):#数据处理者
     def __init__(self,*args, **kwargs):
@@ -768,6 +786,9 @@ class Machine_Learner(Learner):#数据处理者
                           'MLP_class': MLP_Model,
                           'NMF':NMF_Model,
                           't-SNE':TSNE_Model,
+                          'k-means':kmeans_Model,
+                          'Agglomerative':Agglomerative_Model,
+                          'DBSCAN':DBSCAN_Model,
                           }
         self.Learner_Type = {}#记录机器的类型
 
@@ -825,6 +846,10 @@ class Machine_Learner(Learner):#数据处理者
         args_use['hidden_size'] = tuple(args.get('hidden_size',(100,)))
         args_use['activation'] = str(args.get('activation','relu'))
         args_use['solver'] = str(args.get('solver','adam'))
+        if Type in ('k-means',):
+            args_use['n_clusters'] = int(args.get('n_clusters',8))
+        else:
+            args_use['n_clusters'] = int(args.get('n_clusters', 2))
         return args_use
 
     def Add_Learner(self,Learner,Text=''):

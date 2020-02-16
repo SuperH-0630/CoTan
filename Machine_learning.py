@@ -302,6 +302,15 @@ def Main():
         column=a_x + 2, row=a_y,
         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='k-means', command=Add_KMeans, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='凝聚聚类', command=Add_Agglomerative, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='DBSCAN',command=Add_DBSCAN, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
     a_x += 1
@@ -403,6 +412,15 @@ def get_Learner(Type=False):
             return ML_OUT.get()
         except:
             return None
+
+def Add_DBSCAN():
+    Add_leaner('DBSCAN')
+
+def Add_Agglomerative():
+    Add_leaner('Agglomerative')
+
+def Add_KMeans():
+    Add_leaner('k-means')
 
 def Add_MLP_class():
     Add_leaner('MLP_class')
