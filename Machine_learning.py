@@ -1,11 +1,12 @@
 import tkinter
 import webbrowser
-from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename,askdirectory
 import tkinter.messagebox
 import os
 import chardet
 from tkinter.scrolledtext import ScrolledText
 import Learn_Numpy
+import webbrowser
 
 def Main():
     global top,ML,Form_List,PATH,bg,bbg,fg
@@ -340,13 +341,11 @@ def Del_Leaner():
 
 def Show_Args():
     learner = get_Learner(True)
-    if tkinter.messagebox.askokcancel('提示', f'是否将数据生成表格。\n(可绘制成散点图对比数据)'):
-        Dic = asksaveasfilename(title='选择保存的CSV', filetypes=[("CSV", ".csv")])
-    else:
-        Dic = ''
-    Data = ML.Show_Args(learner, Dic)
-    title = f'CoTan数据处理 查看数据:{learner}'
-    Creat_TextSheet(f'对象:{learner}\n\n{Data[0]}\n\n\n{Data[1]}', title)
+    Dic = askdirectory(title='选择保存的CSV')
+    data = ML.Show_Args(learner,Dic)
+    webbrowser.open(data[0])
+    # title = f'CoTan数据处理 查看数据:{learner}'
+    # Creat_TextSheet(f'对象:{learner}\n\n{Data[0]}\n\n\n{Data[1]}', title)
     Update_BOX()
 
 
