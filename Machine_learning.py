@@ -405,7 +405,7 @@ def get_Learner(Type=False):
             try:
                 return list(Learn_Dic.keys)[0]
             except:
-                return None
+                return get_Learner(False)
     else:
         try:
             return ML_OUT.get()
