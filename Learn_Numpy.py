@@ -286,8 +286,8 @@ def Training_visualization(x_trainData,class_,y):
                  .add_xaxis(x_2)
                  .add_yaxis(f'{n_class}', x_1, **Label_Set)
                  .set_global_opts(title_opts=opts.TitleOpts(title='训练数据散点图'), **global_Set,
-                                  yaxis_opts=opts.AxisOpts(type_='value' if x2_con else None,is_scale=True),
-                                  xaxis_opts=opts.AxisOpts(type_='value' if x1_con else None,is_scale=True))
+                                  yaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True))
                  )
             c.add_xaxis(x_2_new)
             if o_c == None:
@@ -335,8 +335,8 @@ def Training_W(x_trainData,class_,y,w_list,b_list,means:list):#针对分类问�
                     .add_xaxis(x2_new)
                     .add_yaxis(f"决策边界:{n_class}=>[{i}]", y_data.tolist(), is_smooth=True, **Label_Set)
                     .set_global_opts(title_opts=opts.TitleOpts(title=f"系数w曲线"), **global_Set,
-                              yaxis_opts=opts.AxisOpts(type_='value' if x2_con else None,is_scale=True),
-                              xaxis_opts=opts.AxisOpts(type_='value' if x1_con else None,is_scale=True))
+                              yaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True),
+                              xaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True))
             )
             if o_c == None:
                 o_c = c
@@ -412,8 +412,31 @@ def Feature_visualization(x_trainData,data_name=''):#x-x数据图
                  .add_xaxis(x2)
                  .add_yaxis(data_name, x1, **Label_Set)
                  .set_global_opts(title_opts=opts.TitleOpts(title=f'[{i}-{a}]数据散点图'), **seeting,
-                                  yaxis_opts=opts.AxisOpts(type_='value' if x2_con else None,is_scale=True),
-                                  xaxis_opts=opts.AxisOpts(type_='value' if x1_con else None,is_scale=True))
+                                  yaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True))
+                 )
+            c.add_xaxis(x2_new)
+            o_cList.append(c)
+    return o_cList
+
+def Discrete_Feature_visualization(x_trainData,data_name=''):#必定离散x-x数据图
+    seeting = global_Set if data_name else global_Leg
+    x_data = x_trainData.T
+    o_cList = []
+    for i in range(len(x_data)):
+        for a in range(len(x_data)):
+            if a <= i: continue#重复内容，跳过
+            x1 = x_data[i]  # x坐标
+            x2 = x_data[a]  # y坐标
+            x2_new = np.unique(x2)
+
+            #x与散点图不同，这里是纵坐标
+            c = (Scatter()
+                 .add_xaxis(x2)
+                 .add_yaxis(data_name, x1, **Label_Set)
+                 .set_global_opts(title_opts=opts.TitleOpts(title=f'[{i}-{a}]数据散点图'), **seeting,
+                                  yaxis_opts=opts.AxisOpts(type_='category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='category',is_scale=True))
                  )
             c.add_xaxis(x2_new)
             o_cList.append(c)
@@ -1486,6 +1509,7 @@ class Regularization_Model(Unsupervised):#正则化
         tab.render(save)  # 生成HTML
         return save,
 
+#离散数据
 class Binarizer_Model(Unsupervised):#二值化
     def __init__(self, args_use, model, *args, **kwargs):
         super(Binarizer_Model, self).__init__(*args, **kwargs)
@@ -1497,9 +1521,9 @@ class Binarizer_Model(Unsupervised):#二值化
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
         y_data = self.y_trainData
-        x_data = self.x_trainData
-        Conversion_control(y_data,x_data,tab)
-
+        get_y = Discrete_Feature_visualization(y_data,'转换数据')#转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i],f'[{i}]数据x-x离散散点图')
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1542,12 +1566,12 @@ class Discretization_Model(prep_Base):#n值离散
         self.y_trainData = x_Predict.copy()
         return x_Predict,f'{len(bool_list)}值离散化'
 
-    def Des(self,Dic,*args,**kwargs):
+    def Des(self, Dic, *args, **kwargs):
         tab = Tab()
         y_data = self.y_trainData
-        x_data = self.x_trainData
-        Conversion_control(y_data,x_data,tab)
-
+        get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1574,12 +1598,12 @@ class Label_Model(prep_Base):#数字编码
         self.y_trainData = x_Predict.copy()
         return x_Predict,'数字编码'
 
-    def Des(self,Dic,*args,**kwargs):
+    def Des(self, Dic, *args, **kwargs):
         tab = Tab()
         y_data = self.y_trainData
-        x_data = self.x_trainData
-        Conversion_control(y_data,x_data,tab)
-
+        get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1607,7 +1631,6 @@ class OneHotEncoder_Model(prep_Base):#独热编码
         for i in range(x_data.shape[1]):
             data = np.expand_dims(x_data[:, i], axis=1)  # 独热编码需要升维
             oneHot = self.Model[i].transform(data).toarray().tolist()
-            print(len(oneHot),oneHot)
             x_new.append(oneHot)#添加到列表中
         x_new = DataFrame(x_new).to_numpy()#新列表的行数据是原data列数据的独热码(只需要ndim=2，暂时没想到numpy的做法)
         x_Predict = []
@@ -1628,12 +1651,12 @@ class OneHotEncoder_Model(prep_Base):#独热编码
         #不保存y_trainData
         return x_Predict,'独热编码'#不需要降维
 
-    def Des(self,Dic,*args,**kwargs):
+    def Des(self, Dic, *args, **kwargs):
         tab = Tab()
         y_data = self.y_trainData
-        x_data = self.x_trainData
-        Conversion_control(y_data,x_data,tab)
-
+        get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
