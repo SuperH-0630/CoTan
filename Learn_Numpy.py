@@ -2,6 +2,7 @@ from pyecharts.components import Table as Table_Fisrt#绘制表格
 from pyecharts import options as opts
 from random import randint
 from pyecharts.charts import *
+from pyecharts.options.series_options import JsCode
 from pandas import DataFrame,read_csv
 import numpy as np
 import re
@@ -62,6 +63,28 @@ def Prediction_boundary(x_range,x_means,Predict_Func,Type):#绘制回归型x-x�
     #r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
     # a-特征x，b-特征x-1，c-其他特征
     o_cList = []
+    if len(x_means) == 1:
+        n_ra = x_range[0]
+        if Type[0] == 1:
+            ra = make_list(n_ra[0], n_ra[1], 70)
+        else:
+            ra = n_ra
+
+        a = np.array([i for i in ra]).reshape(-1,1)
+        y_data = Predict_Func(a)[0].tolist()
+        value = [[0 , float(a[i]), y_data[i]] for i in range(len(a))]
+        c = (HeatMap()
+             .add_xaxis(['None'])
+             .add_yaxis(f'数据', np.unique(a), value, **Label_Set)  # value的第一个数值是x
+             .set_global_opts(title_opts=opts.TitleOpts(title='预测热力图'), **global_Leg,
+                              yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
+                              xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
+                              visualmap_opts=opts.VisualMapOpts(is_show=True, max_=int(max(y_data)) + 1,
+                                                                min_=int(min(y_data)),
+                                                                pos_right='3%'))  # 显示
+             )
+        o_cList.append(c)
+        return o_cList
     for i in range(len(x_means)):
         if i == 0:
             continue
@@ -106,6 +129,29 @@ def Decision_boundary(x_range,x_means,Predict_Func,class_,Type):#绘制分类型
     for i in class_dict:
         v_dict.append({'min':class_dict[i]-0.5,'max':class_dict[i]+0.5,'label':i})
     o_cList = []
+    if len(x_means) == 1:
+        n_ra = x_range[0]
+        if Type[0] == 1:
+            ra = make_list(n_ra[0], n_ra[1], 70)
+        else:
+            ra = n_ra
+
+        a = np.array([i for i in ra]).reshape(-1,1)
+        y_data = Predict_Func(a)[0].tolist()
+        value = [[0,float(a[i]), class_dict.get(y_data[i], -1)] for i in range(len(a))]
+        c = (HeatMap()
+             .add_xaxis(['None'])
+             .add_yaxis(f'数据', np.unique(a), value, **Label_Set)  # value的第一个数值是x
+             .set_global_opts(title_opts=opts.TitleOpts(title='预测热力图'), **global_Leg,
+                              yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
+                              xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
+                              visualmap_opts=opts.VisualMapOpts(is_show=True, max_=max(class_dict.values()),
+                                                                min_=-1,
+                                                                is_piecewise=True, pieces=v_dict,
+                                                                orient='horizontal', pos_bottom='3%'))
+             )
+        o_cList.append(c)
+        return o_cList
     for i in range(len(x_means)):
         if i == 0:
             continue
@@ -259,11 +305,15 @@ def get_Color():
 def is_continuous(data:np.array,f:float=0.1):
     data = data.tolist()
     l = np.unique(data).tolist()
-    re = len(l)/len(data)>=f or len(data) <= 3
-    return re
+    try:
+        re = len(l)/len(data)>=f or len(data) <= 3
+        return re
+    except:return False
 
-def Training_visualization(x_trainData,class_,y):
+def Training_visualization(x_trainData,class_,y):#根据不同类别绘制x-x分类散点图
     x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
     Cat = Categorical_Data()
     o_cList = []
     for i in range(len(x_data)):
@@ -300,6 +350,8 @@ def Training_visualization(x_trainData,class_,y):
 
 def Training_W(x_trainData,class_,y,w_list,b_list,means:list):#针对分类问题绘制决策边界
     x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
     o_cList = []
     means.append(0)
     means = np.array(means)
@@ -348,6 +400,8 @@ def Training_W(x_trainData,class_,y,w_list,b_list,means:list):#针对分类问�
 
 def Regress_W(x_trainData,y,w:np.array,b,means:list):#针对回归问题(y-x图)
     x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
     o_cList = []
     means.append(0)#确保mean[i+1]不会超出index
     means = np.array(means)
@@ -397,6 +451,8 @@ def regress_visualization(x_trainData,y):#y-x数据图
 def Feature_visualization(x_trainData,data_name=''):#x-x数据图
     seeting = global_Set if data_name else global_Leg
     x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
     o_cList = []
     for i in range(len(x_data)):
         for a in range(len(x_data)):
@@ -419,9 +475,42 @@ def Feature_visualization(x_trainData,data_name=''):#x-x数据图
             o_cList.append(c)
     return o_cList
 
+def Feature_visualization_Format(x_trainData,data_name=''):#x-x数据图
+    seeting = global_Set if data_name else global_Leg
+    x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
+    o_cList = []
+    for i in range(len(x_data)):
+        for a in range(len(x_data)):
+            if a <= i: continue#重复内容，跳过
+            x1 = x_data[i]  # x坐标
+            x1_con = is_continuous(x1)
+            x2 = x_data[a]  # y坐标
+            x2_con = is_continuous(x2)
+            x2_new = np.unique(x2)
+            x1_list = x1.astype(np.str).tolist()
+            for i in range(len(x1_list)):
+                x1_list[i] = [x1_list[i],f'特征{i}']
+            #x与散点图不同，这里是纵坐标
+            c = (Scatter()
+                 .add_xaxis(x2)
+                 .add_yaxis(data_name, x1, **Label_Set)
+                 .set_global_opts(title_opts=opts.TitleOpts(title=f'[{i}-{a}]数据散点图'), **seeting,
+                                  yaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True),
+                                  tooltip_opts=opts.TooltipOpts(is_show = True,axis_pointer_type = "cross",
+                formatter=JsCode("function (params) {params.data[2];}")),)
+                 )
+            c.add_xaxis(x2_new)
+            o_cList.append(c)
+    return o_cList
+
 def Discrete_Feature_visualization(x_trainData,data_name=''):#必定离散x-x数据图
     seeting = global_Set if data_name else global_Leg
     x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data,np.zeros(len(x_data[0]))])
     o_cList = []
     for i in range(len(x_data)):
         for a in range(len(x_data)):
@@ -461,6 +550,13 @@ def Conversion_Separate(y_data,x_data,tab):#并列显示两x-x图
             try:
                 tab.add(get_y[i],f'[{i}]变维数据x-x散点图')
             except IndexError:pass
+    return tab
+
+def Conversion_Separate_Format(y_data,tab):#并列显示两x-x图
+    if type(y_data) is np.ndarray:
+        get_y = Feature_visualization_Format(y_data,'转换数据')#转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i],f'[{i}]变维数据x-x散点图')
     return tab
 
 def make_bar(name, value,tab):#绘制柱状图
@@ -724,14 +820,15 @@ class LogisticRegression_Model(Study_MachineBase):
         y = self.y_trainData
         x_data = self.x_trainData
         get, x_means, x_range, Type = Training_visualization(x_data, class_, y)
+        get_Line = Training_W(x_data, class_, y, w_list, b, x_means.copy())
         for i in range(len(get)):
-            tab.add(get[i], f'{i}决策边界')
+            tab.add(get[i].overlap(get_Line[i]), f'{i}决策边界散点图')
 
         for i in range(len(w_list)):
             w = w_list[i]
             w_heard = [f'系数w[{i},{j}]' for j in range(len(w))]
-            tab.add(scatter(w_heard, w), '系数w散点图')
-            tab.add(bar(w_heard, w_array[i]), '系数柱状图')
+            tab.add(scatter(w_heard, w), f'系数w[{i}]散点图')
+            tab.add(bar(w_heard, w_array[i]), f'系数w[{i}]柱状图')
 
         columns = class_heard + ['截距b','C','最大迭代数']
         data = class_ + [b,c,max_iter]
@@ -1028,7 +1125,7 @@ class SVC_Model(Study_MachineBase):
         get, x_means, x_range, Type = Training_visualization(x_data, class_, y)
         get_Line = Training_W(x_data, class_, y, w_list, b, x_means.copy())
         for i in range(len(get)):
-            tab.add(get[i].overlap(get_Line[i]), f'{i}数据散点图')
+            tab.add(get[i].overlap(get_Line[i]), f'{i}决策边界散点图')
 
         get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
         for i in range(len(get)):
@@ -1705,7 +1802,7 @@ class PCA_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1730,7 +1827,7 @@ class RPCA_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1755,7 +1852,7 @@ class KPCA_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1779,7 +1876,7 @@ class LDA_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1804,7 +1901,7 @@ class NMF_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1832,7 +1929,7 @@ class TSNE_Model(Unsupervised):
         tab = Tab()
         y_data = self.y_trainData
         x_data = self.x_trainData
-        Conversion_Separate(y_data,x_data,tab)
+        Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
