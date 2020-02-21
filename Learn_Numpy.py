@@ -123,14 +123,16 @@ def Prediction_boundary(x_range,x_means,Predict_Func,Type):#绘制回归型x-x�
         o_cList.append(c)
     return o_cList
 
-def Decision_boundary(x_range,x_means,Predict_Func,class_,Type):#绘制分类型预测图x-x热力图
+def Decision_boundary(x_range,x_means,Predict_Func,class_,Type,nono=False):#绘制分类型预测图x-x热力图
     #r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调,class_是分类,add_o是可以合成的图
     # a-特征x，b-特征x-1，c-其他特征
     #规定，i-1是x轴，a是x轴，x_1是x轴
     class_dict = dict(zip(class_,[i for i in range(len(class_))]))
-    v_dict = [{'min':-1.5,'max':-0.5,'label':'未知'}]#分段显示
+    if not nono:
+        v_dict = [{'min':-1.5,'max':-0.5,'label':'未知'}]#分段显示
+    else:v_dict = []
     for i in class_dict:
-        v_dict.append({'min':class_dict[i]-0.5,'max':class_dict[i]+0.5,'label':i})
+        v_dict.append({'min':class_dict[i]-0.5,'max':class_dict[i]+0.5,'label':str(i)})
     o_cList = []
     if len(x_means) == 1:
         n_ra = x_range[0]
@@ -155,6 +157,7 @@ def Decision_boundary(x_range,x_means,Predict_Func,class_,Type):#绘制分类型
              )
         o_cList.append(c)
         return o_cList
+    #如果x_means长度不等于1则执行下面
     for i in range(len(x_means)):
         if i == 0:
             continue
@@ -163,7 +166,6 @@ def Decision_boundary(x_range,x_means,Predict_Func,class_,Type):#绘制分类型
         Type_ra = Type[i-1]
         n_rb = x_range[i]
         Type_rb = Type[i]
-        print(f'{n_ra},{n_rb}')
         if Type_ra == 1:
             ra = make_list(n_ra[0],n_ra[1],70)
         else:
@@ -809,6 +811,9 @@ class Study_MachineBase:
         self.have_Fit = False
         self.x_trainData = None
         self.y_trainData = None
+        #有监督学习专有的testData
+        self.x_testData = None
+        self.y_testData = None
         #记录这两个是为了克隆
 
     def Accuracy(self,y_Predict,y_Really):
@@ -830,7 +835,9 @@ class Study_MachineBase:
         return Score
 
     def Predict(self,x_data,*args,**kwargs):
+        self.x_testData = x_data.copy()
         y_Predict = self.Model.predict(x_data)
+        self.y_testData = y_Predict.copy()
         return y_Predict,'预测'
 
     def Des(self,*args,**kwargs):
@@ -1022,6 +1029,8 @@ class Knn_Model(Study_MachineBase):
         tab = Tab()
         y = self.y_trainData
         x_data = self.x_trainData
+        y_test = self.y_testData
+        x_test = self.x_testData
         if self.Model_Name == 'Knn_class':
             class_ = self.Model.classes_.tolist()
             class_heard = [f'类别[{i}]' for i in range(len(class_))]
@@ -1029,6 +1038,10 @@ class Knn_Model(Study_MachineBase):
             get,x_means,x_range,Type = Training_visualization(x_data,class_,y)
             for i in range(len(get)):
                 tab.add(get[i],f'{i}训练数据散点图')
+
+            get = Training_visualization(x_test,class_,y_test)[0]
+            for i in range(len(get)):
+                tab.add(get[i],f'{i}测试数据散点图')
 
             get = Decision_boundary(x_range,x_means,self.Predict,class_,Type)
             for i in range(len(get)):
@@ -1041,7 +1054,11 @@ class Knn_Model(Study_MachineBase):
         else:
             get, x_means, x_range,Type = regress_visualization(x_data, y)
             for i in range(len(get)):
-                tab.add(get[i], f'{i}预测类型图')
+                tab.add(get[i], f'{i}训练数据散点图')
+
+            get = regress_visualization(x_test, y_test)[0]
+            for i in range(len(get)):
+                tab.add(get[i], f'{i}测试数据类型图')
 
             get = Prediction_boundary(x_range, x_means, self.Predict, Type)
             for i in range(len(get)):
@@ -1082,6 +1099,8 @@ class Tree_Model(Study_MachineBase):
 
         y = self.y_trainData
         x_data = self.x_trainData
+        y_test = self.y_testData
+        x_test = self.x_testData
         if self.Model_Name == 'Tree_class':
             class_ = self.Model.classes_.tolist()
             class_heard = [f'类别[{i}]' for i in range(len(class_))]
@@ -1089,6 +1108,10 @@ class Tree_Model(Study_MachineBase):
             get,x_means,x_range,Type = Training_visualization(x_data,class_,y)
             for i in range(len(get)):
                 tab.add(get[i],f'{i}训练数据散点图')
+
+            get = Training_visualization(x_test, class_, y_test)[0]
+            for i in range(len(get)):
+                tab.add(get[i], f'{i}测试数据散点图')
 
             get = Decision_boundary(x_range,x_means,self.Predict,class_,Type)
             for i in range(len(get)):
@@ -1099,7 +1122,11 @@ class Tree_Model(Study_MachineBase):
         else:
             get, x_means, x_range,Type = regress_visualization(x_data, y)
             for i in range(len(get)):
-                tab.add(get[i], f'{i}预测类型图')
+                tab.add(get[i], f'{i}训练数据散点图')
+
+            get = regress_visualization(x_test, y_test)[0]
+            for i in range(len(get)):
+                tab.add(get[i], f'{i}测试数据类型图')
 
             get = Prediction_boundary(x_range, x_means, self.Predict, Type)
             for i in range(len(get)):
@@ -1139,7 +1166,7 @@ class Forest_Model(Study_MachineBase):
 
         y = self.y_trainData
         x_data = self.x_trainData
-        if self.Model_Name == 'Tree_class':
+        if self.Model_Name == 'Forest_class':
             class_ = self.Model.classes_.tolist()
             class_heard = [f'类别[{i}]' for i in range(len(class_))]
 
@@ -2025,7 +2052,7 @@ class KPCA_Model(Unsupervised):
         tab.render(save)  # 生成HTML
         return save,
 
-class LDA_Model(Unsupervised):
+class LDA_Model(prep_Base):#有监督学习
     def __init__(self, args_use, model, *args, **kwargs):
         super(LDA_Model, self).__init__(*args, **kwargs)
         self.Model = LDA(n_components=args_use['n_components'])
@@ -2222,10 +2249,6 @@ class kmeans_Model(UnsupervisedModel):
         for i in range(len(get)):
             tab.add(get[i],f'{i}训练数据散点图')
 
-        get = Decision_boundary(x_range,x_means,self.Predict,class_,Type)
-        for i in range(len(get)):
-            tab.add(get[i], f'{i}预测热力图')
-
         heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
         data = class_ + [f'{i}' for i in x_means]
         c = Table().add(headers=heard, rows=[data])
@@ -2265,10 +2288,6 @@ class Agglomerative_Model(UnsupervisedModel):
         get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
-
-        get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
-        for i in range(len(get)):
-            tab.add(get[i], f'{i}预测热力图')
 
         linkage_array = ward(self.x_trainData)#self.y_trainData是结果
         dendrogram(linkage_array)
@@ -2324,23 +2343,6 @@ class DBSCAN_Model(UnsupervisedModel):
         get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
-
-        get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
-        for i in range(len(get)):
-            tab.add(get[i], f'{i}预测热力图')
-
-        linkage_array = ward(self.x_trainData)#self.y_trainData是结果
-        dendrogram(linkage_array)
-        plt.savefig(Dic + r'/Cluster_graph.png')
-
-        image = Image()
-        image.add(
-                src=Dic + r'/Cluster_graph.png',
-                ).set_global_opts(
-                title_opts=opts.ComponentTitleOpts(title="聚类树状图")
-                )
-
-        tab.add(image,'聚类树状图')
 
         heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
         data = class_ + [f'{i}' for i in x_means]
