@@ -879,6 +879,112 @@ class UnsupervisedModel(prep_Base):
         self.Model.fit(x_data)
         return 'None', 'None'
 
+class Near_feature_scatter_class_More(Unsupervised):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(Near_feature_scatter_class_More, self).__init__(*args, **kwargs)
+        self.Model = None
+        self.k = {}
+        #记录这两个是为了克隆
+        self.Model_Name = model
+
+    def Des(self, Dic, *args, **kwargs):
+        tab = Tab()
+        y = self.y_trainData
+        x_data = self.x_trainData
+        class_ = np.unique(self.y_trainData).tolist()
+        class_heard = [f'簇[{i}]' for i in range(len(class_))]
+
+        get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}训练数据散点图')
+
+        heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = class_ + [f'{i}' for i in x_means]
+        c = Table().add(headers=heard, rows=[data])
+        tab.add(c, '数据表')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Near_feature_scatter_More(Unsupervised):
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(Near_feature_scatter_More, self).__init__(*args, **kwargs)
+        self.Model = None
+        self.k = {}
+        #记录这两个是为了克隆
+        self.Model_Name = model
+
+    def Des(self,Dic,*args,**kwargs):
+        tab = Tab()
+        y_data = self.y_trainData
+        get_y = Feature_visualization(y_data, '转换数据')  # 转换
+        for i in range(len(get_y)):
+            tab.add(get_y[i], f'[{i}]变维数据x-x散点图')
+
+        heard = [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = [f'{i}' for i in x_means]
+        c = Table().add(headers=heard, rows=[data])
+        tab.add(c, '数据表')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Near_feature_scatter_class(Study_MachineBase):#临近特征散点图：分类数据
+    def __init__(self,args_use,model,*args,**kwargs):
+        super(Near_feature_scatter_class, self).__init__(*args,**kwargs)
+        self.Model = None
+        self.k = {}
+        #记录这两个是为了克隆
+        self.Model_Name = model
+
+    def Des(self,Dic='render.html',*args,**kwargs):
+        #获取数据
+        class_ = np.unique(self.y_trainData).tolist()
+        class_heard = [f'类别[{i}]' for i in range(len(class_))]
+        tab = Tab()
+
+        y = self.y_trainData
+        x_data = self.x_trainData
+        get, x_means, x_range, Type = Training_visualization(x_data, class_, y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}临近特征散点图')
+
+        heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = class_ + [f'{i}' for i in x_means]
+        c = Table().add(headers=heard, rows=[data])
+        tab.add(c, '数据表')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Near_feature_scatter(Study_MachineBase):#临近特征散点图：连续数据
+    def __init__(self,args_use,model,*args,**kwargs):
+        super(Near_feature_scatter, self).__init__(*args,**kwargs)
+        self.Model = None
+        self.k = {}
+        #记录这两个是为了克隆
+        self.Model_Name = model
+
+    def Des(self,Dic,*args,**kwargs):
+        tab = Tab()
+        x_data = self.x_trainData
+        y = self.y_trainData
+
+        get, x_means, x_range,Type = regress_visualization(x_data, y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}临近特征散点图')
+
+        columns = [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = [f'{i}' for i in x_means]
+        tab.add(make_Tab(columns,[data]), '数据表')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
 class Line_Model(Study_MachineBase):
     def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
         super(Line_Model, self).__init__(*args,**kwargs)
