@@ -312,6 +312,42 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='DBSCAN',command=Add_DBSCAN, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='特征分类图', command=Add_ClassBar, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='临近特征回归图', command=Add_FeatureScatter, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='临近特征分类图',command=Add_FeatureScatterClass, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='所有特征回归图', command=Add_FeatureScatter_all, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='所有特征分类图', command=Add_FeatureScatterClass_all, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='临近特征预测图',command=Add_Predictive_HeatMap, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='所有特征预测图', command=Add_Predictive_HeatMap_More, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵热力图', command=Add_Numpy_To_HeatMap, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据y-x散点图',command=Add_FeatureY_X, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='聚类树状图', command=Add_ClusterTree, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据y-x散点图',command=Add_FeatureY_X, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
     a_x += 1
@@ -412,6 +448,42 @@ def get_Learner(Type=False):
         except:
             return None
 
+def Add_View_data():  # 添加Lenear的核心
+    ML.Add_View_data(get_Learner(), Text=get_Args_Learner())
+    Update_Leaner()
+
+def Add_ClusterTree():
+    Add_leaner('ClusterTree')
+
+def Add_FeatureY_X():
+    Add_leaner('FeatureY-X')
+
+def Add_Numpy_To_HeatMap():
+    Add_leaner('HeatMap')
+
+def Add_Predictive_HeatMap_More():  # 添加Lenear的核心
+    ML.Add_Predictive_HeatMap_More(get_Learner(), Text=get_Args_Learner())
+    Update_Leaner()
+
+def Add_Predictive_HeatMap():  # 添加Lenear的核心
+    ML.Add_Predictive_HeatMap(get_Learner(), Text=get_Args_Learner())
+    Update_Leaner()
+
+def Add_FeatureScatterClass_all():
+    Add_leaner('FeatureScatterClass_all')
+
+def Add_FeatureScatter_all():
+    Add_leaner('FeatureScatter_all')
+
+def Add_FeatureScatterClass():
+    Add_leaner('FeatureScatterClass')
+
+def Add_FeatureScatter():
+    Add_leaner('FeatureScatter')
+
+def Add_ClassBar():
+    Add_leaner('ClassBar')
+
 def Add_DBSCAN():
     Add_leaner('DBSCAN')
 
@@ -438,9 +510,6 @@ def Add_GradientTree():
 
 def Add_GradientTree_class():
     Add_leaner('GradientTree_class')
-
-# def Add_NMF():
-#     Add_leaner('NMF')
 
 def Add_TSNE():
     Add_leaner('t-SNE')

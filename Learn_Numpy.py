@@ -67,26 +67,47 @@ def Prediction_boundary(x_range,x_means,Predict_Func,Type):#绘制回归型x-x�
     # a-特征x，b-特征x-1，c-其他特征
     o_cList = []
     if len(x_means) == 1:
-        n_ra = x_range[0]
-        if Type[0] == 1:
-            ra = make_list(n_ra[0], n_ra[1], 70)
-        else:
-            ra = n_ra
+        return Prediction_boundary(x_range,x_means,Predict_Func,Type)
+    for i in range(len(x_means)):
+        for j in range(len(x_means)):
+            if j <= i:continue
+            n_ra = x_range[j]
+            Type_ra = Type[j]
+            n_rb = x_range[i]
+            Type_rb = Type[i]
+            if Type_ra == 1:
+                ra = make_list(n_ra[0],n_ra[1],70)
+            else:
+                ra = list_filter(n_ra)#可以接受最大为70
 
-        a = np.array([i for i in ra]).reshape(-1,1)
-        y_data = Predict_Func(a)[0].tolist()
-        value = [[0 , float(a[i]), y_data[i]] for i in range(len(a))]
-        c = (HeatMap()
-             .add_xaxis(['None'])
-             .add_yaxis(f'数据', np.unique(a), value, **Label_Set)  # value的第一个数值是x
-             .set_global_opts(title_opts=opts.TitleOpts(title='预测热力图'), **global_Leg,
-                              yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
-                              xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
-                              visualmap_opts=opts.VisualMapOpts(is_show=True, max_=int(max(y_data)) + 1,
-                                                                min_=int(min(y_data)),
-                                                                pos_right='3%'))  # 显示
-             )
-        o_cList.append(c)
+            if Type_rb == 1:
+                rb = make_list(n_rb[0],n_rb[1],35)
+            else:
+                rb = list_filter(n_rb)#可以接受最大为70
+            a = np.array([i for i in ra for _ in rb]).T
+            b = np.array([i for _ in ra for i in rb]).T
+            data = np.array([x_means for _ in ra for i in rb])
+            data[:, j] = a
+            data[:, i] = b
+            y_data = Predict_Func(data)[0].tolist()
+            value = [[float(a[i]), float(b[i]), y_data[i]] for i in range(len(a))]
+            c = (HeatMap()
+                 .add_xaxis(np.unique(a))
+                 .add_yaxis(f'数据', np.unique(b), value, **Label_Set)  # value的第一个数值是x
+                 .set_global_opts(title_opts=opts.TitleOpts(title='预测热力图'), **global_Leg,
+                                  yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
+                                  xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
+                                  visualmap_opts=opts.VisualMapOpts(is_show=True, max_=int(max(y_data))+1, min_=int(min(y_data)),
+                                                                    pos_right='3%'))#显示
+                 )
+            o_cList.append(c)
+    return o_cList
+
+def Prediction_boundary_More(x_range,x_means,Predict_Func,Type):#绘制回归型x-x热力图
+    #r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
+    # a-特征x，b-特征x-1，c-其他特征
+    o_cList = []
+    if len(x_means) == 1:
         return o_cList
     for i in range(len(x_means)):
         if i == 0:
@@ -192,6 +213,56 @@ def Decision_boundary(x_range,x_means,Predict_Func,class_,Type,nono=False):#绘�
                               is_piecewise=True,pieces=v_dict,orient='horizontal',pos_bottom='3%'))
              )
         o_cList.append(c)
+    return o_cList
+
+def Decision_boundary_More(x_range,x_means,Predict_Func,class_,Type,nono=False):#绘制分类型预测图x-x热力图
+    #r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调,class_是分类,add_o是可以合成的图
+    # a-特征x，b-特征x-1，c-其他特征
+    #规定，i-1是x轴，a是x轴，x_1是x轴
+    class_dict = dict(zip(class_,[i for i in range(len(class_))]))
+    if not nono:
+        v_dict = [{'min':-1.5,'max':-0.5,'label':'未知'}]#分段显示
+    else:v_dict = []
+    for i in class_dict:
+        v_dict.append({'min':class_dict[i]-0.5,'max':class_dict[i]+0.5,'label':str(i)})
+    o_cList = []
+    if len(x_means) == 1:
+        return Decision_boundary(x_range,x_means,Predict_Func,class_,Type,nono)
+    #如果x_means长度不等于1则执行下面
+    for i in range(len(x_means)):
+        for j in range(len(x_means)):
+            if j <= i:continue
+
+            n_ra = x_range[j]
+            Type_ra = Type[j]
+            n_rb = x_range[i]
+            Type_rb = Type[i]
+            if Type_ra == 1:
+                ra = make_list(n_ra[0],n_ra[1],70)
+            else:
+                ra = n_ra
+
+            if Type_rb == 1:
+                rb = make_list(n_rb[0],n_rb[1],35)
+            else:
+                rb = n_rb
+            a = np.array([i for i in ra for _ in rb]).T
+            b = np.array([i for _ in ra for i in rb]).T
+            data = np.array([x_means for _ in ra for i in rb])
+            data[:, j] = a
+            data[:, i] = b
+            y_data = Predict_Func(data)[0].tolist()
+            value = [[float(a[i]), float(b[i]), class_dict.get(y_data[i],-1)] for i in range(len(a))]
+            c = (HeatMap()
+                 .add_xaxis(np.unique(a))
+                 .add_yaxis(f'数据', np.unique(b), value, **Label_Set)#value的第一个数值是x
+                 .set_global_opts(title_opts=opts.TitleOpts(title='预测热力图'), **global_Leg,
+                                  yaxis_opts=opts.AxisOpts(is_scale=True,type_='category'),#'category'
+                                  xaxis_opts=opts.AxisOpts(is_scale=True,type_='category'),
+                                  visualmap_opts=opts.VisualMapOpts(is_show=True,max_=max(class_dict.values()),min_=-1,
+                                  is_piecewise=True,pieces=v_dict,orient='horizontal',pos_bottom='3%'))
+                 )
+            o_cList.append(c)
     return o_cList
 
 def SeeTree(Dic):
@@ -452,6 +523,34 @@ def Training_visualization(x_trainData,class_,y):#根据不同类别绘制x-x分
     means,x_range,Type = Cat.get()
     return o_cList,means,x_range,Type
 
+def Training_visualization_NoClass(x_trainData):#根据绘制x-x分类散点图(无类别)
+    x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data[0],np.zeros(len(x_data[0]))])
+    Cat = make_Cat(x_data)
+    o_cList = []
+    for i in range(len(x_data)):
+        x1 = x_data[i]  # x坐标
+        x1_con = is_continuous(x1)
+
+        if i == 0:continue
+
+        x2 = x_data[i - 1]  # y坐标
+        x2_con = is_continuous(x2)
+        x2_new = np.unique(x2)
+        #x与散点图不同，这里是纵坐标
+        c = (Scatter()
+             .add_xaxis(x2)
+             .add_yaxis('', x1.tolist(), **Label_Set)
+             .set_global_opts(title_opts=opts.TitleOpts(title='训练数据散点图'), **global_Leg,
+                              yaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True),
+                              xaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True))
+             )
+        c.add_xaxis(x2_new)
+        o_cList.append(c)
+    means,x_range,Type = Cat.get()
+    return o_cList,means,x_range,Type
+
 def Training_W(x_trainData,class_,y,w_list,b_list,means:list):#针对分类问题绘制决策边界
     x_data = x_trainData.T
     if len(x_data) == 1:
@@ -534,20 +633,33 @@ def regress_visualization(x_trainData,y):#y-x数据图
     y_con = is_continuous(y)
     Cat = make_Cat(x_data)
     o_cList = []
+    try:
+        visualmap_opts = opts.VisualMapOpts(is_show=True, max_=int(y.max()) + 1, min_=int(y.min()),
+                                            pos_right='3%')
+    except:
+        visualmap_opts = None
+        y_con = False
     for i in range(len(x_data)):
         x1 = x_data[i]  # x坐标
         x1_con = is_continuous(x1)
         #不转换成list因为保持dtype的精度，否则绘图会出现各种问题(数值重复)
+        if not y_con and x1_con:#y不是连续的但x1连续,ry和ry_con是保护y的
+            ry_con,x1_con = x1_con,y_con
+            x1,ry = y,x1
+        else:
+            ry_con = y_con
+            ry = y
         c = (
             Scatter()
-            .add_xaxis(x1)#研究表明，这个是横轴
-            .add_yaxis('数据',y,**Label_Set)
+            .add_xaxis(x1.tolist())#研究表明，这个是横轴
+            .add_yaxis('数据',ry.tolist(),**Label_Set)
              .set_global_opts(title_opts=opts.TitleOpts(title="预测类型图"),**global_Set,
-                              yaxis_opts=opts.AxisOpts(type_='value' if y_con else None,is_scale=True),
-                              xaxis_opts=opts.AxisOpts(type_='value' if x1_con else None,is_scale=True),
-                              visualmap_opts=opts.VisualMapOpts(is_show=True, max_=int(y.max())+1, min_=int(y.min()),
-                                                                pos_right='3%'))
+                              yaxis_opts=opts.AxisOpts(type_='value' if ry_con else 'category',is_scale=True),
+                              xaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True),
+                              visualmap_opts=visualmap_opts
+                              )
         )
+        c.add_xaxis(np.unique(x1))
         o_cList.append(c)
     means,x_range,Type = Cat.get()
     return o_cList,means,x_range,Type
@@ -879,18 +991,189 @@ class UnsupervisedModel(prep_Base):
         self.Model.fit(x_data)
         return 'None', 'None'
 
-class Predictive_HeatMap(prep_Base):#绘制预测型热力图
+class To_PyeBase(Study_MachineBase):
+    def __init__(self,args_use,model,*args,**kwargs):
+        super(To_PyeBase, self).__init__(*args,**kwargs)
+        self.Model = None
+
+        #记录这两个是为了克隆
+        self.k = {}
+        self.Model_Name = model
+
+    def Fit(self, x_data,y_data, *args, **kwargs):
+        self.x_trainData = x_data
+        self.y_trainData = y_data.ravel()
+        return 'None', 'None'
+
+    def Predict(self, x_data, *args, **kwargs):
+        return np.array([]),'请使用训练'
+
+    def Score(self, x_data, y_data):
+        return 'None' # 没有score
+
+class View_data(To_PyeBase):#绘制预测型热力图
     def __init__(self, args_use, Learner, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
-        super(Predictive_HeatMap, self).__init__(*args, **kwargs)
+        super(View_data, self).__init__(args_use,Learner,*args, **kwargs)
 
         self.Model = Learner.Model
         self.Select_Model = None
         self.have_Fit = Learner.have_Fit
         self.Model_Name = 'Select_Model'
-        self.x_trainData = self.x_trainData
-        self.y_trainData = self.y_trainData
+        self.Learner = Learner
+        self.Learner_name = Learner.Model_Name
+
+    def Fit(self,*args,**kwargs):
+        return 'None','None'
+
+    def Predict(self,x_data,Add_Func=None,*args, **kwargs):
+        x_trainData = self.Learner.x_trainData
+        y_trainData = self.Learner.y_trainData
+        x_name = self.Learner_name
+        if not x_trainData is None:
+            Add_Func(x_trainData, f'{x_name}:x训练数据')
+
+        try:
+            x_testData = self.x_testData
+            if not x_testData is None:
+                Add_Func(x_testData, f'{x_name}:x测试数据')
+        except:pass
+
+        try:
+            y_testData = self.y_testData
+            if not y_testData is None:
+                Add_Func(y_testData, f'{x_name}:y测试数据')
+        except:pass
+
+        if y_trainData is None:
+            return np.array([]), 'y训练数据'
+        return y_trainData,'y训练数据'
 
     def Des(self,Dic,*args,**kwargs):
+        return Dic,
+
+class Cluster_Tree(To_PyeBase):
+    def Des(self, Dic, *args, **kwargs):
+        tab = Tab()
+        x_data = self.x_trainData
+        linkage_array = ward(x_data)#self.y_trainData是结果
+        dendrogram(linkage_array)
+        plt.savefig(Dic + r'/Cluster_graph.png')
+
+        image = Image()
+        image.add(src=Dic + r'/Cluster_graph.png',).set_global_opts(title_opts=opts.ComponentTitleOpts(title="聚类树状图"))
+        tab.add(image,'聚类树状图')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Class_To_Bar(To_PyeBase):
+    def Des(self,Dic,*args,**kwargs):
+        tab = Tab()
+        x_data = self.x_trainData.T
+        y_data = self.y_trainData
+        class_ = np.unique(y_data).tolist()#类型
+        class_list = []
+        for n_class in class_:  # 生成class_list(class是1,，也就是二维的，下面会压缩成一维)
+            class_list.append(y_data == n_class)
+        for num_i in range(len(x_data)):#迭代每一个特征
+            i = x_data[num_i]
+            i_con = is_continuous(i)
+            if i_con and len(i) >= 11:
+                c_list = [[0] * 10 for _ in class_list]  # 存放绘图数据，每一层列表是一个类(leg)，第二层是每个x_data
+                start = i.min()
+                end = i.max()
+                n = (end - start) / 10#生成10条柱子
+                x_axis = []#x轴
+                num_startEND = 0#迭代到第n个
+                while num_startEND <= 9:#把每个特征分为10类进行迭代
+                    x_axis.append(f'({num_startEND})[{round(start, 2)}-{round((start + n) if (start + n) <= end or not num_startEND == 9 else end, 2)}]')#x_axis添加数据
+                    try:
+                        if num_startEND == 9:raise Exception#执行到第10次时，直接获取剩下的所有
+                        s = (start <= i) == (i < end)#布尔索引
+                    except:#因为start + n有超出end的风险
+                        s = (start <= i) == (i <= end)#布尔索引
+                    # n_data = i[s]  # 取得现在的特征数据
+
+                    for num in range(len(class_list)):#根据类别进行迭代
+                        now_class = class_list[num]#取得布尔数组：y_data == n_class也就是输出值为指定类型的bool矩阵，用于切片
+                        bool_class = now_class[s].ravel()#切片成和n_data一样的位置一样的形状(now_class就是一个bool矩阵)
+                        c_list[num][num_startEND] = (int(np.sum(bool_class))) #用len计数 c_list = [[class1的数据],[class2的数据],[]]
+                    num_startEND += 1
+                    start += n
+            else :
+                iter_np = np.unique(i)
+                c_list = [[0] * len(iter_np) for _ in class_list]  # 存放绘图数据，每一层列表是一个类(leg)，第二层是每个x_data
+                x_axis = []  # 添加x轴数据
+                for i_num in range(len(iter_np)):#迭代每一个i(不重复)
+                    i_data = iter_np[i_num]
+                    # n_data= i[i == i_data]#取得现在特征数据
+                    x_axis.append(f'[{i_data}]')
+                    for num in range(len(class_list)):# 根据类别进行迭代
+                        now_class = class_list[num]#取得class_list的布尔数组
+                        bool_class = now_class[i == i_data]#切片成和n_data一样的位置一样的形状(now_class就是一个bool矩阵)
+                        c_list[num][i_num] = (int(np.sum(bool_class).tolist())) #用len计数 c_list = [[class1的数据],[class2的数据],[]]
+            c = (
+                Bar()
+                    .add_xaxis(x_axis)
+                    .set_global_opts(title_opts=opts.TitleOpts(title='类型-特征统计柱状图'), **global_Set,xaxis_opts=opts.AxisOpts(type_='category'),
+                                     yaxis_opts=opts.AxisOpts(type_='value')))
+            for i in range(len(c_list)):
+                c.add_yaxis(f'{class_[i]}', c_list[i], **Label_Set)
+            tab.add(c, f'类型-[{num_i}]特征统计柱状图')
+
+        #未完成
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Numpy_To_HeatMap(To_PyeBase):#Numpy矩阵绘制热力图
+    def Des(self,Dic,*args,**kwargs):
+        tab = Tab()
+
+        data = self.x_trainData
+        x = [f'横[{i}]' for i in range(len(data))]
+        y = [f'纵[{i}]' for i in range(len(data[0]))]
+        value = [(f'横[{i}]', f'纵[{j}]', float(data[i][j])) for i in range(len(data)) for j in range(len(data[i]))]
+        print(value)
+        c = (HeatMap()
+             .add_xaxis(x)
+             .add_yaxis(f'数据', y, value, **Label_Set)  # value的第一个数值是x
+             .set_global_opts(title_opts=opts.TitleOpts(title='矩阵热力图'), **global_Leg,
+                              yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
+                              xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
+                              visualmap_opts=opts.VisualMapOpts(is_show=True, max_=float(data.max()),
+                                                                min_=float(data.min()),
+                                                                pos_right='3%'))#显示
+             )
+        tab.add(c,'矩阵热力图')
+        tab.add(make_Tab(x,data.T.tolist()),f'矩阵热力图:表格')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Predictive_HeatMap_Base(To_PyeBase):#绘制预测型热力图
+    def __init__(self, args_use, Learner, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
+        super(Predictive_HeatMap_Base, self).__init__(args_use,Learner,*args, **kwargs)
+
+        self.Model = Learner.Model
+        self.Select_Model = None
+        self.have_Fit = Learner.have_Fit
+        self.Model_Name = 'Select_Model'
+        self.Learner = Learner
+        self.x_trainData = Learner.x_trainData
+        self.y_trainData = Learner.y_trainData
+        self.means = []
+
+    def Fit(self,x_data,*args,**kwargs):
+        try:
+            self.means = x_data.ravel()
+        except:
+            pass
+        return 'None','None'
+
+    def Des(self,Dic,Decision_boundary,Prediction_boundary,*args,**kwargs):
         tab = Tab()
         y = self.y_trainData
         x_data = self.x_trainData
@@ -900,8 +1183,15 @@ class Predictive_HeatMap(prep_Base):#绘制预测型热力图
 
             #获取数据
             get,x_means,x_range,Type = Training_visualization(x_data,class_,y)
-
-            get = Decision_boundary(x_range,x_means,self.Model.Predict,class_,Type)
+            #可使用自带的means，并且nan表示跳过
+            for i in range(min([len(x_means),len(self.means)])):
+                try:
+                    g = self.means[i]
+                    if g == np.nan:raise Exception
+                    x_means[i] = g
+                except:pass
+            print(x_means)
+            get = Decision_boundary(x_range,x_means,self.Learner.Predict,class_,Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
 
@@ -912,7 +1202,7 @@ class Predictive_HeatMap(prep_Base):#绘制预测型热力图
         except:
             get, x_means, x_range,Type = regress_visualization(x_data, y)
 
-            get = Prediction_boundary(x_range, x_means, self.Model.Predict, Type)
+            get = Prediction_boundary(x_range, x_means, self.Learner.Predict, Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
 
@@ -925,20 +1215,20 @@ class Predictive_HeatMap(prep_Base):#绘制预测型热力图
         tab.render(save)  # 生成HTML
         return save,
 
+class Predictive_HeatMap(Predictive_HeatMap_Base):#绘制预测型热力图
+    def Des(self,Dic,*args,**kwargs):
+        return super().Des(Dic,Decision_boundary,Prediction_boundary)
 
-class Near_feature_scatter_class_More(Unsupervised):
-    def __init__(self, args_use, model, *args, **kwargs):
-        super(Near_feature_scatter_class_More, self).__init__(*args, **kwargs)
-        self.Model = None
-        self.k = {}
-        #记录这两个是为了克隆
-        self.Model_Name = model
+class Predictive_HeatMap_More(Predictive_HeatMap_Base):#绘制预测型热力图_More
+    def Des(self,Dic,*args,**kwargs):
+        return super().Des(Dic,Decision_boundary_More,Prediction_boundary_More)
 
+class Near_feature_scatter_class_More(To_PyeBase):
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y = self.y_trainData
         x_data = self.x_trainData
-        class_ = np.unique(self.y_trainData).tolist()
+        y = self.y_trainData
+        class_ = np.unique(y).ravel().tolist()
         class_heard = [f'簇[{i}]' for i in range(len(class_))]
 
         get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
@@ -954,20 +1244,14 @@ class Near_feature_scatter_class_More(Unsupervised):
         tab.render(save)  # 生成HTML
         return save,
 
-class Near_feature_scatter_More(Unsupervised):
-    def __init__(self, args_use, model, *args, **kwargs):
-        super(Near_feature_scatter_More, self).__init__(*args, **kwargs)
-        self.Model = None
-        self.k = {}
-        #记录这两个是为了克隆
-        self.Model_Name = model
-
+class Near_feature_scatter_More(To_PyeBase):
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        get_y = Feature_visualization(y_data, '转换数据')  # 转换
+        x_data = self.x_trainData
+        x_means = make_Cat(x_data).get()[0]
+        get_y = Feature_visualization(x_data, '数据散点图')  # 转换
         for i in range(len(get_y)):
-            tab.add(get_y[i], f'[{i}]变维数据x-x散点图')
+            tab.add(get_y[i], f'[{i}]数据x-x散点图')
 
         heard = [f'普适预测第{i}特征' for i in range(len(x_means))]
         data = [f'{i}' for i in x_means]
@@ -978,17 +1262,10 @@ class Near_feature_scatter_More(Unsupervised):
         tab.render(save)  # 生成HTML
         return save,
 
-class Near_feature_scatter_class(Study_MachineBase):#临近特征散点图：分类数据
-    def __init__(self,args_use,model,*args,**kwargs):
-        super(Near_feature_scatter_class, self).__init__(*args,**kwargs)
-        self.Model = None
-        self.k = {}
-        #记录这两个是为了克隆
-        self.Model_Name = model
-
-    def Des(self,Dic='render.html',*args,**kwargs):
+class Near_feature_scatter_class(To_PyeBase):#临近特征散点图：分类数据
+    def Des(self,Dic,*args,**kwargs):
         #获取数据
-        class_ = np.unique(self.y_trainData).tolist()
+        class_ = np.unique(self.y_trainData).ravel().tolist()
         class_heard = [f'类别[{i}]' for i in range(len(class_))]
         tab = Tab()
 
@@ -1007,20 +1284,13 @@ class Near_feature_scatter_class(Study_MachineBase):#临近特征散点图：分
         tab.render(save)  # 生成HTML
         return save,
 
-class Near_feature_scatter(Study_MachineBase):#临近特征散点图：连续数据
-    def __init__(self,args_use,model,*args,**kwargs):
-        super(Near_feature_scatter, self).__init__(*args,**kwargs)
-        self.Model = None
-        self.k = {}
-        #记录这两个是为了克隆
-        self.Model_Name = model
-
+class Near_feature_scatter(To_PyeBase):#临近特征散点图：连续数据
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        x_data = self.x_trainData
+        x_data = self.x_trainData.T
         y = self.y_trainData
 
-        get, x_means, x_range,Type = regress_visualization(x_data, y)
+        get, x_means, x_range,Type = Training_visualization_NoClass(x_data)
         for i in range(len(get)):
             tab.add(get[i], f'{i}临近特征散点图')
 
@@ -1031,6 +1301,30 @@ class Near_feature_scatter(Study_MachineBase):#临近特征散点图：连续数
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
+
+class Feature_scatter_YX(To_PyeBase):#y-x图
+    def Des(self,Dic,*args,**kwargs):
+        tab = Tab()
+        x_data = self.x_trainData
+        y = self.y_trainData
+
+        get, x_means, x_range,Type = regress_visualization(x_data,y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}特征x-y散点图')
+
+        columns = [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = [f'{i}' for i in x_means]
+        tab.add(make_Tab(columns,[data]), '数据表')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Weight_curve(To_PyeBase):#权重曲线
+    def Des(self,Dic,*args,**kwargs):
+        w = self.x_trainData
+        b = self.y_trainData
+
 
 class Line_Model(Study_MachineBase):
     def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
@@ -1192,9 +1486,10 @@ class Knn_Model(Study_MachineBase):
             for i in range(len(get)):
                 tab.add(get[i],f'{i}训练数据散点图')
 
-            get = Training_visualization(x_test,class_,y_test)[0]
-            for i in range(len(get)):
-                tab.add(get[i],f'{i}测试数据散点图')
+            if not y_test is None:
+                get = Training_visualization(x_test,class_,y_test)[0]
+                for i in range(len(get)):
+                    tab.add(get[i],f'{i}测试数据散点图')
 
             get = Decision_boundary(x_range,x_means,self.Predict,class_,Type)
             for i in range(len(get)):
@@ -2551,6 +2846,14 @@ class Machine_Learner(Learner):#数据处理者
                           'k-means':kmeans_Model,
                           'Agglomerative':Agglomerative_Model,
                           'DBSCAN':DBSCAN_Model,
+                          'ClassBar':Class_To_Bar,
+                          'FeatureScatter':Near_feature_scatter,
+                          'FeatureScatterClass': Near_feature_scatter_class,
+                          'FeatureScatter_all':Near_feature_scatter_More,
+                          'FeatureScatterClass_all':Near_feature_scatter_class_More,
+                          'HeatMap':Numpy_To_HeatMap,
+                          'FeatureY-X':Feature_scatter_YX,
+                          'ClusterTree':Cluster_Tree,
                           }
         self.Learner_Type = {}#记录机器的类型
 
@@ -2634,6 +2937,30 @@ class Machine_Learner(Learner):#数据处理者
         self.Learner[name] = SelectFrom_Model(Learner=model,args_use=args_use,Dic=self.Learn_Dic)
         self.Learner_Type[name] = 'SelectFrom_Model'
 
+    def Add_Predictive_HeatMap(self,Learner,Text=''):#Learner代表选中的学习器
+        model = self.get_Learner(Learner)
+        name = f'Le[{len(self.Learner)}]Predictive_HeatMap:{Learner}'
+        #生成学习器
+        args_use = self.p_Args(Text, 'Predictive_HeatMap')
+        self.Learner[name] = Predictive_HeatMap(Learner=model,args_use=args_use)
+        self.Learner_Type[name] = 'Predictive_HeatMap'
+
+    def Add_Predictive_HeatMap_More(self,Learner,Text=''):#Learner代表选中的学习器
+        model = self.get_Learner(Learner)
+        name = f'Le[{len(self.Learner)}]Predictive_HeatMap_More:{Learner}'
+        #生成学习器
+        args_use = self.p_Args(Text, 'Predictive_HeatMap_More')
+        self.Learner[name] = Predictive_HeatMap_More(Learner=model,args_use=args_use)
+        self.Learner_Type[name] = 'Predictive_HeatMap_More'
+
+    def Add_View_data(self,Learner,Text=''):#Learner代表选中的学习器
+        model = self.get_Learner(Learner)
+        name = f'Le[{len(self.Learner)}]View_data:{Learner}'
+        #生成学习器
+        args_use = self.p_Args(Text, 'View_data')
+        self.Learner[name] = View_data(Learner=model,args_use=args_use)
+        self.Learner_Type[name] = 'View_data'
+
     def Return_Learner(self):
         return self.Learner.copy()
 
@@ -2652,7 +2979,7 @@ class Machine_Learner(Learner):#数据处理者
     def Predict(self,x_name,Learner,Text='',**kwargs):
         x_data = self.get_Sheet(x_name)
         model = self.get_Learner(Learner)
-        y_data,name = model.Predict(x_data,x_name = x_name,Add_Func=self.Add_Form)
+        y_data,name = model.Predict(x_data, x_name=x_name, Add_Func=self.Add_Form)
         self.Add_Form(y_data,f'{x_name}:{name}')
         return y_data
 
