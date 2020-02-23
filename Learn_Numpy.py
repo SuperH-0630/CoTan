@@ -917,6 +917,67 @@ class Learner:
         tab.render(Dic)
         return Dic
 
+    def Merge(self,name,axis=0):#aiis:0-横向合并(hstack),1-纵向合并(vstack)，2-深度合并
+        sheet_list = []
+        for i in name:
+            sheet_list.append(self.get_Sheet(i))
+        get = {0:np.hstack,1:np.vstack,2:np.dstack}[axis](sheet_list)
+        self.Add_Form(np.array(get),f'{name[0]}合成')
+
+    def Split(self,name,split=2,axis=0):#aiis:0-横向分割(hsplit),1-纵向分割(vsplit)
+        sheet = self.get_Sheet(name)
+        get = {0:np.hsplit,1:np.vsplit,2:np.dsplit}[axis](sheet,split)
+        for i in get:
+            self.Add_Form(i,f'{name[0]}分割')
+
+    def Two_Split(self,name,split,axis):#二分切割(0-横向，1-纵向)
+        sheet = self.get_Sheet(name)
+        try:
+            split = float(eval(split))
+            if split < 1:
+                split = int(split * len(sheet) if axis == 1 else len(sheet[0]))
+            else:
+                raise Exception
+        except:
+            split = int(split)
+        if axis == 0:
+            self.Add_Form(sheet[:,split:], f'{name[0]}分割')
+            self.Add_Form(sheet[:,:split], f'{name[0]}分割')
+
+    def Deep(self,sheet:np.ndarray):
+        return sheet.ravel()
+
+    def Down_Ndim(self,sheet:np.ndarray):#横向
+        down_list = []
+        for i in sheet:
+            down_list.append(i.ravel())
+        return np.array(down_list)
+
+    def LongitudinalDown_Ndim(self,sheet:np.ndarray):#纵向
+        down_list = []
+        for i in range(len(sheet[0])):
+            down_list.append(sheet[:,i].ravel())
+        return np.array(down_list).T
+
+    def Reval(self,name,axis):#axis:0-横向，1-纵向(带.T)，2-深度
+        sheet = self.get_Sheet(name)
+        self.Add_Form({0:self.Down_Ndim,1:self.LongitudinalDown_Ndim,2:self.Deep}[axis](sheet).copy(),f'{name}伸展')
+
+    def Del_Ndim(self,name):#删除无用维度
+        sheet = self.get_Sheet(name)
+        self.Add_Form(np.squeeze(sheet), f'{name}降维')
+
+    def T(self,name,Func:list):
+        sheet = self.get_Sheet(name)
+        if sheet.ndim <= 2:
+            self.Add_Form(sheet.T.copy(), f'{name}.T')
+        else:
+            self.Add_Form(np.transpose(sheet,Func).copy(), f'{name}.T')
+
+    def reShape(self,name,shape:list):
+        sheet = self.get_Sheet(name)
+        self.Add_Form(sheet.reshape(shape).copy(), f'{name}.r')
+
 class Study_MachineBase:
     def __init__(self,*args,**kwargs):
         self.Model = None
@@ -1050,6 +1111,32 @@ class View_data(To_PyeBase):#绘制预测型热力图
 
     def Des(self,Dic,*args,**kwargs):
         return Dic,
+
+class MatrixScatter(To_PyeBase):
+    def Des(self, Dic, *args, **kwargs):
+        tab = Tab()
+
+        data = self.x_trainData
+        print(data.ndim)
+        if data.ndim <= 2:#维度为2
+            c = (Scatter()
+                 .add_xaxis([f'{i}' for i in range(data.shape[1])])
+                 .set_global_opts(title_opts=opts.TitleOpts(title=f'矩阵散点图'), **global_Leg)
+                 )
+            if data.ndim == 2:
+                for num in range(len(data)):
+                    i = data[num]
+                    c.add_yaxis(f'{num}',[[f'{num}',x] for x in i],color='#FFFFFF')
+            else:
+                c.add_yaxis(f'0', [[0,x]for x in data],color='#FFFFFF')
+            c.set_series_opts(label_opts=opts.LabelOpts(is_show=True,color='#000000',position='inside',
+            formatter=JsCode("function(params){return params.data[2];}"),
+            ))
+            tab.add(c,'矩阵散点图')
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
 
 class Cluster_Tree(To_PyeBase):
     def Des(self, Dic, *args, **kwargs):
@@ -2854,6 +2941,7 @@ class Machine_Learner(Learner):#数据处理者
                           'HeatMap':Numpy_To_HeatMap,
                           'FeatureY-X':Feature_scatter_YX,
                           'ClusterTree':Cluster_Tree,
+                          'MatrixScatter':MatrixScatter,
                           }
         self.Learner_Type = {}#记录机器的类型
 

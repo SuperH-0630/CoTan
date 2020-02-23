@@ -9,9 +9,10 @@ import Learn_Numpy
 import webbrowser
 
 def Main():
-    global top,ML,Form_List,PATH,bg,bbg,fg
+    global top,ML,Form_List,PATH,bg,bbg,fg,Merge_list
     PATH = os.getcwd()
     Form_List = []
+    Merge_list = []
     ML = Learn_Numpy.Machine_Learner()
 
     top = tkinter.Tk()
@@ -86,7 +87,56 @@ def Main():
     a_y += 1
     Form_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 10)  # 显示符号
     Form_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=10, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    #422
+    a_y += 10
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加数据', command=Merge_Add, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除数据', command=Merge_Del, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='组合数据', command=Merge, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
+    global Processing_type, Shape_Input, Merge_BOX
+    a_y += 1
+    Merge_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)  # 显示符号
+    Merge_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 3
+    Processing_type = tkinter.IntVar()#正，负，0
+    lable = ['横向处理','纵向处理','深度处理']#复选框
+    for i in range(3):
+        tkinter.Radiobutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg,text=lable[i],
+                            variable=Processing_type, value=i).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据切片', command=Two_Split, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据分割', command=Split, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,columnspan=2,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Label(top, text='重塑形状:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Shape_Input = tkinter.Entry(top, width=width_B)
+    Shape_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵重塑', command=Reshape, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵伸展', command=Reval, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵降维', command=Del_Ndim, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵转置', command=T, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
@@ -104,7 +154,7 @@ def Main():
     Put = tkinter.Entry(top, width=width_B * 2, textvariable=X_OUT)
     Put.grid(column=a_x, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
     Put['state'] = 'readonly'
-    tkinter.Button(top, bg=bbg, fg=fg, text='选用特征集', command=set_Feature, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选用X集', command=set_Feature, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     Y_OUT = tkinter.StringVar()
@@ -112,7 +162,7 @@ def Main():
     Put = tkinter.Entry(top, width=width_B * 2, textvariable=Y_OUT)
     Put.grid(column=a_x, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
     Put['state'] = 'readonly'
-    tkinter.Button(top, bg=bbg, fg=fg, text='选用标签集', command=set_Label, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选用Y集', command=set_Label, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     ML_OUT = tkinter.StringVar()
@@ -345,7 +395,7 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='数据y-x散点图',command=Add_FeatureY_X, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_x += 3
@@ -366,6 +416,73 @@ def Main():
 
     top.mainloop()
 
+#90
+
+def Reshape():
+    global ML,Processing_type
+    shape = eval(f'[{Shape_Input.get()}]')[0]
+    ML.reShape(get_Name(),shape)
+    Update_BOX()
+
+def T():
+    global ML,Processing_type,Shape_Input
+    try:
+        Func = eval(f'[{Shape_Input.get()}]')
+    except:
+        Func = None
+    ML.T(get_Name(),Func)
+    Update_BOX()
+
+def Del_Ndim():
+    global ML
+    ML.Del_Ndim(get_Name())
+    Update_BOX()
+
+def Reval():
+    global ML,Processing_type
+    Type = Processing_type.get()
+    ML.Reval(get_Name(),Type)
+    Update_BOX()
+
+def Two_Split():
+    global ML,Processing_type,Shape_Input
+    Type = Processing_type.get()
+    ML.Two_Split(get_Name(),Shape_Input.get(),Type)
+    Update_BOX()
+
+def Split():
+    global ML,Processing_type,Shape_Input
+    Type = Processing_type.get()
+    try:
+        Split = eval(f'[{Shape_Input.get()}]')[0]
+    except:
+        Split = 2
+    ML.Split(get_Name(),Split,Type)
+    Update_BOX()
+
+def Merge():
+    global Merge_list,ML,Processing_type
+    if len(Merge_list) < 1:
+        return False
+    Type = Processing_type.get()
+    ML.Merge(Merge_list,Type)
+    Update_BOX()
+
+def Update_Merge():
+    global Merge_list,Merge_BOX
+    Merge_BOX.delete(0, tkinter.END)
+    Merge_BOX.insert(tkinter.END, *Merge_list)
+
+def Merge_Del():
+    global Merge_list,Merge_BOX
+    del Merge_list[Merge_BOX.curselection()[0]]
+    Update_Merge()
+
+def Merge_Add():
+    global Merge_list
+    name = get_Name()
+    Merge_list.append(name)
+    Update_Merge()
 
 def Del_Leaner():
     Learn = get_Learner(True)
@@ -415,7 +532,6 @@ def Fit_Learner():
     tkinter.messagebox.showinfo('训练完成', f'针对训练数据({(1 - split) * 100}%)评分结果为:{socore[0]}\n'
                                         f'针对测试数据评分({split * 100}%)结果为:{socore[1]}')
 
-
 def set_Feature():
     global X_OUT
     X_OUT.set(get_Name())
@@ -447,6 +563,9 @@ def get_Learner(Type=False):
             return ML_OUT.get()
         except:
             return None
+
+def Add_MatrixScatter():  # 添加Lenear的核心
+    Add_leaner('MatrixScatter')
 
 def Add_View_data():  # 添加Lenear的核心
     ML.Add_View_data(get_Learner(), Text=get_Args_Learner())

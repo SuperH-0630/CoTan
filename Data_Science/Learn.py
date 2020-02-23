@@ -240,7 +240,7 @@ class Form:
 
     def T(self, name, new=True):
         get = self.get_Sheet(name)
-        re = get.T
+        re = get.T.copy()#复制一份，防止冲突
         if new:
             self.Add_Form(re,f'{name}.T')
         return re
