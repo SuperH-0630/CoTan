@@ -398,11 +398,29 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
-    a_x += 3
-    tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
-    a_x += 1
-    a_y = 0
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='特征相关性', command=Add_corr, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据统计', command=Add_Des, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
+    # a_x += 3
+    # tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
+    # a_x += 1
+    # a_y = 0
+    a_y += 1
     tkinter.Label(top, text='【学习器配置】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
                                                                                                         columnspan=3,
                                                                                                         row=a_y,
@@ -553,7 +571,6 @@ def get_Learner(Type=False):
         try:
             return list(Learn_Dic.keys())[ML_BOX.curselection()[0]]
         except:
-            # raise
             try:
                 return list(Learn_Dic.keys)[0]
             except:
@@ -564,10 +581,16 @@ def get_Learner(Type=False):
         except:
             return None
 
-def Add_MatrixScatter():  # 添加Lenear的核心
+def Add_Des():  # 添加Lenear的核心
+    Add_leaner('Statistics')
+
+def Add_corr():
+    Add_leaner('Correlation')
+
+def Add_MatrixScatter():
     Add_leaner('MatrixScatter')
 
-def Add_View_data():  # 添加Lenear的核心
+def Add_View_data():
     ML.Add_View_data(get_Learner(), Text=get_Args_Learner())
     Update_Leaner()
 
