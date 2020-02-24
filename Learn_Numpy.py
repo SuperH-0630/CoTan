@@ -995,8 +995,8 @@ class Study_MachineBase:
     def Fit(self,x_data,y_data,split=0.3,**kwargs):
         self.have_Fit = True
         y_data = y_data.ravel()
-        self.x_trainData = x_data
-        self.y_trainData = y_data
+        self.x_trainData = x_data.copy()
+        self.y_trainData = y_data.copy()
         x_train,x_test,y_train,y_test = train_test_split(x_data,y_data,test_size=split)
         self.Model.fit(x_data,y_data)
         train_score = self.Model.score(x_train,y_train)
@@ -1023,15 +1023,16 @@ class prep_Base(Study_MachineBase):
 
     def Fit(self, x_data,y_data, *args, **kwargs):
         if not self.have_Fit:  # 不允许第二次训练
-            self.x_trainData = x_data
-            self.y_trainData = y_data
+            y_data = y_data.ravel()
+            self.x_trainData = x_data.copy()
+            self.y_trainData = y_data.copy()
             self.Model.fit(x_data,y_data)
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data
+        self.x_trainData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict
+        self.y_trainData = x_Predict.copy()
         return x_Predict,'特征工程'
 
     def Score(self, x_data, y_data):
@@ -1040,14 +1041,14 @@ class prep_Base(Study_MachineBase):
 class Unsupervised(prep_Base):
     def Fit(self, x_data, *args, **kwargs):
         if not self.have_Fit:  # 不允许第二次训练
-            self.x_trainData = x_data
+            self.x_trainData = x_data.copy()
             self.y_trainData = None
             self.Model.fit(x_data)
         return 'None', 'None'
 
 class UnsupervisedModel(prep_Base):
     def Fit(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data
+        self.x_trainData = x_data.copy()
         self.y_trainData = None
         self.Model.fit(x_data)
         return 'None', 'None'
@@ -1062,8 +1063,8 @@ class To_PyeBase(Study_MachineBase):
         self.Model_Name = model
 
     def Fit(self, x_data,y_data, *args, **kwargs):
-        self.x_trainData = x_data
-        self.y_trainData = y_data.ravel()
+        self.x_trainData = x_data.copy()
+        self.y_trainData = y_data.ravel().copy()
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
@@ -1071,6 +1072,87 @@ class To_PyeBase(Study_MachineBase):
 
     def Score(self, x_data, y_data):
         return 'None' # 没有score
+
+def num_str(num,f):
+    num = str(round(float(num),f))
+    if len(num.replace('.','')) == f:
+        return num
+    n = num.split('.')
+    if len(n) == 0:#无小数
+        return num + '.' + '0' * (f - len(num))
+    else:
+        return num + '0' * (f - len(num) + 1)#len(num)多算了一位小数点
+
+def desTo_CSV(Dic,name,data,columns=None,row=None):
+    Dic = Dic + '/' + name + '.csv'
+    DataFrame(data,columns=columns,index=row).to_csv(Dic,header=False if columns is None else True,
+                                                     index=False if row is None else True)
+    return data
+
+class Des(To_PyeBase):#数据分析
+    def Des(self, Dic, *args, **kwargs):
+        tab = Tab()
+
+        data = self.x_trainData
+        def Cumulative_calculation(data,func,name,tab):
+            sum_list = []
+            for i in range(len(data)):#按行迭代数据
+                sum_list.append([])
+                for a in range(len(data[i])):
+                    s = num_str(func(data[:i+1,a]),8)
+                    sum_list[-1].append(s)
+            desTo_CSV(Dic,f'{name}',sum_list)
+            tab.add(make_Tab([f'[{i}]' for i in range(len(sum_list[0]))],sum_list),f'{name}')
+
+        Geometric_mean = lambda x:np.power(np.prod(x),1/len(x))#几何平均数
+        Square_mean = lambda x:np.sqrt(np.sum(np.power(x,2)) / len(x))#平方平均数
+        Harmonic_mean = lambda x:len(x)/np.sum(np.power(x,-1))#调和平均数
+
+        Cumulative_calculation(data,np.sum,'累计求和',tab)
+        Cumulative_calculation(data,np.var,'累计方差',tab)
+        Cumulative_calculation(data,np.std,'累计标准差',tab)
+        Cumulative_calculation(data,np.mean,'累计算术平均值',tab)
+        Cumulative_calculation(data,Geometric_mean,'累计几何平均值',tab)
+        Cumulative_calculation(data,Square_mean,'累计平方平均值',tab)
+        Cumulative_calculation(data,Harmonic_mean,'累计调和平均值',tab)
+        Cumulative_calculation(data,np.median,'累计中位数',tab)
+        Cumulative_calculation(data,np.max,'累计最大值',tab)
+        Cumulative_calculation(data,np.min,'累计最小值',tab)
+
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class CORR(To_PyeBase):#相关性和协方差
+    def Des(self, Dic, *args, **kwargs):
+        tab = Tab()
+
+        data = DataFrame(self.x_trainData)
+        corr = data.corr().to_numpy()#相关性
+        cov = data.cov().to_numpy()#协方差
+
+        def HeatMAP(data,name:str,max_,min_):
+            x = [f'特征[{i}]' for i in range(len(data))]
+            y = [f'特征[{i}]' for i in range(len(data[0]))]
+            value = [(f'特征[{i}]', f'特征[{j}]', float(data[i][j])) for i in range(len(data)) for j in range(len(data[i]))]
+            c = (HeatMap()
+                 .add_xaxis(x)
+                 .add_yaxis(f'数据', y, value, label_opts=opts.LabelOpts(is_show= True if len(x) <= 10 else False,position='inside'))#如果特征太多则不显示标签
+                 .set_global_opts(title_opts=opts.TitleOpts(title='矩阵热力图'), **global_Leg,
+                                  yaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),  # 'category'
+                                  xaxis_opts=opts.AxisOpts(is_scale=True, type_='category'),
+                                  visualmap_opts=opts.VisualMapOpts(is_show=True, max_=max_,min_=min_,pos_right='3%'))#显示
+                 )
+            tab.add(c,name)
+
+        HeatMAP(corr,'相关性热力图',1,-1)
+        HeatMAP(cov,'协方差热力图',float(cov.max()),float(cov.min()))
+
+        desTo_CSV(Dic, f'相关性矩阵', corr)
+        desTo_CSV(Dic, f'协方差矩阵', cov)
+        save = Dic + r'/render.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
 
 class View_data(To_PyeBase):#绘制预测型热力图
     def __init__(self, args_use, Learner, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
@@ -1100,7 +1182,7 @@ class View_data(To_PyeBase):#绘制预测型热力图
         except:pass
 
         try:
-            y_testData = self.y_testData
+            y_testData = self.y_testData.copy()
             if not y_testData is None:
                 Add_Func(y_testData, f'{x_name}:y测试数据')
         except:pass
@@ -1112,12 +1194,11 @@ class View_data(To_PyeBase):#绘制预测型热力图
     def Des(self,Dic,*args,**kwargs):
         return Dic,
 
-class MatrixScatter(To_PyeBase):
+class MatrixScatter(To_PyeBase):#矩阵散点图
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
 
         data = self.x_trainData
-        print(data.ndim)
         if data.ndim <= 2:#维度为2
             c = (Scatter()
                  .add_xaxis([f'{i}' for i in range(data.shape[1])])
@@ -1132,13 +1213,27 @@ class MatrixScatter(To_PyeBase):
             c.set_series_opts(label_opts=opts.LabelOpts(is_show=True,color='#000000',position='inside',
             formatter=JsCode("function(params){return params.data[2];}"),
             ))
-            tab.add(c,'矩阵散点图')
+        elif data.ndim == 3:
+            c = (Scatter3D()
+                 .set_global_opts(title_opts=opts.TitleOpts(title=f'矩阵散点图'),**global_Leg)
+                 )
+            for num in range(len(data)):
+                i = data[num]
+                for s_num in range(len(i)):
+                    s = i[s_num]
+                    y_data = [[num,s_num,x,float(s[x])] for x in range(len(s))]
+                    c.add(f'{num}',y_data,zaxis3d_opts = opts.Axis3DOpts(type_="category"))
+            c.set_series_opts(label_opts=opts.LabelOpts(is_show=True,color='#000000',position='inside',
+                        formatter=JsCode("function(params){return params.data[3];}")))
+        else:
+            c = Scatter()
+        tab.add(c,'矩阵散点图')
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
-class Cluster_Tree(To_PyeBase):
+class Cluster_Tree(To_PyeBase):#聚类树状图
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
         x_data = self.x_trainData
@@ -1154,7 +1249,7 @@ class Cluster_Tree(To_PyeBase):
         tab.render(save)  # 生成HTML
         return save,
 
-class Class_To_Bar(To_PyeBase):
+class Class_To_Bar(To_PyeBase):#类型柱状图
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
         x_data = self.x_trainData.T
@@ -1205,8 +1300,11 @@ class Class_To_Bar(To_PyeBase):
                     .add_xaxis(x_axis)
                     .set_global_opts(title_opts=opts.TitleOpts(title='类型-特征统计柱状图'), **global_Set,xaxis_opts=opts.AxisOpts(type_='category'),
                                      yaxis_opts=opts.AxisOpts(type_='value')))
+            y_axis = []
             for i in range(len(c_list)):
+                y_axis.append(f'{class_[i]}')
                 c.add_yaxis(f'{class_[i]}', c_list[i], **Label_Set)
+            desTo_CSV(Dic, f'类型-[{num_i}]特征统计柱状图', c_list, x_axis, y_axis)
             tab.add(c, f'类型-[{num_i}]特征统计柱状图')
 
         #未完成
@@ -1222,7 +1320,6 @@ class Numpy_To_HeatMap(To_PyeBase):#Numpy矩阵绘制热力图
         x = [f'横[{i}]' for i in range(len(data))]
         y = [f'纵[{i}]' for i in range(len(data[0]))]
         value = [(f'横[{i}]', f'纵[{j}]', float(data[i][j])) for i in range(len(data)) for j in range(len(data[i]))]
-        print(value)
         c = (HeatMap()
              .add_xaxis(x)
              .add_yaxis(f'数据', y, value, **Label_Set)  # value的第一个数值是x
@@ -1249,8 +1346,8 @@ class Predictive_HeatMap_Base(To_PyeBase):#绘制预测型热力图
         self.have_Fit = Learner.have_Fit
         self.Model_Name = 'Select_Model'
         self.Learner = Learner
-        self.x_trainData = Learner.x_trainData
-        self.y_trainData = Learner.y_trainData
+        self.x_trainData = Learner.x_trainData.copy()
+        self.y_trainData = Learner.y_trainData.copy()
         self.means = []
 
     def Fit(self,x_data,*args,**kwargs):
@@ -1277,7 +1374,6 @@ class Predictive_HeatMap_Base(To_PyeBase):#绘制预测型热力图
                     if g == np.nan:raise Exception
                     x_means[i] = g
                 except:pass
-            print(x_means)
             get = Decision_boundary(x_range,x_means,self.Learner.Predict,class_,Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
@@ -1407,12 +1503,6 @@ class Feature_scatter_YX(To_PyeBase):#y-x图
         tab.render(save)  # 生成HTML
         return save,
 
-class Weight_curve(To_PyeBase):#权重曲线
-    def Des(self,Dic,*args,**kwargs):
-        w = self.x_trainData
-        b = self.y_trainData
-
-
 class Line_Model(Study_MachineBase):
     def __init__(self,args_use,model,*args,**kwargs):#model表示当前选用的模型类型,Alpha针对正则化的参数
         super(Line_Model, self).__init__(*args,**kwargs)
@@ -1455,6 +1545,10 @@ class Line_Model(Study_MachineBase):
             columns += ['阿尔法','最大迭代次数']
             data += [self.Model.alpha,self.Model.max_iter]
         tab.add(make_Tab(columns,[data]), '数据表')
+
+        desTo_CSV(Dic, '系数表', [w_list] + [b], [f'系数W[{i}]' for i in range(len(w_list))] + ['截距'])
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
+
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1493,12 +1587,19 @@ class LogisticRegression_Model(Study_MachineBase):
             tab.add(scatter(w_heard, w), f'系数w[{i}]散点图')
             tab.add(bar(w_heard, w_array[i]), f'系数w[{i}]柱状图')
 
-        columns = class_heard + ['截距b','C','最大迭代数']
-        data = class_ + [b,c,max_iter]
+        columns = class_heard + [f'截距{i}' for i in range(len(b))] + ['C', '最大迭代数']
+        data = class_ + b.tolist() + [c, max_iter]
         c = Table().add(headers=columns, rows=[data])
         tab.add(c, '数据表')
         c = Table().add(headers=[f'系数W[{i}]' for i in range(len(w_list[0]))], rows=w_list)
         tab.add(c, '系数数据表')
+
+        c = Table().add(headers=[f'普适预测第{i}特征' for i in range(len(x_means))], rows=[[f'{i}' for i in x_means]])
+        tab.add(c, '普适预测数据表')
+
+        desTo_CSV(Dic, '系数表', w_list, [f'系数W[{i}]' for i in range(len(w_list[0]))])
+        desTo_CSV(Dic, '截距表', [b], [f'截距{i}' for i in range(len(b))])
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1598,10 +1699,12 @@ class Knn_Model(Study_MachineBase):
             get = Prediction_boundary(x_range, x_means, self.Predict, Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
+
             heard = [f'普适预测第{i}特征' for i in range(len(x_means))]
             data = [f'{i}' for i in x_means]
             c = Table().add(headers=heard, rows=[data])
             tab.add(c, '数据表')
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1630,6 +1733,7 @@ class Tree_Model(Study_MachineBase):
             export_graphviz(self.Model, out_file=f)
 
         make_bar('特征重要性',importance,tab)
+        desTo_CSV(Dic, '特征重要性', [importance], [f'[{i}]特征' for i in range(len(importance))])
         tab.add(SeeTree(Dic + r"\Tree_Gra.dot"),'决策树可视化')
 
         y = self.y_trainData
@@ -1669,6 +1773,7 @@ class Tree_Model(Study_MachineBase):
 
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))] + [f'特征{i}重要性' for i in range(len(importance))],
                              [[f'{i}' for i in x_means] + importance]), '数据表')
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1691,7 +1796,6 @@ class Forest_Model(Study_MachineBase):
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-
         #多个决策树可视化
         for i in range(len(self.Model.estimators_)):
             with open(Dic + f"\Tree_Gra[{i}].dot", 'w') as f:
@@ -1725,6 +1829,7 @@ class Forest_Model(Study_MachineBase):
                 tab.add(get[i], f'{i}预测热力图')
 
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1747,7 +1852,6 @@ class GradientTree_Model(Study_MachineBase):#继承Tree_Model主要是继承Des
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-
         #多个决策树可视化
         for a in range(len(self.Model.estimators_)):
             for i in range(len(self.Model.estimators_[a])):
@@ -1782,6 +1886,7 @@ class GradientTree_Model(Study_MachineBase):#继承Tree_Model主要是继承Des
                 tab.add(get[i], f'{i}预测热力图')
 
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -1799,17 +1904,22 @@ class SVC_Model(Study_MachineBase):
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        w_list = self.Model.coef_.tolist()
-        b = self.Model.intercept_.tolist()
+        try:
+            w_list = self.Model.coef_.tolist()  # 未必有这个属性
+            b = self.Model.intercept_.tolist()
+            U = True
+        except:
+            U = False
         class_ = self.Model.classes_.tolist()
         class_heard = [f'类别[{i}]' for i in range(len(class_))]
 
         y = self.y_trainData
         x_data = self.x_trainData
         get, x_means, x_range, Type = Training_visualization(x_data, class_, y)
-        get_Line = Training_W(x_data, class_, y, w_list, b, x_means.copy())
+        if U:get_Line = Training_W(x_data, class_, y, w_list, b, x_means.copy())
         for i in range(len(get)):
-            tab.add(get[i].overlap(get_Line[i]), f'{i}决策边界散点图')
+            if U:tab.add(get[i].overlap(get_Line[i]), f'{i}决策边界散点图')
+            else:tab.add(get[i], f'{i}决策边界散点图')
 
         get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
         for i in range(len(get)):
@@ -1818,6 +1928,10 @@ class SVC_Model(Study_MachineBase):
         dic = {2:'离散',1:'连续'}
         tab.add(make_Tab(class_heard + [f'普适预测第{i}特征:{dic[Type[i]]}' for i in range(len(x_means))],
                          [class_ + [f'{i}' for i in x_means]]), '数据表')
+
+        if U:desTo_CSV(Dic, '系数表', w_list, [f'系数W[{i}]' for i in range(len(w_list[0]))])
+        if U:desTo_CSV(Dic, '截距表', [b], [f'截距{i}' for i in range(len(b))])
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -1854,6 +1968,10 @@ class SVR_Model(Study_MachineBase):
         get = Prediction_boundary(x_range, x_means, self.Predict, Type)
         for i in range(len(get)):
             tab.add(get[i], f'{i}预测热力图')
+
+        if U: desTo_CSV(Dic, '系数表', w_list, [f'系数W[{i}]' for i in range(len(w_list[0]))])
+        if U: desTo_CSV(Dic, '截距表', [b], [f'截距{i}' for i in range(len(b))])
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
         tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
         save = Dic + r'/render.HTML'
@@ -1951,6 +2069,7 @@ class SelectFrom_Model(prep_Base):#无监督
         self.Model_Name = 'SelectFrom_Model'
 
     def Fit(self, x_data,y_data,split=0.3, *args, **kwargs):
+        y_data = y_data.ravel()
         if not self.have_Fit:  # 不允许第二次训练
             self.Select_Model.fit(x_data, y_data)
             return 'None', 'None'
@@ -1958,11 +2077,9 @@ class SelectFrom_Model(prep_Base):#无监督
 
     def Predict(self, x_data, *args, **kwargs):
         try:
-            self.x_trainData = x_data
+            self.x_trainData = x_data.copy()
             x_Predict = self.Select_Model.transform(x_data)
-            self.y_trainData = x_Predict
-            print(self.y_trainData)
-            print(self.x_trainData)
+            self.y_trainData = x_Predict.copy()
             return x_Predict,'模型特征工程'
         except:
             return np.array([]),'无结果工程'
@@ -2246,7 +2363,7 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
         return 'None', 'None'
 
     def Predict(self, x_data,*args,**kwargs):
-        self.y_trainData = x_data.copy()
+        self.x_trainData = x_data.copy()
         try:
             max = self.max
             min = self.min
@@ -2282,8 +2399,8 @@ class Regularization_Model(Unsupervised):#正则化
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_trainData.copy()
+        x_data = self.x_trainData.copy()
         Conversion_control(y_data,x_data,tab)
 
         save = Dic + r'/render.HTML'
@@ -2506,9 +2623,13 @@ class PCA_Model(Unsupervised):
         c = (
             Bar()
                 .add_xaxis([f'第[{i}]主成分' for i in range(len(var))])
-                .add_yaxis('放量差', var, **Label_Set)
+                .add_yaxis('方量差', var, **Label_Set)
                 .set_global_opts(title_opts=opts.TitleOpts(title='方量差柱状图'), **global_Set)
         )
+
+        desTo_CSV(Dic, '成分重要性', importance, [x_data],[y_data])
+        desTo_CSV(Dic, '方量差', [var], [f'第[{i}]主成分' for i in range(len(var))])
+
         tab.add(c, '方量差柱状图')
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -2559,6 +2680,8 @@ class RPCA_Model(Unsupervised):
                 .set_global_opts(title_opts=opts.TitleOpts(title='方量差柱状图'), **global_Set)
         )
         tab.add(c, '方量差柱状图')
+        desTo_CSV(Dic, '成分重要性', importance, [x_data],[y_data])
+        desTo_CSV(Dic, '方量差', [var], [f'第[{i}]主成分' for i in range(len(var))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2596,16 +2719,26 @@ class LDA_Model(prep_Base):#有监督学习
         self.Model_Name = 'LDA'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
         return x_Predict,'LDA'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        x_train = self.x_trainData
+        x_data = self.x_testData
+        y_data = self.y_testData
         Conversion_Separate_Format(y_data,tab)
+
+        w_list = self.Model.coef_.tolist()  # 变为表格
+        b = self.Model.intercept_
+        tab = Tab()
+
+        x_means = make_Cat(x_data).get()[0]
+        get = Regress_W(x_data, None, w_list, b, x_means.copy())#回归的y是历史遗留问题 不用分类回归：因为得不到分类数据（predict结果是降维数据不是预测数据）
+        for i in range(len(get)):
+            tab.add(get[i].overlap(get[i]), f'类别:{i}LDA映射曲线')
 
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
@@ -2665,6 +2798,10 @@ class NMF_Model(Unsupervised):
         make_HeatMap(wh_data,'W * H数据热力图',max_,min_)
         make_HeatMap(difference_data,'数据差热力图',max_,min_)
 
+        desTo_CSV(Dic, '权重矩阵', y_data)
+        desTo_CSV(Dic, '系数矩阵', h_data)
+        desTo_CSV(Dic, '系数*权重矩阵', wh_data)
+
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2717,8 +2854,8 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
 
         coefs = self.Model.coefs_
         def make_HeatMap(data,name):
-            x = [f'特征(节点)[{i}]' for i in range(len(data))]  # 主成分
-            y = [f'节点[{i}]' for i in range(len(data[0]))]  # 主成分
+            x = [f'特征(节点)[{i}]' for i in range(len(data))]
+            y = [f'节点[{i}]' for i in range(len(data[0]))]
             value = [(f'特征(节点)[{i}]', f'节点[{j}]', float(data[i][j])) for i in range(len(data)) for j in range(len(data[i]))]
 
             c = (HeatMap()
@@ -2733,6 +2870,15 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
                  )
             tab.add(c,name)
             tab.add(make_Tab(x,data.T.tolist()),f'{name}:表格')
+            desTo_CSV(Dic,f'{name}:表格',data.T.tolist(),x,y)
+
+        get, x_means, x_range, Type = regress_visualization(self.x_trainData, self.y_trainData)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}训练数据散点图')
+
+        get = Prediction_boundary(x_range, x_means, self.Predict, Type)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}预测热力图')
 
         heard = ['神经网络层数']
         data = [self.Model.n_layers_]
@@ -2784,11 +2930,15 @@ class kmeans_Model(UnsupervisedModel):
         for i in range(len(get)):
             tab.add(get[i],f'{i}训练数据散点图')
 
+        get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}预测热力图')
+
         heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
         data = class_ + [f'{i}' for i in x_means]
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
-
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2824,6 +2974,10 @@ class Agglomerative_Model(UnsupervisedModel):
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
 
+        get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}预测热力图')
+
         linkage_array = ward(self.x_trainData)#self.y_trainData是结果
         dendrogram(linkage_array)
         plt.savefig(Dic + r'/Cluster_graph.png')
@@ -2842,6 +2996,7 @@ class Agglomerative_Model(UnsupervisedModel):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
 
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2865,13 +3020,14 @@ class DBSCAN_Model(UnsupervisedModel):
 
     def Predict(self, x_data, *args, **kwargs):
         y_Predict = self.Model.fit_predict(x_data)
-        self.y_trainData = y_Predict
+        self.y_trainData = y_Predict.copy()
         return y_Predict,'DBSCAN'
 
     def Des(self, Dic, *args, **kwargs):
+        #DBSCAN没有预测的必要
         tab = Tab()
-        y = self.y_trainData
-        x_data = self.x_trainData
+        y = self.y_trainData.copy()
+        x_data = self.x_trainData.copy()
         class_ = self.class_
         class_heard = [f'簇[{i}]' for i in range(len(class_))]
 
@@ -2884,6 +3040,7 @@ class DBSCAN_Model(UnsupervisedModel):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
 
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
         save = Dic + r'/render.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2942,6 +3099,8 @@ class Machine_Learner(Learner):#数据处理者
                           'FeatureY-X':Feature_scatter_YX,
                           'ClusterTree':Cluster_Tree,
                           'MatrixScatter':MatrixScatter,
+                          'Correlation':CORR,
+                          'Statistics':Des,
                           }
         self.Learner_Type = {}#记录机器的类型
 
@@ -2992,7 +3151,7 @@ class Machine_Learner(Learner):#数据处理者
         args_use['fill_value'] = args.get('fill_value',None)
 
         args_use['n_components'] = args.get('n_components',1)
-        args_use['kernel'] = args.get('kernel','rbf' if Type in ('SVR','SVR') else 'linear')
+        args_use['kernel'] = args.get('kernel','rbf' if Type in ('SVR','SVC') else 'linear')
 
         args_use['n_Tree'] = args.get('n_Tree',100)
         args_use['gamma'] = args.get('gamma',1)
