@@ -515,8 +515,7 @@ def Show_Args():
     Dic = askdirectory(title='选择保存的CSV')
     data = ML.Show_Args(learner,Dic)
     webbrowser.open(data[0])
-    # title = f'CoTan数据处理 查看数据:{learner}'
-    # Creat_TextSheet(f'对象:{learner}\n\n{Data[0]}\n\n\n{Data[1]}', title)
+    webbrowser.open(data[1])#还可以打开文件管理器
     Update_BOX()
 
 

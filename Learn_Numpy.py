@@ -3,6 +3,7 @@ from pyecharts.components import Image
 from pyecharts import options as opts
 from random import randint
 from pyecharts.charts import *
+from pyecharts.charts import Tab as tab_First
 from pyecharts.options.series_options import JsCode
 from scipy.cluster.hierarchy import dendrogram, ward
 import matplotlib.pyplot as plt
@@ -25,14 +26,32 @@ from sklearn.svm import SVC,SVR#SVC是svm分类，SVR是svm回归
 from sklearn.neural_network import MLPClassifier,MLPRegressor
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
-from pyecharts.charts import *
-# import sklearn as sk
+from os.path import split as path_split
+from os.path import exists,basename
+from os import mkdir
+import tarfile
+import pickle
 
 #设置
 np.set_printoptions(threshold=np.inf)
 global_Set = dict(toolbox_opts=opts.ToolboxOpts(is_show=True),legend_opts=opts.LegendOpts(pos_bottom='3%',type_='scroll'))
 global_Leg = dict(toolbox_opts=opts.ToolboxOpts(is_show=True),legend_opts=opts.LegendOpts(is_show=False))
 Label_Set = dict(label_opts=opts.LabelOpts(is_show=False))
+
+class Tab(tab_First):
+    def __init__(self, *args,**kwargs):
+        super(Tab, self).__init__(*args,**kwargs)
+        self.element = {}#记录tab组成元素 name:charts
+
+    def add(self, chart, tab_name):
+        self.element[tab_name] = chart
+        return super(Tab, self).add(chart, tab_name)
+
+    def render(self,path: str = "render.html",template_name: str = "simple_tab.html",*args,**kwargs,) -> str:
+        Dic = path_split(path)[0]
+        for i in self.element:
+            self.element[i].render(Dic + '/' + i + '.html')
+        return super(Tab, self).render(path,template_name)
 
 class Table(Table_Fisrt):
     def add(self, headers, rows, attributes = None):
@@ -1119,7 +1138,7 @@ class Des(To_PyeBase):#数据分析
         Cumulative_calculation(data,np.max,'累计最大值',tab)
         Cumulative_calculation(data,np.min,'累计最小值',tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/数据分析.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1150,7 +1169,7 @@ class CORR(To_PyeBase):#相关性和协方差
 
         desTo_CSV(Dic, f'相关性矩阵', corr)
         desTo_CSV(Dic, f'协方差矩阵', cov)
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/数据相关性.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1229,7 +1248,7 @@ class MatrixScatter(To_PyeBase):#矩阵散点图
             c = Scatter()
         tab.add(c,'矩阵散点图')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/矩阵散点图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1245,7 +1264,7 @@ class Cluster_Tree(To_PyeBase):#聚类树状图
         image.add(src=Dic + r'/Cluster_graph.png',).set_global_opts(title_opts=opts.ComponentTitleOpts(title="聚类树状图"))
         tab.add(image,'聚类树状图')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/聚类树状图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1308,7 +1327,7 @@ class Class_To_Bar(To_PyeBase):#类型柱状图
             tab.add(c, f'类型-[{num_i}]特征统计柱状图')
 
         #未完成
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/特征统计.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1333,7 +1352,7 @@ class Numpy_To_HeatMap(To_PyeBase):#Numpy矩阵绘制热力图
         tab.add(c,'矩阵热力图')
         tab.add(make_Tab(x,data.T.tolist()),f'矩阵热力图:表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/矩阵热力图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1394,7 +1413,7 @@ class Predictive_HeatMap_Base(To_PyeBase):#绘制预测型热力图
             c = Table().add(headers=heard, rows=[data])
             tab.add(c, '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/预测热力图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1423,7 +1442,7 @@ class Near_feature_scatter_class_More(To_PyeBase):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/数据特征散点图(分类).HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1441,7 +1460,7 @@ class Near_feature_scatter_More(To_PyeBase):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/数据特征散点图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1463,7 +1482,7 @@ class Near_feature_scatter_class(To_PyeBase):#临近特征散点图：分类数�
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/临近数据特征散点图(分类).HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1481,7 +1500,7 @@ class Near_feature_scatter(To_PyeBase):#临近特征散点图：连续数据
         data = [f'{i}' for i in x_means]
         tab.add(make_Tab(columns,[data]), '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/临近数据特征散点图.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1499,7 +1518,7 @@ class Feature_scatter_YX(To_PyeBase):#y-x图
         data = [f'{i}' for i in x_means]
         tab.add(make_Tab(columns,[data]), '数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/特征y-x图像.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1549,7 +1568,7 @@ class Line_Model(Study_MachineBase):
         desTo_CSV(Dic, '系数表', [w_list] + [b], [f'系数W[{i}]' for i in range(len(w_list))] + ['截距'])
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/线性回归模型.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1601,7 +1620,7 @@ class LogisticRegression_Model(Study_MachineBase):
         desTo_CSV(Dic, '截距表', [b], [f'截距{i}' for i in range(len(b))])
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/逻辑回归.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1705,7 +1724,7 @@ class Knn_Model(Study_MachineBase):
             c = Table().add(headers=heard, rows=[data])
             tab.add(c, '数据表')
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/K.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1774,7 +1793,7 @@ class Tree_Model(Study_MachineBase):
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))] + [f'特征{i}重要性' for i in range(len(importance))],
                              [[f'{i}' for i in x_means] + importance]), '数据表')
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/决策树.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1830,7 +1849,7 @@ class Forest_Model(Study_MachineBase):
 
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/随机森林.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1887,7 +1906,7 @@ class GradientTree_Model(Study_MachineBase):#继承Tree_Model主要是继承Des
 
             tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/梯度提升回归树.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1933,7 +1952,7 @@ class SVC_Model(Study_MachineBase):
         if U:desTo_CSV(Dic, '截距表', [b], [f'截距{i}' for i in range(len(b))])
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/支持向量机分类.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1974,7 +1993,7 @@ class SVR_Model(Study_MachineBase):
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
 
         tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))],[[f'{i}' for i in x_means]]), '数据表')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/支持向量机回归.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2003,7 +2022,7 @@ class Variance_Model(Unsupervised):#无监督
                 .set_global_opts(title_opts=opts.TitleOpts(title='系数w柱状图'), **global_Set)
         )
         tab.add(c,'数据标准差')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/方差特征选择.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2052,7 +2071,7 @@ class SelectKBest_Model(prep_Base):#无监督
         )
         tab.add(c,'单变量重要程度')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/单一变量特征选择.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2125,7 +2144,7 @@ class SelectFrom_Model(prep_Base):#无监督
                 make_Bar(self.Model.feature_importances_)
             except:pass
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/模型特征选择.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2150,7 +2169,7 @@ class Standardization_Model(Unsupervised):#z-score标准化 无监督
         make_bar('方差',means,tab)
         make_bar('Scale',scale,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/z-score标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2174,7 +2193,7 @@ class MinMaxScaler_Model(Unsupervised):#离差标准化
         tab.add(make_Tab(heard= [f'[{i}]特征最大值' for i in range(len(max_))] + [f'[{i}]特征最小值' for i in range(len(min_))],
                          row=[max_ + min_]), '数据表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/离差标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2210,7 +2229,7 @@ class LogScaler_Model(prep_Base):#对数标准化
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['最大对数值(自然对数)'],row=[[str(self.max_logx)]]),'数据表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/对数标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2237,7 +2256,7 @@ class atanScaler_Model(prep_Base):#atan标准化
         x_data = self.x_trainData
         Conversion_control(y_data,x_data,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/反正切函数标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2274,7 +2293,7 @@ class decimalScaler_Model(prep_Base):#小数定标准化
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['小数位数:j'], row=[[j]]), '数据表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/小数定标标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2316,7 +2335,7 @@ class Mapzoom_Model(prep_Base):#映射标准化
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['最大值','最小值'], row=[[max,min]]), '数据表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/映射标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2343,7 +2362,7 @@ class sigmodScaler_Model(prep_Base):#sigmod变换
         x_data = self.x_trainData
         Conversion_control(y_data,x_data,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/Sigmoid变换.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2374,7 +2393,7 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
             min = self.min
         x_Predict = 1 / 2 + (1 / 2) * np.sin(np.pi / (max - min) * (x_data - (max-min) / 2))
         self.y_trainData = x_Predict.copy()
-        return x_Predict,'映射标准化'
+        return x_Predict,'模糊量化标准化'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
@@ -2385,7 +2404,7 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['最大值','最小值'], row=[[max,min]]), '数据表格')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/模糊量化标准化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2403,7 +2422,7 @@ class Regularization_Model(Unsupervised):#正则化
         x_data = self.x_trainData.copy()
         Conversion_control(y_data,x_data,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/正则化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2422,7 +2441,7 @@ class Binarizer_Model(Unsupervised):#二值化
         get_y = Discrete_Feature_visualization(y_data,'转换数据')#转换
         for i in range(len(get_y)):
             tab.add(get_y[i],f'[{i}]数据x-x离散散点图')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/二值离散化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2470,7 +2489,7 @@ class Discretization_Model(prep_Base):#n值离散
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/多值离散化.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2502,7 +2521,7 @@ class Label_Model(prep_Base):#数字编码
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/数字编码.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2555,7 +2574,7 @@ class OneHotEncoder_Model(prep_Base):#独热编码
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/独热编码.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2580,7 +2599,7 @@ class Missed_Model(Unsupervised):#缺失数据补充
         x_data = self.x_trainData
         Conversion_control(y_data,x_data,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/缺失数据填充.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2631,7 +2650,7 @@ class PCA_Model(Unsupervised):
         desTo_CSV(Dic, '方量差', [var], [f'第[{i}]主成分' for i in range(len(var))])
 
         tab.add(c, '方量差柱状图')
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/主成分分析.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2682,7 +2701,7 @@ class RPCA_Model(Unsupervised):
         tab.add(c, '方量差柱状图')
         desTo_CSV(Dic, '成分重要性', importance, [x_data],[y_data])
         desTo_CSV(Dic, '方量差', [var], [f'第[{i}]主成分' for i in range(len(var))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/RPCA(主成分分析).HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2706,7 +2725,7 @@ class KPCA_Model(Unsupervised):
         y_data = self.y_trainData
         Conversion_Separate_Format(y_data, tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/KPCA(主成分分析).HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2802,7 +2821,7 @@ class NMF_Model(Unsupervised):
         desTo_CSV(Dic, '系数矩阵', h_data)
         desTo_CSV(Dic, '系数*权重矩阵', wh_data)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/非负矩阵分解.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2829,7 +2848,7 @@ class TSNE_Model(Unsupervised):
         y_data = self.y_trainData
         Conversion_Separate_Format(y_data,tab)
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/T-SNE.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2893,7 +2912,7 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
 
         tab.add(make_Tab(heard,[data]),'数据表')
 
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/多层感知机.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2939,7 +2958,7 @@ class kmeans_Model(UnsupervisedModel):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, '数据表')
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/k-means聚类.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2997,7 +3016,7 @@ class Agglomerative_Model(UnsupervisedModel):
         tab.add(c, '数据表')
 
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/层次聚类.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3041,7 +3060,7 @@ class DBSCAN_Model(UnsupervisedModel):
         tab.add(c, '数据表')
 
         desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/render.HTML'
+        save = Dic + r'/密度聚类.HTML'
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3237,9 +3256,24 @@ class Machine_Learner(Learner):#数据处理者
         return model.Score(x,y)
 
     def Show_Args(self,Learner,Dic):#显示参数
+        dic = Dic + f'/{Learner}数据[CoTan]'
+        new_dic = dic
+        a = 0
+        while exists(new_dic):#直到他不存在 —— False
+            new_dic = dic + f'[{a}]'
+            a += 1
+        mkdir(new_dic)
         model = self.get_Learner(Learner)
-        return model.Des(Dic)
+        #打包
+        save = model.Des(new_dic)[0]
+        make_targz(f'{new_dic}.tar.gz',new_dic)
+        return save,new_dic
 
     def Del_Leaner(self,Leaner):
         del self.Learner[Leaner]
         del self.Learner_Type[Leaner]
+
+def make_targz(output_filename, source_dir):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=basename(source_dir))
+    return output_filename
