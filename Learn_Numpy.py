@@ -27,16 +27,24 @@ from sklearn.neural_network import MLPClassifier,MLPRegressor
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
 from os.path import split as path_split
-from os.path import exists,basename
+from os.path import exists,basename,splitext
 from os import mkdir
 import tarfile
 import pickle
+import joblib
 
 #设置
 np.set_printoptions(threshold=np.inf)
 global_Set = dict(toolbox_opts=opts.ToolboxOpts(is_show=True),legend_opts=opts.LegendOpts(pos_bottom='3%',type_='scroll'))
 global_Leg = dict(toolbox_opts=opts.ToolboxOpts(is_show=True),legend_opts=opts.LegendOpts(is_show=False))
 Label_Set = dict(label_opts=opts.LabelOpts(is_show=False))
+
+More_Global = False#是否使用全部特征绘图
+All_Global = True#是否导出charts
+CSV_Global = True#是否导出CSV
+CLF_Global = True#是否导出模型
+TAR_Global = True#是否打包tar
+NEW_Global = True#是否新建目录
 
 class Tab(tab_First):
     def __init__(self, *args,**kwargs):
@@ -48,19 +56,39 @@ class Tab(tab_First):
         return super(Tab, self).add(chart, tab_name)
 
     def render(self,path: str = "render.html",template_name: str = "simple_tab.html",*args,**kwargs,) -> str:
-        Dic = path_split(path)[0]
-        for i in self.element:
-            self.element[i].render(Dic + '/' + i + '.html')
-        return super(Tab, self).render(path,template_name)
+        if All_Global:
+            Dic = path_split(path)[0]
+            for i in self.element:
+                self.element[i].render(Dic + '/' + i + '.html')
+        return super(Tab, self).render(path,template_name,*args,**kwargs)
 
 class Table(Table_Fisrt):
+    def __init__(self,*args,**kwargs):
+        super(Table, self).__init__(*args,**kwargs)
+        self.HEADERS = []
+        self.ROWS = [[]]
+
     def add(self, headers, rows, attributes = None):
         if len(rows) == 1:
             new_headers = ['数据类型','数据']
             new_rows = list(zip(headers,rows[0]))
+            self.HEADERS = new_headers
+            self.ROWS = new_rows
             return super().add(new_headers,new_rows,attributes)
         else:
+            self.HEADERS = headers
+            self.ROWS = rows
             return super().add(headers, rows, attributes)
+
+    def render(self,path= "render.html",*args,**kwargs,) -> str:
+        if CSV_Global:
+            Dic,name = path_split(path)
+            name = splitext(name)[0]
+            try:
+                DataFrame(self.ROWS,columns = self.HEADERS).to_csv(Dic + '/' + name + '.csv')
+            except:
+                pass
+        return super().render(path,*args,**kwargs)
 
 def make_list(first,end,num=35):
     n = num / (end - first)
@@ -504,6 +532,60 @@ def Training_visualization_More(x_trainData,class_,y,center):#根据不同类别
     means,x_range,Type = Cat.get()
     return o_cList,means,x_range,Type
 
+def Training_visualization_Center(x_trainData,class_,y,center):#根据不同类别绘制x-x分类散点图(可以绘制更多的图)
+    x_data = x_trainData.T
+    if len(x_data) == 1:
+        x_data = np.array([x_data[0],np.zeros(len(x_data[0]))])
+    Cat = make_Cat(x_data)
+    o_cList = []
+    for i in range(len(x_data)):
+        x1 = x_data[i]  # x坐标
+        x1_con = is_continuous(x1)
+
+        if i == 0:continue
+
+        x2 = x_data[i - 1]  # y坐标
+        x2_con = is_continuous(x2)
+
+        o_c = None  # 旧的C
+        for class_num in range(len(class_)):
+            n_class = class_[class_num]
+            x_1 = x1[y == n_class].tolist()
+            x_2 = x2[y == n_class]
+            x_2_new = np.unique(x_2)
+            x_2 = x2[y == n_class].tolist()
+            #x与散点图不同，这里是纵坐标
+            c = (Scatter()
+                 .add_xaxis(x_2)
+                 .add_yaxis(f'{n_class}', x_1, **Label_Set)
+                 .set_global_opts(title_opts=opts.TitleOpts(title=f'[{i-1}-{i}]训练数据散点图'), **global_Set,
+                                  yaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True))
+                 )
+            c.add_xaxis(x_2_new)
+
+            #添加簇中心
+            try:
+                center_x_2 = [center[class_num][i-1]]
+            except:
+                center_x_2 = [0]
+            b = (Scatter()
+                 .add_xaxis(center_x_2)
+                 .add_yaxis(f'[{n_class}]中心',[center[class_num][i]], **Label_Set,symbol='triangle')
+                 .set_global_opts(title_opts=opts.TitleOpts(title='簇中心'), **global_Set,
+                                  yaxis_opts=opts.AxisOpts(type_='value' if x1_con else 'category',is_scale=True),
+                                  xaxis_opts=opts.AxisOpts(type_='value' if x2_con else 'category',is_scale=True))
+                 )
+            c.overlap(b)
+
+            if o_c == None:
+                o_c = c
+            else:
+                o_c = o_c.overlap(c)
+        o_cList.append(o_c)
+    means,x_range,Type = Cat.get()
+    return o_cList,means,x_range,Type
+
 def Training_visualization(x_trainData,class_,y):#根据不同类别绘制x-x分类散点图
     x_data = x_trainData.T
     if len(x_data) == 1:
@@ -831,6 +913,7 @@ def judging_Digits(num:(int,float)):#查看小数位数
 class Learner:
     def __init__(self,*args,**kwargs):
         self.numpy_Dic = {}#name:numpy
+        self.Fucn_Add()#制作Func_Dic
 
     def Add_Form(self,data:np.array,name):
         name = f'{name}[{len(self.numpy_Dic)}]'
@@ -882,7 +965,7 @@ class Learner:
         for i in range(len(get)):
             get[i] = [i+1] + get[i]
         headers = [i for i in range(len(get[0]))]
-        table = Table()
+        table = Table_Fisrt()
         table.add(headers, get).set_global_opts(
             title_opts=opts.ComponentTitleOpts(title=f"表格:{name}", subtitle="CoTan~机器学习:查看数据"))
         table.render(Dic)
@@ -908,7 +991,7 @@ class Learner:
                 def add(self, table, k, *f):
                     self.tab.add(table, k)
 
-            tab = TAB(Tab(page_title='CoTan:查看表格'))  # 一个Tab
+            tab = TAB(tab_First(page_title='CoTan:查看表格'))  # 一个Tab
         elif type_ == 1:
             class TAB(TAB_F):
                 def add(self, table, *k):
@@ -929,7 +1012,7 @@ class Learner:
             for i in range(len(get)):
                 get[i] = [i+1] + get[i]
             headers = [i for i in range(len(get[0]))]
-            table = Table()
+            table = Table_Fisrt()
             table.add(headers, get).set_global_opts(
                 title_opts=opts.ComponentTitleOpts(title=f"表格:{name}", subtitle="CoTan~机器学习:查看数据"))
             tab.add(table, f'表格:{name}')
@@ -997,10 +1080,56 @@ class Learner:
         sheet = self.get_Sheet(name)
         self.Add_Form(sheet.reshape(shape).copy(), f'{name}.r')
 
+    def Fucn_Add(self):
+        self.Func_Dic = {
+            'abs':lambda x,y:np.abs(x),
+            'sqrt':lambda x,y:np.sqrt(x),
+            'pow':lambda x,y:x**y,
+            'loge':lambda x,y:np.log(x),
+            'log10':lambda x,y:np.log10(x),
+            'ceil':lambda x,y:np.ceil(x),
+            'floor':lambda x,y:np.floor(x),
+            'rint':lambda x,y:np.rint(x),
+            'sin':lambda x,y:np.sin(x),
+            'cos':lambda x,y:np.cos(x),
+            'tan':lambda x,y:np.tan(x),
+            'tanh':lambda x,y:np.tanh(x),
+            'sinh':lambda x,y:np.sinh(x),
+            'cosh':lambda x,y:np.cosh(x),
+            'asin': lambda x, y: np.arcsin(x),
+            'acos': lambda x, y: np.arccos(x),
+            'atan': lambda x, y: np.arctan(x),
+            'atanh': lambda x, y: np.arctanh(x),
+            'asinh': lambda x, y: np.arcsinh(x),
+            'acosh': lambda x, y: np.arccosh(x),
+            'add': lambda x, y: x + y,#矩阵或元素
+            'sub': lambda x, y: x - y,#矩阵或元素
+            'mul': lambda x, y: np.multiply(x,y),#元素级别
+            'matmul': lambda x, y: np.matmul(x,y),#矩阵
+            'dot': lambda x, y: np.dot(x,y),#矩阵
+            'div': lambda x, y: x / y,
+            'div_floor': lambda x, y: np.floor_divide(x,y),
+            'power': lambda x, y: np.power(x,y),#元素级
+        }
+
+    def Cul_Numpy(self,data,data_type,Func):
+        if not 1 in data_type:raise Exception
+        func = self.Func_Dic.get(Func,lambda x,y:x)
+        args_data = []
+        for i in range(len(data)):
+            if data_type[i] == 0:
+                args_data.append(data[i])
+            else:
+                args_data.append(self.get_Sheet(data[i]))
+        get = func(*args_data)
+        self.Add_Form(get,f'{Func}({data[0]},{data[1]})')
+        return get
+
 class Study_MachineBase:
     def __init__(self,*args,**kwargs):
         self.Model = None
         self.have_Fit = False
+        self.have_Predict = False
         self.x_trainData = None
         self.y_trainData = None
         #有监督学习专有的testData
@@ -1011,15 +1140,24 @@ class Study_MachineBase:
     def Accuracy(self,y_Predict,y_Really):
         return accuracy_score(y_Predict, y_Really)
 
-    def Fit(self,x_data,y_data,split=0.3,**kwargs):
-        self.have_Fit = True
+    def Fit(self,x_data,y_data,split=0.3,Increment=True,**kwargs):
         y_data = y_data.ravel()
-        self.x_trainData = x_data.copy()
-        self.y_trainData = y_data.copy()
+        try:
+            if self.x_trainData is None or not Increment:raise Exception
+            self.x_trainData = np.vstack(x_data,self.x_trainData)
+            self.y_trainData = np.vstack(y_data,self.y_trainData)
+        except:
+            self.x_trainData = x_data.copy()
+            self.y_trainData = y_data.copy()
         x_train,x_test,y_train,y_test = train_test_split(x_data,y_data,test_size=split)
-        self.Model.fit(x_data,y_data)
+        try:#增量式训练
+            if not Increment:raise Exception
+            self.Model.partial_fit(x_data,y_data)
+        except:
+            self.Model.fit(self.x_trainData, self.y_trainData)
         train_score = self.Model.score(x_train,y_train)
         test_score = self.Model.score(x_test,y_test)
+        self.have_Fit = True
         return train_score,test_score
 
     def Score(self,x_data,y_data):
@@ -1030,46 +1168,76 @@ class Study_MachineBase:
         self.x_testData = x_data.copy()
         y_Predict = self.Model.predict(x_data)
         self.y_testData = y_Predict.copy()
+        self.have_Predict = True
         return y_Predict,'预测'
 
     def Des(self,*args,**kwargs):
         return ()
 
-class prep_Base(Study_MachineBase):
+class prep_Base(Study_MachineBase):#不允许第二次训练
     def __init__(self,*args,**kwargs):
         super(prep_Base, self).__init__(*args,**kwargs)
         self.Model = None
 
-    def Fit(self, x_data,y_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+    def Fit(self, x_data,y_data,Increment=True, *args, **kwargs):
+        if not self.have_Predict:  # 不允许第二次训练
             y_data = y_data.ravel()
-            self.x_trainData = x_data.copy()
-            self.y_trainData = y_data.copy()
-            self.Model.fit(x_data,y_data)
+            try:
+                if self.x_trainData is None or not Increment: raise Exception
+                self.x_trainData = np.vstack(x_data, self.x_trainData)
+                self.y_trainData = np.vstack(y_data, self.y_trainData)
+            except:
+                self.x_trainData = x_data.copy()
+                self.y_trainData = y_data.copy()
+            try:  # 增量式训练
+                if not Increment: raise Exception
+                self.Model.partial_fit(x_data, y_data)
+            except:
+                self.Model.fit(self.x_trainData, self.y_trainData)
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'特征工程'
 
     def Score(self, x_data, y_data):
         return 'None' # 没有score
 
-class Unsupervised(prep_Base):
-    def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
-            self.x_trainData = x_data.copy()
+class Unsupervised(prep_Base):#无监督，不允许第二次训练
+    def Fit(self, x_data,Increment=True, *args, **kwargs):
+        if not self.have_Predict:  # 不允许第二次训练
             self.y_trainData = None
-            self.Model.fit(x_data)
+            try:
+                if self.x_trainData is None or not Increment: raise Exception
+                self.x_trainData = np.vstack(x_data, self.x_trainData)
+            except:
+                self.x_trainData = x_data.copy()
+            try:  # 增量式训练
+                if not Increment: raise Exception
+                self.Model.partial_fit(x_data)
+            except:
+                self.Model.fit(self.x_trainData, self.y_trainData)
+        self.have_Fit = True
         return 'None', 'None'
 
-class UnsupervisedModel(prep_Base):
-    def Fit(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+class UnsupervisedModel(prep_Base):#无监督
+    def Fit(self, x_data, Increment=True,*args, **kwargs):
         self.y_trainData = None
-        self.Model.fit(x_data)
+        try:
+            if self.x_trainData is None or not Increment: raise Exception
+            self.x_trainData = np.vstack(x_data, self.x_trainData)
+        except:
+            self.x_trainData = x_data.copy()
+        try:  # 增量式训练
+            if not Increment: raise Exception
+            self.Model.partial_fit(x_data)
+        except:
+            self.Model.fit(self.x_trainData, self.y_trainData)
+        self.have_Fit = True
         return 'None', 'None'
 
 class To_PyeBase(Study_MachineBase):
@@ -1084,9 +1252,11 @@ class To_PyeBase(Study_MachineBase):
     def Fit(self, x_data,y_data, *args, **kwargs):
         self.x_trainData = x_data.copy()
         self.y_trainData = y_data.ravel().copy()
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
+        self.have_Predict = True
         return np.array([]),'请使用训练'
 
     def Score(self, x_data, y_data):
@@ -1185,6 +1355,7 @@ class View_data(To_PyeBase):#绘制预测型热力图
         self.Learner_name = Learner.Model_Name
 
     def Fit(self,*args,**kwargs):
+        self.have_Fit = True
         return 'None','None'
 
     def Predict(self,x_data,Add_Func=None,*args, **kwargs):
@@ -1206,6 +1377,7 @@ class View_data(To_PyeBase):#绘制预测型热力图
                 Add_Func(y_testData, f'{x_name}:y测试数据')
         except:pass
 
+        self.have_Fit = True
         if y_trainData is None:
             return np.array([]), 'y训练数据'
         return y_trainData,'y训练数据'
@@ -1374,6 +1546,7 @@ class Predictive_HeatMap_Base(To_PyeBase):#绘制预测型热力图
             self.means = x_data.ravel()
         except:
             pass
+        self.have_Fit = True
         return 'None','None'
 
     def Des(self,Dic,Decision_boundary,Prediction_boundary,*args,**kwargs):
@@ -2009,9 +2182,9 @@ class Variance_Model(Unsupervised):#无监督
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
         var = self.Model.variances_#标准差
-        y_data = self.y_trainData
+        y_data = self.y_testData
         if type(y_data) is np.ndarray:
-            get = Feature_visualization(self.y_trainData)
+            get = Feature_visualization(self.y_testData)
             for i in range(len(get)):
                 tab.add(get[i],f'[{i}]数据x-x散点图')
 
@@ -2026,7 +2199,7 @@ class Variance_Model(Unsupervised):#无监督
         tab.render(save)  # 生成HTML
         return save,
 
-class SelectKBest_Model(prep_Base):#无监督
+class SelectKBest_Model(prep_Base):#有监督
     def __init__(self, args_use, model, *args, **kwargs):
         super(SelectKBest_Model, self).__init__(*args, **kwargs)
         self.Model = SelectKBest(k=args_use['k'],score_func=args_use['score_func'])
@@ -2042,6 +2215,18 @@ class SelectKBest_Model(prep_Base):#无监督
         support = self.Model.get_support()
         y_data = self.y_trainData
         x_data = self.x_trainData
+        if type(x_data) is np.ndarray:
+            get = Feature_visualization(x_data)
+            for i in range(len(get)):
+                tab.add(get[i],f'[{i}]训练数据x-x散点图')
+
+        if type(y_data) is np.ndarray:
+            get = Feature_visualization(y_data)
+            for i in range(len(get)):
+                tab.add(get[i],f'[{i}]保留训练数据x-x散点图')
+
+        y_data = self.y_testData
+        x_data = self.x_testData
         if type(x_data) is np.ndarray:
             get = Feature_visualization(x_data)
             for i in range(len(get)):
@@ -2075,7 +2260,7 @@ class SelectKBest_Model(prep_Base):#无监督
         tab.render(save)  # 生成HTML
         return save,
 
-class SelectFrom_Model(prep_Base):#无监督
+class SelectFrom_Model(prep_Base):#有监督
     def __init__(self, args_use, Learner, *args, **kwargs):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(SelectFrom_Model, self).__init__(*args, **kwargs)
 
@@ -2086,28 +2271,31 @@ class SelectFrom_Model(prep_Base):#无监督
         self.k = {'max_features':args_use['k'],'estimator':Learner.Model,'have_Fit':Learner.have_Fit}
         self.have_Fit = Learner.have_Fit
         self.Model_Name = 'SelectFrom_Model'
+        self.Learner = Learner
 
     def Fit(self, x_data,y_data,split=0.3, *args, **kwargs):
         y_data = y_data.ravel()
         if not self.have_Fit:  # 不允许第二次训练
             self.Select_Model.fit(x_data, y_data)
-            return 'None', 'None'
-        return 'NONE','NONE'
+        self.have_Fit = True
+        return 'None','None'
 
     def Predict(self, x_data, *args, **kwargs):
         try:
-            self.x_trainData = x_data.copy()
+            self.x_testData = x_data.copy()
             x_Predict = self.Select_Model.transform(x_data)
-            self.y_trainData = x_Predict.copy()
+            self.y_testData = x_Predict.copy()
+            self.have_Predict = True
             return x_Predict,'模型特征工程'
         except:
+            self.have_Predict = True
             return np.array([]),'无结果工程'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
         support = self.Select_Model.get_support()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         if type(x_data) is np.ndarray:
             get = Feature_visualization(x_data)
             for i in range(len(get)):
@@ -2158,8 +2346,8 @@ class Standardization_Model(Unsupervised):#z-score标准化 无监督
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         var = self.Model.var_.tolist()
         means = self.Model.mean_.tolist()
         scale = self.Model.scale_.tolist()
@@ -2183,8 +2371,8 @@ class MinMaxScaler_Model(Unsupervised):#离差标准化
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         scale = self.Model.scale_.tolist()
         max_ = self.Model.data_max_.tolist()
         min_ = self.Model.data_min_.tolist()
@@ -2206,8 +2394,9 @@ class LogScaler_Model(prep_Base):#对数标准化
         self.Model_Name = 'LogScaler'
 
     def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
             self.max_logx = np.log(x_data.max())
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
@@ -2217,15 +2406,16 @@ class LogScaler_Model(prep_Base):#对数标准化
             self.have_Fit = False
             self.Fit(x_data)
             max_logx = self.max_logx
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = (np.log(x_data)/max_logx)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'对数变换'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['最大对数值(自然对数)'],row=[[str(self.max_logx)]]),'数据表格')
 
@@ -2242,18 +2432,20 @@ class atanScaler_Model(prep_Base):#atan标准化
         self.Model_Name = 'atanScaler'
 
     def Fit(self, x_data, *args, **kwargs):
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = (np.arctan(x_data)*(2/np.pi))
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'atan变换'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         Conversion_control(y_data,x_data,tab)
 
         save = Dic + r'/反正切函数标准化.HTML'
@@ -2269,12 +2461,13 @@ class decimalScaler_Model(prep_Base):#小数定标准化
         self.Model_Name = 'Decimal_normalization'
 
     def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
             self.j = max([judging_Digits(x_data.max()),judging_Digits(x_data.min())])
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         try:
             j = self.j
         except:
@@ -2282,13 +2475,14 @@ class decimalScaler_Model(prep_Base):#小数定标准化
             self.Fit(x_data)
             j = self.j
         x_Predict = (x_data/(10**j))
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'小数定标标准化'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         j = self.j
         Conversion_control(y_data,x_data,tab)
         tab.add(make_Tab(heard=['小数位数:j'], row=[[j]]), '数据表格')
@@ -2307,13 +2501,14 @@ class Mapzoom_Model(prep_Base):#映射标准化
         self.Model_Name = 'Decimal_normalization'
 
     def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
             self.max = x_data.max()
             self.min = x_data.min()
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         try:
             max = self.max
             min = self.min
@@ -2323,13 +2518,14 @@ class Mapzoom_Model(prep_Base):#映射标准化
             max = self.max
             min = self.min
         x_Predict = (x_data * (self.feature_range[1] - self.feature_range[0])) / (max - min)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'映射标准化'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         max = self.max
         min = self.min
         Conversion_control(y_data,x_data,tab)
@@ -2348,18 +2544,20 @@ class sigmodScaler_Model(prep_Base):#sigmod变换
         self.Model_Name = 'sigmodScaler_Model'
 
     def Fit(self, x_data, *args, **kwargs):
+        self.have_Fit = True
         return 'None', 'None'
 
-    def Predict(self, x_data:np.array):
-        self.x_trainData = x_data.copy()
+    def Predict(self, x_data:np.array,*args,**kwargs):
+        self.x_testData = x_data.copy()
         x_Predict = (1/(1+np.exp(-x_data)))
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'Sigmod变换'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         Conversion_control(y_data,x_data,tab)
 
         save = Dic + r'/Sigmoid变换.HTML'
@@ -2376,13 +2574,14 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
         self.Model_Name = 'Fuzzy_quantization'
 
     def Fit(self, x_data, *args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
             self.max = x_data.max()
             self.min = x_data.min()
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data,*args,**kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         try:
             max = self.max
             min = self.min
@@ -2392,7 +2591,8 @@ class Fuzzy_quantization_Model(prep_Base):#模糊量化标准化
             max = self.max
             min = self.min
         x_Predict = 1 / 2 + (1 / 2) * np.sin(np.pi / (max - min) * (x_data - (max-min) / 2))
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'模糊量化标准化'
 
     def Des(self,Dic,*args,**kwargs):
@@ -2418,8 +2618,8 @@ class Regularization_Model(Unsupervised):#正则化
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData.copy()
-        x_data = self.x_trainData.copy()
+        y_data = self.y_testData.copy()
+        x_data = self.x_testData.copy()
         Conversion_control(y_data,x_data,tab)
 
         save = Dic + r'/正则化.HTML'
@@ -2437,10 +2637,17 @@ class Binarizer_Model(Unsupervised):#二值化
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         get_y = Discrete_Feature_visualization(y_data,'转换数据')#转换
         for i in range(len(get_y)):
             tab.add(get_y[i],f'[{i}]数据x-x离散散点图')
+
+        heard = [f'特征:{i}' for i in range(len(x_data[0]))]
+        tab.add(make_Tab(heard,x_data.tolist()),f'原数据')
+        tab.add(make_Tab(heard,y_data.tolist()), f'编码数据')
+        tab.add(make_Tab(heard,np.dstack((x_data,y_data)).tolist()), f'合成[原数据,编码]数据')
+
         save = Dic + r'/二值离散化.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2458,10 +2665,12 @@ class Discretization_Model(prep_Base):#n值离散
         self.Model_Name = 'Discretization'
 
     def Fit(self,*args,**kwargs):
+        #t值在模型创建时已经保存
+        self.have_Fit = True
         return 'None','None'
 
-    def Predict(self,x_data):
-        self.x_trainData = x_data.copy()
+    def Predict(self,x_data,*args,**kwargs):
+        self.x_testData = x_data.copy()
         x_Predict = x_data.copy()#复制
         range_ = self.range
         bool_list = []
@@ -2480,15 +2689,23 @@ class Discretization_Model(prep_Base):#n值离散
             o_t = t
         for i in range(len(bool_list)):
             x_Predict[bool_list[i]] = i
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,f'{len(bool_list)}值离散化'
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
+
+        heard = [f'特征:{i}' for i in range(len(x_data[0]))]
+        tab.add(make_Tab(heard,x_data.tolist()),f'原数据')
+        tab.add(make_Tab(heard,y_data.tolist()), f'编码数据')
+        tab.add(make_Tab(heard,np.dstack((x_data,y_data)).tolist()), f'合成[原数据,编码]数据')
+
         save = Dic + r'/多值离散化.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2501,26 +2718,37 @@ class Label_Model(prep_Base):#数字编码
         self.Model_Name = 'LabelEncoder'
 
     def Fit(self,x_data,*args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
+            self.Model = []
             if x_data.ndim == 1:x_data = np.array([x_data])
             for i in range(x_data.shape[1]):
-                self.Model.append(LabelEncoder().fit(np.ravel(x_data[:,i])))#训练机器
+                self.Model.append(LabelEncoder().fit(np.ravel(x_data[:,i])))#训练机器(每个特征一个学习器)
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
+        self.x_testData = x_data.copy()
         x_Predict = x_data.copy()
         if x_data.ndim == 1: x_data = np.array([x_data])
         for i in range(x_data.shape[1]):
             x_Predict[:,i] = self.Model[i].transform(x_data[:,i])
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'数字编码'
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        x_data = self.x_testData
+        y_data = self.y_testData
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
+
+        heard = [f'特征:{i}' for i in range(len(x_data[0]))]
+        tab.add(make_Tab(heard,x_data.tolist()),f'原数据')
+        tab.add(make_Tab(heard,y_data.tolist()), f'编码数据')
+        tab.add(make_Tab(heard,np.dstack((x_data,y_data)).tolist()), f'合成[原数据,编码]数据')
+
         save = Dic + r'/数字编码.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2533,27 +2761,30 @@ class OneHotEncoder_Model(prep_Base):#独热编码
         self.ndim_up = args_use['ndim_up']
         self.k = {}
         self.Model_Name = 'OneHotEncoder'
+        self.OneHot_Data = None#三维独热编码
 
     def Fit(self,x_data,*args, **kwargs):
-        if not self.have_Fit:  # 不允许第二次训练
+        if not self.have_Predict:  # 不允许第二次训练
             if x_data.ndim == 1:x_data = [x_data]
             for i in range(x_data.shape[1]):
                 data = np.expand_dims(x_data[:,i], axis=1)#独热编码需要升维
                 self.Model.append(OneHotEncoder().fit(data))#训练机器
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_new = []
         for i in range(x_data.shape[1]):
             data = np.expand_dims(x_data[:, i], axis=1)  # 独热编码需要升维
             oneHot = self.Model[i].transform(data).toarray().tolist()
             x_new.append(oneHot)#添加到列表中
-        x_new = DataFrame(x_new).to_numpy()#新列表的行数据是原data列数据的独热码(只需要ndim=2，暂时没想到numpy的做法)
+        x_new = np.array(x_new)#新列表的行数据是原data列数据的独热码(只需要ndim=2，暂时没想到numpy的做法)
         x_Predict = []
         for i in range(x_new.shape[1]):
             x_Predict.append(x_new[:,i])
         x_Predict = np.array(x_Predict)#转换回array
+        self.OneHot_Data = x_Predict.copy()  # 保存未降维数据
         if not self.ndim_up:#压缩操作
             new_xPredict = []
             for i in x_Predict:
@@ -2563,17 +2794,28 @@ class OneHotEncoder_Model(prep_Base):#独热编码
                     new_list += a
                 new = np.array(new_list)
                 new_xPredict.append(new)
-            self.y_trainData = x_Predict.copy()
-            return np.array(new_xPredict),'独热编码'
-        #不保存y_trainData
-        return x_Predict,'独热编码'#不需要降维
+
+            self.y_testData = np.array(new_xPredict)
+            return self.y_testData.copy(),'独热编码'
+
+        self.y_testData = self.OneHot_Data
+        self.have_Predict = True
+        return x_Predict,'独热编码'
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
+        oh_data = self.OneHot_Data
         get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
         for i in range(len(get_y)):
             tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
+
+        heard = [f'特征:{i}' for i in range(len(x_data[0]))]
+        tab.add(make_Tab(heard,x_data.tolist()),f'原数据')
+        tab.add(make_Tab(heard,oh_data.tolist()), f'编码数据')
+        tab.add(make_Tab(heard,np.dstack((oh_data,x_data)).tolist()), f'合成[原数据,编码]数据')
+        tab.add(make_Tab([f'编码:{i}' for i in range(len(y_data[0]))], y_data.tolist()), f'数据')
         save = Dic + r'/独热编码.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -2588,15 +2830,16 @@ class Missed_Model(Unsupervised):#缺失数据补充
         self.Model_Name = 'Missed'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'填充缺失'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
         Conversion_control(y_data,x_data,tab)
 
         save = Dic + r'/缺失数据填充.HTML'
@@ -2613,14 +2856,15 @@ class PCA_Model(Unsupervised):
         self.Model_Name = 'PCA'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'PCA'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
         importance = self.Model.components_.tolist()
         var = self.Model.explained_variance_.tolist()#方量差
         Conversion_Separate_Format(y_data,tab)
@@ -2664,9 +2908,10 @@ class RPCA_Model(Unsupervised):
         self.Model_Name = 'RPCA'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'RPCA'
 
     def Des(self, Dic, *args, **kwargs):
@@ -2715,14 +2960,15 @@ class KPCA_Model(Unsupervised):
         self.Model_Name = 'KPCA'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'KPCA'
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
         Conversion_Separate_Format(y_data, tab)
 
         save = Dic + r'/KPCA(主成分分析).HTML'
@@ -2741,11 +2987,12 @@ class LDA_Model(prep_Base):#有监督学习
         self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
         self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'LDA'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        x_train = self.x_trainData
+
         x_data = self.x_testData
         y_data = self.y_testData
         Conversion_Separate_Format(y_data,tab)
@@ -2771,23 +3018,24 @@ class NMF_Model(Unsupervised):
         self.n_components = args_use['n_components']
         self.k = {'n_components':args_use['n_components']}
         self.Model_Name = 'NFM'
-        self.h_trainData = None
+        self.h_testData = None
         #x_trainData保存的是W，h_trainData和y_trainData是后来数据
 
     def Predict(self, x_data,x_name='',Add_Func=None,*args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.transform(x_data)
-        self.y_trainData = x_Predict.copy()
-        self.h_trainData = self.Model.components_
+        self.y_testData = x_Predict.copy()
+        self.h_testData = self.Model.components_
         if Add_Func != None and x_name != '':
-            Add_Func(self.h_trainData, f'{x_name}:V->NMF[H]')
+            Add_Func(self.h_testData, f'{x_name}:V->NMF[H]')
+        self.have_Predict = True
         return x_Predict,'V->NMF[W]'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
-        x_data = self.x_trainData
-        h_data = self.h_trainData
+        y_data = self.y_testData
+        x_data = self.x_testData
+        h_data = self.h_testData
         Conversion_SeparateWH(y_data,h_data,tab)
 
         wh_data = np.matmul(y_data, h_data)
@@ -2835,17 +3083,19 @@ class TSNE_Model(Unsupervised):
         self.Model_Name = 't-SNE'
 
     def Fit(self,*args, **kwargs):
+        self.have_Fit = True
         return 'None', 'None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data.copy()
+        self.x_testData = x_data.copy()
         x_Predict = self.Model.fit_transform(x_data)
-        self.y_trainData = x_Predict.copy()
+        self.y_testData = x_Predict.copy()
+        self.have_Predict = True
         return x_Predict,'SNE'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y_data = self.y_trainData
+        y_data = self.y_testData
         Conversion_Separate_Format(y_data,tab)
 
         save = Dic + r'/T-SNE.HTML'
@@ -2871,7 +3121,11 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
 
+        x_data = self.x_testData
+        y_data = self.y_testData
         coefs = self.Model.coefs_
+        class_ = self.Model.classes_
+        n_layers_ = self.Model.n_layers_
         def make_HeatMap(data,name):
             x = [f'特征(节点)[{i}]' for i in range(len(data))]
             y = [f'节点[{i}]' for i in range(len(data[0]))]
@@ -2891,7 +3145,7 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
             tab.add(make_Tab(x,data.T.tolist()),f'{name}:表格')
             desTo_CSV(Dic,f'{name}:表格',data.T.tolist(),x,y)
 
-        get, x_means, x_range, Type = regress_visualization(self.x_trainData, self.y_trainData)
+        get, x_means, x_range, Type = regress_visualization(x_data, y_data)
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
 
@@ -2900,15 +3154,15 @@ class MLP_Model(Study_MachineBase):#神经网络(多层感知机)，有监督学
             tab.add(get[i], f'{i}预测热力图')
 
         heard = ['神经网络层数']
-        data = [self.Model.n_layers_]
+        data = [n_layers_]
         for i in range(len(coefs)):
             make_HeatMap(coefs[i],f'{i}层权重矩阵')
             heard.append(f'第{i}层节点数')
             data.append(len(coefs[i][0]))
 
         if self.Model_Name == 'MLP_class':
-            heard += [f'[{i}]类型' for i in range(len(self.Model.classes_))]
-            data += self.Model.classes_.tolist()
+            heard += [f'[{i}]类型' for i in range(len(class_))]
+            data += class_.tolist()
 
         tab.add(make_Tab(heard,[data]),'数据表')
 
@@ -2929,25 +3183,28 @@ class kmeans_Model(UnsupervisedModel):
     def Fit(self, x_data, *args, **kwargs):
         re = super().Fit(x_data,*args,**kwargs)
         self.class_ = list(set(self.Model.labels_.tolist()))
+        self.have_Fit = True
         return re
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_trainData = x_data
+        self.x_testData = x_data.copy()
         y_Predict = self.Model.predict(x_data)
-        self.y_trainData = y_Predict
+        self.y_testData = y_Predict.copy()
+        self.have_Predict = True
         return y_Predict,'k-means'
 
     def Des(self,Dic,*args,**kwargs):
         tab = Tab()
-        y = self.y_trainData
-        x_data = self.x_trainData
+        y = self.y_testData
+        x_data = self.x_testData
         class_ = self.class_
         center = self.Model.cluster_centers_
         class_heard = [f'簇[{i}]' for i in range(len(class_))]
 
-        get,x_means,x_range,Type = Training_visualization_More(x_data,class_,y,center)
+        Func = Training_visualization_More if More_Global else Training_visualization_Center
+        get,x_means,x_range,Type = Func(x_data,class_,y,center)
         for i in range(len(get)):
-            tab.add(get[i],f'{i}训练数据散点图')
+            tab.add(get[i],f'{i}数据散点图')
 
         get = Decision_boundary(x_range, x_means, self.Predict, class_, Type)
         for i in range(len(get)):
@@ -2975,21 +3232,25 @@ class Agglomerative_Model(UnsupervisedModel):
     def Fit(self, x_data, *args, **kwargs):
         re = super().Fit(x_data,*args,**kwargs)
         self.class_ = list(set(self.Model.labels_.tolist()))
+        self.have_Fit = True
         return re
 
     def Predict(self, x_data, *args, **kwargs):
+        self.x_testData = x_data.copy()
         y_Predict = self.Model.fit_predict(x_data)
-        self.y_trainData = y_Predict
+        self.y_trainData = y_Predict.copy()
+        self.have_Predict = True
         return y_Predict,'Agglomerative'
 
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        y = self.y_trainData
-        x_data = self.x_trainData
+        y = self.y_testData
+        x_data = self.x_testData
         class_ = self.class_
         class_heard = [f'簇[{i}]' for i in range(len(class_))]
 
-        get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
+        Func = Training_visualization_More_NoCenter if More_Global else Training_visualization
+        get, x_means, x_range, Type = Func(x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
 
@@ -3035,22 +3296,26 @@ class DBSCAN_Model(UnsupervisedModel):
     def Fit(self, x_data, *args, **kwargs):
         re = super().Fit(x_data,*args,**kwargs)
         self.class_ = list(set(self.Model.labels_.tolist()))
+        self.have_Fit = True
         return re
 
     def Predict(self, x_data, *args, **kwargs):
+        self.x_testData = x_data.copy()
         y_Predict = self.Model.fit_predict(x_data)
-        self.y_trainData = y_Predict.copy()
+        self.y_testData = y_Predict.copy()
+        self.have_Predict = True
         return y_Predict,'DBSCAN'
 
     def Des(self, Dic, *args, **kwargs):
         #DBSCAN没有预测的必要
         tab = Tab()
-        y = self.y_trainData.copy()
-        x_data = self.x_trainData.copy()
+        y = self.y_testData.copy()
+        x_data = self.x_testData.copy()
         class_ = self.class_
         class_heard = [f'簇[{i}]' for i in range(len(class_))]
 
-        get, x_means, x_range, Type = Training_visualization_More_NoCenter(x_data, class_, y)
+        Func = Training_visualization_More_NoCenter if More_Global else Training_visualization
+        get, x_means, x_range, Type = Func(x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f'{i}训练数据散点图')
 
@@ -3164,7 +3429,7 @@ class Machine_Learner(Learner):#数据处理者
 
         args_use['split_range'] = list(args.get('split_range', [0]))  # 二值化特征
 
-        args_use['ndim_up'] = bool(args.get('ndim_up', True))
+        args_use['ndim_up'] = bool(args.get('ndim_up', False))
         args_use['miss_value'] = args.get('miss_value',np.nan)
         args_use['fill_method'] = args.get('fill_method','mean')
         args_use['fill_value'] = args.get('fill_value',None)
@@ -3256,17 +3521,23 @@ class Machine_Learner(Learner):#数据处理者
         return model.Score(x,y)
 
     def Show_Args(self,Learner,Dic):#显示参数
-        dic = Dic + f'/{Learner}数据[CoTan]'
-        new_dic = dic
-        a = 0
-        while exists(new_dic):#直到他不存在 —— False
-            new_dic = dic + f'[{a}]'
-            a += 1
-        mkdir(new_dic)
+        if NEW_Global:
+            dic = Dic + f'/{Learner}数据[CoTan]'
+            new_dic = dic
+            a = 0
+            while exists(new_dic):#直到他不存在 —— False
+                new_dic = dic + f'[{a}]'
+                a += 1
+            mkdir(new_dic)
+        else:
+            new_dic = Dic
         model = self.get_Learner(Learner)
+        if (model.Model != None or not(model.Model is list)) and CLF_Global:
+            joblib.dump(model.Model,new_dic + '/MODEL.model')#保存模型
+        # pickle.dump(model,new_dic + f'/{Learner}.pkl')#保存学习器
         #打包
         save = model.Des(new_dic)[0]
-        make_targz(f'{new_dic}.tar.gz',new_dic)
+        if TAR_Global:make_targz(f'{new_dic}.tar.gz',new_dic)
         return save,new_dic
 
     def Del_Leaner(self,Leaner):
@@ -3277,3 +3548,12 @@ def make_targz(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=basename(source_dir))
     return output_filename
+
+def set_Global(More=More_Global,All=All_Global,CSV=CSV_Global,CLF=CLF_Global,TAR=TAR_Global,NEW=NEW_Global):
+    global More_Global,All_Global,CSV_Global,CLF_Global,TAR_Global,NEW_Global
+    More_Global = More  # 是否使用全部特征绘图
+    All_Global = All  # 是否导出charts
+    CSV_Global = CSV  # 是否导出CSV
+    CLF_Global = CLF  # 是否导出模型
+    TAR_Global = TAR  # 是否打包tar
+    NEW_Global = NEW  # 是否新建目录

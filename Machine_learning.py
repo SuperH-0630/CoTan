@@ -6,10 +6,12 @@ import os
 import chardet
 from tkinter.scrolledtext import ScrolledText
 import Learn_Numpy
-import webbrowser
+print('Start')
 
 def Main():
-    global top,ML,Form_List,PATH,bg,bbg,fg,Merge_list
+    global top,ML,Form_List,PATH,bg,bbg,fg,Merge_list,Cul_list,Cul_Type
+    Cul_list = []
+    Cul_Type = []
     PATH = os.getcwd()
     Form_List = []
     Merge_list = []
@@ -410,10 +412,10 @@ def Main():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='数据统计', command=Add_Des, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入模型', font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='导出模型', font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     # a_x += 3
@@ -426,15 +428,109 @@ def Main():
                                                                                                         row=a_y,
                                                                                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
 
+    global Global_Type
+    a_y += 1
+    Global_Type = []
+    lable = ['聚类仅邻近特征','导出单独页面','导出表格CSV']#复选框
+    for i in range(3):
+        Global_Type.append(tkinter.IntVar())
+        tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
+                            variable=Global_Type[-1],command=globalSeeting).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+
+    a_y += 1
+    lable = ['导出模型','压缩为tar.gz','创建新目录']#复选框
+    for i in range(3):
+        Global_Type.append(tkinter.IntVar())
+        tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
+                            variable=Global_Type[-1],command=globalSeeting).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+
+    for i in Global_Type[1:]:i.set(1)
+    globalSeeting()
+
     global Args_Learner
     a_y += 1
-    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 11)
-    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=11,
+    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 7)
+    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=7,
                       sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
+
+    a_y += 7
+    tkinter.Label(top, text='【矩阵运算】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
+                                                                                                        columnspan=3,
+                                                                                                        row=a_y,
+                                                                                                        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
+
+    global Cul_Box,CulType_Input,Value_Input
+    a_y += 1
+    Cul_Box = tkinter.Listbox(top, width=width_B * 3, height=height_B * 1)
+    Cul_Box.grid(column=a_x, row=a_y, columnspan=3, rowspan=1, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y +=1
+    tkinter.Label(top, text='运算类型:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    CulType_Input = tkinter.Entry(top, width=width_B * 2)
+    CulType_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y +=1
+    tkinter.Label(top, text='键入参数:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Value_Input = tkinter.Entry(top, width=width_B * 2)
+    Value_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='选择参数', command=Cul_Add, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='键入参数', command=Cul_Input, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵运算', command=Cul_Numpy, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     top.mainloop()
 
-#90
+def Cul_Numpy():
+    global Cul_list, Cul_Type, CulType_Input
+    func = CulType_Input.get()
+    if len(Cul_list) == 2 and 1 in Cul_Type:
+        ML.Cul_Numpy(Cul_list,Cul_Type,func)
+    Update_BOX()
+
+def Add_Cul(num,type_):
+    global Cul_list, Cul_Type
+    if len(Cul_list) == 2:
+        del Cul_list[0]
+        del Cul_Type[0]
+    Cul_list.append(num)
+    Cul_Type.append(type_)
+
+def Update_Cul():
+    global Cul_list,Cul_Type,Cul_Box
+    Cul_Box.delete(0, tkinter.END)
+    a = ['第一参数','第二参数']
+    b = ['参数','矩阵']
+    Cul_Box.insert(tkinter.END, *[f'{a[i]} {Cul_list[i]} {b[Cul_Type[i]]}' for i in range(len(Cul_list))])
+
+def Cul_Input():
+    global Cul_Box,CulType_Input,Value_Input
+    num = eval(Value_Input.get(),{})
+    Add_Cul(num,0)
+    Update_Cul()
+
+def Cul_Add():
+    name = get_Name()
+    Add_Cul(name,1)
+    Update_Cul()
+
+def Del_Leaner():
+    Learn = get_Learner(True)
+    set_Learne = get_Learner(False)  # 获取学习器Learner
+    if set_Learne != Learn:
+        ML.Del_Leaner(Learn)
+    Update_Leaner()
+
+def globalSeeting():
+    global Global_Type
+    args = [bool(i.get()) for i in Global_Type]
+    Learn_Numpy.set_Global(*args)
 
 def Reshape():
     global ML,Processing_type
