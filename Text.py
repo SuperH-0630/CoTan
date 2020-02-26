@@ -1,7 +1,7 @@
-import numpy as np
+name = 'One'
 
-a = np.array([1,2,3,4,5,6,7,8,9])
-b = np.array([4,5,6,7,8])
+def f(x,a,b):
+    print(x)
+    return x * a + b
 
-if a.all() == None:
-    print('a')
+print(f.__code__)

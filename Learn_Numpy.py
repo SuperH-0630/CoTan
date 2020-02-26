@@ -16,7 +16,7 @@ from sklearn.neighbors import KNeighborsClassifier,KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier,DecisionTreeRegressor,export_graphviz
 from sklearn.ensemble import (RandomForestClassifier,RandomForestRegressor,GradientBoostingClassifier,
                               GradientBoostingRegressor)
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import *
 from sklearn.feature_selection import *
 from sklearn.preprocessing import *
 from sklearn.impute import SimpleImputer
@@ -26,6 +26,8 @@ from sklearn.svm import SVC,SVR#SVC是svm分类，SVR是svm回归
 from sklearn.neural_network import MLPClassifier,MLPRegressor
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
+from scipy import optimize
+from scipy.fftpack import fft,ifft#快速傅里叶变换
 from os.path import split as path_split
 from os.path import exists,basename,splitext
 from os import mkdir
@@ -114,7 +116,7 @@ def Prediction_boundary(x_range,x_means,Predict_Func,Type):#绘制回归型x-x�
     # a-特征x，b-特征x-1，c-其他特征
     o_cList = []
     if len(x_means) == 1:
-        return Prediction_boundary(x_range,x_means,Predict_Func,Type)
+        return o_cList
     for i in range(len(x_means)):
         for j in range(len(x_means)):
             if j <= i:continue
@@ -1137,9 +1139,6 @@ class Study_MachineBase:
         self.y_testData = None
         #记录这两个是为了克隆
 
-    def Accuracy(self,y_Predict,y_Really):
-        return accuracy_score(y_Predict, y_Really)
-
     def Fit(self,x_data,y_data,split=0.3,Increment=True,**kwargs):
         y_data = y_data.ravel()
         try:
@@ -1164,6 +1163,160 @@ class Study_MachineBase:
         Score = self.Model.score(x_data,y_data)
         return Score
 
+    def Class_Score(self,Dic,x_data:np.ndarray,y_Really:np.ndarray):
+        y_Really = y_Really.ravel()
+        y_Predict = self.Predict(x_data)[0]
+
+        Accuracy = self._Accuracy(y_Predict,y_Really)
+
+        Recall,class_ = self._Macro(y_Predict,y_Really)
+        Precision,class_ = self._Macro(y_Predict,y_Really,1)
+        F1,class_ = self._Macro(y_Predict,y_Really,2)
+
+        Confusion_matrix,class_ = self._Confusion_matrix(y_Predict,y_Really)
+        kappa = self._Kappa_score(y_Predict,y_Really)
+
+        tab = Tab()
+        def gauge_base(name:str,value:float) -> Gauge:
+            c = (
+                Gauge()
+                    .add("", [(name, round(value*100,2))],min_ = 0, max_ = 100)
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name))
+            )
+            return c
+        tab.add(gauge_base('准确率',Accuracy),'准确率')
+        tab.add(gauge_base('kappa',kappa),'kappa')
+
+        def Bar_base(name,value) -> Bar:
+            c = (
+                Bar()
+                    .add_xaxis(class_)
+                    .add_yaxis(name, value, **Label_Set)
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name), **global_Set)
+            )
+            return c
+        tab.add(Bar_base('精确率',Precision.tolist()),'精确率')
+        tab.add(Bar_base('召回率',Recall.tolist()),'召回率')
+        tab.add(Bar_base('F1',F1.tolist()),'F1')
+
+        def heatmap_base(name,value,max_,min_,show) -> HeatMap:
+            c = (
+                HeatMap()
+                    .add_xaxis(class_)
+                    .add_yaxis(name, class_, value, label_opts=opts.LabelOpts(is_show=show,position='inside'))
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name), **global_Set,visualmap_opts=
+                opts.VisualMapOpts(max_=max_,min_=min_,pos_right='3%'))
+                )
+            return c
+
+        value = [[class_[i],class_[j],float(Confusion_matrix[i,j])] for i in range(len(class_)) for j in range(len(class_))]
+        tab.add(heatmap_base('混淆矩阵',value,float(Confusion_matrix.max()),float(Confusion_matrix.min()),len(class_)<7), '混淆矩阵')
+
+        desTo_CSV(Dic,'混淆矩阵',Confusion_matrix,class_,class_)
+        desTo_CSV(Dic,'评分',[Precision,Recall,F1],class_,['精确率','召回率','F1'])
+        save = Dic + r'/分类模型评估.HTML'
+        tab.render(save)
+        return save,
+
+    def _Accuracy(self,y_Predict,y_Really):#准确率
+        return accuracy_score(y_Really, y_Predict)
+
+    def _Macro(self,y_Predict,y_Really,func=0):
+        Func = [recall_score,precision_score,f1_score]#召回率，精确率和f1
+        class_ = np.unique(y_Really).tolist()
+        result = (Func[func](y_Really,y_Predict,class_,average=None))
+        return result,class_
+
+    def _Confusion_matrix(self,y_Predict,y_Really):#混淆矩阵
+        class_ = np.unique(y_Really).tolist()
+        return confusion_matrix(y_Really, y_Predict),class_
+
+    def _Kappa_score(self,y_Predict,y_Really):
+        return cohen_kappa_score(y_Really, y_Predict)
+
+    def Regression_Score(self,Dic,x_data:np.ndarray,y_Really:np.ndarray):
+        y_Really = y_Really.ravel()
+        y_Predict = self.Predict(x_data)[0]
+        tab = Tab()
+
+        MSE = self._MSE(y_Predict,y_Really)
+        MAE = self._MAE(y_Predict,y_Really)
+        r2_Score = self._R2_Score(y_Predict,y_Really)
+        RMSE = self._RMSE(y_Predict,y_Really)
+
+        tab.add(make_Tab(['MSE','MAE','RMSE','r2_Score'],[[MSE,MAE,RMSE,r2_Score]]), '评估数据')
+
+        save = Dic + r'/回归模型评估.HTML'
+        tab.render(save)
+        return save,
+
+    def Clusters_Score(self,Dic,x_data:np.ndarray,*args):
+        y_Predict = self.Predict(x_data)[0]
+        tab = Tab()
+        Coefficient,Coefficient_array = self._Coefficient_clustering(x_data,y_Predict)
+
+        def gauge_base(name:str,value:float) -> Gauge:
+            c = (
+                Gauge()
+                    .add("", [(name, round(value*100,2))],min_ = 0, max_ = 10**(judging_Digits(value*100)))
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name))
+            )
+            return c
+        def Bar_base(name,value,xaxis) -> Bar:
+            c = (
+                Bar()
+                    .add_xaxis(xaxis)
+                    .add_yaxis(name, value, **Label_Set)
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name), **global_Set)
+            )
+            return c
+
+        tab.add(gauge_base('平均轮廓系数', Coefficient),'平均轮廓系数')
+
+        def Bar_(Coefficient_array,name='数据轮廓系数'):
+            xaxis = [f'数据{i}' for i in range(len(Coefficient_array))]
+            value = Coefficient_array.tolist()
+            tab.add(Bar_base(name,value,xaxis),name)
+
+        n = 20
+        if len(Coefficient_array) <= n:
+            Bar_(Coefficient_array)
+        elif len(Coefficient_array) <= n**2:
+            a = 0
+            while a <= len(Coefficient_array):
+                b = a + n
+                if b >= len(Coefficient_array):b = len(Coefficient_array) + 1
+                Cofe_array = Coefficient_array[a:b]
+                Bar_(Cofe_array,f'{a}-{b}数据轮廓系数')
+                a += n
+        else:
+            split = np.hsplit(Coefficient_array,n)
+            a = 0
+            for Cofe_array in split:
+                Bar_(Cofe_array, f'{a}%-{a + n}%数据轮廓系数')
+                a += n
+
+        save = Dic + r'/聚类模型评估.HTML'
+        tab.render(save)
+        return save,
+
+    def _MSE(self,y_Predict,y_Really):#均方误差
+        return mean_squared_error(y_Really, y_Predict)
+
+    def _MAE(self,y_Predict,y_Really):#中值绝对误差
+        return median_absolute_error(y_Really, y_Predict)
+
+    def _R2_Score(self,y_Predict,y_Really):#中值绝对误差
+        return r2_score(y_Really, y_Predict)
+
+    def _RMSE(self,y_Predict,y_Really):#中值绝对误差
+        return self._MSE(y_Predict,y_Really) ** 0.5
+
+    def _Coefficient_clustering(self,x_data,y_Predict):
+        means_score = silhouette_score(x_data,y_Predict)
+        outline_score = silhouette_samples(x_data,y_Predict)
+        return means_score, outline_score
+
     def Predict(self,x_data,*args,**kwargs):
         self.x_testData = x_data.copy()
         y_Predict = self.Model.predict(x_data)
@@ -1171,8 +1324,8 @@ class Study_MachineBase:
         self.have_Predict = True
         return y_Predict,'预测'
 
-    def Des(self,*args,**kwargs):
-        return ()
+    def Des(self,Dic,*args,**kwargs):
+        return (Dic,)
 
 class prep_Base(Study_MachineBase):#不允许第二次训练
     def __init__(self,*args,**kwargs):
@@ -2807,9 +2960,10 @@ class OneHotEncoder_Model(prep_Base):#独热编码
         y_data = self.y_testData
         x_data = self.x_testData
         oh_data = self.OneHot_Data
-        get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
-        for i in range(len(get_y)):
-            tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
+        if not self.ndim_up:
+            get_y = Discrete_Feature_visualization(y_data, '转换数据')  # 转换
+            for i in range(len(get_y)):
+                tab.add(get_y[i], f'[{i}]数据x-x离散散点图')
 
         heard = [f'特征:{i}' for i in range(len(x_data[0]))]
         tab.add(make_Tab(heard,x_data.tolist()),f'原数据')
@@ -2840,8 +2994,9 @@ class Missed_Model(Unsupervised):#缺失数据补充
         tab = Tab()
         y_data = self.y_testData
         x_data = self.x_testData
+        statistics = self.Model.statistics_.tolist()
         Conversion_control(y_data,x_data,tab)
-
+        tab.add(make_Tab([f'特征[{i}]' for i in range(len(statistics))],[statistics]),'填充值')
         save = Dic + r'/缺失数据填充.HTML'
         tab.render(save)  # 生成HTML
         return save,
@@ -3329,6 +3484,119 @@ class DBSCAN_Model(UnsupervisedModel):
         tab.render(save)  # 生成HTML
         return save,
 
+class Fast_Fourier(Study_MachineBase):#快速傅里叶变换
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(Fast_Fourier, self).__init__(*args, **kwargs)
+        self.Model = None
+        self.Fourier = None
+        self.Frequency = None
+        self.Phase = None
+        #eps是距离(0.5)，min_samples(5)是簇与噪音分界线(每个簇最小元素数)
+        # min_samples
+
+    def Fit(self, x_data, *args, **kwargs):
+        re = super().Fit(x_data,*args,**kwargs)
+        self.class_ = list(set(self.Model.labels_.tolist()))
+        self.have_Fit = True
+        return re
+
+    def Predict(self, x_data, *args, **kwargs):
+        self.x_testData = x_data.copy()
+        y_Predict = self.Model.fit_predict(x_data)
+        self.y_testData = y_Predict.copy()
+        self.have_Predict = True
+        return y_Predict,'DBSCAN'
+
+    def Des(self, Dic, *args, **kwargs):
+        #DBSCAN没有预测的必要
+        tab = Tab()
+        y = self.y_testData.copy()
+        x_data = self.x_testData.copy()
+        class_ = self.class_
+        class_heard = [f'簇[{i}]' for i in range(len(class_))]
+
+        Func = Training_visualization_More_NoCenter if More_Global else Training_visualization
+        get, x_means, x_range, Type = Func(x_data, class_, y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}训练数据散点图')
+
+        heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
+        data = class_ + [f'{i}' for i in x_means]
+        c = Table().add(headers=heard, rows=[data])
+        tab.add(c, '数据表')
+
+        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
+        save = Dic + r'/密度聚类.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Curve_fitting(Study_MachineBase):#曲线拟合
+    def __init__(self,Name, str_, model, *args, **kwargs):
+        super(Curve_fitting, self).__init__(*args, **kwargs)
+        def ndimDown(data:np.ndarray):
+            if data.ndim == 1:return data
+            new_data = []
+            for i in data:
+                new_data.append(np.sum(i))
+            return np.array(new_data)
+        NAME = {'np':np,'Func':model,'ndimDown':ndimDown}
+        DEF = f'''
+def FUNC({",".join(model.__code__.co_varnames)}):
+    answer = Func({",".join(model.__code__.co_varnames)})
+    return ndimDown(answer)
+'''
+        exec(DEF,NAME)
+        self.Func = NAME['FUNC']
+        self.Fit_data = None
+        self.Name = Name
+        self.Func_Str = str_
+
+    def Fit(self, x_data:np.ndarray,y_data:np.ndarray, *args, **kwargs):
+        y_data = y_data.ravel()
+        x_data = x_data.astype(np.float64)
+        try:
+            if self.x_trainData is None:raise Exception
+            self.x_trainData = np.vstack(x_data,self.x_trainData)
+            self.y_trainData = np.vstack(y_data,self.y_trainData)
+        except:
+            self.x_trainData = x_data.copy()
+            self.y_trainData = y_data.copy()
+        self.Fit_data = optimize.curve_fit(self.Func,self.x_trainData,self.y_trainData)
+        self.Model = self.Fit_data[0].copy()
+        return 'None','None'
+
+    def Predict(self, x_data, *args, **kwargs):
+        self.x_testData = x_data.copy()
+        Predict = self.Func(x_data,*self.Model)
+        y_Predict = []
+        for i in Predict:
+            y_Predict.append(np.sum(i))
+        y_Predict = np.array(y_Predict)
+        self.y_testData = y_Predict.copy()
+        self.have_Predict = True
+        return y_Predict,self.Name
+
+    def Des(self, Dic, *args, **kwargs):
+        #DBSCAN没有预测的必要
+        tab = Tab()
+        y = self.y_testData.copy()
+        x_data = self.x_testData.copy()
+
+        get, x_means, x_range,Type = regress_visualization(x_data, y)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}预测类型图')
+
+        get = Prediction_boundary(x_range, x_means, self.Predict, Type)
+        for i in range(len(get)):
+            tab.add(get[i], f'{i}预测热力图')
+
+        tab.add(make_Tab([f'普适预测第{i}特征' for i in range(len(x_means))], [[f'{i}' for i in x_means]]),'普适预测特征数据')
+        tab.add(make_Tab([f'参数[{i}]' for i in range(len(self.Model))], [[f'{i}' for i in self.Model]]), '拟合参数')
+
+        save = Dic + r'/曲线拟合.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
 class Machine_Learner(Learner):#数据处理者
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -3459,6 +3727,14 @@ class Machine_Learner(Learner):#数据处理者
         self.Learner[name] = get(model=Learner,args_use=args_use)
         self.Learner_Type[name] = Learner
 
+    def Add_Curve_Fitting(self,Learner_text,Text=''):
+        NAME = {}
+        exec(Learner_text,NAME)
+        name = f'Le[{len(self.Learner)}]{NAME.get("name","SELF")}'
+        func = NAME.get('f',lambda x,k,b:k * x + b)
+        self.Learner[name] = Curve_fitting(name,Learner_text,func)
+        self.Learner_Type[name] = 'Curve_fitting'
+
     def Add_SelectFrom_Model(self,Learner,Text=''):#Learner代表选中的学习器
         model = self.get_Learner(Learner)
         name = f'Le[{len(self.Learner)}]SelectFrom_Model:{Learner}'
@@ -3520,6 +3796,26 @@ class Machine_Learner(Learner):#数据处理者
         y = self.get_Sheet(name_y)
         return model.Score(x,y)
 
+    def Show_Score(self,Learner,Dic,name_x,name_y,Func=0):#显示参数
+        x = self.get_Sheet(name_x)
+        y = self.get_Sheet(name_y)
+        if NEW_Global:
+            dic = Dic + f'/{Learner}分类评分[CoTan]'
+            new_dic = dic
+            a = 0
+            while exists(new_dic):#直到他不存在 —— False
+                new_dic = dic + f'[{a}]'
+                a += 1
+            mkdir(new_dic)
+        else:
+            new_dic = Dic
+        model = self.get_Learner(Learner)
+        #打包
+        func = [model.Class_Score, model.Regression_Score, model.Clusters_Score][Func]
+        save = func(new_dic,x,y)[0]
+        if TAR_Global:make_targz(f'{new_dic}.tar.gz',new_dic)
+        return save,new_dic
+
     def Show_Args(self,Learner,Dic):#显示参数
         if NEW_Global:
             dic = Dic + f'/{Learner}数据[CoTan]'
@@ -3532,7 +3828,7 @@ class Machine_Learner(Learner):#数据处理者
         else:
             new_dic = Dic
         model = self.get_Learner(Learner)
-        if (model.Model != None or not(model.Model is list)) and CLF_Global:
+        if (not(model.Model is None) or not(model.Model is list)) and CLF_Global:
             joblib.dump(model.Model,new_dic + '/MODEL.model')#保存模型
         # pickle.dump(model,new_dic + f'/{Learner}.pkl')#保存学习器
         #打包

@@ -403,10 +403,10 @@ def Main():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='特征相关性', command=Add_corr, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获取数据', command=Add_View_data, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='曲线拟合', command=Curve_fitting, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='矩阵散点图',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='NONONO',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
@@ -418,10 +418,15 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='导出模型', font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
-    # a_x += 3
-    # tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
-    # a_x += 1
-    # a_y = 0
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='分类模型评估', command=Show_Class_Score, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='回归模型评估', command=Show_Regression_Score, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='聚类模型评估', command=Show_Clustering_Score, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+
     a_y += 1
     tkinter.Label(top, text='【学习器配置】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
                                                                                                         columnspan=3,
@@ -449,11 +454,11 @@ def Main():
 
     global Args_Learner
     a_y += 1
-    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 7)
-    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=7,
+    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 4)
+    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=4,
                       sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
-    a_y += 7
+    a_y += 4
     tkinter.Label(top, text='【矩阵运算】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
                                                                                                         columnspan=3,
                                                                                                         row=a_y,
@@ -486,6 +491,29 @@ def Main():
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     top.mainloop()
+
+def Curve_fitting():
+    Dic = askopenfilename(title='导入参数')
+    with open(Dic,'r') as f:
+        ML.Add_Curve_Fitting(f.read(),Text=get_Args_Learner())
+        Update_Leaner()
+
+def Show_Clustering_Score():
+    Show_Score(2)
+
+def Show_Regression_Score():
+    Show_Score(1)
+
+def Show_Class_Score():
+    Show_Score(0)
+
+def Show_Score(func):
+    learner = get_Learner(True)
+    Dic = askdirectory(title='选择保存位置')
+    data = ML.Show_Score(learner,Dic,get_Name(False,True),get_Name(False,False),func)
+    webbrowser.open(data[0])
+    webbrowser.open(data[1])#还可以打开文件管理器
+    Update_BOX()
 
 def Cul_Numpy():
     global Cul_list, Cul_Type, CulType_Input
@@ -598,17 +626,10 @@ def Merge_Add():
     Merge_list.append(name)
     Update_Merge()
 
-def Del_Leaner():
-    Learn = get_Learner(True)
-    set_Learne = get_Learner(False)  # 获取学习器Learner
-    if set_Learne != Learn:
-        ML.Del_Leaner(Learn)
-    Update_Leaner()
-
 
 def Show_Args():
     learner = get_Learner(True)
-    Dic = askdirectory(title='选择保存的CSV')
+    Dic = askdirectory(title='选择保存位置')
     data = ML.Show_Args(learner,Dic)
     webbrowser.open(data[0])
     webbrowser.open(data[1])#还可以打开文件管理器
