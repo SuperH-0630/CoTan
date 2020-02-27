@@ -5,7 +5,7 @@ import tkinter.messagebox
 import os
 import chardet
 from tkinter.scrolledtext import ScrolledText
-import Learn_Numpy
+from Machine_learning_analysis import Learn_Numpy
 print('Start')
 
 def Main():
@@ -454,11 +454,11 @@ def Main():
 
     global Args_Learner
     a_y += 1
-    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 4)
-    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=4,
+    Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 6)
+    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=6,
                       sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
-    a_y += 4
+    a_y += 6
     tkinter.Label(top, text='【矩阵运算】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
                                                                                                         columnspan=3,
                                                                                                         row=a_y,
@@ -999,6 +999,3 @@ def Creat_TextSheet(data, name):
     text.insert('0.0', data)
     text.config(state=tkinter.DISABLED)
     new_top.resizable(width=False, height=False)
-
-if __name__ == '__main__':
-    Main()

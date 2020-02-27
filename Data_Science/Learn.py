@@ -1,5 +1,8 @@
 import pandas as pd
 import re
+from os import getcwd
+from pyecharts.globals import CurrentConfig
+CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 import pandas_profiling as pp
 from pyecharts import options as opts
 from pyecharts.charts import *

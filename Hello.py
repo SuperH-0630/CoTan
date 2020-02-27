@@ -45,6 +45,15 @@ def Dsgc():
     DsGC = Process(target=Algebraic_factory)
     DsGC.start()
 
+def Machine_Learning():
+    from Machine_learning_analysis import Main
+    Main()
+
+def MLA():
+    global top, DsGC
+    Mla = Process(target=Machine_Learning())
+    Mla.start()
+
 def Main():
     global top
     import tkinter
@@ -87,7 +96,7 @@ def Main():
     tkinter.Button(F1, text='函数工厂',cursor=bc,command=HSGC, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=8,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='代数工厂',cursor=bc,command=Dsgc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=9,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='数据科学',cursor=bc,command=SJKX, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=10,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='机器学习',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=11,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='机器学习',cursor=bc,command=MLA, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=11,sticky=tkinter.N + tkinter.E + tkinter.W)
 
     abg='#F5FFFA'
     tkinter.Label(F1, text='物化系统', bg=abg, font=ft1).grid(column=0, row=12, sticky=tkinter.W + tkinter.E)

@@ -1,3 +1,11 @@
+from os.path import split as path_split
+from os.path import exists,basename,splitext
+from os import mkdir,getcwd
+import tarfile
+import pickle
+import joblib
+from pyecharts.globals import CurrentConfig
+CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 from pyecharts.components import Table as Table_Fisrt#绘制表格
 from pyecharts.components import Image
 from pyecharts import options as opts
@@ -28,12 +36,7 @@ from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
 from scipy import optimize
 from scipy.fftpack import fft,ifft,ifftn,fftn#快速傅里叶变换
-from os.path import split as path_split
-from os.path import exists,basename,splitext
-from os import mkdir
-import tarfile
-import pickle
-import joblib
+
 
 #设置
 np.set_printoptions(threshold=np.inf)
