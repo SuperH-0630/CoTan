@@ -406,16 +406,16 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='曲线拟合', command=Curve_fitting, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONONO',command=Add_MatrixScatter, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='快速傅里叶',command=Add_Fast_Fourier, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='数据统计', command=Add_Des, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入模型', font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='双逆向傅里叶',command=Add_Reverse_Fast_Fourier2, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导出模型', font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='逆向傅里叶',command=Add_Reverse_Fast_Fourier, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
@@ -491,6 +491,15 @@ def Main():
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     top.mainloop()
+
+def Add_Reverse_Fast_Fourier2():  # 添加Lenear的核心
+    Add_leaner('[2]Reverse_Fast_Fourier')
+
+def Add_Reverse_Fast_Fourier():  # 添加Lenear的核心
+    Add_leaner('Reverse_Fast_Fourier')
+
+def Add_Fast_Fourier():  # 添加Lenear的核心
+    Add_leaner('Fast_Fourier')
 
 def Curve_fitting():
     Dic = askopenfilename(title='导入参数')

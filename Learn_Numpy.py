@@ -27,7 +27,7 @@ from sklearn.neural_network import MLPClassifier,MLPRegressor
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans,AgglomerativeClustering,DBSCAN
 from scipy import optimize
-from scipy.fftpack import fft,ifft#快速傅里叶变换
+from scipy.fftpack import fft,ifft,ifftn,fftn#快速傅里叶变换
 from os.path import split as path_split
 from os.path import exists,basename,splitext
 from os import mkdir
@@ -3004,10 +3004,11 @@ class Missed_Model(Unsupervised):#缺失数据补充
 class PCA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(PCA_Model, self).__init__(*args, **kwargs)
-        self.Model = PCA(n_components=args_use['n_components'])
+        self.Model = PCA(n_components=args_use['n_components'],whiten=args_use['white_PCA'])
 
+        self.whiten=args_use['white_PCA']
         self.n_components = args_use['n_components']
-        self.k = {'n_components':args_use['n_components']}
+        self.k = {'n_components':args_use['n_components'],'whiten':args_use['white_PCA']}
         self.Model_Name = 'PCA'
 
     def Predict(self, x_data, *args, **kwargs):
@@ -3056,10 +3057,11 @@ class PCA_Model(Unsupervised):
 class RPCA_Model(Unsupervised):
     def __init__(self, args_use, model, *args, **kwargs):
         super(RPCA_Model, self).__init__(*args, **kwargs)
-        self.Model = IncrementalPCA(n_components=args_use['n_components'])
+        self.Model = IncrementalPCA(n_components=args_use['n_components'],whiten=args_use['white_PCA'])
 
         self.n_components = args_use['n_components']
-        self.k = {'n_components': args_use['n_components']}
+        self.whiten=args_use['white_PCA']
+        self.k = {'n_components': args_use['n_components'],'whiten':args_use['white_PCA']}
         self.Model_Name = 'RPCA'
 
     def Predict(self, x_data, *args, **kwargs):
@@ -3488,47 +3490,130 @@ class Fast_Fourier(Study_MachineBase):#快速傅里叶变换
     def __init__(self, args_use, model, *args, **kwargs):
         super(Fast_Fourier, self).__init__(*args, **kwargs)
         self.Model = None
-        self.Fourier = None
-        self.Frequency = None
-        self.Phase = None
-        #eps是距离(0.5)，min_samples(5)是簇与噪音分界线(每个簇最小元素数)
-        # min_samples
+        self.Fourier = None#fft复数
+        self.Frequency = None#频率range
+        self.angular_Frequency = None#角频率range
+        self.Phase = None#相位range
+        self.Breadth = None#震幅range
+        self.N = None#样本数
 
-    def Fit(self, x_data, *args, **kwargs):
-        re = super().Fit(x_data,*args,**kwargs)
-        self.class_ = list(set(self.Model.labels_.tolist()))
+    def Fit(self, y_data, *args, **kwargs):
+        y_data = y_data.ravel()  # 扯平为一维数组
+        try:
+            if self.y_trainData is None:raise Exception
+            self.y_trainData = np.hstack(y_data,self.x_trainData)
+        except:
+            self.y_trainData = y_data.copy()
+        Fourier = fft(y_data)
+        self.N = len(y_data)
+        self.Frequency = np.linspace(0,1,self.N)#频率N_range
+        self.angular_Frequency = self.Frequency / ( np.pi * 2 )#角频率w
+        self.Phase = np.angle(Fourier)
+        self.Breadth = np.abs(Fourier)
+        self.Fourier = Fourier
         self.have_Fit = True
-        return re
+        return 'None','None'
 
     def Predict(self, x_data, *args, **kwargs):
-        self.x_testData = x_data.copy()
-        y_Predict = self.Model.fit_predict(x_data)
-        self.y_testData = y_Predict.copy()
-        self.have_Predict = True
-        return y_Predict,'DBSCAN'
+        return np.array([]),''
 
     def Des(self, Dic, *args, **kwargs):
         #DBSCAN没有预测的必要
         tab = Tab()
-        y = self.y_testData.copy()
-        x_data = self.x_testData.copy()
-        class_ = self.class_
-        class_heard = [f'簇[{i}]' for i in range(len(class_))]
+        y = self.y_trainData.copy()
+        N = self.N
+        Phase = self.Phase#相位range
+        Breadth = self.Breadth#震幅range
+        normalization_Breadth = Breadth/N
+        def line(name,value,s=slice(0,None)) -> Line:
+            c = (
+                Line()
+                    .add_xaxis(self.Frequency[s].tolist())
+                    .add_yaxis('', value,**Label_Set,symbol='none' if self.N >= 500 else None)
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name),**global_Leg,
+                                     xaxis_opts=opts.AxisOpts(type_='value'),
+                                     yaxis_opts=opts.AxisOpts(type_='value'))
+            )
+            return c
 
-        Func = Training_visualization_More_NoCenter if More_Global else Training_visualization
-        get, x_means, x_range, Type = Func(x_data, class_, y)
-        for i in range(len(get)):
-            tab.add(get[i], f'{i}训练数据散点图')
+        tab.add(line('原始数据',y.tolist()),'原始数据')
+        tab.add(line('双边振幅谱',Breadth.tolist()),'双边振幅谱')
+        tab.add(line('双边振幅谱(归一化)',normalization_Breadth.tolist()),'双边振幅谱(归一化)')
+        tab.add(line('单边相位谱',Breadth[:int(N/2)].tolist(),slice(0,int(N/2))),'单边相位谱')
+        tab.add(line('单边相位谱(归一化)',normalization_Breadth[:int(N/2)].tolist(),slice(0,int(N/2))),'单边相位谱(归一化)')
+        tab.add(line('双边相位谱', Phase.tolist()), '双边相位谱')
+        tab.add(line('单边相位谱', Phase[:int(N/2)].tolist(),slice(0,int(N/2))), '单边相位谱')
 
-        heard = class_heard + [f'普适预测第{i}特征' for i in range(len(x_means))]
-        data = class_ + [f'{i}' for i in x_means]
-        c = Table().add(headers=heard, rows=[data])
-        tab.add(c, '数据表')
+        tab.add(make_Tab(self.Frequency.tolist(),[Breadth.tolist()]),'双边振幅谱')
+        tab.add(make_Tab(self.Frequency.tolist(),[Phase.tolist()]),'双边相位谱')
+        tab.add(make_Tab(self.Frequency.tolist(),[self.Fourier.tolist()]),'快速傅里叶变换')
 
-        desTo_CSV(Dic, '预测表', [[f'{i}' for i in x_means]], [f'普适预测第{i}特征' for i in range(len(x_means))])
-        save = Dic + r'/密度聚类.HTML'
+        save = Dic + r'/快速傅里叶.HTML'
         tab.render(save)  # 生成HTML
         return save,
+
+class Reverse_Fast_Fourier(Study_MachineBase):#快速傅里叶变换
+    def __init__(self, args_use, model, *args, **kwargs):
+        super(Reverse_Fast_Fourier, self).__init__(*args, **kwargs)
+        self.Model = None
+        self.N = None
+        self.y_testData_real = None
+        self.Phase = None
+        self.Breadth = None
+
+    def Fit(self, y_data, *args, **kwargs):
+        return 'None','None'
+
+    def Predict(self, x_data,x_name='', Add_Func=None, *args, **kwargs):
+        self.x_testData = x_data.ravel().astype(np.complex_)
+        Fourier = ifft(self.x_testData)
+        self.y_testData = Fourier.copy()
+        self.y_testData_real = np.real(Fourier)
+        self.N = len(self.y_testData_real)
+        self.Phase = np.angle(self.x_testData)
+        self.Breadth = np.abs(self.x_testData)
+        Add_Func(self.y_testData_real.copy(), f'{x_name}:逆向快速傅里叶变换[实数]')
+        return Fourier,'逆向快速傅里叶变换'
+
+    def Des(self, Dic, *args, **kwargs):
+        #DBSCAN没有预测的必要
+        tab = Tab()
+        y = self.y_testData_real.copy()
+        y_data = self.y_testData.copy()
+        N = self.N
+        range_N = np.linspace(0,1,N).tolist()
+        Phase = self.Phase#相位range
+        Breadth = self.Breadth#震幅range
+
+        def line(name,value,s=slice(0,None)) -> Line:
+            c = (
+                Line()
+                    .add_xaxis(range_N[s])
+                    .add_yaxis('', value,**Label_Set,symbol='none' if N >= 500 else None)
+                    .set_global_opts(title_opts=opts.TitleOpts(title=name),**global_Leg,
+                                     xaxis_opts=opts.AxisOpts(type_='value'),
+                                     yaxis_opts=opts.AxisOpts(type_='value'))
+            )
+            return c
+
+        tab.add(line('逆向傅里叶变换', y.tolist()), '逆向傅里叶变换[实数]')
+        tab.add(make_Tab(range_N,[y_data.tolist()]),'逆向傅里叶变换数据')
+        tab.add(make_Tab(range_N,[y.tolist()]),'逆向傅里叶变换数据[实数]')
+        tab.add(line('双边振幅谱',Breadth.tolist()),'双边振幅谱')
+        tab.add(line('单边相位谱',Breadth[:int(N/2)].tolist(),slice(0,int(N/2))),'单边相位谱')
+        tab.add(line('双边相位谱', Phase.tolist()), '双边相位谱')
+        tab.add(line('单边相位谱', Phase[:int(N/2)].tolist(),slice(0,int(N/2))), '单边相位谱')
+
+        save = Dic + r'/快速傅里叶.HTML'
+        tab.render(save)  # 生成HTML
+        return save,
+
+class Reverse_Fast_Fourier_TwoNumpy(Reverse_Fast_Fourier):#2快速傅里叶变换
+    def Fit(self, x_data,y_data=None,x_name='', Add_Func=None, *args, **kwargs):
+        r = np.multiply(np.cos(x_data),y_data)
+        j = np.multiply(np.sin(x_data),y_data) * 1j
+        super(Reverse_Fast_Fourier_TwoNumpy, self).Predict(r + j,x_name=x_name, Add_Func=Add_Func, *args, **kwargs)
+        return 'None','None'
 
 class Curve_fitting(Study_MachineBase):#曲线拟合
     def __init__(self,Name, str_, model, *args, **kwargs):
@@ -3653,6 +3738,9 @@ class Machine_Learner(Learner):#数据处理者
                           'MatrixScatter':MatrixScatter,
                           'Correlation':CORR,
                           'Statistics':Des,
+                          'Fast_Fourier':Fast_Fourier,
+                          'Reverse_Fast_Fourier':Reverse_Fast_Fourier,
+                          '[2]Reverse_Fast_Fourier':Reverse_Fast_Fourier_TwoNumpy,
                           }
         self.Learner_Type = {}#记录机器的类型
 
@@ -3716,6 +3804,7 @@ class Machine_Learner(Learner):#数据处理者
             args_use['n_clusters'] = int(args.get('n_clusters', 2))
         args_use['eps'] = float(args.get('n_clusters', 0.5))
         args_use['min_samples'] = int(args.get('n_clusters', 5))
+        args_use['white_PCA'] = bool(args.get('white_PCA', False))
         return args_use
 
     def Add_Learner(self,Learner,Text=''):
@@ -3781,7 +3870,7 @@ class Machine_Learner(Learner):#数据处理者
         x_data = self.get_Sheet(x_name)
         y_data = self.get_Sheet(y_name)
         model = self.get_Learner(Learner)
-        return model.Fit(x_data,y_data,split)
+        return model.Fit(x_data,y_data,split = split, x_name=x_name, Add_Func=self.Add_Form)
 
     def Predict(self,x_name,Learner,Text='',**kwargs):
         x_data = self.get_Sheet(x_name)
