@@ -1,27 +1,16 @@
-# import numpy as np
+# import subprocess
 #
-# Dic = r'C:\Users\宋子桓\Desktop\CSV表格'
-#
-# x=np.linspace(0,1,1400)
-# z=np.linspace(8,9,1400)
-# y=7*np.sin(2*np.pi*20*x) + 5*np.sin(2*np.pi*40*z)+3*np.sin(2*np.pi*60*z)
-#
-# # o = np.vstack(x,z)
-# np.savetxt(Dic + r"/sin_x.csv", y, delimiter=',')
+# a = subprocess.Popen('dir;dir',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+#                      cwd=r'C:\Users\宋子桓\Desktop\Git_Test')
+# # print(a.stdout())
+# a.wait()
+# print(a.returncode)
+# while True:
+#     i = a.stdout.readline().decode('utf-8')
+#     if i == '':break
+#     print(i,end='')
 
-# from scipy.fftpack import fft, ifft
-# import numpy as np
-# x = np.arange(5)
-# a = fft(x)
-# b = ifft(a)
-# print(a)
-# print(b)
-# print(a.dtype)
-# print(b.dtype)
-
-import numpy as np
-
-a = np.array([1,2,3,4,5])
-b = np.array([1,2,3,4,5])
-c = a + b * 1j
-print(c)
+a = '&&'
+# b = ['1','2','3']
+b = ['1']
+print(a.join(b))
