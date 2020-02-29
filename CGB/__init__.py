@@ -1,2 +1,2 @@
 from CGB.Write import Draw as Draw
-print('CGB加载完毕...')
+print('草稿版加载完毕...')
