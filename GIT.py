@@ -31,13 +31,12 @@ def Main():
     a_y = 0
     a_x = 0
 
-    global clone_url
-    tkinter.Label(top, text='克隆URL:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    Dic_Var = tkinter.StringVar()#当前的Dic
-    clone_url = tkinter.Entry(top, width=width_B * 2, textvariable=Dic_Var)
-    clone_url.grid(column=a_x+1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    global clone_url,Git_Box,Git_Dir
+    global commit_m,head,master,no_ff
+    global TagName,TagMessage,TagCommit,Show_Key
+    global RemoteSSH,RemoteName,RemoteBranch,LocalBranch,push_bind,allow_history
+    global BranchName, StashName, CommitName, BranchNOrigin
 
-    a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='克隆仓库', command=clone_git, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='打开仓库', command=init_git, font=FONT, width=width_B,
@@ -45,7 +44,12 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='查看文件', command=get_Git_Dir, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    global Git_Box,Git_Dir
+    a_y += 1
+    tkinter.Label(top, text='克隆URL:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Dic_Var = tkinter.StringVar()#当前的Dic
+    clone_url = tkinter.Entry(top, width=width_B * 2, textvariable=Dic_Var)
+    clone_url.grid(column=a_x+1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
     a_y += 1
     Git_Box = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
     Git_Box.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
@@ -66,12 +70,6 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='提交到git', command=Commit_File, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    global commit_m,head,master,no_ff
-    a_y += 1
-    tkinter.Label(top, text='提交描述:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    commit_m = tkinter.Entry(top, width=width_B * 2)
-    commit_m.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='查看执行日志', command=lambda :not_Args(Git.reflog), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -87,16 +85,6 @@ def Main():
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='删除文件', command=rm_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='diff分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    master = tkinter.Entry(top, width=width_B * 2)
-    master.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='回退版本号:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    head = tkinter.Entry(top, width=width_B * 2)
-    head.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='查看分支', command=lambda :not_Args(Git.check_Branch), font=FONT, width=width_B,
@@ -124,17 +112,6 @@ def Main():
                         variable=no_ff).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
     no_ff.set(0)
 
-    global BranchName,StashName,CommitName,BranchNOrigin
-    a_y += 1
-    tkinter.Label(top, text='分支名字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    BranchName = tkinter.Entry(top, width=width_B * 2)
-    BranchName.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='关联远程分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    BranchNOrigin = tkinter.Entry(top, width=width_B * 2)
-    BranchNOrigin.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='保存工作区', command=lambda :not_Args(Git.Save_stash), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -143,37 +120,38 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='删除工作区', command=lambda :Open_Stash(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
-    tkinter.Label(top, text='工作区序号:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    StashName = tkinter.Entry(top, width=width_B)
-    StashName.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_Args(Git.Stash_List), font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='commit:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    CommitName = tkinter.Entry(top, width=width_B)
-    CommitName.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='复制commit', command=cherry_pick, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
     a_x += 1
     a_y = 0
 
-    tkinter.Label(top, text='【远程仓库】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(
+    tkinter.Label(top, text='【参数操作】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(
         column=a_x,columnspan=3,row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='连接远程仓库', command=Add_remote, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='推送到远程仓库', command=lambda :Pull_Push_remote(1), font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='从远程仓库抓取', command=lambda :Pull_Push_remote(0), font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Label(top, text='提交描述:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    commit_m = tkinter.Entry(top, width=width_B * 2)
+    commit_m.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    global RemoteSSH,RemoteName,RemoteBranch,LocalBranch,push_bind,allow_history
+    a_y += 1
+    tkinter.Label(top, text='diff分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    master = tkinter.Entry(top, width=width_B * 2)
+    master.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='回退版本号:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    head = tkinter.Entry(top, width=width_B * 2)
+    head.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='本地分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    BranchName = tkinter.Entry(top, width=width_B * 2)
+    BranchName.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='远程分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    BranchNOrigin = tkinter.Entry(top, width=width_B * 2)
+    BranchNOrigin.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='远程仓库链接:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
@@ -183,19 +161,35 @@ def Main():
     a_y += 1
     tkinter.Label(top, text='远程仓库名:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     RemoteName = tkinter.Entry(top, width=width_B)
-    RemoteName.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除关联', command=cherry_pick, font=FONT, width=width_B,
+    RemoteName.grid(column=a_x + 1, row=a_y, columnspan=2,sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='commit:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    CommitName = tkinter.Entry(top, width=width_B)
+    CommitName.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='标签名字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    TagName = tkinter.Entry(top, width=width_B)
+    TagName.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='查询关键字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Show_Key = tkinter.Entry(top, width=width_B)
+    Show_Key.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='工作区序号:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    StashName = tkinter.Entry(top, width=width_B)
+    StashName.grid(column=a_x + 1, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='连接远程仓库', command=Add_remote, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='推送到远程仓库', command=lambda :Pull_Push_remote(1), font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='从远程仓库抓取', command=lambda :Pull_Push_remote(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='远程分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    RemoteBranch = tkinter.Entry(top, width=width_B)
-    RemoteBranch.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='本地分支:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    LocalBranch = tkinter.Entry(top, width=width_B)
-    LocalBranch.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     push_bind = tkinter.Variable()
     allow_history = tkinter.Variable()
@@ -208,27 +202,6 @@ def Main():
                         variable=push_bind).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
     allow_history.set(0)
     push_bind.set(0)
-
-    global TagName,TagMessage,TagCommit,Show_Key
-    a_y += 1
-    tkinter.Label(top, text='标签名字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    TagName = tkinter.Entry(top, width=width_B)
-    TagName.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='标签描述:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    TagMessage = tkinter.Entry(top, width=width_B)
-    TagMessage.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='commit记录:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    TagCommit = tkinter.Entry(top, width=width_B)
-    TagCommit.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='查询关键字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    Show_Key = tkinter.Entry(top, width=width_B)
-    Show_Key.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='应用标签', command=add_tag, font=FONT, width=width_B,
@@ -254,7 +227,56 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='刷新远程分支', command=Fetch_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='commit补丁', command=cherry_pick, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程仓库', command=cherry_pick, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_Args(Git.Stash_List), font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    global Customize_Input, th_do, wait_do
+    a_y += 1
+    th_do = tkinter.Variable()
+    wait_do = tkinter.Variable()
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='多进程刷新',
+                        variable=th_do).grid(column=0, row=a_y, sticky=tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='异步显示',
+                        variable=wait_do).grid(column=1, row=a_y, sticky=tkinter.W)
+    Customize_Input = tkinter.Entry(top, width=width_B * 3)
+    Customize_Input.grid(column=2, row=a_y, columnspan=4, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
+
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行操作', command=Customize, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+    th_do.set(0)
+    wait_do.set(1)
+    TagMessage = commit_m
+    TagCommit = CommitName
+    RemoteBranch = BranchNOrigin
+    LocalBranch = BranchName
+
     top.mainloop()
+
+def clone_git():#克隆仓库
+    global clone_url
+    new_Dic = askdirectory(title = '选择仓库地址')
+    if new_Dic == '':return False
+    name = Git.Clone_init(new_Dic)
+    Clone(name, clone_url.get())
+    Updata_GitBox()
+
+def Clone(name,url):
+    do_Sys(Git.Clone, (name, url),
+           break_time=0,text_n=f'{url}:正在执行克隆操作',th=True,wait=True)
+    Git.After_Clone(name)
+    update_Git_Dir()
+
+def Customize():
+    global Git, Customize_Input, th_do, wait_do
+    command = Customize_Input.get()
+    do_Sys(Git.Customize, (get_Name(), command),
+           break_time=0,text_n=f'{command}:操作进行中',th=bool(th_do.get()),wait=bool(wait_do.get()))
+    update_Git_Dir()
 
 def Fetch_remote():
     global RemoteBranch, LocalBranch, Git, RemoteName
@@ -602,13 +624,6 @@ def Git_dir(name):
     except:
         pass
     Last_Name = name
-
-def clone_git():#克隆仓库
-    global clone_url
-    new_Dic = askdirectory(title = '选择仓库地址')
-    if new_Dic == '':return False
-    Git.Clone_init(new_Dic, clone_url.get())
-    Updata_GitBox()
 
 def init_git():#创建仓库
     global Git

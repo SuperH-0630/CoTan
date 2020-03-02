@@ -8,13 +8,20 @@ sys_seeting = dict(shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stder
 git_path = 'git'
 
 class git_Repo:#git的基类
-    def __init__(self,Dic,name,*args,**kwargs):
-        self.Repo_Dic = Dic  # 仓库地址
+    def __init__(self,Dic,*args,**kwargs):
         self.url = None
-        if not exists(Dic + r'/.git'):  # 是否为git 仓库
+        try:
+            if exists(Dic + r'/.git'):  # 是否为git 仓库
+                pass
+            elif Dic[-4:] =='.git':
+                Dic = Dic[:-5]  # -5,得把/去掉
+            else:raise Exception
+        except:
             subprocess.Popen(f'{git_path} init',cwd=self.Repo_Dic,**sys_seeting).wait()
+        self.Repo_Dic = Dic  # 仓库地址(末尾不带/)
         self.repo = Repo(Dic)
-        self.name = name
+        self.name = split(Dic)[-1]
+        self.have_clone = True
 
     def Flie_List(self,file_list,is_file=True,pat=' '):
         if file_list == '.':
@@ -220,13 +227,27 @@ class git_Repo:#git的基类
 
         return subprocess.Popen(f'''{git_path} fetch {remote_name} {branch}''', cwd=self.Repo_Dic, **sys_seeting)
 
+    def Customize(self,command:str):
+        return subprocess.Popen(command,cwd=self.Repo_Dic, **sys_seeting)
+
+    def Clone(self,url):
+        return subprocess.Popen(f'echo 无法克隆', cwd=self.Repo_Dic, **sys_seeting)
+
 class Clone_git(git_Repo):#Clone一个git
-    def __init__(self,Dic,url,name,*args,**kwargs):
-        super(Clone_git, self).__init__(Dic,name, *args, **kwargs)
-        self.url = url
-        Repo.clone_from(url=url,to_path=Dic)
-        self.git = self.repo.git
-        self.index = self.repo.index
+    def __init__(self, Dic, *args, **kwargs):
+        self.Repo_Dic = Dic  # 仓库地址
+        self.url = None
+        self.name = split(Dic)[-1]
+        self.have_clone = False
+
+    def Clone(self,url):
+        if self.have_clone:super(Clone_git, self).Clone(url)
+        self.have_clone = True
+        return subprocess.Popen(f'{git_path} clone {url} {self.Repo_Dic}', cwd=split(self.Repo_Dic)[0], **sys_seeting)
+
+    def after_Clone(self):
+        print('F')
+        self.repo = Repo(self.Repo_Dic)
 
 class git_Ctrol:
     def __init__(self):
@@ -234,16 +255,16 @@ class git_Ctrol:
         self.gitType_Dic = {}#名字-类型
 
     def Add_init(self,Dic,**kwargs):
-        name = split(Dic)[-1]
-        git = git_Repo(Dic,name)
-        self.git_Dic[name] = git
-        self.gitType_Dic[name] = 'init'
+        git = git_Repo(Dic)
+        self.git_Dic[git.name] = git
+        self.gitType_Dic[git.name] = 'init'
+        return git.name
 
-    def Clone_init(self,Dic,url,**kwargs):
-        name = split(Dic)[-1]
-        git = Clone_git(Dic,url,name)
-        self.git_Dic[name] = git
-        self.gitType_Dic[name] = 'clone'
+    def Clone_init(self,Dic,**kwargs):
+        git = Clone_git(Dic)
+        self.git_Dic[git.name] = git
+        self.gitType_Dic[git.name] = 'clone'
+        return git.name
 
     def get_git(self,name):
         return self.git_Dic[name]
@@ -353,3 +374,16 @@ class git_Ctrol:
 
     def Fetch(self,name,local_name,remote_name,remote_branch):
         return self.get_git(name).fetch(remote_name,remote_branch,local_name)
+
+    def Customize(self,name,command:str):
+        return self.get_git(name).Customize(command)
+
+    def Clone(self,name,url):
+        return self.get_git(name).Clone(url)
+
+    def After_Clone(self,name):
+        try:
+            return self.get_git(name).after_Clone()
+        except:
+            # return None
+            raise
