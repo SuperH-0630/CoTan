@@ -114,12 +114,21 @@ class git_Repo:#git的基类
         return subprocess.Popen(f'{git_path} branch --set-upstream-to={remote_name} {local_name}', cwd=self.Repo_Dic,
                                 **sys_seeting)
 
+    def push_Tag(self,tag,remote_name):
+        return subprocess.Popen(f'{git_path} push {remote_name} {tag}', cwd=self.Repo_Dic, **sys_seeting)
+
+    def del_tag(self,tag):
+        return subprocess.Popen(f'{git_path} tag -d {tag}', cwd=self.Repo_Dic, **sys_seeting)
+
     def Add_Tag(self,tag,commit,message=''):
+        a = ' -a'
         if message != '':
             message = f' -m "{message}"'#自带空格
+        else:
+            a = ''
         if commit != '':
             commit = f' {commit}'#自带空格
-        return subprocess.Popen(f'{git_path} tag -a {tag}{commit}{message}', cwd=self.Repo_Dic,
+        return subprocess.Popen(f'{git_path} tag{a} {tag}{commit}{message}', cwd=self.Repo_Dic,
                                 **sys_seeting)
 
     def Tag(self,condition=''):
@@ -130,19 +139,86 @@ class git_Repo:#git的基类
     def show_new(self,condition):
         return subprocess.Popen(f'{git_path} show {condition}', cwd=self.Repo_Dic, **sys_seeting)
 
-    def Pull_Push_remote(self,Pull_Push=0,remote='',local='',allow=False,u=False):
+    def Pull_Push_remote(self,Pull_Push=0,remote='',remote_branch='',local='',allow=False,u=False):
+        #处理逻辑
+        # 1）remote去斜杠第一个作为主机名字
+        # 2) 从remote分离主机名(如果没指定)
+        # 3) 如果local为空，用HEAD填充
+        # 4) 如果以上后，主机名仍为空，则local和分支均为空
+
         split = remote.split('/')
         try:
-            remote_name = ' '.join(split[0:2])
+            remote_name = split[0]#获取主机名 1）
         except:
-            remote_name = remote
-            local = ''
+            remote_name = ''#没有主机名 1）
+
+        branch_split = remote_branch.split('/')
+        if len(branch_split) >= 2 and remote_name == '':
+            remote_name = branch_split[0]# 2)
+            remote_branch = '/'.join(branch_split[1:])# 2)
+        if local.replace(' ','') == '':local = 'HEAD'# 3)
+        if remote_name == '':# 4)
+            branch = ''
+        else:
+            if Pull_Push == 1:
+                # 注意，local不可以为空，也不会为空
+                if remote_branch != '':branch = f'{local}:{remote_branch}'# git push <远程主机名> <本地分支名>:<远程分支名>
+                else:branch = f'{local}'#要去掉冒号
+            else:
+                if remote_branch != 'HEAD':branch = f'{remote_branch}:{local}'  # git push <远程主机名> <本地分支名>:<远程分支名>
+                else:branch = f'{remote_branch}'
+
         if allow:
             history = ' --allow-unrelated-histories'
         else:
             history = ''
-        return subprocess.Popen(f'''{git_path} { {0:"pull",1:f"push{' -u' if u else ''}"}.get(Pull_Push,"pull") }{history} {remote_name} {local}''',
+        push_pull = {0:"pull",1:f"push{' -u' if u else ''}"}
+        print(f'''{git_path} {push_pull.get(Pull_Push,"pull")}{history} {remote_name} {branch}''')
+        return subprocess.Popen(f'''{git_path} {push_pull.get(Pull_Push,"pull")}{history} {remote_name} {branch}''',
                                 cwd=self.Repo_Dic, **sys_seeting)
+
+    def del_Branch_remote(self,remote,remote_branch):
+        split = remote.split('/')
+        try:
+            remote_name = split[0]  # 获取主机名 1）
+        except:
+            remote_name = ''  # 没有主机名 1）
+        branch_split = remote_branch.split('/')
+        if len(branch_split) >= 2 and remote_name == '':
+            remote_name = branch_split[0]  # 2)
+            remote_branch = '/'.join(branch_split[1:])  # 2)
+        return subprocess.Popen(f'{git_path} push {remote_name} :{remote_branch}',cwd=self.Repo_Dic, **sys_seeting)
+
+    def del_Tag_remote(self,remote,tag):
+        return subprocess.Popen(f'{git_path} push {remote} :refs/tags/{tag}',cwd=self.Repo_Dic, **sys_seeting)
+
+    def fetch(self,remote,remote_branch,local):
+        # 处理逻辑
+        # 1）remote去斜杠第一个作为主机名字
+        # 2) 从remote分离主机名(如果没指定)
+        # 3) 如果local为空，用HEAD填充
+        # 4) 如果以上后，主机名仍为空，则local和分支均为空
+
+        split = remote.split('/')
+        try:
+            remote_name = split[0]  # 获取主机名 1）
+        except:
+            remote_name = ''  # 没有主机名 1）
+
+        branch_split = remote_branch.split('/')
+        if len(branch_split) >= 2 and remote_name == '':
+            remote_name = branch_split[0]  # 2)
+            remote_branch = '/'.join(branch_split[1:])  # 2)
+        if local.replace(' ', '') == '': local = 'HEAD'  # 3)
+        if remote_name == '':  # 4)
+            branch = ''
+        else:
+            if remote_branch != 'HEAD':
+                branch = f'{remote_branch}:{local}'  # git push <远程主机名> <本地分支名>:<远程分支名>
+            else:
+                branch = f'{remote_branch}'
+
+        return subprocess.Popen(f'''{git_path} fetch {remote_name} {branch}''', cwd=self.Repo_Dic, **sys_seeting)
 
 class Clone_git(git_Repo):#Clone一个git
     def __init__(self,Dic,url,name,*args,**kwargs):
@@ -245,11 +321,11 @@ class git_Ctrol:
     def Bind_remote(self,name,local_name,remote_name):
         return self.get_git(name).Bind_remote(local_name,remote_name)
 
-    def Pull_remote(self,name,local_name,remote_name,allow=False,u=False):
-        return self.get_git(name).Pull_Push_remote(0,remote_name,local_name,allow,u)
+    def Pull_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False):
+        return self.get_git(name).Pull_Push_remote(0,remote_name,remote_branch,local_name,allow,u)
 
-    def Push_remote(self,name,local_name,remote_name,allow=False,u=False):
-        return self.get_git(name).Pull_Push_remote(1,remote_name,local_name,False,u)#push没有allow选项
+    def Push_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False):
+        return self.get_git(name).Pull_Push_remote(1,remote_name,remote_branch,local_name,False,u)#push没有allow选项
 
     def Tag(self,name, condition=''):
         return self.get_git(name).Tag(condition)  # push没有allow选项
@@ -259,3 +335,21 @@ class git_Ctrol:
 
     def Add_Tag(self,name,tag,commit,message=''):
         return self.get_git(name).Add_Tag(tag,commit,message)  # push没有allow选项
+
+    def push_Tag(self,name, tag, remoto):
+        return self.get_git(name).push_Tag(tag, remoto)
+
+    def push_allTag(self,name, remoto):
+        return self.get_git(name).push_Tag('--tags', remoto)
+
+    def del_Tag_remote(self,name , remote, tag):
+        return self.get_git(name).del_Tag_remote(remote, tag)
+
+    def del_Branch_remote(self,name , remote, remote_Branch):
+        return self.get_git(name).del_Branch_remote(remote, remote_Branch)
+
+    def del_tag(self,name,tag):
+        return self.get_git(name).del_tag(tag)
+
+    def Fetch(self,name,local_name,remote_name,remote_branch):
+        return self.get_git(name).fetch(remote_name,remote_branch,local_name)

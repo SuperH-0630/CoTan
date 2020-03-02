@@ -209,9 +209,6 @@ def Main():
     allow_history.set(0)
     push_bind.set(0)
 
-    tkinter.Label(top, text='【标签管理】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(
-        column=a_x,columnspan=3,row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
-
     global TagName,TagMessage,TagCommit,Show_Key
     a_y += 1
     tkinter.Label(top, text='标签名字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
@@ -229,26 +226,88 @@ def Main():
     TagCommit.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Label(top, text='查询关键字:',command=lambda :show_tag(0), bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    tkinter.Label(top, text='查询关键字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     Show_Key = tkinter.Entry(top, width=width_B)
     Show_Key.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='应用标签', command=Bind_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='应用标签', command=add_tag, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看已有标签', command=lambda :show_tag(0), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看已有标签', command=lambda :show_tag(1), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查询数据', command=Bind_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查询commit记录',command=lambda :show_tag(0), font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='推送标签', command=push_tag, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='推送所有标签', command=push_alltag, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除本地标签',command=del_Tag, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程标签', command=del_Tag_remote, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程分支', command=del_Branch_remote, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷新远程分支', command=Fetch_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     top.mainloop()
 
+def Fetch_remote():
+    global RemoteBranch, LocalBranch, Git, RemoteName
+    Branch = RemoteBranch.get()
+    Remote = RemoteName.get()
+    Local = LocalBranch.get()
+    do_Sys(Git.Fetch, (get_Name(), Local, Remote, Branch),
+           break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',th=True,wait=True)
+    update_Git_Dir()
+
+def del_Tag():
+    global Git, RemoteName, TagName
+    Tag = TagName.get()
+    do_Sys(Git.del_tag, (get_Name(),Tag))
+    update_Git_Dir()
+
+def del_Branch_remote():
+    global Git, RemoteName, TagName
+    Remoto = RemoteName.get()
+    Remoto_Branch = RemoteBranch.get()
+    do_Sys(Git.del_Branch_remote, (get_Name(),Remoto,Remoto_Branch),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
+           th=True,wait=True)
+    update_Git_Dir()
+
+def del_Tag_remote():
+    global Git, RemoteName, TagName
+    Remoto = RemoteName.get()
+    Tag = TagName.get()
+    do_Sys(Git.del_Tag_remote, (get_Name(),Remoto,Tag),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
+           th=True,wait=True)
+    update_Git_Dir()
+
+def push_alltag():
+    global Git, RemoteName
+    Remoto = RemoteName.get()
+    do_Sys(Git.push_allTag, (get_Name(),Remoto),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
+           th=True,wait=True)
+    update_Git_Dir()
+
+def push_tag():
+    global TagName, Git, RemoteName
+    tag_name = TagName.get()
+    Remoto = RemoteName.get()
+    do_Sys(Git.push_Tag, (get_Name(), tag_name,Remoto),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
+           th=True,wait=True)
+    update_Git_Dir()
+
 def add_tag():
-    global TagName, Git
+    global TagName, Git, commit, tag_message
     tag_name = TagName.get()
     commit = TagCommit.get()
     tag_message = TagMessage.get()
-    do_Sys(Git.Add_Tag, (get_Name(), tag_name,commit,tag_message))
+    do_Sys(Git.Add_Tag, (get_Name(), tag_name,commit,tag_message),show=False)
     update_Git_Dir()
 
 def show_tag(type_):
@@ -258,13 +317,14 @@ def show_tag(type_):
     update_Git_Dir()
 
 def Pull_Push_remote(type_):
-    global RemoteBranch, LocalBranch, Git, allow_history
-    Remote = RemoteBranch.get()
+    global RemoteBranch, LocalBranch, Git, allow_history, RemoteName
+    Branch = RemoteBranch.get()
+    Remote = RemoteName.get()
     Local = LocalBranch.get()
     allow = bool(allow_history.get())
     u = bool(push_bind.get())
-    do_Sys({0:Git.Pull_remote,1:Git.Push_remote}.get(type_,Git.Pull_remote), (get_Name(), Local, Remote, allow, u),
-           break_time=10,text_n=f'此操作需要连接远程仓库，请稍等...',th=True)
+    do_Sys({0:Git.Pull_remote,1:Git.Push_remote}.get(type_,Git.Pull_remote), (get_Name(), Local, Remote, Branch, allow, u),
+           break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',th=True,wait=True)
     update_Git_Dir()
 
 def Bind_remote():
@@ -353,8 +413,9 @@ def Back_version():
     do_Sys(Git.back_version,(get_Name(),HEAD))
     update_Git_Dir()
 
-def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False):
+def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,wait=False):
     p = func(*args)
+    flat = True
     def Out_Txt():
         nonlocal data
         dic = asksaveasfilename(title='选择文件保存位置',filetypes=[("TXT", ".txt")])
@@ -366,19 +427,33 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False)
             dic += '.txt'
         with open(dic,'w',encoding='utf-8') as f:
             f.write(data)
-    def Stop():nonlocal start;start = 0
-    def keep():nonlocal start;start = float('inf')
+    def Stop():
+        nonlocal start
+        start = 0
+        b_list[0].config(state=tkinter.DISABLED)
+    def keep():
+        nonlocal start
+        start = float('inf')
+        b_list[1].config(state=tkinter.DISABLED)
+
     def pipe():pass
     def not_out():
-        nonlocal text,data
+        nonlocal text,out_data,data,flat
         text.clear()
-        text.insert(tkinter.END,data)
+        if flat:
+            text.insert(tkinter.END,data)
+        else:
+            text.insert(tkinter.END, out_data)
+        flat = not flat
     start = time.time()
     data = ''
+    out_data = ''#包含out的data
     if show:
-        text, new_top = show_Now(Out_Txt,Stop,keep,not_out,pipe,name=name)
+        text, new_top, b_list = show_Now(Out_Txt,Stop,keep,not_out,pipe,name=name)#[close,keep]
         if text_n != '':
             text.insert('0.0',f'载入前提示>>> {text_n}\n')
+            out_data += f'载入前提示>>> {text_n}\n'
+            data += f'{text_n}\n'
         new_top.update()
     top.update()
     def Update():
@@ -386,37 +461,97 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False)
         while True:
             try:
                 top.update()
-                if show: new_top.update()
-                if time.time() - start >= break_time:raise Exception
+                if show:
+                    try:
+                        new_top.update()
+                    except:pass
+                if time.time() - start >= break_time and break_time != 0:
+                    raise Exception
+                elif break_time == 0 and start == 0:
+                    raise Exception
             except:
                 start = 0
                 break
-    if th:
-        j = threading.Thread(target=Update())
+
+    if th or not wait:
+        j = threading.Thread(target=Update)#如果没有启动到多进程的效果，请检查Update是不是加了()，这里需要回调
         j.start()
-    while True:
-        try:
-            if not th:
-                top.update()
-                if show: new_top.update()
-        except:
-            break
-        try:
-            i = p.stdout.readline()#.decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
-            if i.replace(' ','').replace('\n','') != '':
-                if show:text.insert(tkinter.END,f'[out]> {i}')
-                data += i
-            if p.returncode == 0 or time.time() - start >= break_time:
-                if show:text.insert(tkinter.END,'[END]')
-                break
-            elif p.returncode != None:
-                raise Exception
-        except:
+
+    if wait:#等待后显示
+        if break_time == 0:break_ti = None# 此处break_ti是为了别面覆盖break_time，因为Update进程需要用
+        else:break_ti = break_time
+        def wait_p():
+            nonlocal start
+            p.wait(break_ti)
+            start = 0
+        j = threading.Thread(target=wait_p)  # 这么做不是多此一举，如果没有wait，进程并不会退出
+        j.start()
+        Update()#遇到sleep等主线程阻塞，top.update等会阻塞子线程，因此，必须保证主线程不会被wait所阻塞
+        out = p.stdout.read().split('\n')
+        for i in out:
+            if show:
+                try:  # 如果界面被关掉了，会报错
+                    new_top.title(f'{name} : 运行中')
+                except:
+                    text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
+                                             name=f'{name} : 运行中')
+                    text.insert(tkinter.END, out_data)
+                text.insert(tkinter.END, f'[out]> {i}\n')
+            data += i + '\n'
+            out_data += f'[out]> {i}\n'
+        if show:
+            text.insert(tkinter.END, '[END]')
+            out_data += f'[END]'
+            data += f'[END]'
+        start = 0
+    else:#即时显示
+        while True:
+            #界面设置
+            try:#如果界面被关掉了，会报错
+                if show: new_top.title(f'{name} : 运行中')
+            except:
+                text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
+                                         name=f'{name} : 运行中')
+                text.insert(tkinter.END,out_data)
+            #界面刷新
             try:
-                if show:text.insert(tkinter.END, '[ERROR]')
-                raise Exception
-            except:break
-    p.kill()
+                if not th:
+                    top.update()
+                    if show: new_top.update()
+            except:
+                break
+            #输出字符
+            try:
+                i = p.stdout.readline()#.decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
+                if i.replace(' ','').replace('\n','') != '':
+                    if show:text.insert(tkinter.END,f'[out]> {i}')
+                    data += i
+                    out_data += f'[out]> {i}'
+                if p.returncode == 0 or (time.time() - start >= break_time and break_time != 0):
+                    if show:
+                        text.insert(tkinter.END,'[END]')
+                        out_data += f'[END]'
+                        data += f'[END]'
+                    break
+                elif p.returncode != None:
+                    raise Exception
+            except:
+                try:
+                    if show:
+                        text.insert(tkinter.END, '[ERROR]')
+                        out_data += f'[ERROR]'
+                        data += f'[ERROR]'
+                    raise Exception
+                except:break
+        try:  # 如果界面被关掉了，会报错
+            if show: new_top.title(f'{name} : 运行完毕')
+        except:pass
+        p.kill()
+    try:
+        if show:
+            b_list[0].config(state=tkinter.DISABLED)
+            b_list[1].config(state=tkinter.DISABLED)
+    except:pass
     return data
 
 def not_Args(func):
@@ -535,16 +670,15 @@ def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> �
     text.config(state=tkinter.DISABLED)
     tkinter.Button(new_top, bg=bg, fg=fg, text='输出文档', font=('黑体', 11),width=20, height=2, command=out_func).grid(
         column=4, row=1, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(new_top, bg=bg, fg=fg, text='关闭子线程连接', font=('黑体', 11),width=20, height=2, command=close_func).grid(
-        column=0, row=1, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(new_top, bg=bg, fg=fg, text='保持线程连接', font=('黑体', 11),width=20, height=2, command=keepFunc).grid(
-        column=1, row=1, sticky=tkinter.E + tkinter.W)
+    close = tkinter.Button(new_top, bg=bg, fg=fg, text='关闭子线程连接', font=('黑体', 11),width=20, height=2, command=close_func)
+    close.grid(column=0, row=1, sticky=tkinter.E + tkinter.W)
+    keep = tkinter.Button(new_top, bg=bg, fg=fg, text='保持线程连接', font=('黑体', 11),width=20, height=2, command=keepFunc)
+    keep.grid(column=1, row=1, sticky=tkinter.E + tkinter.W)
     tkinter.Button(new_top, bg=bg, fg=fg, text='格式化输出', font=('黑体', 11),width=20, height=2, command=not_out).grid(
         column=2, row=1, sticky=tkinter.E + tkinter.W)
     tkinter.Button(new_top, bg=bg, fg=fg, text='文件管道输入', font=('黑体', 11),width=20, height=2, command=pipeFunc).grid(
         column=3, row=1, sticky=tkinter.E + tkinter.W)
-    return text,new_top
+    return text,new_top,[close,keep]
 
 if __name__ == '__main__':
     Main()
-    # show_Now()
