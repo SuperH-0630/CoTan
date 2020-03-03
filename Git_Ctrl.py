@@ -173,7 +173,7 @@ class git_Repo:#git的基类
     def show_new(self,condition):
         return subprocess.Popen(f'echo 查询结果: && {git_path} show {condition} && echo {self.make_stopKey()}', cwd=self.Repo_Dic, **sys_seeting)
 
-    def Pull_Push_remote(self,Pull_Push=0,remote='',remote_branch='',local='',allow=False,u=False):
+    def Pull_Push_remote(self,Pull_Push=0,remote='',remote_branch='',local='',allow=False,u=False,f=False):
         #处理逻辑
         # 1）remote去斜杠第一个作为主机名字
         # 2) 从remote分离主机名(如果没指定)
@@ -206,7 +206,7 @@ class git_Repo:#git的基类
             history = ' --allow-unrelated-histories'
         else:
             history = ''
-        push_pull = {0:"pull",1:f"push{' -u' if u else ''}"}
+        push_pull = {0:"pull",1:f"push{' -u' if u else ''}{' -f' if f else ''}"}
         return subprocess.Popen(f'''echo 与服务器连接... && {git_path} {push_pull.get(Pull_Push,"pull")}{history} {remote_name} {branch} && echo {self.make_stopKey()}''',
                                 cwd=self.Repo_Dic, **sys_seeting)
 
@@ -373,11 +373,11 @@ class git_Ctrol:
     def Bind_remote(self,name,local_name,remote_name):
         return self.get_git(name).Bind_remote(local_name,remote_name)
 
-    def Pull_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False):
-        return self.get_git(name).Pull_Push_remote(0,remote_name,remote_branch,local_name,allow,u)
+    def Pull_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False,f=False):
+        return self.get_git(name).Pull_Push_remote(0,remote_name,remote_branch,local_name,allow,u,False)
 
-    def Push_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False):
-        return self.get_git(name).Pull_Push_remote(1,remote_name,remote_branch,local_name,False,u)#push没有allow选项
+    def Push_remote(self,name,local_name,remote_name,remote_branch,allow=False,u=False,f=False):
+        return self.get_git(name).Pull_Push_remote(1,remote_name,remote_branch,local_name,False,u,f)#push没有allow选项
 
     def Tag(self,name, condition=''):
         return self.get_git(name).Tag(condition)  # push没有allow选项

@@ -355,7 +355,8 @@ def Pull_Push_remote(type_):
     Local = LocalBranch.get()
     allow = bool(allow_history.get())
     u = bool(push_bind.get())
-    do_Sys({0:Git.Pull_remote,1:Git.Push_remote}.get(type_,Git.Pull_remote), (get_Name(), Local, Remote, Branch, allow, u),
+    f = tkinter.messagebox.askokcancel('提示', f'是否需要强制推送？(强制推送不被建议)')
+    do_Sys({0:Git.Pull_remote,1:Git.Push_remote}.get(type_,Git.Pull_remote), (get_Name(), Local, Remote, Branch, allow, u, f),
            break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',th=True,wait=True)
     update_Git_Dir()
 
