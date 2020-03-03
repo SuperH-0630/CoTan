@@ -37,7 +37,7 @@ class git_Repo:#git的基类
 
     def Flie_List(self,file_list,is_file=True,pat=' '):
         if file_list == '.':
-            file = '.'
+            file = '..'
         else:
             file_ = []
             for i in file_list:

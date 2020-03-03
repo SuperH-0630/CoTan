@@ -1,9 +1,9 @@
 import tkinter
 import tkinter.messagebox
 from tkinter import ttk
-from tkinter.filedialog import askopenfilename, asksaveasfilename,askdirectory,askopenfilenames
+from tkinter.filedialog import asksaveasfilename,askdirectory,askopenfilenames
 import os
-import Git_Ctrl
+from Git_controller import Git_Ctrl
 from tkinter.scrolledtext import ScrolledText
 import time
 import threading

@@ -51,8 +51,17 @@ def Machine_Learning():
 
 def MLA():
     global top, DsGC
-    Mla = Process(target=Machine_Learning())
+    Mla = Process(target=Machine_Learning)
     Mla.start()
+
+def Git_Ctrl():
+    from Git_controller import Main
+    Main()
+
+def GIT_Ctrl():
+    global top, Git_Ctrl
+    Git = Process(target=Git_Ctrl)
+    Git.start()
 
 def Main():
     global top
@@ -85,7 +94,7 @@ def Main():
     #标题
     tkinter.Label(F1, text='CoTan~NOTE', width=20,bg='#FFFFFF', font=ft).grid(column=0, row=0,sticky=tkinter.N)  # 设置说明
     tkinter.Label(F1, text='私人笔记',bg=abg,font=ft1).grid(column=0, row=1,sticky=tkinter.W + tkinter.E)
-    tkinter.Button(F1,text='Markdown笔记',cursor=bc,height=2,font=ft2,bg=bg,activebackground=abg,bd=0,justify=tkinter.LEFT).grid(column =0,row = 2,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1,text='Git仓库控制器',cursor=bc,command=GIT_Ctrl,height=2,font=ft2,bg=bg,activebackground=abg,bd=0,justify=tkinter.LEFT).grid(column =0,row = 2,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='画图板',cursor=bc,command=Draw, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=3,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='爬虫系统',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=4,sticky=tkinter.N + tkinter.E + tkinter.W)
     tkinter.Button(F1, text='我的寄忆',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=5,sticky=tkinter.N + tkinter.E + tkinter.W)
