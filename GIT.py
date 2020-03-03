@@ -65,7 +65,7 @@ def Main():
     a_y += 4
     tkinter.Button(top, bg=bbg, fg=fg, text='添加暂存区文件', command=Add_File, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='移除暂存区文件', command=init_git, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='移除暂存区文件', command=Reset_File, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='提交到git', command=Commit_File, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -73,10 +73,20 @@ def Main():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='查看执行日志', command=lambda :not_Args(Git.reflog), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看文件日志', command=lambda :not_Args(Git.log), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看文件日志', command=log, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='查看状态', command=lambda :not_Args(Git.status), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    global log_Type
+    a_y += 1
+    log_Type = []
+    lable = ['显示轴','commit完全显示','简化显示']#复选框
+    for i in range(3):
+        log_Type.append(tkinter.IntVar())
+        tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
+                            variable=log_Type[-1]).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+        log_Type[-1].set(1)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='版本回退', command=Back_version, font=FONT, width=width_B,
@@ -235,21 +245,21 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_Args(Git.Stash_List), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    global Customize_Input, th_do, wait_do
-    a_y += 1
-    th_do = tkinter.Variable()
-    wait_do = tkinter.Variable()
-    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='多进程刷新',
-                        variable=th_do).grid(column=0, row=a_y, sticky=tkinter.W)
-    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='异步显示',
-                        variable=wait_do).grid(column=1, row=a_y, sticky=tkinter.W)
-    Customize_Input = tkinter.Entry(top, width=width_B * 3)
-    Customize_Input.grid(column=2, row=a_y, columnspan=4, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
-
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行操作', command=Customize, font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-    th_do.set(0)
-    wait_do.set(1)
+    # global Customize_Input, th_do, wait_do
+    # a_y += 1
+    # th_do = tkinter.Variable()
+    # wait_do = tkinter.Variable()
+    # tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='多进程刷新',
+    #                     variable=th_do).grid(column=0, row=a_y, sticky=tkinter.W)
+    # tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='异步显示',
+    #                     variable=wait_do).grid(column=1, row=a_y, sticky=tkinter.W)
+    # Customize_Input = tkinter.Entry(top, width=width_B * 3)
+    # Customize_Input.grid(column=2, row=a_y, columnspan=4, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
+    #
+    # tkinter.Button(top, bg=bbg, fg=fg, text='执行操作', command=Customize, font=FONT, width=width_B,
+    #                height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+    # th_do.set(0)
+    # wait_do.set(1)
     TagMessage = commit_m
     TagCommit = CommitName
     RemoteBranch = BranchNOrigin
@@ -435,9 +445,10 @@ def Back_version():
     do_Sys(Git.back_version,(get_Name(),HEAD))
     update_Git_Dir()
 
-def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,wait=False):
+def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,wait=False,stop=True):
     p = func(*args)
     flat = True
+    stopKey = Git_Ctrl.stopKey
     def Out_Txt():
         nonlocal data
         dic = asksaveasfilename(title='选择文件保存位置',filetypes=[("TXT", ".txt")])
@@ -449,14 +460,24 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
             dic += '.txt'
         with open(dic,'w',encoding='utf-8') as f:
             f.write(data)
+    kb = True
+    sb = True
+    def update_b():
+        if not kb:
+            b_list[1].config(state=tkinter.DISABLED)
+        if not sb:
+            b_list[0].config(state=tkinter.DISABLED)
     def Stop():
-        nonlocal start
+        nonlocal start,kb,sb
         start = 0
-        b_list[0].config(state=tkinter.DISABLED)
+        sb = False
+        kb = False
+        update_b()
     def keep():
-        nonlocal start
+        nonlocal start,kb
         start = float('inf')
-        b_list[1].config(state=tkinter.DISABLED)
+        kb = False
+        update_b()
 
     def pipe():pass
     def not_out():
@@ -472,6 +493,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
     out_data = ''#包含out的data
     if show:
         text, new_top, b_list = show_Now(Out_Txt,Stop,keep,not_out,pipe,name=name)#[close,keep]
+        update_b()
         if text_n != '':
             text.insert('0.0',f'载入前提示>>> {text_n}\n')
             out_data += f'载入前提示>>> {text_n}\n'
@@ -517,10 +539,12 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
                 except:
                     text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
                                              name=f'{name} : 运行中')
+                    update_b()
                     text.insert(tkinter.END, out_data)
-                text.insert(tkinter.END, f'[out]> {i}\n')
-            data += i + '\n'
-            out_data += f'[out]> {i}\n'
+                if stop and i.replace(' ', '').replace('\n', '') != stopKey:
+                    text.insert(tkinter.END, f'[out]> {i}\n')
+                    data += i + '\n'
+                    out_data += f'[out]> {i}\n'
         if show:
             text.insert(tkinter.END, '[END]')
             out_data += f'[END]'
@@ -534,6 +558,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
             except:
                 text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
                                          name=f'{name} : 运行中')
+                update_b()
                 text.insert(tkinter.END,out_data)
             #界面刷新
             try:
@@ -545,11 +570,15 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
             #输出字符
             try:
                 i = p.stdout.readline()#.decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
-                if i.replace(' ','').replace('\n','') != '':
-                    if show:text.insert(tkinter.END,f'[out]> {i}')
-                    data += i
-                    out_data += f'[out]> {i}'
-                if p.returncode == 0 or (time.time() - start >= break_time and break_time != 0):
+                bool_text = i.replace(' ','').replace('\n','')
+                if bool_text != '':
+                    if stop and bool_text == stopKey:
+                        start = 0
+                    else:
+                        if show: text.insert(tkinter.END, f'[out]> {i}')
+                        data += i
+                        out_data += f'[out]> {i}'
+                if p.returncode == 0 or (time.time() - start >= break_time and break_time != 0) or (break_time == 0 and start == 0):
                     if show:
                         text.insert(tkinter.END,'[END]')
                         out_data += f'[END]'
@@ -576,6 +605,15 @@ def do_Sys(func,args,name='CoTan Git',break_time=2,show=True,text_n='',th=False,
     except:pass
     return data
 
+def log():
+    global Git,log_Type
+    name = get_Name()
+    graph = bool(log_Type[0].get())
+    abbrev = bool(log_Type[1].get())
+    pretty = bool(log_Type[2].get())
+    do_Sys(Git.log,(name,graph,pretty,abbrev))
+    update_Git_Dir()
+
 def not_Args(func):
     global Git
     name = get_Name()
@@ -597,6 +635,13 @@ def Diff_File():
     MASTER = master.get()
     if MASTER == '':MASTER = 'HEAD'
     do_Sys(Git.diff_File,(get_Name(),MASTER))
+    update_Git_Dir()
+
+def Reset_File():
+    global Git,Last_Name
+    dic = askopenfilenames(title=f'选择要撤销add的文件(取消为全选)')
+    if dic == '':dic = '.'
+    do_Sys(Git.reset_File,(get_Name(),dic))
     update_Git_Dir()
 
 def Add_File():
