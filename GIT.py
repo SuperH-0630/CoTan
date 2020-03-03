@@ -79,7 +79,7 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='查看状态', command=lambda :not_Args(Git.status), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    global log_Type
+    global log_Type,reset_Type
     a_y += 1
     log_Type = []
     lable = ['显示轴','commit完全显示','简化显示']#复选框
@@ -96,6 +96,13 @@ def Main():
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='删除文件', command=rm_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    reset_Type = tkinter.IntVar()#正，负，0
+    lable = ['回退到工作区','回退到暂存区','无痕回退']#复选框
+    for i in range(3):
+        tkinter.Radiobutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg,text=lable[i],
+                            variable=reset_Type, value=i).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='查看分支', command=lambda :not_Args(Git.check_Branch), font=FONT, width=width_B,
@@ -447,10 +454,11 @@ def Back_File():
     update_Git_Dir()
 
 def Back_version():
-    global Git,head
+    global Git,head,reset_Type
     HEAD = head.get()
     if HEAD == '': HEAD = 'HEAD~1'
-    do_Sys(Git.back_version,(get_Name(),HEAD))
+    Type = reset_Type.get()
+    do_Sys(Git.back_version,(get_Name(),HEAD,Type))
     update_Git_Dir()
 
 def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,wait=False,stop=True):

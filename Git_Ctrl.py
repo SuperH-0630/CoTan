@@ -85,8 +85,14 @@ class git_Repo:#git的基类
     def Diff_File(self,MASTER='HEAD'):#执行diff
         return subprocess.Popen(f'echo 文件日志: && {git_path} diff {MASTER} && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
 
-    def reset(self,HEAD='HEAD~1'):
-        return subprocess.Popen(f'echo 回退... && {git_path} reset --hard {HEAD} && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
+    def reset(self,HEAD='HEAD~1',Type=0):
+        if Type == 0:
+            type_ = '--mixed'#退回到工作区
+        elif Type == 1:
+            type_ = '--soft'#退回到暂存区
+        else:
+            type_ = '--hard'  # 退回到暂存区
+        return subprocess.Popen(f'echo 回退... && {git_path} reset {type_} {HEAD} && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
 
     def checkout(self,file_list):
         if len(file_list) >= 1:#多于一个文件，不用--，空格
@@ -321,8 +327,8 @@ class git_Ctrol:
     def diff_File(self,name,MASTER):
         return self.get_git(name).Diff_File(MASTER)
 
-    def back_version(self,name,HEAD):
-        return self.get_git(name).reset(HEAD)
+    def back_version(self,name,HEAD,Type=0):
+        return self.get_git(name).reset(HEAD,Type)
 
     def checkout_version(self,name,file):
         return self.get_git(name).checkout(file)
