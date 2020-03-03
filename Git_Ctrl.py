@@ -61,7 +61,7 @@ class git_Repo:#git的基类
 
     def Reset_File(self,file_list):
         file = self.Flie_List(file_list)
-        return subprocess.Popen(f'echo 撤销文件... && {git_path} reset {file} && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
+        return subprocess.Popen(f'echo 撤销文件... && {git_path} rm --cached {file} && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
 
     def Commit_File(self,m):
         return subprocess.Popen(f'echo 提交文件: && {git_path} commit -m "{m}" && echo {self.make_stopKey()}',cwd=self.Repo_Dic,**sys_seeting)
@@ -263,7 +263,25 @@ class git_Repo:#git的基类
         return subprocess.Popen(command,cwd=self.Repo_Dic, **sys_seeting)
 
     def Clone(self,url):
-        return subprocess.Popen(f'echo 克隆操作不被允许', cwd=self.Repo_Dic, **sys_seeting)
+        return subprocess.Popen(f'echo 克隆操作不被允许 && echo {self.make_stopKey()}', cwd=self.Repo_Dic, **sys_seeting)
+
+    def make_Dir(self,dir):
+        if len(dir) == '':return dir
+        inside = '/'
+        if dir[0] == '/':
+            inside = ''
+        return self.Repo_Dic + inside + dir
+
+    def reset_File(self,hard,file_list):#注意版本回退是:Reset_File
+        file = self.Flie_List(file_list)
+        return subprocess.Popen(
+            f'''echo 回退文件... && {git_path} reset {hard} {file} && echo {self.make_stopKey()}''',
+            cwd=self.Repo_Dic, **sys_seeting)
+
+    def Branch_new(self,old_name,new_name):
+        return subprocess.Popen(
+            f'''echo 回退文件... && {git_path} branch -m {old_name} {new_name} && echo {self.make_stopKey()}''',
+            cwd=self.Repo_Dic, **sys_seeting)
 
 class Clone_git(git_Repo):#Clone一个git
     def __init__(self, Dic, *args, **kwargs):
@@ -329,6 +347,9 @@ class git_Ctrol:
 
     def back_version(self,name,HEAD,Type=0):
         return self.get_git(name).reset(HEAD,Type)
+
+    def back_version_file(self,name,HEAD,File_list):
+        return self.get_git(name).reset_File(HEAD, File_list)
 
     def checkout_version(self,name,file):
         return self.get_git(name).checkout(file)
@@ -423,3 +444,9 @@ class git_Ctrol:
             return self.get_git(name).after_Clone()
         except:
             return None
+
+    def make_Dir(self,name,dir):
+        return self.get_git(name).make_Dir(dir)
+
+    def Branch_new(self,name, old_name, new_name):
+        return self.get_git(name).Branch_new(old_name,new_name)
