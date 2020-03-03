@@ -1,5 +1,6 @@
 import tkinter
 import tkinter.messagebox
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename,askdirectory,askopenfilenames
 import os
 import Git_Ctrl
@@ -506,6 +507,9 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
             out_data += f'载入前提示>>> {text_n}\n'
             data += f'{text_n}\n'
         new_top.update()
+    else:
+        u = threading.Thread(target=up)
+        u.start()
     top.update()
     def Update():
         nonlocal start
@@ -700,18 +704,7 @@ def Updata_GitBox():
     Git_Box.delete(0,tkinter.END)
     Git_Box.insert(tkinter.END,*Git_List)
 
-def show(data='',name='CoTan_Git'):
-    global bg, ft1
-    new_top = tkinter.Toplevel(bg=bg)
-    new_top.title(name)
-    new_top.geometry('+10+10')  # 设置所在位置
-    text = ScrolledText(new_top, font=('黑体', 11), height=50)
-    text.pack(fill=tkinter.BOTH)
-    text.insert('0.0', data)
-    text.config(state=tkinter.DISABLED)
-    new_top.resizable(width=False, height=False)
-
-def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> 高级命令行'):
+def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> 命令行'):
     global bg
     new_top = tkinter.Toplevel(bg=bg)
     new_top.title(name)
@@ -743,9 +736,27 @@ def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> �
     keep.grid(column=1, row=1, sticky=tkinter.E + tkinter.W)
     tkinter.Button(new_top, bg=bg, fg=fg, text='格式化输出', font=('黑体', 11),width=20, height=2, command=not_out).grid(
         column=2, row=1, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(new_top, bg=bg, fg=fg, text='文件管道输入', font=('黑体', 11),width=20, height=2, command=pipeFunc).grid(
-        column=3, row=1, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(new_top, bg=bg, fg=fg, text='启动CoTan命令行', font=('黑体', 11),width=20, height=2,
+                   command=pipeFunc,state=tkinter.DISABLED).grid(column=3, row=1, sticky=tkinter.E + tkinter.W)
+    new_top.update()
     return text,new_top,[close,keep]
+
+def up(*args,name='CoTan_Git >>> 高级命令行',**kwargs):
+    new_top = tkinter.Toplevel(bg=bg)
+    new_top.title(name)
+    new_top.geometry('+10+10')  # 设置所在位置
+    new_top.resizable(width=False, height=False)
+    new_top.title(name)
+    mpb = ttk.Progressbar(new_top, orient="horizontal", length=300, mode="determinate")
+    mpb.pack()
+    mpb["maximum"] = 100
+    mpb["value"] = 0
+    for i in range(100):
+        mpb["value"] = i + 1
+        new_top.update()
+        top.update()
+        time.sleep(0.001)
+    new_top.destroy()
 
 if __name__ == '__main__':
     Main()
