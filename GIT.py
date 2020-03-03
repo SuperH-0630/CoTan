@@ -240,7 +240,7 @@ def Main():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='commit补丁', command=cherry_pick, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程仓库', command=cherry_pick, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程仓库', command=Del_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_Args(Git.Stash_List), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -364,6 +364,12 @@ def Bind_remote():
     Remote = RemoteBranch.get()
     Local = LocalBranch.get()
     do_Sys(Git.Bind_remote, (get_Name(), Local, Remote))
+    update_Git_Dir()
+
+def Del_remote():
+    global RemoteSSH, RemoteName, Git
+    name = RemoteName.get()
+    do_Sys(Git.Del_remote, (get_Name(), name))
     update_Git_Dir()
 
 def Add_remote():

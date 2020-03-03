@@ -138,6 +138,9 @@ class git_Repo:#git的基类
     def cherry_pick(self,commit):#补丁
         return subprocess.Popen(f'echo 补丁... && {git_path} cherry-pick {commit} && echo {self.make_stopKey()}', cwd=self.Repo_Dic,**sys_seeting)
 
+    def Del_remote(self,remote_name):
+        return subprocess.Popen(f'echo 删除远程仓库... && {git_path} remote remove {remote_name} && echo {self.make_stopKey()}', cwd=self.Repo_Dic, **sys_seeting)
+
     def Add_remote(self,remote,remote_name):
         return subprocess.Popen(f'echo 添加远程仓库... && {git_path} remote add {remote_name} {remote} && echo {self.make_stopKey()}', cwd=self.Repo_Dic, **sys_seeting)
 
@@ -360,6 +363,9 @@ class git_Ctrol:
 
     def cherry_pick(self,name,commit):
         return self.get_git(name).cherry_pick(commit)
+
+    def Del_remote(self,name,remote_name):
+        return self.get_git(name).Del_remote(remote_name)
 
     def Add_remote(self,name,remote,remote_name):
         return self.get_git(name).Add_remote(remote,remote_name)
