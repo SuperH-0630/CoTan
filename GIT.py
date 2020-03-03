@@ -8,9 +8,6 @@ from tkinter.scrolledtext import ScrolledText
 import time
 import threading
 
-str_code = 'utf-8'
-Git = Git_Ctrl.git_Ctrol()#需要去掉
-
 def Main():
     global top,Git,PATH,bg,bbg,fg,Git_List,Last_Name,FileList
     FileList = []
@@ -856,6 +853,3 @@ def up(*args,name='CoTan_Git >>> 运行中...',**kwargs):
         top.update()
         time.sleep(0.001)
     new_top.destroy()
-
-if __name__ == '__main__':
-    Main()
