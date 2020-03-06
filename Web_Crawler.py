@@ -16,7 +16,7 @@ def Main():
     fg = '#000000'  # 文字颜色
     top["bg"] = bg
     FONT = ('黑体', 11)  # 设置字体
-    top.title('CoTan仓库管理器')
+    top.title('CoTan自动化网页')
     top.resizable(width=False, height=False)
     top.geometry('+10+10')  # 设置所在位置
 
@@ -25,9 +25,9 @@ def Main():
     a_y = 0
     a_x = 0
 
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加url',command=add_url , font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加url对象',command=add_url , font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除url',command=del_url , font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除url对象',command=del_url , font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='应用过滤机制', font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -39,51 +39,38 @@ def Main():
     URL_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    URL_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
-    URL_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    URL_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
+    URL_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 3
-    tkinter.Button(top, bg=bbg, fg=fg, text='HTTPS过滤',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
+    a_y += 5
+    tkinter.Button(top, bg=bbg, fg=fg, text='HTTPS过滤器',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='WWW过滤',command=add_filter_func_WWW, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='WWW过滤器',command=add_filter_func_WWW, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除过滤',command=del_func, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除过滤器',command=del_func, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='自定义过滤',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='自定义过滤器',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空过滤', font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空过滤器', font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Func_BOX,cookies_fixed
     a_y += 1
-    Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 2)
-    Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
+    Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     global wait_Func_BOX,Wait_Input,cookies_BOX
-
-    a_y += 2
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行网页下载',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
+    a_y += 4
+    tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='显式等待',command=add_time_wait, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    Wait_Input = tkinter.Entry(top, width=width_B)
-    Wait_Input.grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 3
-    tkinter.Button(top, bg=bbg, fg=fg, text='自定义等待策略',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
-        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除等待策略',command=del_waitfunc, font=FONT, width=width_B,height=height_B).grid(
-        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空等待策略',command=del_func, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫停止',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    wait_Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 2)
-    wait_Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-
-    a_y += 2
     cookies_fixed = tkinter.Variable()
     tkinter.Label(top, text='【曲奇监视】', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1,row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
@@ -92,10 +79,10 @@ def Main():
     cookies_fixed.set('0')
 
     a_y += 1
-    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 2)
-    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 7)
+    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=7, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 2
+    a_y += 7
     tkinter.Button(top, bg=bbg, fg=fg, text='清空曲奇',command=Tra_cookies, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='更新曲奇',command=Update_cookies, font=FONT, width=width_B,height=height_B).grid(
@@ -105,31 +92,74 @@ def Main():
 
     global cookies_Input,PAGE_BOX
     a_y += 1
-    cookies_Input = tkinter.Entry(top, width=width_B * 2)
-    cookies_Input.grid(column=a_x, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    cookies_Input = tkinter.Entry(top, width=width_B * 3)
+    cookies_Input.grid(column=a_x, row=a_y, columnspan=3, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='添加曲奇',command=Add_cookies, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
-    cookies_fixed = tkinter.Variable()
-    tkinter.Label(top, text='【已存储页面】', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(
-        column=a_x,row=a_y,columnspan=3,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    a_x += 3
+    tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
+    a_x += 1
+    a_y = 0
+
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据id搜查',command=lambda :Page_Parser_addFindFunc('id'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据name搜查',command=lambda :Page_Parser_addFindFunc('name'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据class搜查',command=lambda :Page_Parser_addFindFunc('class'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    PAGE_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 2)
-    PAGE_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据xpath搜查',command=lambda :Page_Parser_addFindFunc('xpath'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据css搜查',command=lambda :Page_Parser_addFindFunc('css'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据元素名搜查',command=lambda :Page_Parser_addFindFunc('tag'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    global search_all,search_Input,Parser_Func_BOX
+    a_y += 1
+    search_all = tkinter.Variable()
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据link搜查',command=lambda :Page_Parser_addFindFunc('link'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='link模糊搜查',command=lambda :Page_Parser_addFindFunc('partial_link'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='匹配全部',
+                        variable=search_all).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+    search_all.set('0')
+
+    a_y += 1
+    tkinter.Label(top, text='搜查参数:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    search_Input = tkinter.Entry(top, width=width_B * 2)
+    search_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    Parser_Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
+    Parser_Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     top.update()#要预先update一下，否则会卡住
-    global url,loader
+    global url,loader,Page_Parser
     save_dir = askdirectory(title='选择项目位置')#项目位置
     url = Crawler_controller.url(save_dir,save_dir)
     loader = Crawler_controller.Page_Downloader(url,save_dir)
+    Page_Parser = Crawler_controller.Page_Parser(loader)
     top.mainloop()
 
-def PAGE_BOX_Update(PAGE_list):
-    global PAGE_BOX
-    PAGE_BOX.delete(0,tkinter.END)
-    PAGE_BOX.insert(0,*PAGE_list)
+def Page_Parser_addFindFunc(func):
+    global search_all, search_Input,Page_Parser
+    not_all = not(bool(search_all.get()))
+    search = search_Input.get()
+    FUNC = {'id':Page_Parser.find_ID,'name':Page_Parser.find_name,'class':Page_Parser.find_class,
+            'xpath':Page_Parser.find_xpath,'css':Page_Parser.find_css,'tag':Page_Parser.find_tag_name,
+            'link':Page_Parser.find_link_text,'partial_link':Page_Parser.find_partial_link_text}.get(
+        func,Page_Parser.find_ID)
+    FUNC(search,not_all)
+    Update_Parser_Func_BOX()
+
+def Update_Parser_Func_BOX():
+    global Parser_Func_BOX,Page_Parser
+    Parser_Func_BOX.delete(0,tkinter.END)
+    Parser_Func_BOX.insert(tkinter.END, *Page_Parser.return_func())
 
 def Update_cookies():
     global cookies_BOX,cookies_list,cookies_Input
@@ -179,32 +209,12 @@ def cookies_BOX_Update(cookies):
         cookies_BOX.delete(0,tkinter.END)
         cookies_BOX.insert(0,*cookies)
 
-def add_time_wait():#显式等待一定s
-    global url,Wait_Input
-    times = float(Wait_Input.get())
-    def wait_time(*args):
-        time.sleep(times)
-        return True,f'After_{time}s'
-    loader.Add_func(wait_time,f'wait {times}s')
-    update_Wait_Input()
-
-def del_waitfunc():#删除策略
-    global wait_Func_BOX
-    index = wait_Func_BOX.curselection()[0]
-    loader.Del_func(index)
-    update_Wait_Input()
-
-def update_Wait_Input():
-    global loader,wait_Func_BOX
-    wait_Func_BOX.delete(0,tkinter.END)
-    wait_Func_BOX.insert(tkinter.END,*loader.return_func())
-
 def startDownloader():
     def startLoader():
-        global loader
-        loader.strat_urlGet()
-        loader.Logical_operation(cookies_BOX_Update,PAGE_BOX_Update)
-        loader.save_Page()
+        global loader,Page_Parser
+        loader.strat_urlGet(func_cookie=cookies_BOX_Update)
+        Page_Parser = Crawler_controller.Page_Parser(loader)
+
     new = threading.Thread(target=startLoader)
     new.start()
     update_URLBOX()
