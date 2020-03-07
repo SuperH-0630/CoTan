@@ -4,7 +4,7 @@ import time
 from os.path import exists
 from os import mkdir
 import hashlib
-
+from time import sleep
 
 class URL_PAGE():
     def __init__(self,url,func='get'):
@@ -155,10 +155,10 @@ class Page_Parser:
     def add_base(self,func):  # 装饰器
         def wrap(browser=None,num=None,name=None, *args, **kwargs):
             try:
-                func(browser,num, name, *args, **kwargs)
-                return False
-            except:
+                func(browser=browser,num=num, name=name, *args, **kwargs)
                 return True
+            except:
+                return False
         return wrap
 
     def add_func(self,name,func):
@@ -169,7 +169,7 @@ class Page_Parser:
     def return_func(self):
         return self.func_list.copy()
 
-    def find_ID(self,id,not_all=False):
+    def find_ID(self,id,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,id
@@ -178,7 +178,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_id(id)
         self.add_func(f'find_ID:{id}',find)#添加func
 
-    def find_class(self,class_name,not_all=False):
+    def find_class(self,class_name,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,class_name
@@ -187,7 +187,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_class_name(class_name)#返回必须是list
         self.add_func(f'find_class:{class_name}',find)#添加func
 
-    def find_name(self,name_,not_all=False):
+    def find_name(self,name_,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,name_
@@ -196,7 +196,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_name(name_)#返回必须是list
         self.add_func(f'find_name:{name_}',find)#添加func
 
-    def find_xpath(self,xpath,not_all=False):
+    def find_xpath(self,xpath,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,xpath
@@ -205,7 +205,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_xpath(xpath)#返回必须是list
         self.add_func(f'find_xpath:{xpath}',find)#添加func
 
-    def find_css(self,css_selector,not_all=False):
+    def find_css(self,css_selector,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,css_selector
@@ -214,7 +214,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_css_selector(css_selector)#返回必须是list
         self.add_func(f'find_css:{css_selector}',find)#添加func
 
-    def find_tag_name(self,tag_name,not_all=False):
+    def find_tag_name(self,tag_name,not_all=False,**kwargs):
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,tag_name
@@ -223,7 +223,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_tag_name(tag_name)#返回必须是list
         self.add_func(f'find_tagName:{tag_name}',find)#添加func\
 
-    def find_link_text(self,link_text,not_all=False):#匹配link
+    def find_link_text(self,link_text,not_all=False,**kwargs):#匹配link
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,link_text
@@ -232,7 +232,7 @@ class Page_Parser:
             else:self.element_dict[f'{name}[{num}]'] = browser.find_elements_by_link_text(link_text)#返回必须是list
         self.add_func(f'find_link_text:{link_text}',find)#添加func
 
-    def find_partial_link_text(self,partial_link_text,not_all=False):#模糊匹配
+    def find_partial_link_text(self,partial_link_text,not_all=False,**kwargs):#模糊匹配
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,partial_link_text
@@ -257,7 +257,7 @@ class Page_Parser:
             self.element_dict[f'{name}[{num}]'] = [browser.switch_to.active_element()]
         self.add_func(f'active_element',find)#添加func
 
-    def find_switch_to_frame(self,reference,is_id=False,*args,**kwargs):#定位弹出框
+    def find_switch_to_frame(self,reference,is_id=False,*args,**kwargs):#定位Frame
         @self.add_base
         def find(browser, num, name, *args, **kwargs):
             nonlocal self,reference,is_id
@@ -269,86 +269,167 @@ class Page_Parser:
             else:
                 if is_id:reference = int(reference)
                 self.element_dict[f'{name}[{num}]'] = [browser.switch_to.frame(str(reference))]# 定位进入文档
-        self.add_func(f'find_frame：{reference}',find)#添加func
+        func_name = {None:'主文档','':'父文档'}.get(reference,reference)
+        self.add_func(f'find_frame：{func_name}',find)#添加func
 
-    def send_keys(self,text,element_value,index=0):#输入文字
+    def send_keys(self,text,element_value,index=0,**kwargs):#输入文字
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].send_keys(text)
         self.add_func(f'sent_text:{text}>{element_value}[{index}]', action)  # 添加func
 
-    def User_Passwd(self,User,Passwd,element_value,index=0):#输入验证(User&Password)
+    def User_Passwd(self,User,Passwd,element_value,index=0,**kwargs):#输入验证(User&Password)
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].authenticate(User,Passwd)
-        self.add_func(f'sent_text:{User};{Passwd}>{element_value}[{index}]', action)  # 添加func
+        self.add_func(f'User:Passwd:{User};{Passwd}>{element_value}[{index}]', action)  # 添加func
 
-    def clear(self,element_value,index=0):#清空文本
+    def clear(self,element_value,index=0,**kwargs):#清空文本
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].clear()
         self.add_func(f'clear_text>{element_value}[{index}]', action)  # 添加func
 
-    def click(self,element_value,index=0):#点击按钮
+    def click(self,element_value,index=0,**kwargs):#点击按钮
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].click()
         self.add_func(f'click>{element_value}[{index}]', action)  # 添加func
 
-    def accept(self,element_value,index=0):#点击确定(弹出框)
+    def accept(self,element_value,index=0,**kwargs):#点击确定(弹出框)
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].accept()
         self.add_func(f'accept>{element_value}[{index}]', action)  # 添加func
 
-    def dismiss(self,element_value,index=0):#点击取消(弹出框)
+    def dismiss(self,element_value,index=0,**kwargs):#点击取消(弹出框)
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].dismiss()
         self.add_func(f'dismiss>{element_value}[{index}]', action)  # 添加func
 
-    def submit(self,element_value,index=0):#点击按钮
+    def submit(self,element_value,index=0,**kwargs):#提交表单
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
             self.element_dict[element_value][index].submit()
         self.add_func(f'submit>{element_value}[{index}]', action)  # 添加func
 
-    def deselect_by_index(self,element_value,deselect_index,index=0):#根据index取消选择
+    def deselect_by_index(self,element_value,deselect,index=0,**kwargs):#根据index取消选择
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
-            self.element_dict[element_value][index].deselect_by_index(int(deselect_index))
-        self.add_func(f'deselect_by_index:{deselect_index}>{element_value}[{index}]', action)  # 添加func
+            self.element_dict[element_value][index].deselect_by_index(int(deselect))
+        self.add_func(f'deselect_by_index:{deselect}>{element_value}[{index}]', action)  # 添加func
 
-    def deselect_by_text(self,element_value,deselect_text,index=0):#根据text取消选择
+    def deselect_by_text(self,element_value,deselect,index=0,**kwargs):#根据text取消选择
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
-            self.element_dict[element_value][index].deselect_by_visible_text(deselect_text)
-        self.add_func(f'deselect_by_text:{deselect_text}>{element_value}[{index}]', action)  # 添加func
+            self.element_dict[element_value][index].deselect_by_visible_text(deselect)
+        self.add_func(f'deselect_by_text:{deselect}>{element_value}[{index}]', action)  # 添加func
 
-    def select_by_index(self,element_value,deselect_index,index=0):#根据index选择
+    def deselect_by_value(self,element_value,deselect,index=0,**kwargs):#根据value取消选择
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
-            self.element_dict[element_value][index].select_by_index(int(deselect_index))
-        self.add_func(f'select_by_index:{deselect_index}>{element_value}[{index}]', action)  # 添加func
+            self.element_dict[element_value][index].deselect_by_value(deselect)
+        self.add_func(f'deselect_by_value:{deselect}>{element_value}[{index}]', action)  # 添加func
 
-    def select_by_text(self,element_value,deselect_text,index=0):#根据text选择
+    def select_by_index(self,element_value,deselect,index=0,**kwargs):#根据index选择
         @self.add_base
         def action(*args, **kwargs):
             nonlocal self
-            self.element_dict[element_value][index].select_by_visible_text(deselect_text)
-        self.add_func(f'select_by_text:{deselect_text}>{element_value}[{index}]', action)  # 添加func
+            self.element_dict[element_value][index].select_by_index(int(deselect))
+        self.add_func(f'select_by_index:{deselect}>{element_value}[{index}]', action)  # 添加func
 
-    def Element_interaction(self):#元素交互
+    def select_by_text(self,element_value,deselect,index=0,**kwargs):#根据text选择
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[element_value][index].select_by_visible_text(deselect)
+        self.add_func(f'select_by_text:{deselect}>{element_value}[{index}]', action)  # 添加func
+
+    def select_by_value(self,element_value,deselect,index=0,**kwargs):#根据value选择
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[element_value][index].select_by_value(deselect)
+        self.add_func(f'select_by_value:{deselect}>{element_value}[{index}]', action)  # 添加func
+
+    def back(self,**kwargs):# 返回
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.back()
+        self.add_func(f'BACK', action)
+
+    def forward(self,**kwargs):# 前进
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.forward()
+        self.add_func(f'FORWARD', action)
+
+    def refresh(self,**kwargs):# 刷新
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.refresh()
+        self.add_func(f'REFRESH', action)
+
+    def wait_sleep(self,time:int=2,**kwargs):#暴力等待
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            sleep(time)
+        self.add_func(f'WAIT:{time}s', action)
+
+    def set_wait(self,time:int=2,**kwargs):#隐式等待
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            sleep(time)
+        self.add_func(f'Loading_wait:{time}s', action)
+
+    def run_JS(self,JS,**kwargs):
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            get = self.browser.execute_script(JS)
+            if hasattr(get,'__getitem__'):#可切片
+                self.element_dict[f'{name}[{num}]'] = get  # 返回必须是list
+            else:
+                self.element_dict[f'{name}[{num}]'] = [get]
+        self.add_func(f'run_js:{JS}', action)
+
+    def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
+        status = None
+        def update(func_name):
+            nonlocal status,self
+            if status:
+                success_code = 'Success to run'
+            elif status is None:
+                success_code = 'No status'
+            else:
+                success_code = 'Wrong to run'
+            value_box = []
+            for i in self.element_dict:
+                try:
+                    value_box.append(f'{i}[{len(i)}] = {self.element_dict[i]}')
+                except:
+                    value_box.append(f'{i} = {self.element_dict[i]}')
+            update_func(func_name, success_code, value_box)  # 信息更新系统
+
         for func_num in range(len(func_list)):
-            self.func_dict[func_list[func_num]](num=f'{func_num}',name='var')
+            func_name = func_list[func_num]
+            update(func_name)
+            status = self.func_dict[func_name](num=f'{func_num}',name='var')
+        update('Finish')
