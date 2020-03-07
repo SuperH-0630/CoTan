@@ -188,7 +188,11 @@ def Main():
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='点击按钮',command=lambda :Page_Parser_addActionFunc('click'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x,columnspan=3, row=a_y, sticky=tkinter.E + tkinter.W)
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='取得源代码',command=lambda :Page_Parser_addActionFunc('get_Page'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='输出HTML',command=lambda :Page_Parser_addActionFunc('out'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='切换Frame(id)',command=Page_Parser_addFrameFunc_id, font=FONT, width=width_B,height=height_B).grid(
@@ -252,14 +256,16 @@ def Main():
     a_y = 0
 
     global Func_Output,Status_Output,FuncValue_BOX
+    Func_Output = tkinter.StringVar()
+    Status_Output = tkinter.StringVar()
     tkinter.Label(top, text='正在执行:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    Func_Output = tkinter.Entry(top, width=width_B * 2, state=tkinter.DISABLED)
-    Func_Output.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    tkinter.Entry(top, width=width_B * 2, state=tkinter.DISABLED,textvariable=Func_Output).grid(
+        column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='上一次状态:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    Status_Output = tkinter.Entry(top, width=width_B * 2, state=tkinter.DISABLED)
-    Status_Output.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    tkinter.Entry(top, width=width_B * 2, state=tkinter.DISABLED,textvariable=Status_Output).grid(
+        column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     FuncValue_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
@@ -316,7 +322,8 @@ def Page_Parser_addActionFunc(func):
             'accept':Page_Parser.accept,'dismiss':Page_Parser.dismiss,'submit':Page_Parser.submit,'deselect_by_index':Page_Parser.deselect_by_index,
             'deselect_by_value':Page_Parser.deselect_by_value,'deselect_by_text':Page_Parser.deselect_by_text,'select_by_index':Page_Parser.select_by_index,
             'select_by_value':Page_Parser.select_by_value,'select_by_text':Page_Parser.select_by_text,'back':Page_Parser.back,'forward':Page_Parser.forward,
-            'refresh':Page_Parser.refresh,'wait_sleep':Page_Parser.wait_sleep,'set_wait':Page_Parser.set_wait,'run_JS':Page_Parser.run_JS}.get(
+            'refresh':Page_Parser.refresh,'wait_sleep':Page_Parser.wait_sleep,'set_wait':Page_Parser.set_wait,'run_JS':Page_Parser.run_JS,
+            'out':Page_Parser.out_html,'get_Page':Page_Parser.to_text}.get(
         func,Page_Parser.send_keys
     )
     FUNC(**args)

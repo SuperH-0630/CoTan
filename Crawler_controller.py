@@ -5,6 +5,7 @@ from os.path import exists
 from os import mkdir
 import hashlib
 from time import sleep
+import bs4
 
 class URL_PAGE():
     def __init__(self,url,func='get'):
@@ -110,7 +111,7 @@ class Page_Downloader:
         self.cookie_Thread = threading.Thread(target=update_cookie)
         self.cookie_Thread.start()
         self.Parser.browser = self.browser
-        self.Parser.init()
+        self.Parser.init(url)
         return self.browser
 
     def Del_cookies(self,name):#删除指定cookies
@@ -140,6 +141,7 @@ class Page_Downloader:
         self.Parser = Parser
         self.Parser.browser = self.browser
         self.Parser.url = self.url
+        self.Parser.dir = self.dir
 
 class Page_Parser:
     def __init__(self,Downloader:Page_Downloader):
@@ -149,11 +151,12 @@ class Page_Parser:
         self.func_dict = {}
         self.init()
 
-    def init(self):
+    def init(self,url=''):
         self.element_dict = {}#记录属性的名字
+        self.now_url = url
 
     def add_base(self,func):  # 装饰器
-        def wrap(browser=None,num=None,name=None, *args, **kwargs):
+        def wrap(browser=None,num=None,name=None, *args, **kwargs) -> bool:
             try:
                 func(browser=browser,num=num, name=name, *args, **kwargs)
                 return True
@@ -409,6 +412,95 @@ class Page_Parser:
                 self.element_dict[f'{name}[{num}]'] = [get]
         self.add_func(f'run_js:{JS}', action)
 
+    def to_text(self,**kwargs):#获取网页源码
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = [self.browser.page_source,self.now_url]
+        self.add_func(f'get_page_source', action)
+
+    def out_html(self,element_value,**kwargs):#输出网页源码
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            md5 = hashlib.md5()  # 应用MD5算法
+            md5.update(f'{time.time()}_{self.now_url}'.encode('utf-8'))
+            name = md5.hexdigest()
+            save_dir = self.dir + '/' + name + '.html'
+            print(save_dir)
+            with open(save_dir,'w') as f:
+                f.write(self.element_dict[element_value][0])
+            with open(save_dir + '.CoTanURL','w') as f:
+                f.write(self.element_dict[element_value][1])
+        self.add_func(f'write_html<{element_value}', action)
+
+    def del_all_cookies(self,**kwargs):#删除所有曲奇
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.delete_all_cookies()
+        self.add_func(f'del_all_cookies', action)
+
+    def del_cookies(self,cookies_name,**kwargs):#删除指定曲奇
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.delete_cookie(cookies_name)
+        self.add_func(f'del_cookies:{cookies_name}', action)
+
+    def add_cookies(self,cookies,**kwargs):#添加指定曲奇
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.add_cookie(cookies)
+        self.add_func(f'add_cookies:{cookies}', action)
+
+    def update_cookies(self,cookies_name,cookies,**kwargs):#更新曲奇
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            now_cookies = self.browser.get_cookie(cookies_name)
+            self.browser.delete_cookie(cookies_name)
+            now_cookies.update(cookies)
+            self.browser.add_cookie(now_cookies)
+        self.add_func(f'add_cookies:{cookies}', action)
+
+    def get_cookies(self,cookies_name,**kwargs):#获取指定曲奇
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = [self.browser.get_cookie(cookies_name)]
+        self.add_func(f'get_cookies:{cookies_name}', action)
+
+    def get_all_cookies(self,**kwargs):#获取所有曲奇
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = self.browser.get_cookie()
+        self.add_func(f'get_all_cookies', action)
+
+    def make_bs(self, element_value, **kwargs):  # 解析成bs4对象
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = [bs4.BeautifulSoup(self.element_dict[element_value][0], "html.parser")]
+        self.add_func(f'Parsing:{element_value}', action)  # 添加func
+
+    #findAll需要修正为for循环
+    def findAll(self, element_value,tag,attribute,limit,recursive):
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = self.element_dict[element_value][0].findAll(tag,attribute,limit=limit,recursive=recursive)
+        self.add_func(f'findAll:{element_value}', action)  # 添加func
+
+    def findAll_by_text(self, element_value,text,limit,recursive):
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = self.element_dict[element_value][0].findAll(text=text,limit=limit,recursive=recursive)
+        self.add_func(f'findAll_by_text:{element_value}', action)  # 添加func
+
     def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
         status = None
@@ -416,7 +508,7 @@ class Page_Parser:
             nonlocal status,self
             if status:
                 success_code = 'Success to run'
-            elif status is None:
+            elif status == None:
                 success_code = 'No status'
             else:
                 success_code = 'Wrong to run'
@@ -427,7 +519,7 @@ class Page_Parser:
                 except:
                     value_box.append(f'{i} = {self.element_dict[i]}')
             update_func(func_name, success_code, value_box)  # 信息更新系统
-
+        update('start')
         for func_num in range(len(func_list)):
             func_name = func_list[func_num]
             update(func_name)
