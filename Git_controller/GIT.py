@@ -213,7 +213,7 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=switch_Branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    no_ff = tkinter.Variable()
+    no_ff = tkinter.IntVar()
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=merge_Branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -231,8 +231,8 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='从远程仓库抓取', command=lambda :Pull_Push_remote(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    push_bind = tkinter.Variable()
-    allow_history = tkinter.Variable()
+    push_bind = tkinter.IntVar()
+    allow_history = tkinter.IntVar()
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='分支绑定', command=Bind_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
@@ -294,8 +294,8 @@ def Main():
 
     global Customize_Input, th_do, wait_do
     a_y += 1
-    th_do = tkinter.Variable()
-    wait_do = tkinter.Variable()
+    th_do = tkinter.IntVar()
+    wait_do = tkinter.IntVar()
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='多进程刷新',
                         variable=th_do).grid(column=0, row=a_y, sticky=tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='异步显示',

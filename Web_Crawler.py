@@ -7,7 +7,9 @@ import threading
 import time
 
 def Main():
-    global top,Git,PATH,bg,bbg,fg,cookies_list
+    global top,Git,PATH,bg,bbg,fg,cookies_list,Attributes_Dict,DataBase_list
+    DataBase_list = []
+    Attributes_Dict = {}
     PATH = os.getcwd()
     top = tkinter.Tk()
     cookies_list = []
@@ -271,125 +273,228 @@ def Main():
     FuncValue_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
     FuncValue_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
+    global CookiesName_Input,Cookies_Input,Tag_Input,AttributesName_Input,AttributesValue_Input
+    global FindAllText_Input,text_re,attribute_re,limit_Input,recursive_Input,FindAllPATH_Input,Attributes_BOX
+
     a_y += 5
     tkinter.Label(top, text='cookies名:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    CookiesName_Input = tkinter.Entry(top, width=width_B * 2)
+    CookiesName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='cookies:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    Cookies_Input = tkinter.Entry(top, width=width_B * 2)
+    Cookies_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='定位标签:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    Tag_Input = tkinter.Entry(top, width=width_B * 2)
+    Tag_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='定位属性名:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    AttributesName_Input = tkinter.Entry(top, width=width_B * 2)
+    AttributesName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    attribute_re = tkinter.Variable()
+    attribute_re = tkinter.IntVar()
     a_y += 1
     tkinter.Label(top, text='定位属性值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='属性值使用正则',
-                        variable=attribute_re).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
-    attribute_re.set('1')
+    AttributesValue_Input = tkinter.Entry(top, width=width_B)
+    AttributesValue_Input.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加属性',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加属性',command=add_Attributes, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除属性',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除属性',command=del_Attributes, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空属性',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空属性',command=tra_Attributes, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    Solve_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
-    Solve_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    Attributes_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    Attributes_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    text_re = tkinter.Variable()
     a_y += 3
     tkinter.Label(top, text='定位文本:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用正则',
-                        variable=text_re).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+    FindAllText_Input = tkinter.Entry(top, width=width_B)
+    FindAllText_Input.grid(column=a_x + 1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    recursive_Input = tkinter.IntVar()
+    text_re = tkinter.IntVar()
+    a_y += 1
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='递归查找',
+                        variable=recursive_Input).grid(column=a_x, row=a_y, sticky=tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='文本使用正则',
+                        variable=text_re).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='属性值使用正则',
+                        variable=attribute_re).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+    attribute_re.set(1)
     text_re.set('1')
+    recursive_Input.set('1')
 
     a_y += 1
     tkinter.Label(top, text='查找个数:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(top, text='递归查找:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
-                                                                                                      row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    limit_Input = tkinter.Entry(top, width=width_B * 2)
+    limit_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='定位路径:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                       row=a_y)
-    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
-    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+    FindAllPATH_Input = tkinter.Entry(top, width=width_B * 2)
+    FindAllPATH_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除所有曲奇',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除所有曲奇',command=lambda :Page_Parser_addActionFunc2('del_all_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除指定曲奇',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除指定曲奇',command=lambda :Page_Parser_addActionFunc2('del_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加新的曲奇',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加新的曲奇',command=lambda :Page_Parser_addActionFunc2('add_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='更新指定曲奇',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='更新指定曲奇',command=lambda :Page_Parser_addActionFunc2('update_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得所有曲奇',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得所有曲奇',command=lambda :Page_Parser_addActionFunc2('get_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得指定曲奇',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得指定曲奇',command=lambda :Page_Parser_addActionFunc2('get_all_cookies'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='解析网页',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='解析网页',command=lambda :Page_Parser_addActionFunc2('make_bs'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='根据标签定位',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据标签定位',command=lambda :Page_Parser_addActionFunc2('findAll'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='根据文本定位',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据文本定位',command=lambda :Page_Parser_addActionFunc2('findAll_by_text'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得子标签',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得子标签',command=lambda :Page_Parser_addActionFunc2('get_children'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得后代标签',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得后代标签',command=lambda :Page_Parser_addActionFunc2('get_offspring'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得弟标签',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得弟标签',command=lambda :Page_Parser_addActionFunc2('get_down'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄标签',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄标签',command=lambda :Page_Parser_addActionFunc2('get_up'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄弟标签',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄弟标签',command=lambda :Page_Parser_addActionFunc2('brothers'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='路径定位',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='路径定位',command=lambda :Page_Parser_addActionFunc2('get_by_path'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_x += 3
+    tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
+    a_x += 1
+    a_y = 0
+
+    tkinter.Label(top, text='【数据库操作】', bg=bg, fg=fg, font=FONT).grid(column=a_x, row=a_y,columnspan=3)  # 设置说明
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='元素式存入',command=lambda :to_Database(True), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='正则式存入',command=lambda :to_Database(False), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='新增数据表',command=add_DataBase, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除数据表',command=remove_DataBase, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='导出数据表',command=out, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='关闭数据表', command=close, font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    global Data_Input,DataBase_BOX,DataName_Input
+    a_y += 1
+    tkinter.Label(top, text='数据存入格式:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Data_Input = tkinter.Entry(top, width=width_B * 2)
+    Data_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='数据表名字:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    DataName_Input = tkinter.Entry(top, width=width_B * 2)
+    DataName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    DataBase_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    DataBase_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 3
+    tkinter.Button(top, bg=bbg, fg=fg, text='导出页面快照',command=lambda :Page_Parser_addActionFunc2('png'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='NONE',command=out, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='NONE', command=close, font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     top.update()#要预先update一下，否则会卡住
-    global url,loader,Page_Parser
+    global url,loader,Page_Parser,DataBase,save_dir
     save_dir = askdirectory(title='选择项目位置')#项目位置
     url = Crawler_controller.url(save_dir,save_dir)
     loader = Crawler_controller.Page_Downloader(url,save_dir)
     Page_Parser = Crawler_controller.Page_Parser(loader)
+    DataBase = Crawler_controller.data_base
     top.mainloop()
+
+def to_Database(is_tag=True):
+    global VarIndex_Input,Var_Input,Data_Input,Page_Parser
+    try:
+        index = eval(VarIndex_Input.get(),{})
+    except:
+        index = slice(None,None)
+    if is_tag:
+        func = Page_Parser.to_Database
+    else:
+        func = Page_Parser.to_Database_by_re
+    func(element_value=Var_Input.get(),index=index,data = Data_Input.get(),dataBase_name=get_DataBase_Name())
+    Update_Parser_Func_BOX()
+
+def close():
+    global DataBase
+    name = get_DataBase_Name()
+    DataBase.close(name)
+    update_DataBase_BOX()
+
+def out():
+    global save_dir,DataBase
+    name = get_DataBase_Name()
+    DataBase.out(name,save_dir)
+    update_DataBase_BOX()
+
+def remove_DataBase():
+    global DataBase
+    name = get_DataBase_Name()
+    DataBase.rm_dataBase(name)
+    update_DataBase_BOX()
+
+def add_DataBase():
+    global DataName_Input,DataBase
+    name = DataName_Input.get()
+    DataBase.add_DataBase(name)
+    update_DataBase_BOX()
+
+def get_DataBase_Name():
+    global DataBase_BOX,DataBase_list
+    try:
+        return DataBase_list[DataBase_BOX.curselection()[0]]
+    except:
+        try:
+            return DataBase_list[0]
+        except:
+            return None
+
+def update_DataBase_BOX():
+    global DataBase_BOX,DataBase_list
+    DataBase_list = DataBase.return_database()
+    DataBase_BOX.delete(0,tkinter.END)
+    DataBase_BOX.insert(tkinter.END,*DataBase_list)
 
 def update_Status(now_func,status,Value_BOX):
     global Func_Output,Status_Output,FuncValue_BOX
@@ -397,6 +502,48 @@ def update_Status(now_func,status,Value_BOX):
     Status_Output.set(status)
     FuncValue_BOX.delete(0,tkinter.END)
     FuncValue_BOX.insert(0,*Value_BOX)
+
+def tra_Attributes():
+    global Attributes_Dict
+    Attributes_Dict = {}
+    update_Attributes_BOX()
+
+def del_Attributes():
+    global Attributes_BOX, Attributes_Dict
+    del Attributes_Dict[list(Attributes_Dict.keys())[Attributes_BOX.curselection()[0]]]
+    update_Attributes_BOX()
+
+def add_Attributes():
+    global AttributesName_Input,AttributesValue_Input,attribute_re,Attributes_Dict
+    name = AttributesName_Input.get()
+    value = AttributesValue_Input.get()
+    if name == '' or value == '': return False
+    value = re.compile(value) if bool(attribute_re.get()) else value
+    Attributes_Dict[name] = value
+    update_Attributes_BOX()
+
+def update_Attributes_BOX():
+    global Attributes_BOX,Attributes_Dict
+    show = []
+    for i in Attributes_Dict:
+        show.append(f'{i} -> {Attributes_Dict[i]}')
+    Attributes_BOX.delete(0, tkinter.END)
+    Attributes_BOX.insert(tkinter.END,*show)
+
+def Func_Args2():#方法args统一转换(第二栏目)
+    global CookiesName_Input,Cookies_Input,Tag_Input,Attributes_Dict,Var_Input,VarIndex_Input
+    global FindAllText_Input,text_re,limit_Input,recursive_Input,FindAllPATH_Input
+    try:
+        index = eval(VarIndex_Input.get(),{})
+    except:
+        index = slice(None,None)
+    try:
+        cookies = eval(Cookies_Input.get(),{})
+    except:
+        cookies = {}
+    return dict(element_value=Var_Input.get(),index=index,cookies_name=CookiesName_Input.get(),cookies=cookies,tag=Tag_Input.get().split(','),
+             attribute=Attributes_Dict,text=re.compile(FindAllText_Input.get()) if bool(text_re.get()) else FindAllText_Input.get(),
+             limit=limit_Input.get(),recursive=bool(recursive_Input.get()),path=FindAllPATH_Input.get())
 
 def Func_Args():#方法args统一转换(不支持Frame)
     global Var_Input, VarIndex_Input, Send_Input, UserPW_Input, SELE_Input, JS_Input, Time_Input
@@ -419,6 +566,18 @@ def Func_Args():#方法args统一转换(不支持Frame)
     time=time
     )
 
+def Page_Parser_addActionFunc2(func):
+    global Page_Parser
+    args = Func_Args2()
+    FUNC = {'del_all_cookies':Page_Parser.del_all_cookies,'del_cookies':Page_Parser.del_cookies,'add_cookies':Page_Parser.add_cookies,
+            'update_cookies':Page_Parser.update_cookies,'get_cookies':Page_Parser.get_cookies,'get_all_cookies':Page_Parser.get_all_cookies,
+            'make_bs':Page_Parser.make_bs,'findAll':Page_Parser.findAll,'findAll_by_text':Page_Parser.findAll_by_text,
+            'get_children':Page_Parser.get_children,'get_offspring':Page_Parser.get_offspring,'get_up':Page_Parser.get_up,
+            'get_down':Page_Parser.get_down,'get_by_path':Page_Parser.get_by_path,'brothers':Page_Parser.get_brothers,
+            'png':Page_Parser.Webpage_snapshot}.get(func,Page_Parser.make_bs)
+    FUNC(**args)
+    Update_Parser_Func_BOX()
+
 def Page_Parser_addActionFunc(func):
     global Page_Parser
     args = Func_Args()
@@ -427,9 +586,7 @@ def Page_Parser_addActionFunc(func):
             'deselect_by_value':Page_Parser.deselect_by_value,'deselect_by_text':Page_Parser.deselect_by_text,'select_by_index':Page_Parser.select_by_index,
             'select_by_value':Page_Parser.select_by_value,'select_by_text':Page_Parser.select_by_text,'back':Page_Parser.back,'forward':Page_Parser.forward,
             'refresh':Page_Parser.refresh,'wait_sleep':Page_Parser.wait_sleep,'set_wait':Page_Parser.set_wait,'run_JS':Page_Parser.run_JS,
-            'out':Page_Parser.out_html,'get_Page':Page_Parser.to_text}.get(
-        func,Page_Parser.send_keys
-    )
+            'out':Page_Parser.out_html,'get_Page':Page_Parser.to_text}.get(func,Page_Parser.send_keys)
     FUNC(**args)
     Update_Parser_Func_BOX()
 
@@ -460,7 +617,7 @@ def Page_Parser_addFindFunc(func):
 def Update_Parser_Func_BOX():
     global Parser_Func_BOX,Page_Parser
     Parser_Func_BOX.delete(0,tkinter.END)
-    Parser_Func_BOX.insert(tkinter.END, *Page_Parser.return_func())
+    Parser_Func_BOX.insert(tkinter.END, *Page_Parser.return_func(False)[::-1])
 
 def Update_cookies():
     global cookies_BOX,cookies_list,cookies_Input

@@ -7,6 +7,9 @@ import hashlib
 from time import sleep
 import bs4
 import re as regular
+import Information_storage
+
+data_base = Information_storage.DataBase_Home()
 
 class URL_PAGE():
     def __init__(self,url,func='get'):
@@ -170,8 +173,11 @@ class Page_Parser:
         self.func_list.append(f'{name}[{n}]')
         self.func_dict[f'{name}[{n}]'] = func
 
-    def return_func(self):
-        return self.func_list.copy()
+    def return_func(self,only=True):
+        if only:
+            return self.func_list.copy()
+        else:
+            return [f'var[{index}]@ {i}' for index,i in enumerate(self.func_list.copy())]
 
     def find_ID(self,id,not_all=False,**kwargs):
         @self.add_base
@@ -493,20 +499,50 @@ class Page_Parser:
         else:
             return self.element_dict[element_value][index]
 
-    def findAll(self, element_value,tag:(str,list),attribute:dict,limit,recursive,index:(slice,int)):#根据标签定位
+    def to_Database(self,element_value,index,data:(str,list),dataBase_name:str,**kwargs):#传入data Base
+        @self.add_base
+        def action(*args, **kwargs):
+            global data_base
+            nonlocal self
+            iter_list = self.listSlicing(index, element_value)
+            for bs in iter_list:
+                new = []
+                for i in data:
+                    if i == '$name&':new.append(bs.name)
+                    elif i == '$self&':new.append(str(bs).replace('\n',''))
+                    elif i == '$string$':new.append(str(bs.string).replace('\n',''))
+                    else:
+                        new.append(bs.attrs.get(i,''))
+                data_base.add_DataBase(dataBase_name,new)
+        self.add_func(f'DataBase:{data}<{element_value}[{index}]>{dataBase_name}', action)  # 添加func
+
+    def to_Database_by_re(self,element_value,index,data:str,dataBase_name:str,**kwargs):#通过正则，传入dataBase
+        data = regular.compile(data)
+        @self.add_base
+        def action(*args, **kwargs):
+            global data_base
+            nonlocal self
+            iter_list = self.listSlicing(index, element_value)
+            for bs in iter_list:
+                new = regular.findall(data,str(bs))
+                data_base.add_DataBase(dataBase_name,new)
+        self.add_func(f'DataBase:{data}<{element_value}[{index}]>{dataBase_name}', action)  # 添加func
+
+    def findAll(self, element_value,tag:(str,list),attribute:dict,limit,recursive,index:(slice,int),**kwargs):#根据标签定位
         if type(tag) is str:
             tag = str(tag).split(',')
+        try:
+            limit = int(limit)
+        except:
+            limit = None
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
-            if type(index) is int:
-                iter_list = [self.element_dict[element_value][index]]
-            else:
-                iter_list = self.element_dict[element_value][index]
+            iter_list = self.listSlicing(index,element_value)
             paser_list = []
             for bs in iter_list:
                 try:
-                    re = bs.findAll(tag,attribute,limit=limit,recursive=recursive)
+                    re = bs.find_all(tag,attribute,limit=limit,recursive=recursive)
                 except:
                     try:
                         if str(bs.name) not in tag:raise Exception
@@ -521,9 +557,13 @@ class Page_Parser:
                         re = []
                 paser_list += re
             self.element_dict[f'{name}[{num}]'] = paser_list
-        self.add_func(f'findAll:{element_value}', action)  # 添加func
+        self.add_func(f'findAll:{element_value}[{index}]', action)  # 添加func
 
-    def findAll_by_text(self, element_value,text:(regular.compile,str),limit,recursive,index:(slice,int)):#根据text定位
+    def findAll_by_text(self, element_value,text:(regular.compile,str),limit,recursive,index:(slice,int),**kwargs):#根据text定位
+        try:
+            limit = int(limit)
+        except:
+            limit = None
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
@@ -531,7 +571,7 @@ class Page_Parser:
             paser_list = []
             for bs in iter_list:
                 try:
-                    re = bs.findAll(text=text,limit=limit,recursive=recursive)
+                    re = bs.find_all(text=text,limit=limit,recursive=recursive)
                 except:
                     try:
                         if type(text) is str:
@@ -543,33 +583,40 @@ class Page_Parser:
                         re = []
                 paser_list += re
             self.element_dict[f'{name}[{num}]'] = paser_list
-        self.add_func(f'findAll_by_text:{element_value}', action)  # 添加func
+        self.add_func(f'findAll_by_text:{element_value}[{index}]', action)  # 添加func
 
-    def __get_other_base(self,element_value,index:(slice,int),who='children'):#获得子、后代、兄弟标签的基类
+    def __get_other_base(self,element_value,index:(slice,int),who='children',**kwargs):#获得子、后代、兄弟标签的基类
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
             iter_list = self.listSlicing(index, element_value)
             paser_list = []
             for bs in iter_list:
-                paser_list += {'children':bs.children,'offspring':bs.descendants,'down':bs.next_siblings,
-                               'up':bs.previous_siblings}.get(who,bs.children)
-            self.element_dict[f'{name}[{num}]'] = paser_list
-        self.add_func(f'get_{who}:{element_value}', action)  # 添加func
+                if who != 'brothers':
+                    paser_list += {'children':bs.children,'offspring':bs.descendants,'down':bs.next_siblings,
+                                   'up':bs.previous_siblings}.get(who,bs.children)
+                else:
+                    paser_list += bs.previous_siblings
+                    paser_list += bs.next_siblings
+            self.element_dict[f'{name}[{num}]'] = list(set(paser_list))
+        self.add_func(f'get_{who}:{element_value}[{index}]', action)  # 添加func
 
-    def get_children(self,element_value,index:(slice,int)):
+    def get_children(self,element_value,index:(slice,int),**kwargs):
         return self.__get_other_base(element_value,index)
 
-    def get_offspring(self,element_value,index:(slice,int)):
+    def get_offspring(self,element_value,index:(slice,int),**kwargs):
         return self.__get_other_base(element_value,index,'offspring')
 
-    def get_up(self,element_value,index:(slice,int)):
+    def get_up(self,element_value,index:(slice,int),**kwargs):
         return self.__get_other_base(element_value,index,'up')
 
-    def get_down(self,element_value,index:(slice,int)):
+    def get_down(self,element_value,index:(slice,int),**kwargs):
         return self.__get_other_base(element_value,index,'down')
 
-    def get_by_path(self,element_value,index:(slice,int),path):#根据bs4的目录选择
+    def get_brothers(self,element_value,index:(slice,int),**kwargs):
+        return self.__get_other_base(element_value,index,'brothers')
+
+    def get_by_path(self,element_value,index:(slice,int),path,**kwargs):#根据bs4的目录选择
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
@@ -583,7 +630,20 @@ class Page_Parser:
                 except:
                     pass
             self.element_dict[f'{name}[{num}]'] = paser_list
-        self.add_func(f'get>{path}:{element_value}', action)  # 添加func
+        self.add_func(f'get>{path}:{element_value}[{index}]', action)  # 添加func
+
+    def Webpage_snapshot(self,**kwargs):
+        @self.add_base
+        def action(num, name, *args, **kwargs):
+            nonlocal self
+            md5 = hashlib.md5()  # 应用MD5算法
+            md5.update(f'{time.time()}_{self.now_url}'.encode('utf-8'))
+            name = md5.hexdigest()
+            with open(self.dir + '/' + name + '.png.CoTanURL','w') as f:
+                f.write(self.now_url)
+            self.browser.save_screenshot(self.dir + '/' + name + '.png')
+            sleep(1)
+        self.add_func(f'Webpage_snapshot', action)  # 添加func
 
     def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
