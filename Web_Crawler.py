@@ -272,11 +272,115 @@ def Main():
     FuncValue_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 5
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONE',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Label(top, text='cookies名:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='cookies:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='定位标签:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='定位属性名:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    attribute_re = tkinter.Variable()
+    a_y += 1
+    tkinter.Label(top, text='定位属性值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='属性值使用正则',
+                        variable=attribute_re).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+    attribute_re.set('1')
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加属性',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONE',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除属性',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONE',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空属性',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    Solve_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    Solve_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+
+    text_re = tkinter.Variable()
+    a_y += 3
+    tkinter.Label(top, text='定位文本:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用正则',
+                        variable=text_re).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+    text_re.set('1')
+
+    a_y += 1
+    tkinter.Label(top, text='查找个数:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='递归查找:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='定位路径:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                      row=a_y)
+    ValueName_Input = tkinter.Entry(top, width=width_B * 2)
+    ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除所有曲奇',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除指定曲奇',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加新的曲奇',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='更新指定曲奇',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得所有曲奇',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得指定曲奇',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='解析网页',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据标签定位',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='根据文本定位',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得子标签',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得后代标签',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得弟标签',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄标签',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获得兄弟标签',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='路径定位',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     top.update()#要预先update一下，否则会卡住

@@ -6,6 +6,7 @@ from os import mkdir
 import hashlib
 from time import sleep
 import bs4
+import re as regular
 
 class URL_PAGE():
     def __init__(self,url,func='get'):
@@ -486,20 +487,103 @@ class Page_Parser:
             self.element_dict[f'{name}[{num}]'] = [bs4.BeautifulSoup(self.element_dict[element_value][0], "html.parser")]
         self.add_func(f'Parsing:{element_value}', action)  # 添加func
 
-    #findAll需要修正为for循环
-    def findAll(self, element_value,tag,attribute,limit,recursive):
+    def listSlicing(self,index:(slice,int),element_value):
+        if type(index) is int:
+            return [self.element_dict[element_value][index]]
+        else:
+            return self.element_dict[element_value][index]
+
+    def findAll(self, element_value,tag:(str,list),attribute:dict,limit,recursive,index:(slice,int)):#根据标签定位
+        if type(tag) is str:
+            tag = str(tag).split(',')
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
-            self.element_dict[f'{name}[{num}]'] = self.element_dict[element_value][0].findAll(tag,attribute,limit=limit,recursive=recursive)
+            if type(index) is int:
+                iter_list = [self.element_dict[element_value][index]]
+            else:
+                iter_list = self.element_dict[element_value][index]
+            paser_list = []
+            for bs in iter_list:
+                try:
+                    re = bs.findAll(tag,attribute,limit=limit,recursive=recursive)
+                except:
+                    try:
+                        if str(bs.name) not in tag:raise Exception
+                        for agrs_name in attribute:
+                            text = attribute[agrs_name]
+                            if type(text) is str:
+                                if bs.attrs[agrs_name] != text:raise Exception
+                            else:#正则匹配
+                                if not regular.match(text,bs.attrs[agrs_name]): raise Exception
+                        re = [bs]
+                    except:
+                        re = []
+                paser_list += re
+            self.element_dict[f'{name}[{num}]'] = paser_list
         self.add_func(f'findAll:{element_value}', action)  # 添加func
 
-    def findAll_by_text(self, element_value,text,limit,recursive):
+    def findAll_by_text(self, element_value,text:(regular.compile,str),limit,recursive,index:(slice,int)):#根据text定位
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
-            self.element_dict[f'{name}[{num}]'] = self.element_dict[element_value][0].findAll(text=text,limit=limit,recursive=recursive)
+            iter_list = self.listSlicing(index,element_value)
+            paser_list = []
+            for bs in iter_list:
+                try:
+                    re = bs.findAll(text=text,limit=limit,recursive=recursive)
+                except:
+                    try:
+                        if type(text) is str:
+                            if str(bs.string) != text:raise Exception
+                        else:
+                            if not regular.match(text,str(bs.string)):raise Exception
+                        re = [bs]
+                    except:
+                        re = []
+                paser_list += re
+            self.element_dict[f'{name}[{num}]'] = paser_list
         self.add_func(f'findAll_by_text:{element_value}', action)  # 添加func
+
+    def __get_other_base(self,element_value,index:(slice,int),who='children'):#获得子、后代、兄弟标签的基类
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            iter_list = self.listSlicing(index, element_value)
+            paser_list = []
+            for bs in iter_list:
+                paser_list += {'children':bs.children,'offspring':bs.descendants,'down':bs.next_siblings,
+                               'up':bs.previous_siblings}.get(who,bs.children)
+            self.element_dict[f'{name}[{num}]'] = paser_list
+        self.add_func(f'get_{who}:{element_value}', action)  # 添加func
+
+    def get_children(self,element_value,index:(slice,int)):
+        return self.__get_other_base(element_value,index)
+
+    def get_offspring(self,element_value,index:(slice,int)):
+        return self.__get_other_base(element_value,index,'offspring')
+
+    def get_up(self,element_value,index:(slice,int)):
+        return self.__get_other_base(element_value,index,'up')
+
+    def get_down(self,element_value,index:(slice,int)):
+        return self.__get_other_base(element_value,index,'down')
+
+    def get_by_path(self,element_value,index:(slice,int),path):#根据bs4的目录选择
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            iter_list = self.listSlicing(index, element_value)
+            paser_list = []
+            for bs in iter_list:
+                try:
+                    re = eval(str(path),{'self':bs})
+                    if re == None:raise Exception
+                    paser_list.append(re)
+                except:
+                    pass
+            self.element_dict[f'{name}[{num}]'] = paser_list
+        self.add_func(f'get>{path}:{element_value}', action)  # 添加func
 
     def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
