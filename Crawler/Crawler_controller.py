@@ -1,13 +1,11 @@
 from selenium import webdriver
 import threading
 import time
-from os.path import exists
-from os import mkdir
 import hashlib
 from time import sleep
 import bs4
 import re as regular
-import Information_storage
+from Crawler import Information_storage
 import requests
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys

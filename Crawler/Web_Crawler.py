@@ -1,10 +1,10 @@
-import Crawler_controller
+from Crawler import Crawler_controller
 import os
 import tkinter
 from tkinter.filedialog import askdirectory
 import re
 import threading
-import time
+
 
 def Main():
     global top,Git,PATH,bg,bbg,fg,cookies_list,Attributes_Dict,DataBase_list
@@ -567,8 +567,8 @@ def Main():
     top.update()#要预先update一下，否则会卡住
     global url,loader,Page_Parser,DataBase,save_dir
     save_dir = askdirectory(title='选择项目位置')#项目位置
-    url = Crawler_controller.url(save_dir,save_dir)#url管理器
-    loader = Crawler_controller.Page_Downloader(url,save_dir)#页面下载器
+    url = Crawler_controller.url(save_dir, save_dir)#url管理器
+    loader = Crawler_controller.Page_Downloader(url, save_dir)#页面下载器
     Page_Parser = Crawler_controller.Page_Parser(loader)#页面解析器
     DataBase = Crawler_controller.data_base#数据库
 
@@ -957,7 +957,3 @@ def update_URLBOX():
     global url,URL_BOX
     URL_BOX.delete(0,tkinter.END)
     URL_BOX.insert(tkinter.END,*url.return_url())
-
-
-if __name__ == "__main__":
-    Main()
