@@ -2,7 +2,7 @@ import os
 
 class Database:
     def __init__(self,name):
-        self.dir = rf'{os.getcwd()}/Database_dir/{name}.cotanDB'#创建保存文件
+        self.dir = rf'{os.getcwd()}/Database_dir/{name}.cotanDB'#创建DB文件
         self.file = open(self.dir,'r+' if os.path.exists(self.dir) else 'w+')
         self.id = 0
         self.name = name

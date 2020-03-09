@@ -8,21 +8,97 @@ from time import sleep
 import bs4
 import re as regular
 import Information_storage
+import requests
 
 data_base = Information_storage.DataBase_Home()
 
-class URL_PAGE():
-    def __init__(self,url,func='get'):
-        self.url = url
-        self.func = func
+class PAGE:
+    def __init__(self):
+        self.url=''
+        self.UA=''
+        self.func = 'PAGE'
 
     def __str__(self):
-        return self.url
+        return f'{self.func}-{self.url}:UA>{self.UA}'
+
+class REQUESTS_Base(PAGE):
+    def init(self,UA,url,cookies):
+        if UA == '':
+            UA = f'--user-agent ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' \
+                 f'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66"'
+        self.UA = UA
+        self.headers = {'Accept': 'text/html, application/xhtml+xml, image/jxr, */*',
+                   'Accept - Encoding': 'gzip, deflate',
+                   'Accept-Language': 'zh-Hans-CN, zh-Hans; q=0.5',
+                   'Connection': 'Keep-Alive',
+                   'User-Agent': UA}
+        self.requests = lambda *args:None
+        self.url = url
+        self.cookies = cookies
+        self.new = True
+
+class URL_POST(REQUESTS_Base):#通过requests的post请求
+    def __init__(self, url, data,UA='',cookies=None, **kwargs):
+        super(URL_POST, self).__init__()
+        self.func = 'post'
+        self.data = data
+        self.requests = requests.post
+        self.init(UA,url,cookies)
+
+    def __str__(self):
+        return super(URL_POST, self).__str__() + f';data>{self.data}'
+
+class URL_GET(REQUESTS_Base):#通过requests的post请求
+    def __init__(self, url,UA='',cookies=None, **kwargs):
+        super(URL_GET, self).__init__()
+        self.func = 'simplify_get'
+        self.requests = requests.get
+        self.init(UA,url,cookies)
+
+class URL_PAGE(PAGE):
+    def __init__(self,url,first_run=False,head=False,no_plugins=True,no_js=False,no_java=False,
+                 no_img=False,UA='',cookies=None,new=False,down_load_dir='',**kwargs):
+        super(URL_PAGE, self).__init__()
+        self.url = url
+        self.func = 'get'
+        self.options = webdriver.ChromeOptions()
+        self.cookies = cookies#cookies存储位置
+        self.new = new#新键页面or新键浏览器
+        self.down_load_dir = down_load_dir
+        self.init(first_run,head,no_plugins,no_js,no_java,no_img,UA)
+
+    def init(self,first_run,head,no_plugins,no_js,no_java,no_img,UA):
+        self.options.add_argument('disable-infobars')#不显示
+        prefs = {'profile.default_content_settings.popups': 0, 'download.default_directory':self.down_load_dir}
+        self.options.add_experimental_option('prefs', prefs)#下载设置
+        if first_run:
+            self.options.add_argument('-first run')
+        if head:#无头设置
+            print('FFF')
+            self.options.add_argument('--headless')
+            self.options.add_argument('--disable-gpu')
+        if no_plugins:
+            self.options.add_argument('--disable-plugins')
+        if no_js:
+            self.options.add_argument('--disable-javascript')
+        if no_java:
+            self.options.add_argument('--disable-java')
+        if no_img:
+            self.options.add_argument('blink-settings=imagesEnabled=false')
+        if UA == '':
+            UA = (f'user-agent ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  f'Chrome/80.0.3987.132 Safari/537.36"')
+        # self.options.add_argument(f'--user-agent ="{UA}"')
+        self.UA = UA
+
+    def __str__(self):
+        return f'{self.func}-{self.url}:UA>{self.UA}'
 
 class url:#url管理器
     num = 0#url处理器个数
     def __init__(self,dic=f'',dic_run=f''):
         url.num += 1
+        self.save_dir = dic
         dic += f'/url[{url.num}].cot_url'
         dic_run += f'/url_run[{url.num}].cot_url'
         self.dir = dic
@@ -33,7 +109,7 @@ class url:#url管理器
         self.url_history = []#url历史
         self.filter = {}#过滤函数
 
-    def filter_func(self,url):#url过滤系统
+    def filter_func(self,url,**kwargs):#url过滤系统
         for i in self.filter:
             if not self.filter[i](url): return False
         return True
@@ -47,11 +123,21 @@ class url:#url管理器
     def return_func(self):
         return list(self.filter.keys())
 
-    def add_url(self,url):#添加url
-        if url not in self.url_history and self.filter_func(url):#1.url不存在历史，2.url满足筛选条件
-            self.url_list.append(URL_PAGE(url,'get'))#添加到待取得url
-            self.url_history.append(url)#添加到历史url
-            self.__out_url(url)#输出历史url
+    def add_url(self,url,func,data=None,**kwargs):#添加url
+        if func == '':func = 'simplify_get'
+        if func == 'get':url_ = url
+        else:
+            url_ = url + str(data)
+        if url_ not in self.url_history and self.filter_func(url,func=func):#1.url不存在历史，2.url满足筛选条件
+            if func == 'get':
+                self.url_list.append(URL_PAGE(url=url,**kwargs,down_load_dir=self.dir))#添加到待取得url
+            elif func == 'simplify_get':
+                self.url_list.append(URL_GET(url=url, **kwargs, down_load_dir=self.dir))  # 添加到待取得url
+            else:
+                self.url_list.append(URL_POST(url=url,data=data,**kwargs))  # 添加到待取得url
+
+            self.url_history.append(url_)#添加到历史url
+            self.__out_url(url_)#输出历史url
             return True#写入成功
         return False#写入失败
 
@@ -59,7 +145,7 @@ class url:#url管理器
         self.__out_url_run(f'DELETE {self.url_list[index]}')
         del self.url_list[index]
 
-    def get_url(self) -> URL_PAGE:#取得url
+    def get_url(self) -> (URL_PAGE,URL_POST):#取得url
         url_page = self.url_list[0]
         self.__out_url_run(url_page.url)
         del self.url_list[0]
@@ -88,35 +174,66 @@ class Page_Downloader:
         self.page_source_dict = {}#页面保存信息
         self.cookie_Thread = None#子进程
         self.browser = None
-
-    def __seeting(self,*args):#设置参数，请求头
-        options = webdriver.ChromeOptions()
-        options.add_argument('disable-infobars')# 不显示提示语句
-        for i in args:
-            if i == '':continue
-            options.add_argument(i)
-        return options
+        self.cookie_dict = {}
+        self.cookie_dict_list = {}#sele的cookies
+        self.lase_func = ''
 
     def strat_urlGet(self,*args,func_cookie):#用get请求url ->得到一个页面信息
         self.break_ = False
         self.page_source_dict = {}
         self.nowurl = self.url.get_url()#获取一个url
         url = self.nowurl.url
-        self.browser = webdriver.Chrome(chrome_options=self.__seeting(*args))
-        self.browser.get(url)
+        if self.nowurl.func == 'get':
+            if self.nowurl.new == True and self.lase_func == 'get':#重新启动
+                self.browser.quit()
+                self.browser = webdriver.Chrome(chrome_options=self.nowurl.options)
+            try:
+                self.browser.get(url)
+            except:
+                self.browser = webdriver.Chrome(chrome_options=self.nowurl.options)
+                self.browser.get(url)
+            try:
+                if self.nowurl.new != True:raise Exception
+                list_ = self.cookie_dict_list[self.nowurl.cookies]
+                self.Tra_cookies()
+                try:
+                    for i in list_:
+                        self.Add_cookies(i)
+                except:pass
+            except:
+                pass
+            self.start_cookies(func_cookie,url)
+        else:
+            try:
+                args = {'cookies':self.cookie_dict[self.nowurl.cookies]}
+                func_cookie([args['cookies']])
+            except:
+                args = {}
+                func_cookie([])
+            if self.nowurl.func == 'post':args['data'] = self.nowurl.data
+            self.browser = self.nowurl.requests(url,headers=self.nowurl.headers,**args)
+            self.cookie_dict[url] = requests.utils.dict_from_cookiejar(self.browser.cookies)#保存cookies
+            func_cookie([self.cookie_dict[url]])
+        self.lase_func = self.nowurl.func
+        self.Parser.browser = self.browser
+        self.Parser.init(url)
+        return self.browser
+
+    def start_cookies(self,func_cookie,url):
         self.break_ = True
         def update_cookie():
             nonlocal self
             while self.break_:
                 try:
-                    func_cookie(self.browser.get_cookies())  # 与GUI通信显示cookie
+                    cookies = self.browser.get_cookies()
+                    func_cookie(cookies)  # 与GUI通信显示cookie
+                    self.cookie_dict[url] = cookies
                     time.sleep(.5)
-                except:pass
+                except:
+                    pass
+
         self.cookie_Thread = threading.Thread(target=update_cookie)
         self.cookie_Thread.start()
-        self.Parser.browser = self.browser
-        self.Parser.init(url)
-        return self.browser
 
     def Del_cookies(self,name):#删除指定cookies
         browser = self.browser
@@ -130,7 +247,7 @@ class Page_Downloader:
         browser = self.browser
         browser.add_cookie(cookies)
 
-    def update_cookies(self,name,cookies:dict,):
+    def update_cookies(self,name,cookies:dict):
         browser = self.browser
         cookies_list = browser.get_cookies()
         for i in cookies_list:
@@ -423,7 +540,10 @@ class Page_Parser:
         @self.add_base
         def action(num,name,*args, **kwargs):
             nonlocal self
-            self.element_dict[f'{name}[{num}]'] = [self.browser.page_source,self.now_url]
+            try:
+                self.element_dict[f'{name}[{num}]'] = [self.browser.page_source,self.now_url]
+            except:
+                self.element_dict[f'{name}[{num}]'] = [self.browser.text, self.now_url]#request
         self.add_func(f'get_page_source', action)
 
     def out_html(self,element_value,**kwargs):#输出网页源码
@@ -433,7 +553,7 @@ class Page_Parser:
             md5 = hashlib.md5()  # 应用MD5算法
             md5.update(f'{time.time()}_{self.now_url}'.encode('utf-8'))
             name = md5.hexdigest()
-            save_dir = self.dir + '/' + name + '.html'
+            save_dir = self.dir + '/' + name + '.cotan_source'
             print(save_dir)
             with open(save_dir,'w') as f:
                 f.write(self.element_dict[element_value][0])

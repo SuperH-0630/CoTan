@@ -40,11 +40,50 @@ def Main():
     URL_Input = tkinter.Entry(top, width=width_B * 2)
     URL_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
+    global URL_ARGS,UA_Input,use_Cookies_Input,FUNC_Input,DATA_Input
     a_y += 1
-    URL_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
-    URL_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    URL_ARGS = []
+    lable = ['不加载js','不加载java','不加载插件']#复选框
+    for i in range(3):
+        URL_ARGS.append(tkinter.IntVar())
+        tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
+                            variable=URL_ARGS[-1]).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
 
-    a_y += 5
+    a_y += 1
+    lable = ['第一次启动','隐藏网页','不加载图片']#复选框
+    for i in range(3):
+        URL_ARGS.append(tkinter.IntVar())
+        tkinter.Checkbutton(top,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i],
+                            variable=URL_ARGS[-1]).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='UA设置:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    UA_Input = tkinter.Entry(top, width=width_B * 2)
+    UA_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='DATA:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    DATA_Input = tkinter.Entry(top, width=width_B * 2)
+    DATA_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='请求方式:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    FUNC_Input = tkinter.Entry(top, width=width_B * 2)
+    FUNC_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='Cookies:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    use_Cookies_Input = tkinter.Entry(top, width=width_B)
+    use_Cookies_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
+    URL_ARGS.append(tkinter.IntVar())
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='新启动网页',
+                        variable=URL_ARGS[-1]).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+
+    a_y += 1
+    URL_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
+    URL_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+
+    a_y += 4
     tkinter.Button(top, bg=bbg, fg=fg, text='HTTPS过滤器',command=add_filter_func_HTTPS, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='WWW过滤器',command=add_filter_func_WWW, font=FONT, width=width_B,height=height_B).grid(
@@ -60,11 +99,11 @@ def Main():
 
     global Func_BOX,cookies_fixed
     a_y += 1
-    Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
-    Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     global wait_Func_BOX,Wait_Input,cookies_BOX
-    a_y += 4
+    a_y += 3
     tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
@@ -81,10 +120,10 @@ def Main():
     cookies_fixed.set('0')
 
     a_y += 1
-    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 8)
-    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=8, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
+    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 8
+    a_y += 4
     tkinter.Button(top, bg=bbg, fg=fg, text='清空曲奇',command=Tra_cookies, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='更新曲奇',command=Update_cookies, font=FONT, width=width_B,height=height_B).grid(
@@ -704,11 +743,29 @@ def del_url():
     url.del_url(index)
     update_URLBOX()
 
+def add_args():
+    global URL_ARGS, UA_Input, use_Cookies_Input,FUNC_Input,DATA_Input
+    try:
+        data = eval(DATA_Input.get(),{})
+    except:
+        data = {}
+    re = dict(
+        func = FUNC_Input.get(),
+        UA = UA_Input.get(),
+        cookies = use_Cookies_Input.get(),
+        data=data
+        )
+    name = ['no_js','no_java','no_plugins','first_run','head','no_img','new']
+    for i in range(len(name)):
+        re[name[i]] = bool(URL_ARGS[i].get())
+    return re
+
 def add_url():
     global URL_Input,url
+    args = add_args()
     new_url = URL_Input.get()
     if new_url == '':return
-    url.add_url(new_url)
+    url.add_url(new_url,**args)
     update_URLBOX()
 
 def update_URLBOX():
