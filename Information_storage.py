@@ -1,4 +1,5 @@
 import os
+import time
 
 class Database:
     def __init__(self,name):
@@ -71,3 +72,15 @@ class DataBase_Home:# data base控制器
 
     def return_database(self):
         return list(self.database.keys())
+
+class log:
+    def __init__(self,log_dir):
+        self.log_dir = log_dir
+        self.log_file = open(log_dir + '/log.coTanLog','r+' if os.path.exists(log_dir + 'log.coTanLog') else 'w+')
+
+    def write(self,data):
+        self.log_file.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] " + data + '\n')
+        self.log_file.flush()
+
+    def close(self):
+        self.log_file.close()

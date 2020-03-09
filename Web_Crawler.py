@@ -40,7 +40,7 @@ def Main():
     URL_Input = tkinter.Entry(top, width=width_B * 2)
     URL_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    global URL_ARGS,UA_Input,use_Cookies_Input,FUNC_Input,DATA_Input
+    global URL_ARGS,UA_Input,use_Cookies_Input,FUNC_Input,DATA_Input,TimeOut_Input
     a_y += 1
     URL_ARGS = []
     lable = ['不加载js','不加载java','不加载插件']#复选框
@@ -70,6 +70,11 @@ def Main():
     tkinter.Label(top, text='请求方式:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     FUNC_Input = tkinter.Entry(top, width=width_B * 2)
     FUNC_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='请求超时:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    TimeOut_Input = tkinter.Entry(top, width=width_B * 2)
+    TimeOut_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='Cookies:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
@@ -106,9 +111,9 @@ def Main():
     a_y += 3
     tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='爬虫运行',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='爬虫运行',command=Crawler_Run, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫停止',command=startDownloader, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='单点爬虫停止',command=Crawler_Stop, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -120,10 +125,10 @@ def Main():
     cookies_fixed.set('0')
 
     a_y += 1
-    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
-    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    cookies_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 4
+    a_y += 3
     tkinter.Button(top, bg=bbg, fg=fg, text='清空曲奇',command=Tra_cookies, font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='更新曲奇',command=Update_cookies, font=FONT, width=width_B,height=height_B).grid(
@@ -175,11 +180,17 @@ def Main():
     search_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    Parser_Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
-    Parser_Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除方法',command=Del_Parser_Func, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y,columnspan=2 , sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空方法',command=Tra_Parser_Func, font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    Parser_Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
+    Parser_Func_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     global Var_Input,VarIndex_Input,Send_Input,UserPW_Input,SELE_Input,JS_Input,Time_Input
-    a_y += 4
+    a_y += 5
     tkinter.Label(top, text='操作元素:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     Var_Input = tkinter.Entry(top, width=width_B * 2)
     Var_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
@@ -273,22 +284,6 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='选择text',command=lambda :Page_Parser_addActionFunc('select_by_text'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='选择value',command=lambda :Page_Parser_addActionFunc('select_by_value'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='页面后退',command=lambda :Page_Parser_addActionFunc('back'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='页面刷新',command=lambda :Page_Parser_addActionFunc('refresh'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='页面前进',command=lambda :Page_Parser_addActionFunc('forward'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='暴力等待',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='元素检查等待',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
-        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='运行js',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_x += 3
@@ -462,10 +457,10 @@ def Main():
     DataName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    DataBase_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
-    DataBase_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+    DataBase_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
+    DataBase_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    a_y += 3
+    a_y += 5
     tkinter.Label(top, text='URL标签:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     URLTAG_Input = tkinter.Entry(top, width=width_B * 2)
     URLTAG_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
@@ -478,6 +473,97 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='解析为json', command=lambda :Page_Parser_addActionFunc2('to_json'), font=FONT,
                    width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
+    global Special_keys,Chains_Input,element_value2_Input,index2_Input,run_time,key_Input
+
+    a_y += 1
+    tkinter.Label(top, text='操作动作链:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    Chains_Input = tkinter.Entry(top, width=width_B * 2)
+    Chains_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='拽拖至元素:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    element_value2_Input = tkinter.Entry(top, width=width_B * 2)
+    element_value2_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='拽拖索引:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    index2_Input = tkinter.Entry(top, width=width_B * 2)
+    index2_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='键入值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    key_Input = tkinter.Entry(top, width=width_B * 2)
+    key_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Label(top, text='运行时长:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    run_time = tkinter.Entry(top, width=width_B * 2)
+    run_time.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='点击左键',command=lambda :Page_Parser_addActionFunc3('click'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='双击左键',command=lambda :Page_Parser_addActionFunc3('double_click'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='点击右键', command=lambda :Page_Parser_addActionFunc3('click_right'), font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='按住左键',command=lambda :Page_Parser_addActionFunc3('click_and_hold'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='松开左键',command=lambda :Page_Parser_addActionFunc3('release'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='拽托元素', command=lambda :Page_Parser_addActionFunc2('drag_and_drop'), font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='移动鼠标',command=lambda :Page_Parser_addActionFunc3('move'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='按下按键',command=lambda :Page_Parser_addActionFunc3('key_down'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='抬起按键', command=lambda :Page_Parser_addActionFunc3('key_up'), font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    Special_keys = tkinter.IntVar()
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='发送文本到焦点',command=lambda :Page_Parser_addActionFunc3('send_keys'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='发送文本',command=lambda :Page_Parser_addActionFunc3('send_keys_to_element'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='转换为特殊按钮',
+                        variable=Special_keys).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成动作链',command=lambda :Page_Parser_addActionFunc3('make_ActionChains'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='运行动作链',command=lambda :Page_Parser_addActionFunc3('ActionChains_run'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='获取当前窗口',command=lambda :Page_Parser_addActionFunc('get_now_windows'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='获取所有窗口',command=lambda :Page_Parser_addActionFunc('get_all_windows'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='切换窗口', command=lambda :Page_Parser_addActionFunc('switch_to_windwos'), font=FONT,
+                   width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='暴力等待',command=lambda :Page_Parser_addActionFunc('wait_sleep'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='元素检查等待',command=lambda :Page_Parser_addActionFunc('set_wait'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='运行js',command=lambda :Page_Parser_addActionFunc('run_JS'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
+    tkinter.Button(top, bg=bbg, fg=fg, text='页面后退',command=lambda :Page_Parser_addActionFunc('back'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='页面刷新',command=lambda :Page_Parser_addActionFunc('refresh'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='页面前进',command=lambda :Page_Parser_addActionFunc('forward'), font=FONT, width=width_B,height=height_B).grid(
+        column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+
+
     top.update()#要预先update一下，否则会卡住
     global url,loader,Page_Parser,DataBase,save_dir
     save_dir = askdirectory(title='选择项目位置')#项目位置
@@ -487,6 +573,11 @@ def Main():
     DataBase = Crawler_controller.data_base#数据库
 
     top.mainloop()
+    #关闭操作
+    loader.stop()
+    DataBase.close_all()
+    url.close()
+    loader.close()
 
 def to_Database(is_tag=True):
     global VarIndex_Input,Var_Input,Data_Input,Page_Parser
@@ -575,6 +666,23 @@ def update_Attributes_BOX():
     Attributes_BOX.delete(0, tkinter.END)
     Attributes_BOX.insert(tkinter.END,*show)
 
+def Func_Args3():#方法args统一转换(第三栏目)
+    global Special_keys, Chains_Input, element_value2_Input, index2_Input, run_time,Var_Input,VarIndex_Input,key_Input
+    try:
+        index = int(VarIndex_Input.get())
+    except:
+        index = 0
+    try:
+        index2 = int(index2_Input.get())
+    except:
+        index2 = 0
+    try:
+        time = int(run_time.get())
+    except:
+        time = 1
+    return dict(Chains=Chains_Input.get(),element_value=Var_Input.get(),index=index,element_value2=element_value2_Input.get(),
+                index2=index2,run_time=time,is_special_keys = bool(Special_keys.get()),key=key_Input.get())
+
 def Func_Args2():#方法args统一转换(第二栏目)
     global CookiesName_Input,Cookies_Input,Tag_Input,Attributes_Dict,Var_Input,VarIndex_Input
     global FindAllText_Input,text_re,limit_Input,recursive_Input,FindAllPATH_Input
@@ -611,6 +719,20 @@ def Func_Args():#方法args统一转换(不支持Frame)
     time=time
     )
 
+def Page_Parser_addActionFunc3(func):
+    global Page_Parser
+    args = Func_Args3()
+    FUNC = {'make_ActionChains':Page_Parser.make_ActionChains,'click':Page_Parser.ActionChains_click,
+            'double_click':Page_Parser.ActionChains_double_click,
+            'click_right':Page_Parser.ActionChains_click_right,'click_and_hold':Page_Parser.ActionChains_click_and_hold,
+            'release':Page_Parser.ActionChains_release,'drag_and_drop':Page_Parser.ActionChains_drag_and_drop,
+            'move':Page_Parser.ActionChains_move,'key_down':Page_Parser.ActionChains_key_down,
+            'key_up':Page_Parser.ActionChains_key_up,'send_keys_to_element':Page_Parser.ActionChains_send_keys_to_element,
+            'send_keys':Page_Parser.ActionChains_send_keys,'ActionChains_run':Page_Parser.ActionChains_run}.get(
+        func,Page_Parser.make_ActionChains)
+    FUNC(**args)
+    Update_Parser_Func_BOX()
+
 def Page_Parser_addActionFunc2(func):
     global Page_Parser
     args = Func_Args2()
@@ -631,7 +753,9 @@ def Page_Parser_addActionFunc(func):
             'deselect_by_value':Page_Parser.deselect_by_value,'deselect_by_text':Page_Parser.deselect_by_text,'select_by_index':Page_Parser.select_by_index,
             'select_by_value':Page_Parser.select_by_value,'select_by_text':Page_Parser.select_by_text,'back':Page_Parser.back,'forward':Page_Parser.forward,
             'refresh':Page_Parser.refresh,'wait_sleep':Page_Parser.wait_sleep,'set_wait':Page_Parser.set_wait,'run_JS':Page_Parser.run_JS,
-            'out':Page_Parser.out_html,'get_Page':Page_Parser.to_text}.get(func,Page_Parser.send_keys)
+            'out':Page_Parser.out_html,'get_Page':Page_Parser.to_text,'get_all_windows':Page_Parser.get_all_windows,
+            'get_now_windows':Page_Parser.get_now_windows,'switch_to_windwos':Page_Parser.switch_to_windwos
+            }.get(func,Page_Parser.send_keys)
     FUNC(**args)
     Update_Parser_Func_BOX()
 
@@ -658,6 +782,23 @@ def Page_Parser_addFindFunc(func):
             'frame':Page_Parser.find_switch_to_frame}.get(func,Page_Parser.find_ID)
     FUNC(search,not_all=not_all)
     Update_Parser_Func_BOX()
+
+def Del_Parser_Func():
+    global Page_Parser
+    try:
+        index = Parser_Func_BOX.curselection()[0]
+        Page_Parser.del_func(index,True)
+        Update_Parser_Func_BOX()
+    except:
+        pass
+
+def Tra_Parser_Func():
+    global Page_Parser
+    try:
+        Page_Parser.tra_func()
+        Update_Parser_Func_BOX()
+    except:
+        pass
 
 def Update_Parser_Func_BOX():
     global Parser_Func_BOX,Page_Parser
@@ -712,15 +853,38 @@ def cookies_BOX_Update(cookies):
         cookies_BOX.delete(0,tkinter.END)
         cookies_BOX.insert(0,*cookies)
 
+def Crawler_Stop():
+    global startLoader_Stop
+    startLoader_Stop = False
+    loader.stop()
+
+def Crawler_Run():
+    global startLoader_Stop
+    def startLoader():
+        global loader,Page_Parser,url,startLoader_Stop
+        loader.stop()#把之前的停止
+        while startLoader_Stop:
+            if url.finish():break
+            loader.strat_urlGet(func_cookie=cookies_BOX_Update)
+            update_URLBOX()
+            Page_Parser.Element_interaction(update_Status)
+        loader.stop()
+
+    startLoader_Stop = True
+    new = threading.Thread(target=startLoader)
+    new.start()
+    update_URLBOX()
+
 def startDownloader():
     def startLoader():
         global loader,Page_Parser
         loader.strat_urlGet(func_cookie=cookies_BOX_Update)
+        update_URLBOX()
         Page_Parser.Element_interaction(update_Status)
+        loader.stop()
 
     new = threading.Thread(target=startLoader)
     new.start()
-    update_URLBOX()
 
 def add_filter_func_HTTPS():
     global url
@@ -750,16 +914,21 @@ def del_url():
     update_URLBOX()
 
 def add_args():
-    global URL_ARGS, UA_Input, use_Cookies_Input,FUNC_Input,DATA_Input
+    global URL_ARGS, UA_Input, use_Cookies_Input,FUNC_Input,DATA_Input,TimeOut_Input
     try:
         data = eval(DATA_Input.get(),{})
     except:
         data = {}
+    try:
+        TimeOut = int(TimeOut_Input.get())
+    except:
+        TimeOut = 5
     re = dict(
         func = FUNC_Input.get(),
         UA = UA_Input.get(),
         cookies = use_Cookies_Input.get(),
-        data=data
+        data=data,
+        time_out=TimeOut
         )
     name = ['no_js','no_java','no_plugins','first_run','head','no_img','new']
     for i in range(len(name)):

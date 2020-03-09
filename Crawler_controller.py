@@ -9,17 +9,27 @@ import bs4
 import re as regular
 import Information_storage
 import requests
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+keys_name_dict = {'ctrl':Keys.CONTROL,'shift':Keys.SHIFT,'tab':Keys.TAB,'left_ctrl':Keys.LEFT_CONTROL,'left_shift':Keys.LEFT_SHIFT,
+                      'left_alt':Keys.LEFT_ALT,'ALT':Keys.ALT,'enter':Keys.ENTER,'return':Keys.RETURN,'backspace':Keys.BACKSPACE,
+                      'del':Keys.DELETE,'pgup':Keys.PAGE_UP,'pgdn':Keys.PAGE_DOWN,'home':Keys.HOME,'end':Keys.END,'esc':Keys.CANCEL,
+                      'insert':Keys.INSERT,'meta':Keys.META,'up':Keys.UP,'down':Keys.DOWN,'right':Keys.RIGHT,'left':Keys.LEFT
+                     }#键-值映射
+for i in range(1,13):#F1 - F12按键
+    keys_name_dict[f'f{i}'] = eval(f'Keys.F{i}')
 
 data_base = Information_storage.DataBase_Home()
 
 class PAGE:
-    def __init__(self):
+    def __init__(self,time_out):
         self.url=''
         self.UA=''
         self.func = 'PAGE'
+        self.time_out = time_out
 
     def __str__(self):
-        return f'{self.func}-{self.url}:UA>{self.UA}'
+        return f'[{self.time_out}s]{self.func}-{self.url}:UA>{self.UA}'
 
 class REQUESTS_Base(PAGE):
     def init(self,UA,url,cookies):
@@ -32,14 +42,13 @@ class REQUESTS_Base(PAGE):
                    'Accept-Language': 'zh-Hans-CN, zh-Hans; q=0.5',
                    'Connection': 'Keep-Alive',
                    'User-Agent': UA}
-        self.requests = lambda *args:None
         self.url = url
         self.cookies = cookies
         self.new = True
 
 class URL_POST(REQUESTS_Base):#通过requests的post请求
-    def __init__(self, url, data,UA='',cookies=None, **kwargs):
-        super(URL_POST, self).__init__()
+    def __init__(self, url, data, time_out,UA='',cookies=None, **kwargs):
+        super(URL_POST, self).__init__(time_out)
         self.func = 'post'
         self.data = data
         self.requests = requests.post
@@ -49,16 +58,16 @@ class URL_POST(REQUESTS_Base):#通过requests的post请求
         return super(URL_POST, self).__str__() + f';data>{self.data}'
 
 class URL_GET(REQUESTS_Base):#通过requests的post请求
-    def __init__(self, url,UA='',cookies=None, **kwargs):
-        super(URL_GET, self).__init__()
+    def __init__(self, url, time_out,UA='',cookies=None, **kwargs):
+        super(URL_GET, self).__init__(time_out)
         self.func = 'simplify_get'
         self.requests = requests.get
         self.init(UA,url,cookies)
 
 class URL_PAGE(PAGE):
-    def __init__(self,url,first_run=False,head=False,no_plugins=True,no_js=False,no_java=False,
+    def __init__(self,url, time_out,first_run=False,head=False,no_plugins=True,no_js=False,no_java=False,
                  no_img=False,UA='',cookies=None,new=False,down_load_dir='',**kwargs):
-        super(URL_PAGE, self).__init__()
+        super(URL_PAGE, self).__init__(time_out)
         self.url = url
         self.func = 'get'
         self.options = webdriver.ChromeOptions()
@@ -109,6 +118,10 @@ class url:#url管理器
         self.url_history = []#url历史
         self.filter = {}#过滤函数
 
+    def close(self):
+        self.file.close()
+        self.file_run.close()
+
     def filter_func(self,url,**kwargs):#url过滤系统
         for i in self.filter:
             if not self.filter[i](url): return False
@@ -124,7 +137,7 @@ class url:#url管理器
         return list(self.filter.keys())
 
     def add_url(self,url,func,data=None,**kwargs):#添加url
-        if func == '':func = 'simplify_get'
+        if func == '':func = 'get'
         if func == 'get':url_ = url
         else:
             url_ = url + str(data)
@@ -159,6 +172,9 @@ class url:#url管理器
         self.file_run.write(f'{url}\n')
         self.file_run.flush()
 
+    def finish(self):
+        return len(self.url_list) == 0
+
     def return_url(self):
         return self.url_list.copy()
 
@@ -170,6 +186,7 @@ class Page_Downloader:
     def __init__(self,url:url,dic=''):
         self.url = url
         self.dir = dic
+        self.log = Information_storage.log(dic)
         Page_Downloader.num += 1
         self.page_source_dict = {}#页面保存信息
         self.cookie_Thread = None#子进程
@@ -177,6 +194,17 @@ class Page_Downloader:
         self.cookie_dict = {}
         self.cookie_dict_list = {}#sele的cookies
         self.lase_func = ''
+
+    def close(self):
+        self.log.close()
+
+    def stop(self):
+        try:
+            self.break_ = False
+            self.browser.quit()
+            self.lase_func = ''
+        except:
+            pass
 
     def strat_urlGet(self,*args,func_cookie):#用get请求url ->得到一个页面信息
         self.break_ = False
@@ -188,9 +216,13 @@ class Page_Downloader:
                 self.browser.quit()
                 self.browser = webdriver.Chrome(chrome_options=self.nowurl.options)
             try:
+                self.browser.set_page_load_timeout(self.nowurl.time_out)  # 设置页面加载超时
+                self.browser.set_script_timeout(self.nowurl.time_out)  # 设置页面异步js执行超时
                 self.browser.get(url)
             except:
                 self.browser = webdriver.Chrome(chrome_options=self.nowurl.options)
+                self.browser.set_page_load_timeout(self.nowurl.time_out)  # 设置页面加载超时
+                self.browser.set_script_timeout(self.nowurl.time_out)  # 设置页面异步js执行超时
                 self.browser.get(url)
             try:
                 if self.nowurl.new != True:raise Exception
@@ -204,6 +236,9 @@ class Page_Downloader:
                 pass
             self.start_cookies(func_cookie,url)
         else:#requests模式
+            if self.lase_func == 'get':
+                try:self.browser.quit()
+                except:pass
             try:
                 args = {'cookies':self.cookie_dict[self.nowurl.cookies]}
                 func_cookie([args['cookies']])
@@ -211,7 +246,7 @@ class Page_Downloader:
                 args = {}
                 func_cookie([])
             if self.nowurl.func == 'post':args['data'] = self.nowurl.data
-            self.browser = self.nowurl.requests(url,headers=self.nowurl.headers,**args)
+            self.browser = self.nowurl.requests(url,headers=self.nowurl.headers,**args,timeout=self.nowurl.time_out)
             self.cookie_dict[url] = requests.utils.dict_from_cookiejar(self.browser.cookies)#保存cookies
             func_cookie([self.cookie_dict[url]])
         self.lase_func = self.nowurl.func
@@ -263,6 +298,7 @@ class Page_Downloader:
         self.Parser.browser = self.browser
         self.Parser.url = self.url
         self.Parser.dir = self.dir
+        self.Parser.log = self.log
 
 class Page_Parser:
     def __init__(self,Downloader:Page_Downloader):
@@ -270,6 +306,7 @@ class Page_Parser:
         self.Downloader.set_Page_Parser(self)
         self.func_list = []
         self.func_dict = {}
+        self.n = 0
         self.init()
 
     def init(self,url=''):
@@ -286,9 +323,20 @@ class Page_Parser:
         return wrap
 
     def add_func(self,name,func):
-        n = len(self.func_list)
-        self.func_list.append(f'{name}[{n}]')
-        self.func_dict[f'{name}[{n}]'] = func
+        self.func_list.append(f'{name}[{self.n}]')
+        self.func_dict[f'{name}[{self.n}]'] = func
+        self.n += 1
+
+    def tra_func(self):
+        self.func_list = []
+        self.func_dict = {}
+        self.n = 0
+
+    def del_func(self,index,end=False):
+        if end:index = len(self.func_list) - index - 1
+        del self.func_dict[self.func_list[index]]
+        self.func_list[index] = 'Func_have_been_del'
+        self.func_dict['Func_have_been_del'] = lambda *args,**kwargs:None
 
     def return_func(self,only=True):
         if only:
@@ -793,9 +841,136 @@ class Page_Parser:
             self.element_dict[f'{name}[{num}]'] = [self.browser.json()]#request 解析为 json
         self.add_func(f'to_json', action)  # 添加func
 
+    def make_ActionChains(self,**kwargs):#创建动作链
+        @self.add_base
+        def action(num,name,*args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = [ActionChains(self.browser)]
+        self.add_func(f'make_ActionChains', action)  # 添加func
+
+    def ActionChains_click(self,Chains,element_value,index,**kwargs):#单击左
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].click(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]click>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_double_click(self,Chains,element_value,index,**kwargs):#双击左
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].double_click(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]double_click>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_click_right(self,Chains,element_value,index,**kwargs):#点击右
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].context_click(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]right_click>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_click_and_hold(self,Chains,element_value,index,**kwargs):#按住左
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].click_and_hold(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]click_and_hold>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_release(self,Chains,element_value,index,**kwargs):#松开左键
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].release(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]release>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_drag_and_drop(self,Chains,element_value,index,element_value2,index2,**kwargs):#拽托、松开
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].drag_and_drop(self.element_dict[element_value][index],
+                                                       self.element_dict[element_value2][index2])
+        self.add_func(f'[{Chains}]drag_and_drop>[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_move(self,Chains,element_value,index,**kwargs):#移动鼠标
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].move_to_element(self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]drag_and_drop>[{element_value}][{index}]', action)  # 添加func
+
+    def Special_keys(self,key:str,is_special_keys):  # 装饰器
+        if is_special_keys:
+            return keys_name_dict.get(key.lower(), key),f'[{key.upper()}]'
+        else:
+            return key,key
+
+    def ActionChains_key_down(self,Chains,key,element_value,index,is_special_keys,**kwargs):#down
+        new_key,key = self.Special_keys(key,is_special_keys)
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].key_down(new_key,self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]key_down>{key}:[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_key_up(self,Chains,key,element_value,index,is_special_keys,**kwargs):#down
+        new_key, key = self.Special_keys(key, is_special_keys)
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].key_up(new_key,self.element_dict[element_value][index])
+        self.add_func(f'[{Chains}]key_up>{key}:[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_send_keys_to_element(self,Chains,key,element_value,index,is_special_keys,**kwargs):#发送到指定元素
+        new_key, key = self.Special_keys(key, is_special_keys)
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].send_keys_to_element(self.element_dict[element_value][index],new_key)
+        self.add_func(f'[{Chains}]sent>{key}:[{element_value}][{index}]', action)  # 添加func
+
+    def ActionChains_send_keys(self,Chains,key,is_special_keys,**kwargs):#发送到焦点元素
+        new_key, key = self.Special_keys(key, is_special_keys)
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].send_keys(new_key)
+        self.add_func(f'[{Chains}].sent>{key}', action)  # 添加func
+
+    def ActionChains_run(self,Chains,run_time=1,**kwargs):#执行
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.element_dict[Chains][0].perform()
+            sleep(run_time)
+        self.add_func(f'[{Chains}].run<{run_time}s', action)  # 添加func
+
+    def get_all_windows(self,*args,**kwargs):#获取所有句柄
+        @self.add_base
+        def find(browser, num, name, *args, **kwargs):
+            nonlocal self
+            if browser == None:browser = self.browser
+            self.element_dict[f'{name}[{num}]'] = browser.window_handles#获得窗口句柄
+        self.add_func(f'get_all_windows',find)#添加func
+
+    def get_now_windows(self,*args,**kwargs):#获取当前窗口句柄
+        @self.add_base
+        def find(browser, num, name, *args, **kwargs):
+            nonlocal self
+            if browser == None:browser = self.browser
+            self.element_dict[f'{name}[{num}]'] = [browser.current_window_handle]#获得当前窗口句柄
+        self.add_func(f'get_now_window',find)#添加func
+
+    def switch_to_windwos(self,element_value,index=0,**kwargs):#切换窗口
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            self.browser.switch_to.window(self.element_dict[element_value][index])
+        self.add_func(f'switch_to_window>{element_value}[{index}]', action)  # 添加func
+
     def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
         status = None
+        self.log.write(f'{"*"*5}url:{self.now_url}{"*"*5}')
         def update(func_name):
             nonlocal status,self
             if status:
@@ -804,6 +979,7 @@ class Page_Parser:
                 success_code = 'No status'
             else:
                 success_code = 'Wrong to run'
+            self.log.write(f'last:[{success_code}];now:[{func_name}];url:{self.now_url} [END]')
             value_box = []
             for i in self.element_dict:
                 try:
