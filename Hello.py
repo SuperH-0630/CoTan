@@ -50,7 +50,7 @@ def Machine_Learning():
     Main()
 
 def MLA():
-    global top, DsGC
+    global top, Mla
     Mla = Process(target=Machine_Learning)
     Mla.start()
 
@@ -62,6 +62,16 @@ def GIT_Ctrl():
     global top, Git_Ctrl
     Git = Process(target=Git_Ctrl)
     Git.start()
+
+def Crawler_Main():
+    from Crawler import Main
+    Main()
+
+def Crawlef_Run():
+    global top, crawlef
+    crawlef = Process(target=Crawler_Main)
+    crawlef.start()
+
 
 def Main():
     global top
@@ -92,12 +102,12 @@ def Main():
     bg = '#FFFFFF'
     bc = 'tcross'
     #标题
-    tkinter.Label(F1, text='CoTan~NOTE', width=20,bg='#FFFFFF', font=ft).grid(column=0, row=0,sticky=tkinter.N)  # 设置说明
-    tkinter.Label(F1, text='私人笔记',bg=abg,font=ft1).grid(column=0, row=1,sticky=tkinter.W + tkinter.E)
-    tkinter.Button(F1,text='Git仓库控制器',cursor=bc,command=GIT_Ctrl,height=2,font=ft2,bg=bg,activebackground=abg,bd=0,justify=tkinter.LEFT).grid(column =0,row = 2,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='画图板',cursor=bc,command=Draw, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=3,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='爬虫系统',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=4,sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='我的寄忆',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=5,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Label(F1, text='CoTan~科学计算', width=20,bg='#FFFFFF', font=ft).grid(column=0, row=0,sticky=tkinter.N)  # 设置说明
+    tkinter.Label(F1, text='寄忆学术',bg=abg,font=ft1).grid(column=0, row=1,sticky=tkinter.W + tkinter.E)
+    tkinter.Button(F1,text='我的寄忆',cursor=bc,height=2,font=ft2,bg=bg,activebackground=abg,bd=0,justify=tkinter.LEFT).grid(column =0,row = 2,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='寄忆草稿版',cursor=bc,command=Draw, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=3,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='自动化网页',cursor=bc,command=Crawlef_Run, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=4,sticky=tkinter.N + tkinter.E + tkinter.W)
+    tkinter.Button(F1, text='Git仓库控制器',cursor=bc,command=GIT_Ctrl, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=5,sticky=tkinter.N + tkinter.E + tkinter.W)
 
     abg = '#FFFAFA'
     tkinter.Label(F1, text='数学系统', bg=abg, font=ft1).grid(column=0, row=6,sticky=tkinter.W + tkinter.E)

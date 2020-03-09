@@ -179,7 +179,7 @@ def Draw(dis_x=900,dis_y=700):
     if done[1] != 0: print('Init!')  # 检查是否错误
     Font = pygame.font.Font('Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
     root = pygame.display.set_mode((dis_x, dis_y),0)  # 创建屏幕
-    root_caption = pygame.display.set_caption('CoTan画图板')#定义标题（后期加上定义Logo）
+    root_caption = pygame.display.set_caption('CoTan草稿板')#定义标题（后期加上定义Logo）
     root.fill([255, 255, 255])  # 默认用白色填充窗口
     flat = True#循环条件（不是全局）
     while flat:
