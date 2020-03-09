@@ -450,7 +450,7 @@ def Main():
     tkinter.Button(top, bg=bbg, fg=fg, text='关闭数据表', command=close, font=FONT,
                    width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    global Data_Input,DataBase_BOX,DataName_Input
+    global Data_Input,DataBase_BOX,DataName_Input,URLTAG_Input
     a_y += 1
     tkinter.Label(top, text='数据存入格式:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
     Data_Input = tkinter.Entry(top, width=width_B * 2)
@@ -466,20 +466,26 @@ def Main():
     DataBase_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 3
+    tkinter.Label(top, text='URL标签:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    URLTAG_Input = tkinter.Entry(top, width=width_B * 2)
+    URLTAG_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+    a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='导出页面快照',command=lambda :Page_Parser_addActionFunc2('png'), font=FONT, width=width_B,height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONE',command=out, font=FONT, width=width_B,height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='回调添加URL',command=add_url_from_tag, font=FONT, width=width_B,height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='NONE', command=close, font=FONT,
+    tkinter.Button(top, bg=bbg, fg=fg, text='解析为json', command=lambda :Page_Parser_addActionFunc2('to_json'), font=FONT,
                    width=width_B, height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     top.update()#要预先update一下，否则会卡住
     global url,loader,Page_Parser,DataBase,save_dir
     save_dir = askdirectory(title='选择项目位置')#项目位置
-    url = Crawler_controller.url(save_dir,save_dir)
-    loader = Crawler_controller.Page_Downloader(url,save_dir)
-    Page_Parser = Crawler_controller.Page_Parser(loader)
-    DataBase = Crawler_controller.data_base
+    url = Crawler_controller.url(save_dir,save_dir)#url管理器
+    loader = Crawler_controller.Page_Downloader(url,save_dir)#页面下载器
+    Page_Parser = Crawler_controller.Page_Parser(loader)#页面解析器
+    DataBase = Crawler_controller.data_base#数据库
+
     top.mainloop()
 
 def to_Database(is_tag=True):
@@ -613,7 +619,7 @@ def Page_Parser_addActionFunc2(func):
             'make_bs':Page_Parser.make_bs,'findAll':Page_Parser.findAll,'findAll_by_text':Page_Parser.findAll_by_text,
             'get_children':Page_Parser.get_children,'get_offspring':Page_Parser.get_offspring,'get_up':Page_Parser.get_up,
             'get_down':Page_Parser.get_down,'get_by_path':Page_Parser.get_by_path,'brothers':Page_Parser.get_brothers,
-            'png':Page_Parser.Webpage_snapshot}.get(func,Page_Parser.make_bs)
+            'png':Page_Parser.Webpage_snapshot,'to_json':Page_Parser.to_json}.get(func,Page_Parser.make_bs)
     FUNC(**args)
     Update_Parser_Func_BOX()
 
@@ -767,6 +773,16 @@ def add_url():
     if new_url == '':return
     url.add_url(new_url,**args)
     update_URLBOX()
+
+def add_url_from_tag():
+    global URLTAG_Input,Page_Parser,Var_Input
+    try:
+        index = eval(VarIndex_Input.get(),{})
+    except:
+        index = slice(None,None)
+    Page_Parser.add_url(element_value=Var_Input.get(),index=index,url_name=URLTAG_Input.get(),update_func=update_URLBOX,
+                        url_args=add_args())
+    Update_Parser_Func_BOX()
 
 def update_URLBOX():
     global url,URL_BOX

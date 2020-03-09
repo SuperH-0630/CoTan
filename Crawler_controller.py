@@ -203,7 +203,7 @@ class Page_Downloader:
             except:
                 pass
             self.start_cookies(func_cookie,url)
-        else:
+        else:#requests模式
             try:
                 args = {'cookies':self.cookie_dict[self.nowurl.cookies]}
                 func_cookie([args['cookies']])
@@ -754,7 +754,7 @@ class Page_Parser:
 
     def Webpage_snapshot(self,**kwargs):
         @self.add_base
-        def action(num, name, *args, **kwargs):
+        def action(*args, **kwargs):
             nonlocal self
             md5 = hashlib.md5()  # 应用MD5算法
             md5.update(f'{time.time()}_{self.now_url}'.encode('utf-8'))
@@ -764,6 +764,34 @@ class Page_Parser:
             self.browser.save_screenshot(self.dir + '/' + name + '.png')
             sleep(1)
         self.add_func(f'Webpage_snapshot', action)  # 添加func
+
+    def add_url(self, element_value, index: (slice, int), url_name,update_func,url_args:dict, **kwargs):# 自动添加url
+        @self.add_base
+        def action(*args, **kwargs):
+            nonlocal self
+            iter_list = self.listSlicing(index, element_value)
+            for bs in iter_list:
+                try:
+                    if url_name == '$name&':
+                        new_url = bs.name
+                    elif url_name == '$self&':
+                        new_url = str(bs).replace('\n', '')
+                    elif url_name == '$string$':
+                        new_url = str(bs.string).replace('\n', '')
+                    else:
+                        new_url = bs.attrs.get(url_name, '')
+                    url.add_url(new_url, **url_args)
+                except:
+                    pass
+            update_func()#更新tkinter
+        self.add_func(f'add_URL<{element_value}[{index}]:{url_name}', action)  # 添加func
+
+    def to_json(self,**kwargs):
+        @self.add_base
+        def action(num, name, *args, **kwargs):
+            nonlocal self
+            self.element_dict[f'{name}[{num}]'] = [self.browser.json()]#request 解析为 json
+        self.add_func(f'to_json', action)  # 添加func
 
     def Element_interaction(self,update_func=lambda *args:None):#元素交互
         func_list = self.func_list
