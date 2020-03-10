@@ -3,7 +3,7 @@ from tkinter.filedialog import asksaveasfile
 import tkinter.messagebox
 from CGB import TK_HS
 
-help_Wo='''
+help_doc= '''
 *快捷键：
     d-不用点击左键画线（再次点击关闭）
     g-画直线（2）
@@ -46,35 +46,35 @@ help_Wo='''
     绘制函数-绘制基本初等函数和字定义解析函数
 '''
 
-def GetZColor():
+def increasing_func_color():
     global ZColo
     ZColo = askcolor(title='选择颜色')[0]
 
-def GetJColor():
+def subtraction_func_color():
     global JColo
     JColo = askcolor(title='选择颜色')[0]
 
-def GetColor():
+def select_color():
     global colo
     colo = askcolor(title='选择颜色')[0]
 
-def getBC():
+def choose_save():
     global BC
     BC = tkinter.filedialog.asksaveasfilename(title='选择保存位置',filetypes=[("PNG", ".png")])
     if not BC:BC = None
     else:BC += '.png'
 
-def getBG():
+def choose_open():
     global BG_IM
     BG_IM = tkinter.filedialog.askopenfilename(title='选择载入图片',filetypes=[("PNG", ".png"),("JPG", ".jpg")])
     if not BG_IM: BG_IM = None
 
 
-def ChangePenSZ():
+def switch_brush():
     global d
     if tkinter.messagebox.askokcancel('提示', '要切换到刷子吗（可当橡皮使用）'):d = 10
 
-def ChangePenB():
+def switch_big():
     global d
     if tkinter.messagebox.askokcancel('提示', '要切换到大笔吗'):d = 3
 
@@ -87,33 +87,33 @@ def Set_d():
     except:
         if tkinter.messagebox.askokcancel('提示', '设置失败，是否要切换到中笔吗'): d = 2
 
-def ChangePenZ():
+def switch_stroke():
     global d
     if tkinter.messagebox.askokcancel('提示', '要切换到中笔吗'):d = 2
 
-def ChangePenS():
+def switch_small():
     global d
     if tkinter.messagebox.askokcancel('提示', '要切换到小笔吗？'):d = 1
 
-def ZBX_XY():
+def plot_coordinate():
     global XY
     if tkinter.messagebox.askokcancel('提示', '是否绘制坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
         XY = 1
     else:XY = None
 
-def ZBX_XY_XKD():
+def plot_coordinate_small():
     global XY
     if tkinter.messagebox.askokcancel('提示', '是否绘制小跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
         XY = 2
     else:XY = None
 
-def ZBX_XY_DKD():
+def plot_coordinate_big_span():
     global XY
     if tkinter.messagebox.askokcancel('提示', '是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
         XY = 3
     else:XY = None
 
-def Set_k():
+def set_span():
     global XY,k,k_Input
     Input = k_Input.get().replace(' ', '')
     try:
@@ -131,19 +131,19 @@ def Set_k():
         else:
             XY = None
 
-def QK():
+def empty():
     global BG
     if tkinter.messagebox.askokcancel('提示', '是否清空草稿(点击取消可撤销未执行的清空)'):
         BG = askcolor(title='选择背景颜色')[0]
     else:BG = None
 
-def HS():
+def open_func_box():
     global HS_List,closeable
-    HS_List = TK_HS.CHS()
+    HS_List = TK_HS.func_box()
 
 def _help():
-    global help_Wo
-    tkinter.messagebox.showinfo(title='帮助', message=help_Wo)
+    global help_doc
+    tkinter.messagebox.showinfo(title='帮助', message=help_doc)
 
 def close():#关闭屏幕事件
     global top
@@ -153,7 +153,7 @@ def close():#关闭屏幕事件
     except:pass
     top.destroy()
 
-def CC():
+def tool_box():
     global colo#三个月还有这个一般v额u
     global ZColo,JColo
     global top#初始化屏幕
@@ -186,26 +186,26 @@ def CC():
     top.resizable(width=False, height=False)
     top.geometry(f'+10+10')
 
-    tkinter.Button(top, text ="选择颜色", command = GetColor,width = w_b, height = h_b).pack()#选择颜色组件
-    tkinter.Button(top, text="选择增函数颜色", command=GetZColor, width=w_b, height=1).pack()  # 选择颜色组件
-    tkinter.Button(top, text="选择减函数颜色", command=GetJColor, width=w_b, height=1).pack()  # 选择颜色组件
-    tkinter.Button(top, text="使用中笔(默认笔)", command=ChangePenZ, width=w_b, height=h_b).pack()  # 切换笔
-    tkinter.Button(top, text="使用大笔", command = ChangePenB,width = w_b, height = 1).pack()  # 切换到大笔
-    tkinter.Button(top, text="使用小笔", command=ChangePenS, width=w_b, height=1).pack()  # 切换笔
-    tkinter.Button(top, text="使用刷子", command=ChangePenSZ, width=w_b, height=1).pack()  # 切换笔
+    tkinter.Button(top, text ="选择颜色", command = select_color, width = w_b, height = h_b).pack()#选择颜色组件
+    tkinter.Button(top, text="选择增函数颜色", command=increasing_func_color, width=w_b, height=1).pack()  # 选择颜色组件
+    tkinter.Button(top, text="选择减函数颜色", command=subtraction_func_color, width=w_b, height=1).pack()  # 选择颜色组件
+    tkinter.Button(top, text="使用中笔(默认笔)", command=switch_stroke, width=w_b, height=h_b).pack()  # 切换笔
+    tkinter.Button(top, text="使用大笔", command = switch_big, width = w_b, height = 1).pack()  # 切换到大笔
+    tkinter.Button(top, text="使用小笔", command=switch_small, width=w_b, height=1).pack()  # 切换笔
+    tkinter.Button(top, text="使用刷子", command=switch_brush, width=w_b, height=1).pack()  # 切换笔
     d_Input = tkinter.Entry(top, width=w_b-2)
     d_Input.pack(fill=tkinter.BOTH)
     tkinter.Button(top, text="使用自定义大小", command=Set_d, width=w_b, height=1).pack()  # 切换笔
-    tkinter.Button(top, text="清空草稿", command=QK, width=w_b, height=h_b).pack()  # 填充背景
-    tkinter.Button(top, text="绘制坐标系", command=ZBX_XY, width=w_b, height=h_b).pack()  # 绘制坐标系
-    tkinter.Button(top, text="绘制坐标系(小跨度)", command=ZBX_XY_XKD, width=w_b, height=1).pack()  # 绘制坐标系
-    tkinter.Button(top, text="绘制坐标系(大跨度)", command=ZBX_XY_DKD, width=w_b, height=1).pack()  # 绘制坐标系
+    tkinter.Button(top, text="清空草稿", command=empty, width=w_b, height=h_b).pack()  # 填充背景
+    tkinter.Button(top, text="绘制坐标系", command=plot_coordinate, width=w_b, height=h_b).pack()  # 绘制坐标系
+    tkinter.Button(top, text="绘制坐标系(小跨度)", command=plot_coordinate_small, width=w_b, height=1).pack()  # 绘制坐标系
+    tkinter.Button(top, text="绘制坐标系(大跨度)", command=plot_coordinate_big_span, width=w_b, height=1).pack()  # 绘制坐标系
     k_Input = tkinter.Entry(top, width=w_b-2)
     k_Input.pack(fill=tkinter.BOTH)
-    tkinter.Button(top, text="使用自定义跨度", command=Set_k, width=w_b, height=1).pack()  # 切换笔
-    tkinter.Button(top, text="绘制函数", command=HS, width=w_b, height=h_b).pack()
-    tkinter.Button(top, text="保存", command=getBC, width=w_b, height=1).pack()
-    tkinter.Button(top, text="载入", command=getBG, width=w_b, height=1).pack()
+    tkinter.Button(top, text="使用自定义跨度", command=set_span, width=w_b, height=1).pack()  # 切换笔
+    tkinter.Button(top, text="绘制函数", command=open_func_box, width=w_b, height=h_b).pack()
+    tkinter.Button(top, text="保存", command=choose_save, width=w_b, height=1).pack()
+    tkinter.Button(top, text="载入", command=choose_open, width=w_b, height=1).pack()
     tkinter.Button(top, text="帮助", command=_help, width=w_b, height=1).pack()#help是系统保留关键词，用_help代替
     top.protocol('WM_DELETE_WINDOW',close)
     top.mainloop()

@@ -1,8 +1,8 @@
 from multiprocessing import Process
 
 def painting_board():
-    from CGB import Draw
-    Draw()
+    from CGB import draw_main
+    draw_main()
 
 def Draw():
     global top,HTB
@@ -10,8 +10,8 @@ def Draw():
     HTB.start()
 
 def Data_Science():
-    from Data_Science import Machine_learning
-    Machine_learning()
+    from Data_Science import machine_learning
+    machine_learning()
 
 def SJKX():
     global top,SJ
@@ -37,8 +37,8 @@ def HSGC():
     HsGC.start()
 
 def Algebraic_factory():
-    from DSGC import Alg
-    Alg()
+    from DSGC import algebraic_factory_main
+    algebraic_factory_main()
 
 def Dsgc():
     global top,DsGC
@@ -55,8 +55,8 @@ def MLA():
     Mla.start()
 
 def Git_Ctrl():
-    from Git_controller import Main
-    Main()
+    from Git_controller import git_main
+    git_main()
 
 def GIT_Ctrl():
     global top, Git_Ctrl
