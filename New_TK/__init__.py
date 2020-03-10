@@ -1,5 +1,6 @@
 import tkinter as tk
 
+
 class DragWindow(tk.Tk):
     root_x, root_y, abs_x, abs_y = 0, 0, 0, 0
     width, height = None, None

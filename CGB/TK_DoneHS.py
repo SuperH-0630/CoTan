@@ -13,44 +13,70 @@ help_doc = '''
 不支持定义域选择，不支持分段函数
 '''
 
+
 class FunctionExpression:
     def __init__(self, func):
         self.FUNC = func
-        self.NAME = {'x':0, 'Pi':math.pi, 'e':math.e, 'log':math.log,
-                     'sin':math.sin,'cos':math.cos,'tan':math.tan,
-                     'cot':lambda x:1/math.tan(x),'csc':lambda x:1/math.sin(x),
-                     'sec':lambda x:1/math.cos(x),'sinh':math.sinh,'cosh':math.cosh,
-                     'tanh':math.tanh,'asin':math.asin,'acos':math.acos,
-                     'atan':math.atan}
+        self.NAME = {
+            'x': 0,
+            'Pi': math.pi,
+            'e': math.e,
+            'log': math.log,
+            'sin': math.sin,
+            'cos': math.cos,
+            'tan': math.tan,
+            'cot': lambda x: 1 / math.tan(x),
+            'csc': lambda x: 1 / math.sin(x),
+            'sec': lambda x: 1 / math.cos(x),
+            'sinh': math.sinh,
+            'cosh': math.cosh,
+            'tanh': math.tanh,
+            'asin': math.asin,
+            'acos': math.acos,
+            'atan': math.atan}
 
-    def __call__(self,x):
+    def __call__(self, x):
         self.NAME['x'] = x
         return eval(self.FUNC, self.NAME)
 
+
 def determine():
-    global HS_Input,HS,help_doc
+    global HS_Input, HS, help_doc
     Input = HS_Input.get().replace(' ', '')
     if Input:
-        if tkinter.messagebox.askokcancel('提示', f'是否确认生成自定义函数:\n{HS_Input.get()}\n(点击取消可撤销未执行的制造函数)'):
+        if tkinter.messagebox.askokcancel(
+                '提示', f'是否确认生成自定义函数:\n{HS_Input.get()}\n(点击取消可撤销未执行的制造函数)'):
             HS = FunctionExpression(HS_Input.get())
-        else:HS = None
+        else:
+            HS = None
     else:
         if tkinter.messagebox.askokcancel('提示', f'点击确定撤销为执行的制造函数'):
             HS = None
+
 
 def get_help():
     tkinter.messagebox.showinfo(title='帮助', message=help_doc)
 
 
 def make_func():
-    global HS_Input,HS,top
+    global HS_Input, HS, top
     HS = None
     top = tkinter.Tk()  # 设置屏幕
     top.title('')
     top.resizable(width=False, height=False)
     top.geometry(f'+350+10')
-    button = tkinter.Button(top, text="制造函数", command=determine, width=28, height=1)  # 收到消息执行这个函数
-    help = tkinter.Button(top, text="帮助", command=get_help, width=28, height=1)  # 帮助菜单
+    button = tkinter.Button(
+        top,
+        text="制造函数",
+        command=determine,
+        width=28,
+        height=1)  # 收到消息执行这个函数
+    help = tkinter.Button(
+        top,
+        text="帮助",
+        command=get_help,
+        width=28,
+        height=1)  # 帮助菜单
     HS_Input = tkinter.Entry(top)
     HS_Input.pack(fill=tkinter.BOTH)
     button.pack()
