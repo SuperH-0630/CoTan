@@ -2,11 +2,10 @@ import tkinter,tkinter.messagebox
 import tkinter.font as tkFont
 from DSGC.Algebra import Algebra_Polynomial
 
-#删除系统
 #树状图打印核心组件
-def Draw_An_Alg():
+def draw_algebra_core():
     global alg,Can_Input,kd_bool,logkd_bool
-    name = get_AlgName()
+    name = get_algebraic_name()
     get = alg.Draw(name)
     try:
         wh = Can_Input.get().split(',')
@@ -17,9 +16,9 @@ def Draw_An_Alg():
         h = 300
     kd = bool(kd_bool.get())
     logkd = bool(logkd_bool.get())
-    Draw_Alg(get,w,h,kd,logkd)
+    draw_algebra(get, w, h, kd, logkd)
 
-def Draw_Alg(n,w,h,kh=True,logkh=True):
+def draw_algebra(n, w, h, kh=True, logkh=True):
     new_top = tkinter.Toplevel(bg=bg)
     new_top.resizable(width=False, height=False)
     new_top.geometry('+10+10')  # 设置所在位置
@@ -30,7 +29,6 @@ def Draw_Alg(n,w,h,kh=True,logkh=True):
     x = 30
     y = 150
     l = (size/16)*5.5
-    print(f'n={n}')
     for i in n:
         if i[0] == 'A':
             print(f'A.={i}')
@@ -40,41 +38,36 @@ def Draw_Alg(n,w,h,kh=True,logkh=True):
             x += len(te) * l
         elif i[0] == 'B':
             print(f'B.={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y,h = Draw_Son(i[1], Can, x, y, size,[],kh,logkh)  # 底数
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y,h = draw_algebra_son(i[1], Can, x, y, size, [], kh, logkh)  # 底数
             dy = y
             y = h-10
-            x, y,q = Draw_Son(i[2], Can, x, y, size - 5,[],kh,logkh)  # 指数
+            x, y,q = draw_algebra_son(i[2], Can, x, y, size - 5, [], kh, logkh)  # 指数
             y = dy
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
         elif i[0] == 'C':
             print(f'C.={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y, h = Draw_Son(i[1], Can, x, y, size, [],kh,logkh)  # log符号
-            # y += 10
-            # if logkh:x, y, q = Draw_Son([['A', '(']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # x, y, q = Draw_Son(i[2], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # if logkh:x, y, q = Draw_Son([['A', ')']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # y -= 10
-            if logkh:x, y, q = Draw_Son([['A', '(']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y, q = Draw_Son(i[2], Can, x, y, size, [],kh,logkh)  # 递归呼叫儿子
-            if logkh:x, y, q = Draw_Son([['A', ')']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y, h = draw_algebra_son(i[1], Can, x, y, size, [], kh, logkh)  # log符号
+            if logkh:x, y, q = draw_algebra_son([['A', '(']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y, q = draw_algebra_son(i[2], Can, x, y, size, [], kh, logkh)  # 递归呼叫儿子
+            if logkh:x, y, q = draw_algebra_son([['A', ')']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
         elif i[0] == 'D':
             print(f'D.={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
             y -= 20
-            a_x, y, h = Draw_Son(i[1], Can, x, y, size, [],kh,logkh)  # log符号
+            a_x, y, h = draw_algebra_son(i[1], Can, x, y, size, [], kh, logkh)  # log符号
             y += 40
-            b_x, y, h = Draw_Son(i[2], Can, x, y, size, [],kh,logkh)  # log符号
+            b_x, y, h = draw_algebra_son(i[2], Can, x, y, size, [], kh, logkh)  # log符号
             n_x = max([a_x, b_x]) - x
             y -= 20
-            x, y, h = Draw_Son([('A', '-' * int((n_x /(2*l))))], Can, x, y, size, [],kh,logkh)  # log符号
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            x, y, h = draw_algebra_son([('A', '-' * int((n_x / (2 * l))))], Can, x, y, size, [], kh, logkh)  # log符号
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
 
-    addNews('运算完毕')
+    output_prompt('运算完毕')
 
-def Draw_Son(n,Can,x,y,size,max_y,kh=True,logkh=True):
+def draw_algebra_son(n, Can, x, y, size, max_y, kh=True, logkh=True):
     F2 = ('Fixdsys', size)
     l = (size/16)*5.5
     print(f'n={n}')
@@ -88,53 +81,48 @@ def Draw_Son(n,Can,x,y,size,max_y,kh=True,logkh=True):
             x += len(te) * l
         elif i[0] == 'B':
             print(f'B={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y, h = Draw_Son(i[1], Can, x, y, size,max_y,kh,logkh)  # 底数
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y, h = draw_algebra_son(i[1], Can, x, y, size, max_y, kh, logkh)  # 底数
             dy = y
             y = h-10
-            x, y,q = Draw_Son(i[2], Can, x, y, size - 5,max_y,kh,logkh)  # 递归呼叫儿子
+            x, y,q = draw_algebra_son(i[2], Can, x, y, size - 5, max_y, kh, logkh)  # 递归呼叫儿子
             y = dy
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
         elif i[0] == 'C':
             print(f'C={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y, h = Draw_Son(i[1], Can, x, y, size, [],kh,logkh)  # log符号
-            # y += 10
-            # if logkh:x, y, q = Draw_Son([['A', '(']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # x, y, q = Draw_Son(i[2], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # if logkh:x, y, q = Draw_Son([['A', ')']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            # y -= 10
-            if logkh:x, y, q = Draw_Son([['A', '(']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            x, y, q = Draw_Son(i[2], Can, x, y, size, [],kh,logkh)  # 递归呼叫儿子
-            if logkh:x, y, q = Draw_Son([['A', ')']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y, h = draw_algebra_son(i[1], Can, x, y, size, [], kh, logkh)  # log符号
+            if logkh:x, y, q = draw_algebra_son([['A', '(']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            x, y, q = draw_algebra_son(i[2], Can, x, y, size, [], kh, logkh)  # 递归呼叫儿子
+            if logkh:x, y, q = draw_algebra_son([['A', ')']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
         elif i[0] == 'D':
             print(f'D={i}')
-            if kh:x, y, q = Draw_Son([['A', '[']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            if kh:x, y, q = draw_algebra_son([['A', '[']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
             y -= 20
-            a_x, y, h = Draw_Son(i[1], Can, x, y, size, [],kh,logkh)  # log符号
+            a_x, y, h = draw_algebra_son(i[1], Can, x, y, size, [], kh, logkh)  # log符号
             y += 40
-            b_x, y, h = Draw_Son(i[2], Can, x, y, size, [],kh,logkh)  # log符号
+            b_x, y, h = draw_algebra_son(i[2], Can, x, y, size, [], kh, logkh)  # log符号
             n_x = max([a_x, b_x]) - x
             y -= 20
-            x, y, h = Draw_Son([('A', '-' * int((n_x/(2*l))))], Can, x, y, size, [],kh,logkh)  # log符号
-            if kh:x, y, q = Draw_Son([['A', ']']], Can, x, y, size - 5, [],kh,logkh)  # 递归呼叫儿子
+            x, y, h = draw_algebra_son([('A', '-' * int((n_x / (2 * l))))], Can, x, y, size, [], kh, logkh)  # log符号
+            if kh:x, y, q = draw_algebra_son([['A', ']']], Can, x, y, size - 5, [], kh, logkh)  # 递归呼叫儿子
     try:
         re = min(max_y)
     except:
         re = 150
     return x,y,re
 
-def Print_Sym_Core(str_,w=40,h=20,jh=True):
+def show_algebraic_expression(str_, w=40, h=20, jh=True):
     global New_Text,alg,bg
     if jh:
         try:
             str_ = alg.rprint_expression(str_)
-            addNews('树状图计算成功')
+            output_prompt('树状图计算成功')
         except:
-            addNews('树状图计算失败')
+            output_prompt('树状图计算失败')
             return False
-    addNews('系统运算中')
+    output_prompt('系统运算中')
     new_top = tkinter.Toplevel(bg=bg)
     new_top.resizable(width=False, height=False)
     new_top.geometry('+10+10')  # 设置所在位置
@@ -143,16 +131,16 @@ def Print_Sym_Core(str_,w=40,h=20,jh=True):
     New_Text.delete(1.0, tkinter.END)
     New_Text.insert(tkinter.END,str_)
     New_Text.config(state=tkinter.DISABLED)
-    addNews('运算完毕')
+    output_prompt('运算完毕')
+
 #打印接口（按钮）
-def Print_Sym():
+def show_algebraic():
     global New_Text,alg,Can_Input
-    n = get_AlgName()
+    n = get_algebraic_name()
     print(n)
     try:
         str_ = alg.print_expression(n)
     except:
-        # raise
         return False
     try:
         wh = Can_Input.get().split(',')
@@ -161,61 +149,61 @@ def Print_Sym():
     except:
         w = 40
         h = 20
-    Print_Sym_Core(str_,w,h,False)
+    show_algebraic_expression(str_, w, h, False)
 
-def Tra_Alg():
+def clear_algebra():
     global alg
     try:
         alg.Tra_Alg()
-        update_BOX()
-        addNews('删除完成')
+        update_symbol_algebraic_box()
+        output_prompt('删除完成')
     except:
-        addNews('删除失败')
+        output_prompt('删除失败')
 
-def Del_Alg():
+def del_algebra():
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         alg.del_Alg(name)
-        update_BOX()
-        addNews('删除完成')
+        update_symbol_algebraic_box()
+        output_prompt('删除完成')
     except:
-        addNews('删除失败')
+        output_prompt('删除失败')
 
-def Del_Symbol():
+def delete_symbol():
     global alg
     try:
         value = Value_List[Value_BOX.curselection()[0]]
     except:
-        addNews('请选定符号')
+        output_prompt('请选定符号')
         return False
     try:
         alg.del_Symbol(value)
-        update_BOX()
-        addNews('删除完成')
+        update_symbol_algebraic_box()
+        output_prompt('删除完成')
     except:
         # raise
-        addNews('删除失败')
+        output_prompt('删除失败')
 
 #画图系统
-def Plotting():
+def drawing_image():
     global alg, p2D_Value, p3D_Value, Plot_Type
     try:
         ty = Plot_Type.get()
         if p2D_Value == None:raise Exception
         if ty == 1 and p3D_Value == None:raise Exception
-        name = get_AlgName()
+        name = get_algebraic_name()
         alg.Plot(name,p2D_Value,p3D_Value)
     except:
-        addNews('画图失败')
+        output_prompt('画图失败')
 
-def add_PlotValue():
+def add_plot_value():
     global alg,p2D_Value,p3D_Value,Range_Input,Plot_Type,Value_List,Value_BOX
     try:
         try:
             value = Value_List[Value_BOX.curselection()[0]]
         except:
-            addNews('请选定符号')
+            output_prompt('请选定符号')
             return False
         R = Range_Input.get().split(',')
         if R == ['']:R = [-10,10]
@@ -223,7 +211,7 @@ def add_PlotValue():
         tup = [value]+Range
         ty = Plot_Type.get()
     except:
-        addNews('修改失败')
+        output_prompt('修改失败')
         return False
     if p2D_Value == None:
         p2D_Value = tup
@@ -244,10 +232,10 @@ def add_PlotValue():
             else:
                 p2D_Value = p3D_Value
                 p3D_Value = tup
-    addNews('修改完成')
-    Update_PlotValue()
+    output_prompt('修改完成')
+    update_plot_value()
 
-def Update_PlotValue():
+def update_plot_value():
     global PlotValue_BOX,Plot_Type,p2D_Value,p3D_Value
     ty = Plot_Type.get()
     re = []
@@ -262,22 +250,22 @@ def Update_PlotValue():
     PlotValue_BOX.insert(tkinter.END, *re)
 
 #重写代数式
-def Rewrite():
+def rewrite_algebra():
     global alg,Rewrite_Input,Rewrite_F_Input,Rewrite_deep
     Func = Rewrite_Input.get()
     DX = Rewrite_F_Input.get().split(',')
     if DX == ['']:DX = []
     deep = bool(Rewrite_deep.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
-        get = alg.Rewrite(name,Func,DX,deep)
-        addNews('运行完成')
+        get = alg.rewrite_algebra(name, Func, DX, deep)
+        output_prompt('运行完成')
     except:
-        addNews('运行失败')
-    After_Func(get, f'代数式重写的结果为:{get},是否应用？')
+        output_prompt('运行失败')
+    apply_algebraic_tips(get, f'代数式重写的结果为:{get},是否应用？')
 
 #解不等式
-def Update_Inequality_BOX():
+def update_inequality_box():
     global Z_Inequality,Y_Inequality,Inequality_Type,Inequality_BOX
     re = []
     if Z_Inequality != None and Y_Inequality != None:
@@ -291,7 +279,7 @@ def Update_Inequality_BOX():
     Inequality_BOX.delete(0, tkinter.END)
     Inequality_BOX.insert(tkinter.END, *re)
 
-def Inequality_Solve():
+def inequality_solve():
     global alg,Z_Inequality,Y_Inequality,Inequality_Type,AnswerInequality_BOX
     if Z_Inequality != None and Y_Inequality != None:
         type = Inequality_Type.get()
@@ -299,55 +287,55 @@ def Inequality_Solve():
             get = alg.Solve_Inequality([Z_Inequality,Y_Inequality],type)
             AnswerInequality_BOX.delete(0, tkinter.END)
             AnswerInequality_BOX.insert(tkinter.END, *get)
-            addNews('运行完成')
+            output_prompt('运行完成')
         except:
-            addNews('解不等式失败')
+            output_prompt('解不等式失败')
 
-def In_add_Z():
+def add_left_algebra():
     global Z_Inequality
-    Z_Inequality = get_AlgName()
-    Update_Inequality_BOX()
+    Z_Inequality = get_algebraic_name()
+    update_inequality_box()
 
-def In_add_Y():
+def add_right_algebra():
     global Y_Inequality
-    Y_Inequality = get_AlgName()
-    Update_Inequality_BOX()
+    Y_Inequality = get_algebraic_name()
+    update_inequality_box()
 
 #解方程
-def To_Alg():
+def add_to_algebraic_box():
     global Answer_BOX, Answer_List
     get = Answer_List[Answer_BOX.curselection()[0]][1]#[1]取结果
-    After_Func(get, f'联立结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'联立结果为:{get},是否应用？')
 
-def To_Sub():
+def add_to_value_algebraic_box():
     global Answer_BOX, Answer_List,Sub_Dic
     get = Answer_List[Answer_BOX.curselection()[0]]
     Sub_Dic[get[0]] = get[1]
-    Update_Sub()
+    update_value_algebraic_box()
 
-def To_RSub():
+def add_to_algebraic_value_box():
     global Answer_BOX, Answer_List,RSub_Dic
     get = Answer_List[Answer_BOX.curselection()[0]]
     RSub_Dic[get[1]] = get[0]
-    Update_RSub()
+    update_algebraic_value_box()
 
-def alg_Solve():
+def solve_simultaneous_equations():
     global Solve_list,Answer_BOX,Answer_List
     try:
         get = alg.Solve(Solve_list)
-        addNews('运行成功')
+        output_prompt('运行成功')
     except:
-        addNews('解方程失败')
+        output_prompt('解方程失败')
         return False
     Answer_List = []
     re = []
     for i in get:
-        re.append(f'{i[0]} = {i[1]}')
+        re.append(f'{i[0]} = {i[1]}')#i[0]是一个字母=i[1]是一个代数式
         Answer_List.append((i[0],i[1]))
     Answer_BOX.delete(0, tkinter.END)
     Answer_BOX.insert(tkinter.END, *re)
 
-def Del_Solve():
+def del_equation():
     global Solve_list,Z_alg, Y_alg,Solve_BOX
     num = Solve_BOX.curselection()[0]
     if Z_alg != None or Y_alg != None:
@@ -359,9 +347,9 @@ def Del_Solve():
             del Solve_list[num]
     else:
         del Solve_list[num]
-    Update_SolveBOX()
+    update_simultaneous_equations_box()
 
-def Update_SolveBOX():
+def update_simultaneous_equations_box():
     global Solve_list,Solve_BOX,Z_alg, Y_alg
     BOX = []
     if Z_alg != None or Y_alg != None:
@@ -371,39 +359,39 @@ def Update_SolveBOX():
     Solve_BOX.delete(0, tkinter.END)
     Solve_BOX.insert(tkinter.END, *BOX)
 
-def add_ZY():
+def generating_equation():
     global Z_alg, Y_alg, Solve_list, Answer_List
     if Z_alg != None and Y_alg != None:
         Solve_list.append((Z_alg,Y_alg))
         Z_alg = None
         Y_alg = None
-    Update_SolveBOX()
+    update_simultaneous_equations_box()
 
-def add_Z():
+def add_equation_left():
     global Z_alg, Y_alg, Solve_list, Answer_List
-    Z_alg = get_AlgName()
-    Update_SolveBOX()
+    Z_alg = get_algebraic_name()
+    update_simultaneous_equations_box()
 
 
-def add_Y():
+def add_equation_right():
     global Z_alg, Y_alg, Solve_list, Answer_List
-    Y_alg = get_AlgName()
-    Update_SolveBOX()
+    Y_alg = get_algebraic_name()
+    update_simultaneous_equations_box()
 
 
 #代数运算
-def Alg_Sub_Num():
+def algebraic_assignment():
     global alg,Value_Sub_Dic
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.SubNum_Value(name,Value_Sub_Dic)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('代数运算失败')
+        output_prompt('代数运算失败')
         return False
-    After_Func(get, f'联立结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'联立结果为:{get},是否应用？')
 
-def Update_Sub_Num():
+def update_variable_assignment_box():
     global alg, Value_Sub_Dic,ValueNUM_BOX
     BOX = []
     for v in Value_Sub_Dic:
@@ -411,37 +399,37 @@ def Update_Sub_Num():
     ValueNUM_BOX.delete(0, tkinter.END)
     ValueNUM_BOX.insert(tkinter.END, *BOX)
 
-def Del_Sub_Num():
+def del_variable_assignment():
     global alg,Value_Sub_Dic,ValueNUM_BOX
     num = ValueNUM_BOX.curselection()[0]
     del Value_Sub_Dic[list(Value_Sub_Dic.keys())[num]]
-    Update_Sub_Num()
+    update_variable_assignment_box()
 
-def Add_Sub_Num():
+def add_variable_assignment():
     global ValueNUM_Input,Value_Sub_Dic,Num_Type
     try:
         value_name = Value_List[Value_BOX.curselection()[0]]
     except:
-        addNews('请选定符号')
+        output_prompt('请选定符号')
         return False
     value_num = alg.Creat_Num(ValueNUM_Input.get(),Num_Type.get())#不同类型
     Value_Sub_Dic[value_name] = value_num
-    Update_Sub_Num()
+    update_variable_assignment_box()
 
 #反向联立
-def Alg_RSub():
+def algebragic_value_simultaneous():
     global alg,RSub_Dic
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.RSub_Value(name,RSub_Dic)
-        addNews('反向联立完成')
+        output_prompt('反向联立完成')
     except:
-        addNews('无法联立')
+        output_prompt('无法联立')
         return False
-    After_Func(get, f'联立结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'联立结果为:{get},是否应用？')
 
 
-def Update_RSub():
+def update_algebraic_value_box():
     global alg, RSub_Dic, RSub_Alg, RSub_Value, RSub_BOX
     BOX = []
     if RSub_Value != None or RSub_Alg != None:
@@ -452,7 +440,7 @@ def Update_RSub():
     RSub_BOX.insert(tkinter.END, *BOX)
 
 
-def Del_RSub():
+def del_algebraic_value_simultaneousness():
     global alg,RSub_Dic, RSub_Alg, RSub_Value
     num = RSub_BOX.curselection()[0]
     if RSub_Value != None or RSub_Alg != None:
@@ -464,45 +452,45 @@ def Del_RSub():
             del RSub_Dic[list(RSub_Dic.keys())[num]]
     else:
         del RSub_Dic[list(RSub_Dic.keys())[num]]
-    Update_RSub()
+    update_algebraic_value_box()
 
-def Add_RSub():
+def add_algebraic_values_simultaneously():
     global alg, RSub_Dic, RSub_Alg,RSub_Value
     if RSub_Value != None and RSub_Alg != None:
         RSub_Dic[RSub_Alg] = RSub_Value
         RSub_Value,RSub_Alg = None,None
-    Update_RSub()
+    update_algebraic_value_box()
 
-def Add_RSub_Alg():
+def add_left_simultaneous_algebra():#代数式=值的左代数式
     global alg,RSub_Alg
-    alg_name = get_AlgName()
+    alg_name = get_algebraic_name()
     RSub_Alg = alg_name
-    Update_RSub()
+    update_algebraic_value_box()
 
-def Add_RSub_Value():
+def add_right_simultaneous_values():#解释同上
     global alg,Value_List,Value_BOX,RSub_Value
     try:
         value_name = Value_List[Value_BOX.curselection()[0]]
     except:
-        addNews('请选定符号')
+        output_prompt('请选定符号')
         return False
     RSub_Value = value_name
-    Update_RSub()
+    update_algebraic_value_box()
 
 #执行符号->代数式联立
-def Alg_Sub():
+def value_algebraic_simultaneous():
     global alg,Sub_Dic
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Sub_Value(name,Sub_Dic)
-        addNews('联立完成')
+        output_prompt('联立完成')
     except:
-        addNews('无法联立')
+        output_prompt('无法联立')
         return False
-    After_Func(get, f'联立结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'联立结果为:{get},是否应用？')
 
 
-def Update_Sub():
+def update_value_algebraic_box():
     global alg, Value_List, Value_BOX, Sub_Dic, Sub_Alg, Sub_Value, Sub_BOX
     BOX = []
     if Sub_Value != None or Sub_Alg != None:
@@ -513,7 +501,7 @@ def Update_Sub():
     Sub_BOX.insert(tkinter.END, *BOX)
 
 
-def Del_Sub():
+def del_value_algebraic_simultaneous():
     global alg, Value_List, Value_BOX, Sub_Dic, Sub_Alg, Sub_Value
     num = Sub_BOX.curselection()[0]
     if Sub_Value != None or Sub_Alg != None:
@@ -525,32 +513,32 @@ def Del_Sub():
             del Sub_Dic[list(Sub_Dic.keys())[num]]
     else:
         del Sub_Dic[list(Sub_Dic.keys())[num]]
-    Update_Sub()
+    update_value_algebraic_box()
 
-def Add_Sub():
+def add_value_algebraic_simultaneous():
     global alg, Value_List, Value_BOX, Sub_Dic, Sub_Alg,Sub_Value
     if Sub_Value != None and Sub_Alg != None:
         Sub_Dic[Sub_Value] = Sub_Alg
         Sub_Value,Sub_Alg = None,None
-    Update_Sub()
+    update_value_algebraic_box()
 
-def Add_Sub_Alg():
+def add_right_simultaneous_algebra():
     global alg,Value_List,Value_BOX,Sub_Alg
-    alg_name = get_AlgName()
+    alg_name = get_algebraic_name()
     Sub_Alg = alg_name
-    Update_Sub()
+    update_value_algebraic_box()
 
-def Add_Sub_Value():
+def add_left_simultaneous_values():
     global alg,Value_List,Value_BOX,Sub_Value
     try:
         value_name = Value_List[Value_BOX.curselection()[0]]
     except:
-        addNews('请选定符号')
+        output_prompt('请选定符号')
         return False
     Sub_Value = value_name
-    Update_Sub()
+    update_value_algebraic_box()
 
-def alg_to_Num():
+def algebraic_digitization():
     global alg,Num_Input
     try:
         num = int(Num_Input.get())
@@ -558,61 +546,61 @@ def alg_to_Num():
         num = 5
     try:
         get = alg.to_num(num)
-        addNews('数字化完成')
+        output_prompt('数字化完成')
     except:
-        addNews('数字化失败')
+        output_prompt('数字化失败')
         return False
-    After_Func(get, f'数字化的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'数字化的结果为:{get},是否应用？')
 
-def Ex_Func():
+def expand_special():
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.func_Ex(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开特殊函数的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开特殊函数的结果为:{get},是否应用？')
 
-def Ex_I():
+def expand_complex():
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.complex_Ex(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开虚数的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开虚数的结果为:{get},是否应用？')
 
-def Coll():
+def merger_of_similar_items():
     global alg,CollX_Input
     x = CollX_Input.get().split('#')
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Collect(name,x)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get,f'合并同类项的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'合并同类项的结果为:{get},是否应用？')
 
-def Expansion():
+def general_expansion():
     global alg,EX_IM
     IM = bool(EX_IM.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.expansion(name,IM)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'普遍展开的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'普遍展开的结果为:{get},是否应用？')
 
-def Factor():
+def factorization():
     global alg,GAOSI, FactorM_Input,Factor_Deep,Factor_Rat
-    name = get_AlgName()
+    name = get_algebraic_name()
     GS = bool(GAOSI.get())
     Deep = bool(Factor_Deep.get())
     Rat = bool(Factor_Rat.get())
@@ -622,277 +610,265 @@ def Factor():
         M = None
     try:
         get = alg.factor(name,M,GS,Deep,Rat)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'因式分解的结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'因式分解的结果为:{get},是否应用？')
 
-def Simp():
+def standardization():
     global alg,Simpratio_Input,SimpFunc_Input,simp_in,simp_rat
     try:
         radio = float(Simpratio_Input.get())
     except:radio = 1.7
     rat = bool(simp_rat.get())
     inverse = bool(simp_in.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.simplify(name,radio,rat=rat,inv=inverse)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'化简(标准化)为:{get},是否应用？')
+    apply_algebraic_tips(get, f'化简(标准化)为:{get},是否应用？')
 
-def After_Func(re,message):
+def apply_algebraic_tips(re, message):
     if tkinter.messagebox.askokcancel('提示', message):
         alg.addAlgebra('', re)
-        update_BOX()
+        update_symbol_algebraic_box()
 
-def log_Ex():
+def expand_log():
     global alg,Fo_log,Deep_log
     Fo = not bool(Fo_log.get())
     Deep = bool(Deep_log.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.log_Expansion(name,Fo,Deep)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开对数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开对数结果为:{get},是否应用？')
 
-def log_Simp():
+def reduce_log():
     global alg,Fo_log
     Fo = not bool(Fo_log.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
-        get = alg.log_Simp(name,Fo)
-        addNews('运算成功')
+        get = alg.log_Simp(name, Fo)
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'化简对数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'化简对数结果为:{get},是否应用？')
 
-def mul_Ex():
+def expand_mul():
     global alg,Fo_exp
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Mul_Expansion(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开乘法结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开乘法结果为:{get},是否应用？')
 
-def multinomial_Ex():
+def expand_additive_index():
     global alg,Fo_exp
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Multinomial_Expansion(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开加法式幂结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开加法式幂结果为:{get},是否应用？')
 
-def multinomial_Simp():
+def composite_index():
     global alg,Fo_exp
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Simp_Multinomial(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'合成幂指数的结果为:{get},是否应用？(彻底化简加法式幂可以使用因式分解)')
+    apply_algebraic_tips(get, f'合成幂指数的结果为:{get},是否应用？(彻底化简加法式幂可以使用因式分解)')
 
-def exp_Ex_Mul():
+def expand_exp_base():
     global alg,Fo_exp
     deep = bool(Deep_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Expansion_base(name,deep)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开指数底数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开指数底数结果为:{get},是否应用？')
 
-def exp_Ex_base():
-    global alg,Fo_exp
-    deep = bool(Deep_exp.get())
-    name = get_AlgName()
-    try:
-        get = alg.Pow_Expansion_base(name,deep)
-        addNews('运算成功')
-    except:
-        addNews('运算失败')
-        return False
-    After_Func(get, f'展开指数底数结果为:{get},是否应用？')
-
-def exp_Ex_exp():
+def expand_exp_index():
     global alg,Deep_exp
     deep = bool(Deep_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Expansion_exp(name,deep)
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开指数幂结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开指数幂结果为:{get},是否应用？')
 
-def exp_Ex():
+def expand_power():
     global alg,Deep_exp
     deep = bool(Deep_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Expansion(name,deep)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'展开指数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'展开指数结果为:{get},是否应用？')
 
-def exp_Simp_base():
+def reduce_exp_base():
     global alg,Fo_exp
     Fo = not bool(Fo_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Simp_base(name,Fo)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'化简指数底数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'化简指数底数结果为:{get},是否应用？')
 
-def exp_Simp_exp():
+def reduce_exp_index():
     global alg,Fo_exp
     Fo = not bool(Fo_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Simp_exp(name,Fo)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'化简指数幂结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'化简指数幂结果为:{get},是否应用？')
 
-def exp_Simp():
+def reduced_power():
     global alg,Fo_exp
     Fo = not bool(Fo_exp.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Pow_Simp(name,Fo)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'化简指数结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'化简指数结果为:{get},是否应用？')
 
-def trig_Simp():#三角函数化简
+def reduced_trigonometric():#三角函数化简
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Trig_Simp(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get,f'三角化简结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'三角化简结果为:{get},是否应用？')
 
-def trig_Expand():#三角展开
+def expand_trigonometric():#三角展开
     global alg,simp_deep
     deep = bool(simp_deep.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Trig_Expansion(name,deep)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'三角展开结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'三角展开结果为:{get},是否应用？')
 
-def rat():#通分
+def fractional_division():#通分
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Fractional_merge(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get,f'分式通分结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'分式通分结果为:{get},是否应用？')
 
-def canc():#约分
+def fraction_reduction():#约分
     global alg
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Fraction_reduction(name)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get,f'分式约分结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'分式约分结果为:{get},是否应用？')
 
-def apart():#裂项
+def fractional_fission():#裂项
     global alg,apart_Input
     x = apart_Input.get().replace(' ','')
     if x == '':x = None
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Fractional_fission(name,x)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get,f'分式裂项结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'分式裂项结果为:{get},是否应用？')
 
-def as_Fraction():#together
+def fractional_synthesis():#together
     global alg,together_deep
     deep = bool(together_deep.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
-        get = alg.as_Fraction(name,deep)
-        addNews('运算成功')
+        get = alg.as_Fraction(name, deep)
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'合成分式结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'合成分式结果为:{get},是否应用？')
 
-def Fraction_rat():#分母有理化
+def denominator_rationalization():#分母有理化
     global alg,radsymbol,radMax_Input
     #Max
     try:M = int(radMax_Input.get())
     except:M=4
     #Symbol
     s = bool(radsymbol.get())
-    name = get_AlgName()
+    name = get_algebraic_name()
     try:
         get = alg.Fractional_rat(name,s,M)
-        addNews('运算成功')
+        output_prompt('运算成功')
     except:
-        addNews('运算失败')
+        output_prompt('运算失败')
         return False
-    After_Func(get, f'分母有理化结果为:{get},是否应用？')
+    apply_algebraic_tips(get, f'分母有理化结果为:{get},是否应用？')
 
-def Option_Add():
+def add_operation_algebra():
     global alg,Option_BOX,Option_List
-    name = get_AlgName()
+    name = get_algebraic_name()
     if name == None:return False
     Option_List.append(name)
-    Update_Option_BOX()
+    update_operation_box()
 
-def Option_Del():
+def del_operation_algebra():
     global Option_BOX, Option_List
     del Option_List[Option_BOX.curselection()[0]]
-    Update_Option_BOX()
+    update_operation_box()
 
-def Option_Tra():
+def clear_operational_algebra():
     global Option_BOX, Option_List
-    update_BOX()
+    update_symbol_algebraic_box()
 
-def Update_Option_BOX():
+def update_operation_box():
     global Option_BOX, Option_List
     re = []
     for i in range(len(Option_List)):
@@ -900,51 +876,51 @@ def Update_Option_BOX():
     Option_BOX.delete(0, tkinter.END)
     Option_BOX.insert(tkinter.END, *re)
 
-def Merge_Func():
+def algebraic_composition():
     global alg, Option_List,Merge_Func_Input
     name = Option_List.copy()
     if len(name) < 2: raise Exception
     try:
         re = alg.Merge_Func(name,Merge_Func_Input.get())
-        addNews('合成成功')
+        output_prompt('合成成功')
     except:
-        addNews('合成失败')
+        output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
         alg.addAlgebra('', re)
-        update_BOX()
+        update_symbol_algebraic_box()
 
-def Merge_Mul():
+def algebraic_multiplication():
     global alg, Option_List
     name = Option_List.copy()
     if len(name)<2:raise Exception
     try:
         re = alg.Merge_Mul(name)
-        addNews('合成成功')
+        output_prompt('合成成功')
     except:
-        addNews('合成失败')
+        output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
         alg.addAlgebra('',re)
-        update_BOX()
+        update_symbol_algebraic_box()
 
-def Merge_Add():
+def algebraic_addition():
     global alg,Option_List
     name = Option_List.copy()
     if len(name)<2:raise Exception
     try:
         re = alg.Merge_Add(name)
-        addNews('合成成功')
+        output_prompt('合成成功')
     except:
-        addNews('合成失败')
+        output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
         alg.addAlgebra('',re)
-        update_BOX()
+        update_symbol_algebraic_box()
 
-def Func_Split():
+def algebraic_partition():
     global alg,Deep_Split,Func_Input,Split_XS
-    name = get_AlgName()
+    name = get_algebraic_name()
     Deep = Deep_Split.get()
     f = Func_Input.get().split(',')
     m = Split_XS.get()
@@ -952,34 +928,34 @@ def Func_Split():
     else:must = True
     try:
         re = alg.Split_Func(name,Deep,f,must)
-        addNews('拆分成功')
+        output_prompt('拆分成功')
     except:
-        addNews('拆分失败')
+        output_prompt('拆分失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
             alg.addAlgebra('',in_alg)
-            update_BOX()
+            update_symbol_algebraic_box()
 
-def Split_Add():
+def algebraic_similarity_split():
     global alg,Object_Input,Split_XS
-    name = get_AlgName()
+    name = get_algebraic_name()
     Value = Object_Input.get().split('#')
     f = Split_XS.get()
     try:
         re = alg.Split_Add(name,Value,f)
-        addNews('拆分成功')
+        output_prompt('拆分成功')
     except:
-        addNews('拆分失败')
+        output_prompt('拆分失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
             alg.addAlgebra('',in_alg)
-            update_BOX()
+            update_symbol_algebraic_box()
 
-def Split_Mul():
+def algebraic_factorization():
     global alg,Split_XS
-    name = get_AlgName()
+    name = get_algebraic_name()
     all = Split_XS.get()
     if all == 0:
         k = [True,False]
@@ -989,36 +965,27 @@ def Split_Mul():
         k = [True, True]
     try:
         re = alg.Split_Mul(name,*k)
-        addNews('拆分成功')
+        output_prompt('拆分成功')
     except:
-        addNews('拆分失败')
+        output_prompt('拆分失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
             alg.addAlgebra('',in_alg)
-            update_BOX()
+            update_symbol_algebraic_box()
 
 #统一接口：得到alg的名字(提取第一个)
-def get_AlgName():
+def get_algebraic_name():
     global alg_list,Alg_BOX
     try:
-        print(alg_list)
         name = alg_list[Alg_BOX.curselection()[0]]
-        print(name)
     except:
         name = None
-        addNews('请选定代数式')
+        output_prompt('请选定代数式')
     return name
 
-#结果显示统一接口
-def Re(list,str_= None):#结果显示
-    global alg,Re_BOX
-    Re_BOX.delete(0, tkinter.END)
-    Re_BOX.insert(tkinter.END, *list)
-    if str_ != None:
-        Print_Sym_Core(str_)
 
-def Add_Alg():
+def add__algebraic():
     global AlgName_Input,Alg_Input,Alg_BOX,simp_in,simp_rat,ratio_Input,simp_bool
     try:
         in_alg = Alg_Input.get()
@@ -1032,26 +999,26 @@ def Add_Alg():
             if new_alg != None and tkinter.messagebox.askokcancel('提示', f'约简函数为:{new_alg}，是否应用?'):
                 in_alg = new_alg
         if not alg.addAlgebra(name,in_alg):raise Exception
-        update_BOX()
-        addNews('代数式新增成功')
+        update_symbol_algebraic_box()
+        output_prompt('代数式新增成功')
     except:
-        addNews('新增代数式无法应用')
+        output_prompt('新增代数式无法应用')
 #获取预测
-def get_JS():
+def get_predictions():
     global Value_BOX,Value_List,alg,JS_BOX
     try:
         try:
             n = Value_List[Value_BOX.curselection()[0]]
         except:
-            addNews('请选定符号')
+            output_prompt('请选定符号')
             return False
         JS_BOX.delete(0, tkinter.END)
         JS_BOX.insert(tkinter.END, *alg.Value_assumptions0(n))
-        addNews('性质预测成功')
+        output_prompt('性质预测成功')
     except:
-        addNews('性质预测失败')
+        output_prompt('性质预测失败')
 #更新列表显示
-def update_BOX():
+def update_symbol_algebraic_box():
     global alg,Value_BOX,Value_List,Alg_BOX,alg_list,Option_List,Option_BOX
     #保存符号
     re = alg()#0-value,1-alg
@@ -1067,7 +1034,7 @@ def update_BOX():
     Option_List = []
     Option_BOX.delete(0, tkinter.END)
 
-def AddSymbol():#添加自定义Symbol
+def add_custom_symbol():#添加自定义Symbol
     global AT, RI, PC, EO, FI, CIR, NZ, ValueName_Input,Value_BOX,NONE,INT
     #复选框系统
     C = []
@@ -1094,30 +1061,30 @@ def AddSymbol():#添加自定义Symbol
     else:
         RNZ = None  # 其余
     try:
-        __addSymbot_Core(AT.get(),RI.get(),PC.get(),EO.get(),FI.get(),RCIR,RNZ,INT.get())
+        __add_symbot_core(AT.get(), RI.get(), PC.get(), EO.get(), FI.get(), RCIR, RNZ, INT.get())
     except:
-        addNews('自定义符号新增失败')
+        output_prompt('自定义符号新增失败')
 
-def addRSymbol():#添加实数符号
-    __addSymbot_Core(RCIR=['real',True],ms='实数(且复数)符号')
-def addZSymbol():#添加整数符号
-    __addSymbot_Core(INT=1,ms='整数(且实数)符号')
-def addNPSymbol():#非负实数
-    __addSymbot_Core(RNZ=['negative',False],RCIR=['real',True],ms='非负实数符号')
-def addevenSymbol():#偶数
-    __addSymbot_Core(EO=1,ms='偶数(且整数)符号')
-def addoddSymbol():#奇数
-    __addSymbot_Core(EO=2,ms='奇数(且整数)符号')
-def addZRSymbol():#正实数
-    __addSymbot_Core(RNZ=['positive',True],RCIR=['real',True],ms='正实数符号')
-def addZZSymbol():#正整数
-    __addSymbot_Core(RNZ=['positive',True],INT=1,ms='正整数符号')
-def addNSymbol():#自然数
-    __addSymbot_Core(RNZ=['negative',False],INT=1,ms='自然数(非负整数)符号')
-def addWSymbol():#无约束
-    __addSymbot_Core(NONE=1,ms='仅满足交换律的无约束符号')
+def add_real():#添加实数符号
+    __add_symbot_core(RCIR=['real', True], ms='实数(且复数)符号')
+def add_integer():#添加整数符号
+    __add_symbot_core(INT=1, ms='整数(且实数)符号')
+def add_non_negative_real():#非负实数
+    __add_symbot_core(RNZ=['negative', False], RCIR=['real', True], ms='非负实数符号')
+def add_even():#偶数
+    __add_symbot_core(EO=1, ms='偶数(且整数)符号')
+def add_odd():#奇数
+    __add_symbot_core(EO=2, ms='奇数(且整数)符号')
+def add_positive_real():#正实数
+    __add_symbot_core(RNZ=['positive', True], RCIR=['real', True], ms='正实数符号')
+def add_positive_integer():#正整数
+    __add_symbot_core(RNZ=['positive', True], INT=1, ms='正整数符号')
+def add_natural():#自然数
+    __add_symbot_core(RNZ=['negative', False], INT=1, ms='自然数(非负整数)符号')
+def add_no_constraints():#无约束
+    __add_symbot_core(NONE=1, ms='仅满足交换律的无约束符号')
 #添加Symbol的统一接口
-def __addSymbot_Core(AT=0,RI=0,PC=0,EO=0,FI=0,RCIR=None,RNZ=None,INT=0, NONE=0,ms='自定义符号'):
+def __add_symbot_core(AT=0, RI=0, PC=0, EO=0, FI=0, RCIR=None, RNZ=None, INT=0, NONE=0, ms='自定义符号'):
     global alg
     #代数，有理，质数，偶数，有限实数，复数，正负，整数，取消
     name_list = ValueName_Input.get().split(',')
@@ -1125,23 +1092,23 @@ def __addSymbot_Core(AT=0,RI=0,PC=0,EO=0,FI=0,RCIR=None,RNZ=None,INT=0, NONE=0,m
         try:
             if not alg.addSymbol(name, AT, RI, PC, EO, FI, RCIR, RNZ, INT, NONE,ms): raise Exception
         except:
-            addNews(f'新增“{name}”失败')
-    addNews(f'新增“{ms}”完成')
-    update_BOX()
+            output_prompt(f'新增“{name}”失败')
+    output_prompt(f'新增“{ms}”完成')
+    update_symbol_algebraic_box()
 
-def addNews(News):
+def output_prompt(News):
     global News_BOX,T,top
     T += 1
     News = str(News)
     News_BOX.insert(0, News+f'({T})')
     top.update()
 
-def Alg():
+def algebraic_factory_main():
     global alg,top,Value_List,alg_list,Option_List,Sub_Dic,Sub_Value,Sub_Alg,RSub_Dic,RSub_Value,RSub_Alg,Value_Sub_Dic
     global Z_alg,Y_alg,Solve_list,Answer_List,Z_Inequality,Y_Inequality,p2D_Value,p3D_Value,T
     global bg,bbg,fg,F2,FONT,F3
 
-    alg = Algebra_Polynomial(addNews)
+    alg = Algebra_Polynomial(output_prompt)
 
     alg_list = []
     Value_List = []
@@ -1150,7 +1117,7 @@ def Alg():
     bbg = '#FFFAFA'#按钮颜色
     fg = '#000000'#文字颜色
     top["bg"] = bg
-    FONT = ('Font\ZKST.ttf', 11)#设置字体
+    FONT = ('黑体', 11)#设置字体
     # F2 = tkFont.Font(family='Fixdsys', size=16)
     F2 = ('Fixdsys',16)
     F3 = tkFont.Font(family='Fixdsys', size=11)
@@ -1186,27 +1153,27 @@ def Alg():
     ValueName_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='实数符号(R)', command=addRSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='实数符号(R)', command=add_real, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='整数符号(Z)', command=addZSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='整数符号(Z)', command=add_integer, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='非负实数符号', command=addNPSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='非负实数符号', command=add_non_negative_real, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='偶数符号', command=addevenSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='偶数符号', command=add_even, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='奇数符号', command=addoddSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='奇数符号', command=add_odd, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='正数符号', command=addZRSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='正数符号', command=add_positive_real, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='自然数符号', command=addNSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='自然数符号', command=add_natural, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x , row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='正整数符号', command=addZZSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='正整数符号', command=add_positive_integer, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='无约束符号', command=addWSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='无约束符号', command=add_no_constraints, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
     a_y += 1
     AT = tkinter.IntVar()#代数或者超越数
@@ -1264,11 +1231,11 @@ def Alg():
     Value_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=6,sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 6
-    tkinter.Button(top, bg=bbg, fg=fg, text='自定义符号', command=AddSymbol, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='自定义符号', command=add_custom_symbol, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看假设',command = get_JS, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看假设', command = get_predictions, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除符号',command = Del_Symbol, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除符号', command = delete_symbol, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
 
     global JS_BOX
@@ -1313,11 +1280,11 @@ def Alg():
                         variable=simp_bool).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空代数式',command=Tra_Alg, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空代数式', command=clear_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成代数式', command=Add_Alg, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成代数式', command=add__algebraic, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除代数式',command=Del_Alg, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除代数式', command=del_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -1341,7 +1308,7 @@ def Alg():
     Rewrite_deep = tkinter.IntVar()
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='重写子代数式',
                         variable=Rewrite_deep).grid(column=a_x+2, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='重写代数式', command=Rewrite, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='重写代数式', command=rewrite_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -1365,11 +1332,11 @@ def Alg():
                         variable=Deep_Split).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='同类项拆分',command=Split_Add, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='同类项拆分', command=algebraic_similarity_split, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='乘法拆分', command=Split_Mul, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='乘法拆分', command=algebraic_factorization, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='函数拆分',command=Func_Split, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='函数拆分', command=algebraic_partition, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Option_BOX
@@ -1378,11 +1345,11 @@ def Alg():
     Option_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 4
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加',command=Option_Add, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加', command=add_operation_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空', command=Option_Tra, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空', command=clear_operational_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除',command=Option_Del, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除', command=del_operation_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Merge_Func_Input
@@ -1392,11 +1359,11 @@ def Alg():
     Merge_Func_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='多项式合成',command=Merge_Add, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='多项式合成', command=algebraic_addition, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='因式合成', command=Merge_Mul, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='因式合成', command=algebraic_multiplication, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)  # 添加函数
-    tkinter.Button(top, bg=bbg, fg=fg, text='函数合成',command=Merge_Func, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='函数合成', command=algebraic_composition, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Num_Input
@@ -1406,7 +1373,7 @@ def Alg():
     Num_Input = tkinter.Entry(top, width=width_B)
     Num_Input.grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
-    tkinter.Button(top, bg=bbg, fg=fg, text='代数式数字化', command=alg_to_Num, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='代数式数字化', command=algebraic_digitization, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=0)
@@ -1434,17 +1401,17 @@ def Alg():
                         variable=radsymbol).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='最小公分母',command=rat, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='最小公分母', command=fractional_division, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='分式约分',command=canc, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='分式约分', command=fraction_reduction, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='分式裂项',command=apart, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='分式裂项', command=fractional_fission, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='分母有理化',command=Fraction_rat, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='分母有理化', command=denominator_rationalization, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='转化为分式(小改动)',command=as_Fraction, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='转化为分式(小改动)', command=fractional_synthesis, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1,columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -1454,9 +1421,9 @@ def Alg():
     global simp_deep
     a_y += 1
     simp_deep = tkinter.IntVar()
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开三角函数',command=trig_Expand, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开三角函数', command=expand_trigonometric, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='三角函数合成',command=trig_Simp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='三角函数合成', command=reduced_trigonometric, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='完全展开',
                         variable=simp_deep).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
@@ -1476,28 +1443,28 @@ def Alg():
                         variable=Deep_exp).grid(column=a_x, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开乘法',command=mul_Ex, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开乘法', command=expand_mul, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开加法式幂',command=multinomial_Ex, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开加法式幂', command=expand_additive_index, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='指数合成', command=multinomial_Simp, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='指数合成', command=composite_index, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数底数',command=exp_Simp_base, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数底数', command=reduce_exp_base, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数幂',command=exp_Simp_exp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数幂', command=reduce_exp_index, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数',command=exp_Simp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='化简指数', command=reduced_power, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数底数',command=exp_Ex_base, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数底数', command=expand_exp_base, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数幂',command=exp_Ex_exp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数幂', command=expand_exp_index, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数',command=exp_Ex, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开指数', command=expand_power, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Fo_log,Deep_log
@@ -1510,18 +1477,18 @@ def Alg():
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='忽略假设',
                         variable=Fo_log).grid(column=a_x+1, row=a_y, sticky=tkinter.W)
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开对数',command=log_Ex, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开对数', command=expand_log, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='化简对数',command=log_Simp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='化简对数', command=reduce_log, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Label(top, text='【虚数与特殊函数】', bg=bg, fg=fg, font=FONT, width=width_B*3, height=height_B).grid(
         column=a_x,row=a_y,columnspan=3)  # 设置说明
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开特殊函数',command=Ex_Func, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开特殊函数', command=expand_special, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='展开虚数',command=Ex_I, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='展开虚数', command=expand_complex, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
 
 
@@ -1570,15 +1537,15 @@ def Alg():
                         variable=EX_IM).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='化简标准化',command=Simp, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='化简标准化', command=standardization, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='普遍运算展开',command=Expansion, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='普遍运算展开', command=general_expansion, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='因式分解',command=Factor, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='因式分解', command=factorization, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='合并同类项',command=Coll, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='合并同类项', command=merger_of_similar_items, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y,columnspan=3, sticky=tkinter.E + tkinter.W)
 
     a_x += 3
@@ -1590,17 +1557,17 @@ def Alg():
         column=a_x,row=a_y,columnspan=3)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='选定符号',command = Add_Sub_Value, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='选定符号', command = add_left_simultaneous_values, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='选定代数式',command = Add_Sub_Alg, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='选定代数式', command = add_right_simultaneous_algebra, font=FONT, width=width_B, height=height_B).grid(
         column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='新键联立',command = Add_Sub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='新键联立', command = add_value_algebraic_simultaneous, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成联立代数式', command=Alg_Sub,font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成联立代数式', command=value_algebraic_simultaneous, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, columnspan=2,row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除联立',command = Del_Sub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除联立', command = del_value_algebraic_simultaneous, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Sub_BOX
@@ -1614,19 +1581,19 @@ def Alg():
 
     #反向联立系统
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='选定代数式', command=Add_RSub_Alg, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选定代数式', command=add_left_simultaneous_algebra, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='选定符号', command=Add_RSub_Value, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选定符号', command=add_right_simultaneous_values, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='新键联立', command=Add_RSub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='新键联立', command=add_algebraic_values_simultaneously, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成联立代数式', command=Alg_RSub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成联立代数式', command=algebraic_value_simultaneous, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除联立', command=Del_RSub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除联立', command=del_algebraic_value_simultaneousness, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global RSub_BOX
@@ -1644,7 +1611,7 @@ def Alg():
     tkinter.Label(top, text='数值:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
     ValueNUM_Input = tkinter.Entry(top, width=width_B+2)
     ValueNUM_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='指定符号', command=Add_Sub_Num, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='指定符号', command=add_variable_assignment, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
@@ -1659,9 +1626,9 @@ def Alg():
                         text=lable[3], variable=Num_Type, value=3).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成赋值代数式', command=Alg_Sub_Num, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成赋值代数式', command=algebraic_assignment, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除赋值', command=Del_Sub_Num, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除赋值', command=del_variable_assignment, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global ValueNUM_BOX
@@ -1678,19 +1645,19 @@ def Alg():
         column=a_x, row=a_y, columnspan=3)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='左代数式', command=add_Z, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='左代数式', command=add_equation_left, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='右代数式', command=add_Y, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='右代数式', command=add_equation_right, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='新建方程', command=add_ZY, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='新建方程', command=generating_equation, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='解联立方程', command=alg_Solve, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='解联立方程', command=solve_simultaneous_equations, font=FONT, width=width_B, height=height_B).grid(
         column=a_x, columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除方程', command=Del_Solve, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除方程', command=del_equation, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Solve_BOX
@@ -1699,13 +1666,13 @@ def Alg():
     Solve_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y +=2
-    tkinter.Button(top, bg=bbg, fg=fg, text='应用为代数式', command=To_Alg, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='应用为代数式', command=add_to_algebraic_box, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加联立', command=To_Sub, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加联立', command=add_to_value_algebraic_box, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加反联立', command=To_RSub, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加反联立', command=add_to_algebraic_value_box, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Answer_BOX
@@ -1718,13 +1685,13 @@ def Alg():
         column=a_x, row=a_y, columnspan=3)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='左代数式', command=In_add_Z, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='左代数式', command=add_left_algebra, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='右代数式', command=In_add_Y, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='右代数式', command=add_right_algebra, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='不等式运算', command=Inequality_Solve, font=FONT, width=width_B, height=height_B).grid(
+    tkinter.Button(top, bg=bbg, fg=fg, text='不等式运算', command=inequality_solve, font=FONT, width=width_B, height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Inequality_BOX,Inequality_Type,AnswerInequality_BOX,Range_Input
@@ -1736,11 +1703,11 @@ def Alg():
     Inequality_Type = tkinter.IntVar()#实数
     lable = ['大于>','小于<','大于等于>=','小于等于<=']
     for i in range(2):
-        tkinter.Radiobutton(top,command=Update_Inequality_BOX,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i], variable=Inequality_Type, value=i).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
+        tkinter.Radiobutton(top, command=update_inequality_box, bg = bg, fg = fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i], variable=Inequality_Type, value=i).grid(column=a_x + i, row=a_y, sticky=tkinter.W)
     a_y += 1
     for i in range(2):
         i += 2
-        tkinter.Radiobutton(top,command=Update_Inequality_BOX,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i], variable=Inequality_Type, value=i).grid(column=a_x+i-2, row=a_y, sticky=tkinter.W)
+        tkinter.Radiobutton(top, command=update_inequality_box, bg = bg, fg = fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i], variable=Inequality_Type, value=i).grid(column=a_x + i - 2, row=a_y, sticky=tkinter.W)
 
     a_y += 1
     AnswerInequality_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B)  # 显示代数式
@@ -1754,7 +1721,7 @@ def Alg():
     tkinter.Label(top, text='符号取值范围:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)  # 设置说明
     Range_Input = tkinter.Entry(top, width=width_B+2)
     Range_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='指定符号', command=add_PlotValue, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='指定符号', command=add_plot_value, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
@@ -1767,15 +1734,15 @@ def Alg():
     Plot_Type = tkinter.IntVar()#实数
     lable = ['二维图像','三维图像']
     for i in range(2):
-        tkinter.Radiobutton(top,command=Update_PlotValue,bg = bg,fg = fg,activebackground=bg,activeforeground=fg,selectcolor=bg, text=lable[i], variable=Plot_Type, value=i).grid(column=a_x+i, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='绘制图像', command=Plotting, font=FONT, width=width_B,
+        tkinter.Radiobutton(top, command=update_plot_value, bg = bg, fg = fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i], variable=Plot_Type, value=i).grid(column=a_x + i, row=a_y, sticky=tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='绘制图像', command=drawing_image, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='绘制代数式', command=Draw_An_Alg, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='绘制代数式', command=draw_algebra_core, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='绘制树状图', command=Print_Sym, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='绘制树状图', command=show_algebraic, font=FONT, width=width_B,
                    height=height_B).grid(
         column=a_x + 1, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
 
@@ -1794,5 +1761,5 @@ def Alg():
     News_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B)  # 显示代数式
     News_BOX.grid(column=a_x, row=a_y, columnspan=3,rowspan=3, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
-    addNews('加载完成')
+    output_prompt('加载完成')
     top.mainloop()
