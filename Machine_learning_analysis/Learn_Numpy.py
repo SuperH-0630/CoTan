@@ -407,7 +407,7 @@ def see_Line(x_trainData,y_trainData,w,w_sum,b):
         x_num = np.arange(x.min(), x.min() + p * 6, p)  # 固定5个点，并且正好包括端点
         y_num = x_num * w[i] + (w[i] / w_sum) * b
         c = (
-            Line()
+            line()
                 .add_xaxis(x_num.tolist())
                 .add_yaxis(f"{i}预测曲线", y_num.tolist(), is_smooth=True, **Label_Set)
                 .set_global_opts(title_opts=opts.TitleOpts(title=f"系数w曲线"), **global_Set)
@@ -692,7 +692,7 @@ def Training_W(x_trainData,class_,y,w_list,b_list,means:list):#针对分类问�
             w = np.append(w, 0)
             y_data = -(x2_new * w[i - 1]) / w[i] + b + (means[:i - 1] * w[:i - 1]).sum() + (means[i + 1:] * w[i + 1:]).sum()#假设除了两个特征意外，其余特征均为means列表的数值
             c = (
-                Line()
+                line()
                     .add_xaxis(x2_new)
                     .add_yaxis(f"决策边界:{n_class}=>[{i}]", y_data.tolist(), is_smooth=True, **Label_Set)
                     .set_global_opts(title_opts=opts.TitleOpts(title=f"系数w曲线"), **global_Set,
@@ -724,7 +724,7 @@ def Regress_W(x_trainData,y,w:np.array,b,means:list):#针对回归问题(y-x图)
         y_data = x1_new * w[i] + b + (means[:i] * w[:i]).sum() + (means[i+1:] * w[i+1:]).sum()#假设除了两个特征意外，其余特征均为means列表的数值
         y_con = is_continuous(y_data)
         c = (
-            Line()
+            line()
                 .add_xaxis(x1_new)
                 .add_yaxis(f"拟合结果=>[{i}]", y_data.tolist(), is_smooth=True, **Label_Set)
                 .set_global_opts(title_opts=opts.TitleOpts(title=f"系数w曲线"), **global_Set,
@@ -3528,9 +3528,9 @@ class Fast_Fourier(Study_MachineBase):#快速傅里叶变换
         Phase = self.Phase#相位range
         Breadth = self.Breadth#震幅range
         normalization_Breadth = Breadth/N
-        def line(name,value,s=slice(0,None)) -> Line:
+        def line(name,value,s=slice(0,None)) -> line:
             c = (
-                Line()
+                line()
                     .add_xaxis(self.Frequency[s].tolist())
                     .add_yaxis('', value,**Label_Set,symbol='none' if self.N >= 500 else None)
                     .set_global_opts(title_opts=opts.TitleOpts(title=name),**global_Leg,
@@ -3588,9 +3588,9 @@ class Reverse_Fast_Fourier(Study_MachineBase):#快速傅里叶变换
         Phase = self.Phase#相位range
         Breadth = self.Breadth#震幅range
 
-        def line(name,value,s=slice(0,None)) -> Line:
+        def line(name,value,s=slice(0,None)) -> line:
             c = (
-                Line()
+                line()
                     .add_xaxis(range_N[s])
                     .add_yaxis('', value,**Label_Set,symbol='none' if N >= 500 else None)
                     .set_global_opts(title_opts=opts.TitleOpts(title=name),**global_Leg,
