@@ -119,14 +119,14 @@ def Main():
 
     abg='#F5FFFA'
     tkinter.Label(F1, text='物化系统', bg=abg, font=ft1).grid(column=0, row=12, sticky=tkinter.W + tkinter.E)
-    tkinter.Button(F1, text='平面物体分析',cursor=bc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=13,
+    tkinter.Button(F1, text='几何车间',cursor=bc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=13,
                                                                                                        sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='平面受力分析',cursor=bc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=14,
+    tkinter.Button(F1, text='物理车间',cursor=bc, height=2, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0, row=14,
                                                                                                        sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='实验数据拟合',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0,
+    tkinter.Button(F1, text='化学车间',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0,
                                                                                                            row=15,
                                                                                                            sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(F1, text='化学反应预测',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0,
+    tkinter.Button(F1, text='实验室管理',cursor=bc, height=1, font=ft2, bg=bg,activebackground=abg, bd=0, justify=tkinter.LEFT).grid(column=0,
                                                                                                        row=16,
                                                                                                        sticky=tkinter.N + tkinter.E + tkinter.W)
     abg = '#F8F8FF'
