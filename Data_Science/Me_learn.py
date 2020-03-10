@@ -8,7 +8,7 @@ from tkinter.scrolledtext import ScrolledText
 import chardet
 
 # 数据清洗
-Clean_Text = '''#输入你的数据清洗执行代码
+clean_default_script = '''#输入你的数据清洗执行代码
 
 Done_Row=[] #输入操作的行号
 Done_Column=[] #输入操作的列号
@@ -22,7 +22,7 @@ def done(data, row, column, get, R, C): #应用修正方法
     return DEL
 '''
 
-Clean_Help = '''
+clean_help = '''
 使用Python代码进行数据清洗
 1)代码结构
     Done_Row=[] 代码用来检测的数据的列号
@@ -48,7 +48,7 @@ Clean_Help = '''
     支持:可以使用import导入语句，支持python语法
 '''
 
-Args_Help = '''
+drawing_parameters = '''
 输入python变量赋值代码:渲染设置
 title #设置标题:str
 vice_title #设置副标题:str
@@ -62,6 +62,8 @@ max_Visual_mapping #映射的最大值
 
 ......(我太懒了, 设置太多不想写了)
 '''
+
+
 # top = None
 # ML = None
 # Form_List = None
@@ -83,10 +85,10 @@ max_Visual_mapping #映射的最大值
 # str_must = None
 # Index_must = None
 
-def Machine_learning():
-    global top, ML, Form_List, PATH, bg, ft1, Stored_List, Clean_List, R_Dic, Over_Up, Over_Down,Learn_Dic
+def machine_learning():
+    global top, ML, Form_List, PATH, bg, ft1, Stored_List, Clean_List, R_Dic, Over_Up, Over_Down, Learn_Dic
     R_Dic = {}  # 保存了画图的List
-    Learn_Dic = {} #保存数据处理
+    Learn_Dic = {}  # 保存数据处理
     PATH = os.getcwd()
     Form_List = []
     ML = Learn.Machine_Learner()
@@ -110,30 +112,31 @@ def Machine_learning():
     Over_Down = None
     Over_Up = None
 
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入CSV', command=Add_CSV, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入CSV', command=add_csv, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入Py', command=Add_Python, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入Py', command=add_from_python, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导出CSV', command=to_CSV,font=FONT, width=width_B,
-                   height=height_B).grid(column=a_x + 2, row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='导出CSV', command=to_csv, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
+                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     global name_Input
     a_y += 1
     tkinter.Label(top, text='表格名称:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
                                                                                                    row=a_y)  # 设置说明
     name_Input = tkinter.Entry(top, width=width_B)
-    name_Input.grid(column=a_x + 1, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
+    name_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除表格',command=Del_Sheet, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除表格', command=del_form, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看表格', command=Show, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看表格', command=show_sheet_html, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看单一表格', command=Show_One,font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看单一表格', command=show_one_sheet_html, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -171,13 +174,13 @@ def Machine_learning():
     Form_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 5
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看行名', command=get_Index, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看行名', command=get_row, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看列名', command=get_Column, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看列名', command=get_column, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='显示表格', command=Write_Sheet, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='显示表格', command=show_sheet, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -205,10 +208,10 @@ def Machine_learning():
 
     global Des_Bool
     a_y += 10
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看数据分析', command=Show_Des, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看数据分析', command=show_report, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='简单数据统计', command=Show_describe, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='简单数据统计', command=show_describe, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
     Des_Bool = tkinter.IntVar()  # 是否启用
@@ -262,10 +265,10 @@ def Machine_learning():
 
     a_y += 1
     Slice_new = tkinter.IntVar()
-    tkinter.Button(top, bg=bbg, fg=fg, text='切片选定', command=Slice_Data, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='切片选定', command=slice_data, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除选定', command=Del_Data, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除选定', command=del_data, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='生成新表格',
@@ -287,24 +290,24 @@ def Machine_learning():
     Drop_Column.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.W + tkinter.E)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成布尔表格', command=Make_BoolSheet, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成布尔表格', command=to_bool, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看空值', command=is_Na, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看空值', command=is_NaN, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清洗空值(按行)', command=Done_NaN, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='清洗空值(按行)', command=clear_NaN_by_row, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加执行方法', command=Add_Clean, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加执行方法', command=add_cleaning_script, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除执行方法', command=Del_Clean, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除执行方法', command=del_cleaning_script, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='数据特征提取', command=DecisionTreeClassifier, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据特征提取', command=feature_extraction, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -315,28 +318,28 @@ def Machine_learning():
                        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 2
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看词典', command=Show_Help, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看词典', command=show_dictionary, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='恢复显示', command=get_InsertClean_Text, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='恢复显示', command=reset, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行数据清洗', command=Done_Clean, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行数据清洗', command=execute_cleaning_script, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
     Done_Func = tkinter.Text(top, width=width_B * 3, height=height_B * 7)
     Done_Func.grid(column=a_x, row=a_y, columnspan=3, rowspan=7, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
-    Done_Func.insert('0.0', Clean_Text)
+    Done_Func.insert('0.0', clean_default_script)
 
     a_y += 7
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空执行方法', command=Tra_Clean, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空执行方法', command=empty_cleaning_script, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看执行方法', command=get_CleanEXP, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看执行方法', command=view_cleaning_script, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入执行方法', command=Open_Python, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入执行方法', command=open_python, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -450,13 +453,13 @@ def Machine_learning():
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='选择底图', command=Over_Down_Add, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选择底图', command=add_basemap, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='选择顶图', command=Over_UP_Add, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选择顶图', command=add_top_image, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='生成层叠图', command=to_OverLap, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='生成层叠图', command=make_OverLap, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -466,13 +469,13 @@ def Machine_learning():
     Over_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=2, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='渲染HTML', command=Draw, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='渲染HTML', command=rendering, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='单独渲染HTML', command=Draw_One, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='单独渲染HTML', command=rendering_one, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除渲染', command=Del_R_BOX, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除渲染', command=del_rendering, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -483,10 +486,10 @@ def Machine_learning():
     a_y += 2
     global Draw_asWell
     Draw_asWell = tkinter.IntVar()
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空渲染', command=Tra_RDic, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空渲染', command=clear_rendering, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入渲染', command=Import_c, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入渲染', command=python_render, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='马上渲染',
@@ -496,10 +499,10 @@ def Machine_learning():
     Args_Input.grid(column=a_x, row=a_y, columnspan=3, rowspan=7, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
     a_y += 7
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看词典',command=Show_Help, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看词典', command=show_dictionary, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='恢复显示',command=Show_Help, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='恢复显示', command=show_tips, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y, columnspan=2,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -520,7 +523,8 @@ def Machine_learning():
     for i in range(2):
         tkinter.Radiobutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i],
                             variable=Repalce_RC, value=i).grid(column=a_x + i, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='植入行(列)号', command=num_withName, font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='植入行(列)号', command=num_with_name, font=FONT, width=width_B,
+                   height=height_B). \
         grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -530,7 +534,7 @@ def Machine_learning():
         RC_Type.append(tkinter.IntVar())
         tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i],
                             variable=RC_Type[-1]).grid(column=a_x + i, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='统一行(列)号', command=num_toName, font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='统一行(列)号', command=num_to_name, font=FONT, width=width_B, height=height_B). \
         grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -546,10 +550,10 @@ def Machine_learning():
     replace_iloc.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换已有列(行)操作', command=Change_Index, font=FONT, width=width_B * 2,
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换已有列(行)操作', command=change_index, font=FONT, width=width_B * 2,
                    height=height_B). \
         grid(column=a_x, columnspan=2, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换操作', command=Replace_Index, font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行替换操作', command=replace_index, font=FONT, width=width_B, height=height_B). \
         grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     label = ['起点', '终点', '间隔']
@@ -564,9 +568,9 @@ def Machine_learning():
     global Date_Type
     a_y += 1
     Date_Type = tkinter.IntVar()
-    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Date序列', command=Date_Index, font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Date序列', command=date_index, font=FONT, width=width_B, height=height_B). \
         grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Time序列', command=Time_index, font=FONT, width=width_B, height=height_B). \
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷入Time序列', command=time_index, font=FONT, width=width_B, height=height_B). \
         grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用间隔',
                         variable=Date_Type).grid(column=a_x + 2, row=a_y, sticky=tkinter.W)
@@ -597,7 +601,7 @@ def Machine_learning():
     Dtype_Wrong.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行转换', command=DTYPE, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行转换', command=set_dtype, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
     Dtype_Func = tkinter.IntVar()  # 正，负，0
@@ -606,20 +610,19 @@ def Machine_learning():
         tkinter.Radiobutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text=lable[i],
                             variable=Dtype_Func, value=i).grid(column=a_x + 1 + i, row=a_y, sticky=tkinter.W)
 
-
     a_y += 1
     tkinter.Label(top, text='【排序操作】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
                                                                                                         columnspan=3,
                                                                                                         row=a_y)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='.T', command=T, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='.T', command=transpose, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='按行名排序', command=Stored_Row, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='按行名排序', command=sort_by_tow, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='按列名排序', command=Stored_Column, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='按列名排序', command=sort_by_column, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -629,7 +632,7 @@ def Machine_learning():
                                                                                                       row=a_y)  # 设置说明
     Sort_By = tkinter.Entry(top, width=width_B + 2)
     Sort_By.grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='按数据排序', command=Stored_Value, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='按数据排序', command=stored_value, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
@@ -649,16 +652,15 @@ def Machine_learning():
     Stored_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 5
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加基准', command=add_Stored_Value, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加基准', command=add_baseline, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除基准', command=Delete_Stored_Value, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除基准', command=del_baseline, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='打乱表格', command=Sample_Data, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='打乱表格', command=sample_data, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-
 
     a_x += 3
     tkinter.Label(top, text='', bg=bg, fg=fg, font=FONT, width=1).grid(column=a_x, row=a_y)  # 设置说明
@@ -666,162 +668,184 @@ def Machine_learning():
     a_y = 0
 
     tkinter.Label(top, text='【机器学习】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
-                                                                                                             columnspan=3,
-                                                                                                             row=a_y,
-                                                                                                             sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
+                                                                                                        columnspan=3,
+                                                                                                        row=a_y,
+                                                                                                        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
 
-    global ML_BOX,ML_OUT
+    global ML_BOX, ML_OUT
     a_y += 1
     ML_OUT = tkinter.StringVar()
-    Put = tkinter.Entry(top, width=width_B * 2,textvariable = ML_OUT)
+    Put = tkinter.Entry(top, width=width_B * 2, textvariable=ML_OUT)
     Put.grid(column=a_x, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
     Put['state'] = 'readonly'
-    tkinter.Button(top, bg=bbg, fg=fg, text='选用学习器',command=set_Learner, font=FONT, width=width_B,height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
+    tkinter.Button(top, bg=bbg, fg=fg, text='选用学习器', command=set_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Split_Input
     a_y += 1
-    tkinter.Label(top, text='测试数据分割:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,row=a_y)
+    tkinter.Label(top, text='测试数据分割:', bg=bg, fg=fg, font=FONT, width=width_B, height=height_B).grid(column=a_x,
+                                                                                                     row=a_y)
     Split_Input = tkinter.Entry(top, width=width_B * 2)
     Split_Input.grid(column=a_x + 1, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    ML_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B*5)
+    ML_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
     ML_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=5, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 5
-    tkinter.Button(top, bg=bbg, fg=fg, text='导入学习器', command=Draw, font=FONT, width=width_B,height=height_B).grid(column=a_x, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='导入学习器', command=rendering, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看数据', command=visual_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看数据', command=Show_Args, font=FONT, width=width_B,height=height_B).grid(column=a_x + 1, row=a_y,
-                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除学习器', command=Del_Leaner, font=FONT, width=width_B,height=height_B).grid(column=a_x + 2, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除学习器', command=del_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='训练机器', command=Fit_Learner, font=FONT, width=width_B,height=height_B).grid(column=a_x, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='训练机器', command=fit_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='测试机器', command=Score_Learner, font=FONT, width=width_B,height=height_B).grid(column=a_x + 1, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='测试机器', command=test_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='数据预测', command=Predict_Learner, font=FONT, width=width_B,height=height_B).grid(column=a_x + 2, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='数据预测', command=predict_learner, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
     tkinter.Label(top, text='【学习器选择和配置】', bg=bg, fg=fg, font=FONT, width=width_B * 3, height=height_B).grid(column=a_x,
-                                                                                                         columnspan=3,
-                                                                                                         row=a_y,
-                                                                                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
+                                                                                                            columnspan=3,
+                                                                                                            row=a_y,
+                                                                                                            sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='线性回归', command=Add_Line, font=FONT, width=width_B,height=height_B).grid(column=a_x, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='线性回归', command=add_GeneralizedLinear, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='岭回归', command=Add_Ridge, font=FONT, width=width_B,height=height_B).grid(column=a_x + 1, row=a_y,
-                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='Lasso', command=Add_Lasso, font=FONT, width=width_B,height=height_B).grid(column=a_x + 2, row=a_y,
-                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='岭回归', command=add_Ridge, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 1, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='Lasso', command=add_Lasso, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='逻辑回归', command=Add_LogisticRegression, font=FONT, width=width_B,height=height_B).grid(column=a_x, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='逻辑回归', command=add_LogisticRegression, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='决策树', command=ML_Sorry, font=FONT, width=width_B,height=height_B).grid(column=a_x + 1, row=a_y,
-                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='SVM', command=ML_Sorry, font=FONT, width=width_B,height=height_B).grid(column=a_x + 2, row=a_y,
-                                         sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='决策树', command=show_sorry, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 1, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
+    tkinter.Button(top, bg=bbg, fg=fg, text='SVM', command=show_sorry, font=FONT, width=width_B, height=height_B).grid(
+        column=a_x + 2, row=a_y,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='朴素贝叶斯', command=ML_Sorry, font=FONT, width=width_B,height=height_B).grid(column=a_x, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='朴素贝叶斯', command=show_sorry, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近分类', command=Add_Knn, font=FONT, width=width_B,height=height_B).grid(column=a_x + 1, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近分类', command=add_KnnRegression, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 1, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近预测', command=Add_Knn_Class, font=FONT, width=width_B,height=height_B).grid(column=a_x + 2, row=a_y,
+    tkinter.Button(top, bg=bbg, fg=fg, text='K邻近预测', command=add_KnnClass, font=FONT, width=width_B,
+                   height=height_B).grid(column=a_x + 2, row=a_y,
                                          sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)
 
     global Args_Learner
     a_y += 1
     Args_Learner = tkinter.Text(top, width=width_B * 3, height=height_B * 11)
-    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=11, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
+    Args_Learner.grid(column=a_x, row=a_y, columnspan=3, rowspan=11,
+                      sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
     top.mainloop()
 
 
-def Show_Help():
-    tkinter.messagebox.showinfo('使用提示', Args_Help)
+def show_tips():
+    tkinter.messagebox.showinfo('使用提示', drawing_parameters)
 
 
-def ML_Sorry():
+def show_sorry():
     tkinter.messagebox.showinfo('非常抱歉', '高级别的机器学习请到机器学习板块深入研究...')
 
 
-def Tra_RDic():
+def clear_rendering():
     ML.Tra_RDic()
-    Update_R_BOX()
+    update_render_box()
 
 
-def Del_Sheet():
-    name = get_Name()
+def del_form():
+    name = get_sheet_name()
     ML.Del_Form(name)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Del_Leaner():
-    Learn = get_Learner(True)
-    set_Learne = get_Learner(False)#获取学习器Learner
+def del_learner():
+    Learn = get_learner_name(True)
+    set_Learne = get_learner_name(False)  # 获取学习器Learner
     if set_Learne != Learn:
         ML.Del_Leaner(Learn)
-    Update_Leaner()
+    update_leaner_box()
 
 
-def Show_Args():
-    learner = get_Learner(True)
+def visual_learner():
+    learner = get_learner_name(True)
     new = tkinter.messagebox.askokcancel('提示', f'是否将数据生成表格。\n(可绘制成散点图对比数据)')
-    print(new)
-    Data = ML.Show_Args(learner,new)
+    Data = ML.Show_Args(learner, new)
     title = f'CoTan数据处理 查看数据:{learner}'
-    Creat_TextSheet(f'对象:{learner}\n\n{Data[0]}\n\n\n{Data[1]}', title)
-    Updat_BOX()
+    vitables(f'对象:{learner}\n\n{Data[0]}\n\n\n{Data[1]}', title)
+    update_sheet_box()
 
 
-def get_Args_Learner():
+def get_learner_config():
     global Args_Learner
-    return Args_Learner.get('0.0',tkinter.END)
+    return Args_Learner.get('0.0', tkinter.END)
 
 
-def Score_Learner():
-    name = get_Name()#表格数据
-    learner = get_Learner()
+def test_learner():
+    global ML
+    print('F')
+    name = get_sheet_name()  # 表格数据
+    learner = get_learner_name()
     try:
         split = float(Split_Input.get())
-        if split < 0 or 1 < split:raise Exception
-    except:split = 0.3
-    socore = ML.Fit(name,learner,Score_Only=True,split=split)[1]
+        if split < 0 or 1 < split: raise Exception
+    except:
+        split = 0.3
+    socore = ML.Fit(name, learner, Score_Only=True, split=split)[1]
     tkinter.messagebox.showinfo('测试完成', f'针对测试数据评分结果为:{socore}')
 
 
-def Predict_Learner():
-    name = get_Name()#表格数据
-    learner = get_Learner()
-    Data = ML.Predict(name,learner)
+def predict_learner():
+    name = get_sheet_name()  # 表格数据
+    learner = get_learner_name()
+    Data = ML.Predict(name, learner)
     title = f'CoTan数据处理 表格:{name} 学习器:{learner}'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Fit_Learner():
-    name = get_Name()#表格数据
-    learner = get_Learner()
+def fit_learner():
+    name = get_sheet_name()  # 表格数据
+    learner = get_learner_name()
     try:
         split = float(Split_Input.get())
-        if split < 0 or 1 < split:raise Exception
-    except:split = 0.3
-    socore = ML.Fit(name,learner,Text=get_Args_Learner(),split=split)
-    tkinter.messagebox.showinfo('训练完成', f'针对训练数据({(1-split)*100}%)评分结果为:{socore[0]}\n'
-                                        f'针对测试数据评分({split*100}%)结果为:{socore[1]}')
+        if split < 0 or 1 < split: raise Exception
+    except:
+        split = 0.3
+    socore = ML.Fit(name, learner, Text=get_learner_config(), split=split)
+    tkinter.messagebox.showinfo('训练完成', f'针对训练数据({(1 - split) * 100}%)评分结果为:{socore[0]}\n'
+                                        f'针对测试数据评分({split * 100}%)结果为:{socore[1]}')
 
-def set_Learner():
+
+def set_learner():
     global ML_OUT
-    ML_OUT.set(get_Learner(True))
+    ML_OUT.set(get_learner_name(True))
 
 
-def get_Learner(Type=False):
-    global Learn_Dic,ML_BOX,ML_OUT
+def get_learner_name(Type=False):
+    global Learn_Dic, ML_BOX, ML_OUT
     if Type:
         try:
             return list(Learn_Dic.keys())[ML_BOX.curselection()[0]]
@@ -838,93 +862,93 @@ def get_Learner(Type=False):
             return None
 
 
-def Add_Knn_Class():
-    Add_leaner('Knn_class')
+def add_KnnClass():
+    add_learner_core('Knn_class')
 
 
-def Add_LogisticRegression():
-    Add_leaner('LogisticRegression')
+def add_LogisticRegression():
+    add_learner_core('LogisticRegression')
 
 
-def Add_Lasso():
-    Add_leaner('Lasso')
+def add_Lasso():
+    add_learner_core('Lasso')
 
 
-def Add_Knn():
-    Add_leaner('Knn')
+def add_KnnRegression():
+    add_learner_core('Knn')
 
 
-def Add_Ridge():
-    Add_leaner('Ridge')
+def add_Ridge():
+    add_learner_core('Ridge')
 
 
-def Add_Line():
-    Add_leaner('Line')
+def add_GeneralizedLinear():
+    add_learner_core('Line')
 
 
-def Add_leaner(Type):#添加Lenear的核心
-    ML.Add_Learner(Type,Text=get_Args_Learner())
-    Update_Leaner()
+def add_learner_core(Type):  # 添加Lenear的核心
+    ML.Add_Learner(Type, Text=get_learner_config())
+    update_leaner_box()
 
 
-def Update_Leaner():
-    global Learn_Dic,ML_BOX
+def update_leaner_box():
+    global Learn_Dic, ML_BOX
     Learn_Dic = ML.Return_Learner()
-    ML_BOX.delete(0,tkinter.END)
-    ML_BOX.insert(tkinter.END,*Learn_Dic.keys())
+    ML_BOX.delete(0, tkinter.END)
+    ML_BOX.insert(tkinter.END, *Learn_Dic.keys())
 
 
-def DecisionTreeClassifier():
-    name = get_Name()
+def feature_extraction():
+    name = get_sheet_name()
     ML.DecisionTreeClassifier(name)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Replace_Index():
+def replace_index():
     global replace_Dic, Repalce_RC, ML
-    name = get_Name()
+    name = get_sheet_name()
     Dic = eval(replace_Dic.get())
     is_Column = bool(Repalce_RC.get())  # 操作行-False，操作列-True
     save = bool(RC_Type[0].get())
     ML.Replace_Index(name, is_Column, Dic, save)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Change_Index():
+def change_index():
     global Repalce_RC, replace_iloc, RC_Type, ML
-    name = get_Name()  # 名字
+    name = get_sheet_name()  # 名字
     is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
     iloc = int(replace_iloc.get())  # 替换的列号(行号)
     save = bool(RC_Type[0].get())
     drop = not bool(RC_Type[1].get())
 
     ML.Change_Index(name, is_Column, iloc, save, drop)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def num_toName():
+def num_to_name():
     global Repalce_RC, replace_iloc, RC_Type, ML
-    name = get_Name()  # 名字
+    name = get_sheet_name()  # 名字
     is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
     save = bool(RC_Type[0].get())
 
     ML.num_toName(name, is_Column, save)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def num_withName():
+def num_with_name():
     global Repalce_RC, RC_Type, ML
-    name = get_Name()  # 名字
+    name = get_sheet_name()  # 名字
     is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
     save = bool(RC_Type[0].get())
 
     ML.num_withName(name, is_Column, save)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def DateTime_Index(is_Date=True):
+def datetime_index(is_Date=True):
     global Repalce_RC, RC_Type, ML, Date_Input, Date_Type
-    name = get_Name()  # 名字
+    name = get_sheet_name()  # 名字
     is_Column = bool(Repalce_RC.get())  # 操作行名-False，操作列名-True
     save = bool(RC_Type[0].get())
 
@@ -940,24 +964,24 @@ def DateTime_Index(is_Date=True):
         else:
             del Init['freq']
     if is_Date:
-        ML.Date_Index(name, is_Column, save, **Init)
+        ML.date_index(name, is_Column, save, **Init)
     else:
         ML.Time_Index(name, is_Column, save, **Init)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Date_Index():
-    DateTime_Index(True)
+def date_index():
+    datetime_index(True)
 
 
-def Time_index():
-    DateTime_Index(False)
+def time_index():
+    datetime_index(False)
 
 
-def DTYPE():
+def set_dtype():
     global Dtype_Column, Dtype_Input, Dtype_Wrong, Dtype_Func, ML
     type_ = bool(Dtype_Func.get())
-    name = get_Name()
+    name = get_sheet_name()
     column_list = Dtype_Column.get().split(',')
     if column_list == ['']: column_list = []
     dtype = Dtype_Input.get()
@@ -967,23 +991,23 @@ def DTYPE():
         ML.Reasonable_Type(name, column_list, dtype, wrong)
     else:
         ML.as_Type(name, column_list, dtype, 'ignore')
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Import_c():  # 导入绘制方法
+def python_render():  # 导入绘制方法
     global Done_Func
     Dic = askopenfilename(title='打开Python脚本', filetypes=[("Python", ".py"), ("TXT", ".txt")])
     with open(Dic) as f:
         get = f.read()
-        Render_ToHTML(ML.Import_c(get), '自定义图')
+        new_render(ML.Import_c(get), '自定义图')
 
 
-def get_ARGS():  # 获取画图的args
+def get_rendering_parameters():  # 获取画图的args
     global Args_Input
     return Args_Input.get('0.0', tkinter.END)
 
 
-def Draw():
+def rendering():
     global R_Dic, R_BOX
     Dic = asksaveasfilename(title='选择渲染保存地址', filetypes=[("HTML", ".html")])
     if Dic == '': return False
@@ -991,11 +1015,11 @@ def Draw():
         if Dic[-5:] != '.html': raise Exception
     except:
         Dic += '.html'
-    webbrowser.open(ML.Draw_Page(get_ARGS(), Dic))
-    Update_R_BOX()
+    webbrowser.open(ML.Draw_Page(get_rendering_parameters(), Dic))
+    update_render_box()
 
 
-def Draw_One():
+def rendering_one():
     global R_Dic, R_BOX
     Dic = asksaveasfilename(title='选择渲染保存地址', filetypes=[("HTML", ".html")])
     if Dic == '': return False
@@ -1005,22 +1029,22 @@ def Draw_One():
         Dic += '.html'
     list(R_Dic.values())[R_BOX.curselection()[0]].render(Dic)
     webbrowser.open(Dic)
-    Update_R_BOX()
+    update_render_box()
 
 
-def to_OverLap():
+def make_OverLap():
     global ML, Over_Up, Over_Down
     if Over_Down != None and Over_Up != None:
         try:
-            Render_ToHTML(ML.Overlap(Over_Down, Over_Up), f'合成图')
+            new_render(ML.Overlap(Over_Down, Over_Up), f'合成图')
         except:
             raise
         Over_Down = None
         Over_Up = None
-    Update_Over_Box()
+    update_combo_box()
 
 
-def Update_Over_Box():
+def update_combo_box():
     global Over_BOX, Over_Down, Over_Up
     Over_BOX.delete(0, tkinter.END)
     if Over_Down != None:
@@ -1029,212 +1053,212 @@ def Update_Over_Box():
         Over_BOX.insert(tkinter.END, f'顶图: {Over_Up}')
 
 
-def Over_Down_Add():
+def add_basemap():
     global Over_Down
     Over_Down = list(R_Dic.keys())[R_BOX.curselection()[0]]
-    Update_Over_Box()
+    update_combo_box()
 
 
-def Over_UP_Add():
+def add_top_image():
     global Over_Up
     Over_Up = list(R_Dic.keys())[R_BOX.curselection()[0]]
-    Update_Over_Box()
+    update_combo_box()
 
 
-def Del_R_BOX():
+def del_rendering():
     global R_Dic, R_BOX, ML
     key = list(R_Dic.keys())[R_BOX.curselection()[0]]
     ML.Delete_RDic(key)
-    Update_R_BOX()
+    update_render_box()
 
 
-def Update_R_BOX():
+def update_render_box():
     global R_Dic, R_BOX, ML
     R_Dic = ML.retunr_RDic()
     R_BOX.delete(0, tkinter.END)
     R_BOX.insert(tkinter.END, *R_Dic.keys())
 
 
-def Render_ToHTML(c, name):
+def new_render(c, name):
     global R_Dic, Draw_asWell
     if bool(Draw_asWell.get()):
         c.render(f'{PATH}\\{name}.html')
-    Update_R_BOX()
+    update_render_box()
 
 
 def to_Geo():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Geo(name, get_ARGS()), 'Geo地图')
+    name = get_sheet_name()
+    new_render(ML.to_Geo(name, get_rendering_parameters()), 'Geo地图')
 
 
 def to_Map():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Map(name, get_ARGS()), 'Map地图')
+    name = get_sheet_name()
+    new_render(ML.to_Map(name, get_rendering_parameters()), 'Map地图')
 
 
 def to_ScatterGeo():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_ScatterGeo(name, get_ARGS()), 'Geo点地图')
+    name = get_sheet_name()
+    new_render(ML.to_ScatterGeo(name, get_rendering_parameters()), 'Geo点地图')
 
 
 def to_TreeMap():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_TreeMap(name, get_ARGS()), '矩形树图')
+    name = get_sheet_name()
+    new_render(ML.to_TreeMap(name, get_rendering_parameters()), '矩形树图')
 
 
 def to_Tree():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Tree(name, get_ARGS()), '树状图')
+    name = get_sheet_name()
+    new_render(ML.to_Tree(name, get_rendering_parameters()), '树状图')
 
 
 def to_Sankey():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Sankey(name, get_ARGS()), '桑基图')
+    name = get_sheet_name()
+    new_render(ML.to_Sankey(name, get_rendering_parameters()), '桑基图')
 
 
 def to_Sunburst():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Sunburst(name, get_ARGS()), '旭日图')
+    name = get_sheet_name()
+    new_render(ML.to_Sunburst(name, get_rendering_parameters()), '旭日图')
 
 
 def to_ThemeRiver():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_ThemeRiver(name, get_ARGS()), '河流图')
+    name = get_sheet_name()
+    new_render(ML.to_ThemeRiver(name, get_rendering_parameters()), '河流图')
 
 
 def to_Calendar():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Calendar(name, get_ARGS()), '日历图')
+    name = get_sheet_name()
+    new_render(ML.to_Calendar(name, get_rendering_parameters()), '日历图')
 
 
 def to_Gauge():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Gauge(name, get_ARGS()), '仪表图')
+    name = get_sheet_name()
+    new_render(ML.to_Gauge(name, get_rendering_parameters()), '仪表图')
 
 
 def to_Liquid():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Liquid(name, get_ARGS()), '水球图')
+    name = get_sheet_name()
+    new_render(ML.to_Liquid(name, get_rendering_parameters()), '水球图')
 
 
 def to_Line3D():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Line3D(name, get_ARGS()), '3D折线图')
+    name = get_sheet_name()
+    new_render(ML.to_Line3D(name, get_rendering_parameters()), '3D折线图')
 
 
 def to_Scatter3D():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Scatter3D(name, get_ARGS()), '3D散点图')
+    name = get_sheet_name()
+    new_render(ML.to_Scatter3D(name, get_rendering_parameters()), '3D散点图')
 
 
 def to_Bar3d():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Bar3d(name, get_ARGS()), '3D柱状图')
+    name = get_sheet_name()
+    new_render(ML.to_Bar3d(name, get_rendering_parameters()), '3D柱状图')
 
 
 def to_WordCloud():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_WordCloud(name, get_ARGS()), '词云图')
+    name = get_sheet_name()
+    new_render(ML.to_WordCloud(name, get_rendering_parameters()), '词云图')
 
 
 def to_Radar():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Radar(name, get_ARGS()), '雷达图')
+    name = get_sheet_name()
+    new_render(ML.to_Radar(name, get_rendering_parameters()), '雷达图')
 
 
 def to_Polar():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Polar(name, get_ARGS()), '极坐标图')
+    name = get_sheet_name()
+    new_render(ML.to_Polar(name, get_rendering_parameters()), '极坐标图')
 
 
 def to_Pie():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Pie(name, get_ARGS()), '饼图')
+    name = get_sheet_name()
+    new_render(ML.to_Pie(name, get_rendering_parameters()), '饼图')
 
 
 def to_Parallel():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Parallel(name, get_ARGS()), '多轴图')
+    name = get_sheet_name()
+    new_render(ML.to_Parallel(name, get_rendering_parameters()), '多轴图')
 
 
 def to_XY_Graph():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_XY_Graph(name, get_ARGS()), '关系图')
+    name = get_sheet_name()
+    new_render(ML.to_XY_Graph(name, get_rendering_parameters()), '关系图')
 
 
 def to_Graph():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Graph(name, get_ARGS()), '关系图')
+    name = get_sheet_name()
+    new_render(ML.to_Graph(name, get_rendering_parameters()), '关系图')
 
 
 def to_Funnel():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Funnel(name, get_ARGS()), '漏斗图')
+    name = get_sheet_name()
+    new_render(ML.to_Funnel(name, get_rendering_parameters()), '漏斗图')
 
 
 def to_HeatMap():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_HeatMap(name, get_ARGS()), '热力图')
+    name = get_sheet_name()
+    new_render(ML.to_HeatMap(name, get_rendering_parameters()), '热力图')
 
 
 def to_Boxpolt():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Boxpolt(name, get_ARGS()), '箱形图')
+    name = get_sheet_name()
+    new_render(ML.to_Boxpolt(name, get_rendering_parameters()), '箱形图')
 
 
 def to_Pictorialbar():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Pictorialbar(name, get_ARGS()), '象形柱状图')
+    name = get_sheet_name()
+    new_render(ML.to_Pictorialbar(name, get_rendering_parameters()), '象形柱状图')
 
 
 def to_Scatter():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Scatter(name, get_ARGS()), '散点图')
+    name = get_sheet_name()
+    new_render(ML.to_Scatter(name, get_rendering_parameters()), '散点图')
 
 
 def to_Line():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Line(name, get_ARGS()), '折线图')
+    name = get_sheet_name()
+    new_render(ML.to_Line(name, get_rendering_parameters()), '折线图')
 
 
 def to_Bar():
     global ML
-    name = get_Name()
-    Render_ToHTML(ML.to_Bar(name, get_ARGS()), '柱状图')
+    name = get_sheet_name()
+    new_render(ML.to_Bar(name, get_rendering_parameters()), '柱状图')
 
 
-def Show_Help():
-    tkinter.messagebox.showinfo('帮助字典', Clean_Help)
+def show_dictionary():
+    tkinter.messagebox.showinfo('帮助字典', clean_help)
 
 
-def Open_Python():
+def open_python():
     global Done_Func
     Dic = askopenfilename(title='打开Python脚本', filetypes=[("Python", ".py"), ("TXT", ".txt")])
     with open(Dic) as f:
@@ -1243,13 +1267,13 @@ def Open_Python():
         Done_Func.insert('0.0', get)
 
 
-def get_InsertClean_Text():
-    global Done_Func, Clean_Text
+def reset():
+    global Done_Func, clean_default_script
     Done_Func.delete('0.0', tkinter.END)
-    Done_Func.insert('0.0', Clean_Text)
+    Done_Func.insert('0.0', clean_default_script)
 
 
-def get_CleanEXP():
+def view_cleaning_script():
     global ML, Clean_List, Done_CleanBox, Done_Func
     name = Clean_List[Done_CleanBox.curselection()[0]]
     get = ML.Return_CleanExp(name)
@@ -1257,89 +1281,89 @@ def get_CleanEXP():
     Done_Func.insert('0.0', get)
 
 
-def Tra_Clean():
+def empty_cleaning_script():
     global ML
     ML.Tra_Clean()
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Done_Clean():
+def execute_cleaning_script():
     global ML
-    name = get_Name()
+    name = get_sheet_name()
     Data = ML.Done_CleanFunc(name)
     title = f'CoTan数据处理 表格:{name}.数据清洗'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Del_Clean():
+def del_cleaning_script():
     global ML, Clean_List, Done_CleanBox
     name = Clean_List[Done_CleanBox.curselection()[0]]
     ML.Delete_CleanFunc(name)
-    Update_Clean()
+    update_cleaning_script_box()
 
 
-def Update_Clean():
+def update_cleaning_script_box():
     global ML, Done_CleanBox, Clean_List
     Clean_List = ML.Return_CleanFunc()
     Done_CleanBox.delete(0, tkinter.END)
     Done_CleanBox.insert(tkinter.END, *Clean_List)
 
 
-def Add_Clean():
+def add_cleaning_script():
     global ML, Done_CleanBox, Done_Func
     Exp = Done_Func.get('0.0', tkinter.END)
     print(Exp)
     ML.Add_CleanFunc(Exp)
-    Update_Clean()
+    update_cleaning_script_box()
 
 
-def Done_NaN():
+def clear_NaN_by_row():
     global Drop_Column
-    name = get_Name()
+    name = get_sheet_name()
     Data = ML.Dropna(name, True)
     title = f'CoTan数据处理 表格:{name}.NaN'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def is_Na():
+def is_NaN():
     global Bool_E
-    name = get_Name()
+    name = get_sheet_name()
     Data = ML.is_Na(name)
     title = f'CoTan数据处理 表格:{name}.NaN'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Make_BoolSheet():
+def to_bool():
     global Bool_E
     Bool_Exp = Bool_E.get()
-    name = get_Name()
+    name = get_sheet_name()
     Data = ML.Done_Bool(name, Bool_Exp, True)
     print(Data)
     title = f'CoTan数据处理 表格:{name} 布尔化'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Del_Data():
+def del_data():
     global Slice_new, Column_clist, Row_clist
     Column = Column_clist[0].get().replace(' ', '').split(',')
     Row = Row_clist[0].get().replace(' ', '').split(',')
     print(Column)
     new = bool(Slice_new.get())
-    name = get_Name()
+    name = get_sheet_name()
     try:
         Data = ML.Delete(name, Column, Row, new)
     except:
         Data = 'None 你的操作不被允许'
     title = f'CoTan数据处理 表格:{name}'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def __get_clist(n, t=str):
+def __split_slice(n, t):
     a = []
     for i in n:
         b = i.get().replace(' ', '')
@@ -1356,15 +1380,15 @@ def __get_clist(n, t=str):
     return a
 
 
-def Slice_Data():
+def slice_data():
     global Slice_new, Column_Type, Row_Type, Column_clist, Row_clist
     CT = Column_Type.get()
     U = True
     if CT == 0:  # 输入的列号
-        Column = slice(*__get_clist(Column_clist, int))
+        Column = slice(*__split_slice(Column_clist, int))
     elif CT == 1:
         U = False
-        Column = slice(*__get_clist(Column_clist, str))
+        Column = slice(*__split_slice(Column_clist, str))
     else:
         get = Column_clist[0].get().replace(' ', '').split(',')
         Column = []
@@ -1376,9 +1400,9 @@ def Slice_Data():
 
     RT = Row_Type.get()
     if RT == 0:  # 输入的列号
-        Row = slice(*__get_clist(Row_clist, int))
+        Row = slice(*__split_slice(Row_clist, int))
     elif RT == 1:
-        Row = slice(*__get_clist(Row_clist, str))
+        Row = slice(*__split_slice(Row_clist, str))
     else:
         get = Row_clist[0].get().replace(' ', '').split(',')
         Row = []
@@ -1388,50 +1412,43 @@ def Slice_Data():
             except:
                 pass
     new = bool(Slice_new.get())
-    name = get_Name()
+    name = get_sheet_name()
     try:
         Data = ML.get_Clice(name, Column, Row, U, new)
     except:
         Data = 'None 你的操作不被允许'
     title = f'CoTan数据处理 表格:{name}'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Sample_Data():
-    global ML,Ascending_New
-    name = get_Name()
+def sample_data():
+    global ML, Ascending_New
+    name = get_sheet_name()
     new = bool(Ascending_New.get())
     Data = ML.Sample(name, new)
     title = f'CoTan数据处理 打乱表格:{name}'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-
-def Stored_Value():
-    global ML, Stored_List,Ascending_New
-    name = get_Name()
+def stored_value():
+    global ML, Stored_List, Ascending_New
+    name = get_sheet_name()
     new = bool(Ascending_New.get())
     Data = ML.Stored_Valuse(name, Stored_List, new)
     title = f'CoTan数据处理 表格:{name}.Stored'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Tra_Stored_Value():
-    global Stored_List, Stored_BOX
-    Stored_List = []
-    Update_Stored()
-
-
-def Delete_Stored_Value():
+def del_baseline():
     global Stored_List, Stored_BOX, Ascending_Type
     del Stored_List[Stored_BOX.curselection()[0]]
-    Update_Stored()
+    update_sort_box()
 
 
-def add_Stored_Value():  # 按基准列排行
+def add_baseline():  # 按基准列排行
     global ML, Stored_List, Sort_By, Ascending_Type
     try:
         a = not bool(Ascending_Type.get())
@@ -1439,10 +1456,10 @@ def add_Stored_Value():  # 按基准列排行
         Stored_List.append((value, a))
     except:
         pass
-    Update_Stored()
+    update_sort_box()
 
 
-def Update_Stored():
+def update_sort_box():
     global Stored_List, Stored_BOX
     re = []
     d = {True: '正序', False: '倒叙'}
@@ -1452,44 +1469,44 @@ def Update_Stored():
     Stored_BOX.insert(tkinter.END, *re)
 
 
-def Stored_Column():  # 行
+def sort_by_column():  # 行
     global ML
-    name = get_Name()
+    name = get_sheet_name()
     a = not bool(Ascending_Type.get())
     new = bool(Ascending_New.get())
     Data = ML.Sorted(name, False, new, a)
     title = f'CoTan数据处理 表格:{name}.Stored by Column'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Stored_Row():  # 行
+def sort_by_tow():  # 行
     global ML
-    name = get_Name()
+    name = get_sheet_name()
     new = bool(Ascending_New.get())
     a = not bool(Ascending_Type.get())
     Data = ML.Sorted(name, True, new, a)
     title = f'CoTan数据处理 表格:{name}.Stored by Row'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def T():
+def transpose():
     global ML
-    name = get_Name()
+    name = get_sheet_name()
     new = bool(Ascending_New.get())
     Data = ML.T(name, new)
     title = f'CoTan数据处理 表格:{name}.T'
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Show_Des():
+def show_report():
     global PATH, top
     if not tkinter.messagebox.askokcancel('提示', f'是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)'): return False
     Dic = f'{PATH}/$Show_Des_Sheet.html'
     try:
-        name = get_Name()
+        name = get_sheet_name()
         if name == None: raise Exception
         ML.to_Report(name, Dic)
         webbrowser.open(Dic)
@@ -1497,25 +1514,25 @@ def Show_Des():
         pass
 
 
-def Show_describe():
+def show_describe():
     global ML, Des_Bool
     Des = bool(Des_Bool.get())
-    name = get_Name()
+    name = get_sheet_name()
     title = f'CoTan数据处理 表格:{name}_describe'
     Data = str(ML.Describe(name, Des))
-    Creat_TextSheet(Data, title)
-    Updat_BOX()
+    vitables(Data, title)
+    update_sheet_box()
 
 
-def Write_Sheet():
+def show_sheet():
     global ML, top
-    name = get_Name()
+    name = get_sheet_name()
     title = f'CoTan数据处理 表格:{name}'
     Data = str(ML.get_Sheet(name))
-    Creat_TextSheet(Data, title)
+    vitables(Data, title)
 
 
-def Creat_TextSheet(data, name):
+def vitables(data, name):
     global bg, ft1
     new_top = tkinter.Toplevel(bg=bg)
     new_top.title(name)
@@ -1527,29 +1544,29 @@ def Creat_TextSheet(data, name):
     new_top.resizable(width=False, height=False)
 
 
-def get_Column():  # 列名(横行竖列，列名是上面的)
+def get_column():  # 列名(横行竖列，列名是上面的)
     global ML
-    name = get_Name()
-    Updat_IndexBOX(ML.get_Column(name))
+    name = get_sheet_name()
+    update_index_box(ML.get_Column(name))
 
 
-def get_Index():  # 行名(横行竖列，行名左)
+def get_row():  # 行名(横行竖列，行名左)
     global ML
-    name = get_Name()
-    Updat_IndexBOX(ML.get_Index(name))
+    name = get_sheet_name()
+    update_index_box(ML.get_Index(name))
 
 
-def Updat_IndexBOX(get_Index):
+def update_index_box(index):
     global top, Index_BOX
     Index_BOX.delete(0, tkinter.END)
-    Index_BOX.insert(tkinter.END, *get_Index)
+    Index_BOX.insert(tkinter.END, *index)
 
 
-def Show_One():
+def show_one_sheet_html():
     global PATH, to_HTML_Type
     Dic = f'{PATH}/$Show_Sheet.html'
     try:
-        name = get_Name()
+        name = get_sheet_name()
         if name == None: raise Exception
         ML.to_Html_One(name, Dic)
         webbrowser.open(Dic)
@@ -1557,11 +1574,12 @@ def Show_One():
         # pass
         raise
 
-def Show():
+
+def show_sheet_html():
     global PATH, to_HTML_Type
     Dic = f'{PATH}/$Show_Sheet.html'
     try:
-        name = get_Name()
+        name = get_sheet_name()
         if name == None: raise Exception
         ML.to_Html(name, Dic, to_HTML_Type.get())
         webbrowser.open(Dic)
@@ -1569,24 +1587,24 @@ def Show():
         pass
 
 
-def to_CSV():
+def to_csv():
     global top, Seq_Input, Code_Input, str_must, Index_must
     Dic = asksaveasfilename(title='选择保存的CSV', filetypes=[("CSV", ".csv")])
     Seq = Seq_Input.get()
-    name = get_Name()
-    ML.to_CSV(name,Dic,Seq)
-    Updat_BOX()
+    name = get_sheet_name()
+    ML.to_CSV(name, Dic, Seq)
+    update_sheet_box()
 
 
-def Add_CSV():
-    global top, Seq_Input, Code_Input, str_must, Index_must,name_Input
+def add_csv():
+    global top, Seq_Input, Code_Input, str_must, Index_must, name_Input
     Dic = askopenfilename(title='选择载入的CSV', filetypes=[("CSV", ".csv")])
-    if Dic == '':return False
+    if Dic == '': return False
     Seq = Seq_Input.get()
     Codeing = Code_Input.get()
     str_ = bool(str_must.get())
     Index = bool(Index_must.get())
-    name = name_Input.get().replace(' ','')
+    name = name_Input.get().replace(' ', '')
     if name == '':
         name = os.path.splitext(os.path.split(Dic)[1])[0]
         print(name)
@@ -1595,21 +1613,21 @@ def Add_CSV():
             Codeing = chardet.detect(f.read())['encoding']
     if Seq == '': Seq = ','
     ML.Add_CSV(Dic, name, Seq, Codeing, str_, Index)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def Add_Python():
+def add_from_python():
     global top, Seq_Input, Code_Input, str_must, Index_must
     Dic = askopenfilename(title='选择载入的py', filetypes=[("Python", ".py"), ("Txt", ".txt")])
-    name = name_Input.get().replace(' ','')
+    name = name_Input.get().replace(' ', '')
     if name == '':
         name = os.path.splitext(os.path.split(Dic)[1])[0]
     with open(Dic, 'r') as f:
         ML.Add_Python(f.read(), name)
-    Updat_BOX()
+    update_sheet_box()
 
 
-def get_Name():  # 获得名字统一接口
+def get_sheet_name():  # 获得名字统一接口
     global Form_List
     try:
         return Form_List[Form_BOX.curselection()[0]]
@@ -1620,8 +1638,10 @@ def get_Name():  # 获得名字统一接口
             return None
 
 
-def Updat_BOX():
+def update_sheet_box():
     global top, Form_BOX, Form_List
     Form_List = ML.get_FormList()
     Form_BOX.delete(0, tkinter.END)
     Form_BOX.insert(tkinter.END, *Form_List)
+
+machine_learning()
