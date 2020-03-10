@@ -328,7 +328,7 @@ class git_Ctrol:
         return self.get_git(name).Add_File(dic_list)
 
     def reset_File(self,name,dic_list):
-        return self.get_git(name).Reset_File(dic_list)
+        return self.get_git(name).Reset_File(dic_list)#移除出去暂存区
 
     def commit_File(self,name,m):
         return self.get_git(name).Commit_File(m)
@@ -343,16 +343,16 @@ class git_Ctrol:
         return self.get_git(name).Status()
 
     def diff_File(self,name,MASTER):
-        return self.get_git(name).Diff_File(MASTER)
+        return self.get_git(name).diff(MASTER)
 
     def back_version(self,name,HEAD,Type=0):
-        return self.get_git(name).reset(HEAD,Type)
+        return self.get_git(name).reset(HEAD,Type)#版本回退HEAD
 
     def back_version_file(self,name,HEAD,File_list):
-        return self.get_git(name).reset_File(HEAD, File_list)
+        return self.get_git(name).reset_File(HEAD, File_list)#文件回退
 
     def checkout_version(self,name,file):
-        return self.get_git(name).checkout(file)
+        return self.get_git(name).checkout(file)#弹出
 
     def rm(self,name,file):
         return self.get_git(name).rm(file)

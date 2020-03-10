@@ -8,7 +8,7 @@ from tkinter.scrolledtext import ScrolledText
 import time
 import threading
 
-def Main():
+def git_main():
     global top,Git,PATH,bg,bbg,fg,Git_List,Last_Name,FileList
     FileList = []
     PATH = os.getcwd()
@@ -38,9 +38,9 @@ def Main():
 
     tkinter.Button(top, bg=bbg, fg=fg, text='克隆仓库', command=clone_git, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='打开仓库', command=init_git, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='打开仓库', command=repo_init, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看文件', command=get_Git_Dir, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看文件', command=update_git_file_select, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -72,17 +72,17 @@ def Main():
     File_Input.grid(column=a_x, row=a_y, columnspan=3, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='填充路径并添加', command=Add_FileByGit, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='填充路径并添加', command=add_file_by_git, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='直接添加', command=Add_FileInput, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='直接添加', command=add_file_input, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='选择文件', command=Add_FileList, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='选择文件', command=add_file_list, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='把文件移除出列表', command=Del_FileBox, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='把文件移除出列表', command=del_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y,columnspan=2, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='清空列表', command=Tra_FileBox, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='清空列表', command=clean_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -90,19 +90,19 @@ def Main():
     File_BOX.grid(column=a_x, row=a_y, columnspan=3, rowspan=4, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
     a_y += 4
-    tkinter.Button(top, bg=bbg, fg=fg, text='添加暂存区文件', command=Add_File, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='添加暂存区文件', command=add, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='移除暂存区文件', command=Reset_File, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='移除暂存区文件', command=remove_the_staging, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='提交到git', command=Commit_File, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='提交到git', command=commit, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看执行日志', command=lambda :not_Args(Git.reflog), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看执行日志', command=lambda :not_parameters_call(Git.reflog), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Button(top, bg=bbg, fg=fg, text='查看文件日志', command=log, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看状态', command=lambda :not_Args(Git.status), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看状态', command=lambda :not_parameters_call(Git.status), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global log_Type,reset_Type
@@ -116,11 +116,11 @@ def Main():
         log_Type[-1].set(1)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='版本回退', command=Back_version, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='版本回退', command=reset_head, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='放弃修改', command=Back_File, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='放弃修改', command=checkout_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除文件', command=rm_file, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除文件', command=remove_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
@@ -198,43 +198,43 @@ def Main():
         column=a_x,columnspan=3,row=a_y,sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N)  # 设置说明
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='查看分支', command=lambda :not_Args(Git.check_Branch), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='查看分支', command=lambda :not_parameters_call(Git.check_Branch), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='新建分支', command=make_Branch, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='新建分支', command=add_new_Branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='切换分支', command=switch_Branch, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='切换分支', command=switch_branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除分支', command=lambda :Delete_Branch(1), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除分支', command=lambda :del_branch(1), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='丢弃分支', command=lambda :Delete_Branch(0), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='丢弃分支', command=lambda :del_branch(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=switch_Branch, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=switch_branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     no_ff = tkinter.IntVar()
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=merge_Branch, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='合并分支', command=branch_merge, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='退出冲突处理', command=lambda :not_Args(Git.merge_abort), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='退出冲突处理', command=lambda :not_parameters_call(Git.merge_abort), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='使用快速合并',
                         variable=no_ff).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
     no_ff.set(0)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='连接远程仓库', command=Add_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='连接远程仓库', command=add_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='推送到远程仓库', command=lambda :Pull_Push_remote(1), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='推送到远程仓库', command=lambda :pull_push_remote(1), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='从远程仓库抓取', command=lambda :Pull_Push_remote(0), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='从远程仓库抓取', command=lambda :pull_push_remote(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     push_bind = tkinter.IntVar()
     allow_history = tkinter.IntVar()
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='分支绑定', command=Bind_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='分支绑定', command=bind_remote_branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(top, bg=bg, fg=fg, activebackground=bg, activeforeground=fg, selectcolor=bg, text='无视历史记录',
                         variable=allow_history).grid(column=a_x + 1, row=a_y, sticky=tkinter.W)
@@ -254,42 +254,42 @@ def Main():
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='推送标签', command=push_tag, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='推送所有标签', command=push_alltag, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='推送所有标签', command=push_all_tag, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除本地标签',command=del_Tag, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除本地标签', command=del_tag, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程标签', command=del_Tag_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程标签', command=del_remote_tag, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程分支', command=del_Branch_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程分支', command=del_remote_branch, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='刷新远程分支', command=Fetch_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='刷新远程分支', command=fetch_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
     tkinter.Button(top, bg=bbg, fg=fg, text='commit补丁', command=cherry_pick, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程仓库', command=Del_remote, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除远程仓库', command=del_remote, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_Args(Git.Stash_List), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='工作区列表', command=lambda :not_parameters_call(Git.Stash_List), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global newName_Input
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='文件回退', command=Back_version_File, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='文件回退', command=reset_file, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='分支重命名', command=Branch_new, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='分支重命名', command=branch_new, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
     newName_Input = tkinter.Entry(top, width=width_B)
     newName_Input.grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     a_y += 1
-    tkinter.Button(top, bg=bbg, fg=fg, text='保存工作区', command=lambda :not_Args(Git.Save_stash), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='保存工作区', command=lambda :not_parameters_call(Git.Save_stash), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='恢复工作区', command=lambda :Open_Stash(1), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='恢复工作区', command=lambda :open_stash(1), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+1, row=a_y, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(top, bg=bbg, fg=fg, text='删除工作区', command=lambda :Open_Stash(0), font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='删除工作区', command=lambda :open_stash(0), font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
 
     global Customize_Input, th_do, wait_do
@@ -303,7 +303,7 @@ def Main():
     Customize_Input = tkinter.Entry(top, width=width_B * 3)
     Customize_Input.grid(column=2, row=a_y, columnspan=4, sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S)
 
-    tkinter.Button(top, bg=bbg, fg=fg, text='执行操作', command=Customize, font=FONT, width=width_B,
+    tkinter.Button(top, bg=bbg, fg=fg, text='执行操作', command=customize, font=FONT, width=width_B,
                    height=height_B).grid(column=a_x+2, row=a_y, sticky=tkinter.E + tkinter.W)
     th_do.set(0)
     wait_do.set(1)
@@ -314,95 +314,95 @@ def Main():
 
     top.mainloop()
 
-def Branch_new():#克隆仓库
+def branch_new():#克隆仓库
     global BranchName, newName_Input
     new_name = newName_Input.get()
     old_name = BranchName.get()
-    do_Sys(Git.Branch_new, (get_Name(), old_name, new_name),show=False)
-    Updata_GitBox()
+    cli(Git.Branch_new, (get_repo_name(), old_name, new_name), show=False)
+    update_repo_box()
 
 def clone_git():#克隆仓库
     global clone_url
     new_Dic = askdirectory(title = '选择仓库地址')
     if new_Dic == '':return False
     name = Git.Clone_init(new_Dic)
-    Clone(name, clone_url.get())
-    Updata_GitBox()
+    clone_core(name, clone_url.get())
+    update_repo_box()
 
-def Clone(name,url):
-    do_Sys(Git.Clone, (name, url),
-           break_time=0,text_n=f'{url}:正在执行克隆操作',th=True,wait=True)
+def clone_core(name, url):
+    cli(Git.Clone, (name, url),
+        break_time=0, text_n=f'{url}:正在执行克隆操作', th=True, wait=True)
     Git.After_Clone(name)
-    update_Git_Dir()
+    update_git_file_last()
 
-def Customize():
+def customize():
     global Git, Customize_Input, th_do, wait_do
     command = Customize_Input.get()
-    do_Sys(Git.Customize, (get_Name(), command),
-           break_time=0,text_n=f'{command}:操作进行中',th=bool(th_do.get()),wait=bool(wait_do.get()))
-    update_Git_Dir()
+    cli(Git.Customize, (get_repo_name(), command),
+        break_time=0, text_n=f'{command}:操作进行中', th=bool(th_do.get()), wait=bool(wait_do.get()))
+    update_git_file_last()
 
-def Fetch_remote():
+def fetch_remote():
     global RemoteBranch, LocalBranch, Git, RemoteName
     Branch = RemoteBranch.get()
     Remote = RemoteName.get()
     Local = LocalBranch.get()
-    do_Sys(Git.Fetch, (get_Name(), Local, Remote, Branch),
-           break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',th=True,wait=True)
-    update_Git_Dir()
+    cli(Git.Fetch, (get_repo_name(), Local, Remote, Branch),
+        break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...', th=True, wait=True)
+    update_git_file_last()
 
-def del_Tag():
+def del_tag():
     global Git, RemoteName, TagName
     Tag = TagName.get()
-    do_Sys(Git.del_tag, (get_Name(),Tag))
-    update_Git_Dir()
+    cli(Git.del_tag, (get_repo_name(), Tag))
+    update_git_file_last()
 
-def del_Branch_remote():
+def del_remote_branch():
     global Git, RemoteName, TagName
     Remoto = RemoteName.get()
     Remoto_Branch = RemoteBranch.get()
-    do_Sys(Git.del_Branch_remote, (get_Name(),Remoto,Remoto_Branch),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
-           th=True,wait=True)
-    update_Git_Dir()
+    cli(Git.del_Branch_remote, (get_repo_name(), Remoto, Remoto_Branch), break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...',
+        th=True, wait=True)
+    update_git_file_last()
 
-def del_Tag_remote():
+def del_remote_tag():
     global Git, RemoteName, TagName
     Remoto = RemoteName.get()
     Tag = TagName.get()
-    do_Sys(Git.del_Tag_remote, (get_Name(),Remoto,Tag),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
-           th=True,wait=True)
-    update_Git_Dir()
+    cli(Git.del_Tag_remote, (get_repo_name(), Remoto, Tag), break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...',
+        th=True, wait=True)
+    update_git_file_last()
 
-def push_alltag():
+def push_all_tag():
     global Git, RemoteName
     Remoto = RemoteName.get()
-    do_Sys(Git.push_allTag, (get_Name(),Remoto),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
-           th=True,wait=True)
-    update_Git_Dir()
+    cli(Git.push_allTag, (get_repo_name(), Remoto), break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...',
+        th=True, wait=True)
+    update_git_file_last()
 
 def push_tag():
     global TagName, Git, RemoteName
     tag_name = TagName.get()
     Remoto = RemoteName.get()
-    do_Sys(Git.push_Tag, (get_Name(), tag_name,Remoto),break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',
-           th=True,wait=True)
-    update_Git_Dir()
+    cli(Git.push_Tag, (get_repo_name(), tag_name, Remoto), break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...',
+        th=True, wait=True)
+    update_git_file_last()
 
 def add_tag():
     global TagName, Git, commit, tag_message
     tag_name = TagName.get()
     commit = TagCommit.get()
     tag_message = TagMessage.get()
-    do_Sys(Git.Add_Tag, (get_Name(), tag_name,commit,tag_message),show=False)
-    update_Git_Dir()
+    cli(Git.Add_Tag, (get_repo_name(), tag_name, commit, tag_message), show=False)
+    update_git_file_last()
 
 def show_tag(type_):
     global Show_Key, Git
     key = Show_Key.get()
-    do_Sys({1:Git.Tag,0:Git.show_new}.get(type_,Git.show_new), (get_Name(), key))
-    update_Git_Dir()
+    cli({1:Git.Tag, 0:Git.show_new}.get(type_, Git.show_new), (get_repo_name(), key))
+    update_git_file_last()
 
-def Pull_Push_remote(type_):
+def pull_push_remote(type_):
     global RemoteBranch, LocalBranch, Git, allow_history, RemoteName
     Branch = RemoteBranch.get()
     Remote = RemoteName.get()
@@ -410,44 +410,44 @@ def Pull_Push_remote(type_):
     allow = bool(allow_history.get())
     u = bool(push_bind.get())
     f = tkinter.messagebox.askokcancel('提示', f'是否需要强制推送？(强制推送不被建议)')
-    do_Sys({0:Git.Pull_remote,1:Git.Push_remote}.get(type_,Git.Pull_remote), (get_Name(), Local, Remote, Branch, allow, u, f),
-           break_time=0,text_n=f'此操作需要连接远程仓库，请稍等...',th=True,wait=True)
-    update_Git_Dir()
+    cli({0:Git.Pull_remote, 1:Git.Push_remote}.get(type_, Git.Pull_remote), (get_repo_name(), Local, Remote, Branch, allow, u, f),
+        break_time=0, text_n=f'此操作需要连接远程仓库，请稍等...', th=True, wait=True)
+    update_git_file_last()
 
-def Bind_remote():
+def bind_remote_branch():
     global RemoteBranch, LocalBranch, Git
     Remote = RemoteBranch.get()
     Local = LocalBranch.get()
-    do_Sys(Git.Bind_remote, (get_Name(), Local, Remote))
-    update_Git_Dir()
+    cli(Git.Bind_remote, (get_repo_name(), Local, Remote))
+    update_git_file_last()
 
-def Del_remote():
+def del_remote():
     global RemoteSSH, RemoteName, Git
     name = RemoteName.get()
-    do_Sys(Git.Del_remote, (get_Name(), name))
-    update_Git_Dir()
+    cli(Git.Del_remote, (get_repo_name(), name))
+    update_git_file_last()
 
-def Add_remote():
+def add_remote():
     global RemoteSSH, RemoteName, Git
     SSH = RemoteSSH.get()
     name = RemoteName.get()
-    do_Sys(Git.Add_remote, (get_Name(), SSH, name))
-    update_Git_Dir()
+    cli(Git.Add_remote, (get_repo_name(), SSH, name))
+    update_git_file_last()
 
 def cherry_pick():
     global CommitName, Git
     commit = CommitName.get()
-    do_Sys(Git.cherry_pick, (get_Name(), commit))
-    update_Git_Dir()
+    cli(Git.cherry_pick, (get_repo_name(), commit))
+    update_git_file_last()
 
-def Open_Stash(type_):
+def open_stash(type_):
     global StashName, Git
     stash_num = StashName.get()
     if stash_num == '':stash_num = '0'
-    do_Sys([Git.Drop_stash,Git.Apply_stash][type_], (get_Name(), stash_num))
-    update_Git_Dir()
+    cli([Git.Drop_stash, Git.Apply_stash][type_], (get_repo_name(), stash_num))
+    update_git_file_last()
 
-def merge_Branch():
+def branch_merge():
     global BranchName, Git, no_ff,commit_m
     m = commit_m.get()
     no = not bool(no_ff.get())  # 对于no_ff来说，True - 使用快速合并，所以要翻转
@@ -456,63 +456,63 @@ def merge_Branch():
                                            '(如果你不想添加描述，请使用快速合并，但我并不建议！)')
         return False
     name = BranchName.get()
-    do_Sys(Git.merge_Branch, (get_Name(), name, no, m))
-    update_Git_Dir()
+    cli(Git.merge_Branch, (get_repo_name(), name, no, m))
+    update_git_file_last()
 
-def Delete_Branch(type_):
+def del_branch(type_):
     global BranchName, Git
     name = BranchName.get()
-    do_Sys(Git.Del_Branch, (get_Name(), name, type_))
-    update_Git_Dir()
+    cli(Git.Del_Branch, (get_repo_name(), name, type_))
+    update_git_file_last()
 
-def switch_Branch():
+def switch_branch():
     global BranchName,Git
     name = BranchName.get()
-    do_Sys(Git.switch_Branch, (get_Name(), name),break_time=1,show=False)
-    update_Git_Dir()
+    cli(Git.switch_Branch, (get_repo_name(), name), break_time=1, show=False)
+    update_git_file_last()
 
-def make_Branch():
+def add_new_Branch():
     global BranchName,Git,BranchNOrigin
     name = BranchName.get()
     origin = BranchNOrigin.get()
-    do_Sys(Git.new_Branch, (get_Name(), name, origin),break_time=1,show=False)
-    update_Git_Dir()
+    cli(Git.new_Branch, (get_repo_name(), name, origin), break_time=1, show=False)
+    update_git_file_last()
 
-def rm_file():
+def remove_file():
     global Git,head
     dic = FileList
     if dic == []: return False
-    do_Sys(Git.rm,(get_Name(),dic))
-    update_Git_Dir()
+    cli(Git.rm, (get_repo_name(), dic))
+    update_git_file_last()
 
-def Back_File():#从暂存区、仓库返回文件
+def checkout_file():#从暂存区、仓库返回文件
     global Git,head
     dic = FileList
     if dic == []: return False
-    do_Sys(Git.checkout_version,(get_Name(),dic))
-    update_Git_Dir()
+    cli(Git.checkout_version, (get_repo_name(), dic))
+    update_git_file_last()
 
-def Back_version_File():#使用reset回退文件
+def reset_file():#使用reset回退文件
     global Git,head,reset_Type
     HEAD = head.get()
     if HEAD == '': HEAD = 'HEAD~1'
     File = FileList
-    do_Sys(Git.back_version_file,(get_Name(),HEAD,File))
-    update_Git_Dir()
+    cli(Git.back_version_file, (get_repo_name(), HEAD, File))
+    update_git_file_last()
 
-def Back_version():
+def reset_head():
     global Git,head,reset_Type
     HEAD = head.get()
     if HEAD == '': HEAD = 'HEAD~1'
     Type = reset_Type.get()
-    do_Sys(Git.back_version,(get_Name(),HEAD,Type))
-    update_Git_Dir()
+    cli(Git.back_version, (get_repo_name(), HEAD, Type))
+    update_git_file_last()
 
-def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,wait=False,stop=True):
+def cli(func, args, name='CoTan Git', break_time=0, show=True, text_n='', th=False, wait=False, stop=True):
     p = func(*args)
     flat = True
-    stopKey = Git_Ctrl.stopKey
-    def Out_Txt():
+    stop_key = Git_Ctrl.stopKey
+    def out_txt():
         nonlocal data
         dic = asksaveasfilename(title='选择文件保存位置',filetypes=[("TXT", ".txt")])
         try:
@@ -530,7 +530,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
             b_list[1].config(state=tkinter.DISABLED)
         if not sb:
             b_list[0].config(state=tkinter.DISABLED)
-    def Stop():
+    def stop():
         nonlocal start,kb,sb
         start = 0
         sb = False
@@ -555,7 +555,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
     data = ''
     out_data = ''#包含out的data
     if show:
-        text, new_top, b_list = show_Now(Out_Txt,Stop,keep,not_out,pipe,name=name)#[close,keep]
+        text, new_top, b_list = show_cli(out_txt, stop, keep, not_out, pipe, name=name)#[close,keep]
         update_b()
         if text_n != '':
             text.insert('0.0',f'载入前提示>>> {text_n}\n')
@@ -563,7 +563,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
             data += f'{text_n}\n'
         new_top.update()
     else:
-        u = threading.Thread(target=up)
+        u = threading.Thread(target=progress_bar)
         u.start()
     top.update()
     def Update():
@@ -603,11 +603,11 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
                 try:  # 如果界面被关掉了，会报错
                     new_top.title(f'{name} : 运行中')
                 except:
-                    text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
-                                             name=f'{name} : 运行中')
+                    text, new_top, b_list = show_cli(out_txt, stop, keep, not_out, pipe,
+                                                     name=f'{name} : 运行中')
                     update_b()
                     text.insert(tkinter.END, out_data)
-                if stop and i.replace(' ', '').replace('\n', '') != stopKey:
+                if stop and i.replace(' ', '').replace('\n', '') != stop_key:
                     text.insert(tkinter.END, f'[out]> {i}\n')
                     data += i + '\n'
                     out_data += f'[out]> {i}\n'
@@ -622,8 +622,8 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
             try:#如果界面被关掉了，会报错
                 if show: new_top.title(f'{name} : 运行中')
             except:
-                text, new_top, b_list = show_Now(Out_Txt, Stop, keep, not_out, pipe,
-                                         name=f'{name} : 运行中')
+                text, new_top, b_list = show_cli(out_txt, stop, keep, not_out, pipe,
+                                                 name=f'{name} : 运行中')
                 update_b()
                 text.insert(tkinter.END,out_data)
             #界面刷新
@@ -638,7 +638,7 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
                 i = p.stdout.readline()#.decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
                 bool_text = i.replace(' ','').replace('\n','')
                 if bool_text != '':
-                    if stop and bool_text == stopKey:
+                    if stop and bool_text == stop_key:
                         start = 0
                     else:
                         if show: text.insert(tkinter.END, f'[out]> {i}')
@@ -673,102 +673,102 @@ def do_Sys(func,args,name='CoTan Git',break_time=0,show=True,text_n='',th=False,
 
 def log():
     global Git,log_Type
-    name = get_Name()
+    name = get_repo_name()
     graph = bool(log_Type[0].get())
     abbrev = bool(log_Type[1].get())
     pretty = bool(log_Type[2].get())
-    do_Sys(Git.log,(name,graph,pretty,abbrev))
-    update_Git_Dir()
+    cli(Git.log, (name, graph, pretty, abbrev))
+    update_git_file_last()
 
-def not_Args(func):
+def not_parameters_call(func):
     global Git
-    name = get_Name()
-    do_Sys(func,(name,))
-    update_Git_Dir()
+    name = get_repo_name()
+    cli(func, (name,))
+    update_git_file_last()
 
-def Commit_File():
+def commit():
     global Git,commit_m
     m = commit_m.get()
     if m.replace(' ','') == '':
         tkinter.messagebox.showinfo('警告!', '非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！')
         return False
-    name = get_Name()
-    do_Sys(Git.commit_File,(name,m))
-    update_Git_Dir()
+    name = get_repo_name()
+    cli(Git.commit_File, (name, m))
+    update_git_file_last()
 
-def Diff_File():
+def diff():
     global Git,master
     MASTER = master.get()
     if MASTER == '':MASTER = 'HEAD'
-    do_Sys(Git.diff_File,(get_Name(),MASTER))
-    update_Git_Dir()
+    cli(Git.diff_File, (get_repo_name(), MASTER))
+    update_git_file_last()
 
-def Reset_File():
+def remove_the_staging():
     global Git,Last_Name,FileList
     dic = FileList
     if dic == []:dic = '.'
-    do_Sys(Git.reset_File,(get_Name(),dic))
-    update_Git_Dir()
+    cli(Git.reset_File, (get_repo_name(), dic))
+    update_git_file_last()
 
-def Add_File():
+def add():
     global Git,Last_Name,FileList
     dic = FileList
     if dic == []:dic = '.'#查一下取消的dic
-    do_Sys(Git.add_File,(get_Name(),dic))
-    update_Git_Dir()
+    cli(Git.add_File, (get_repo_name(), dic))
+    update_git_file_last()
 
-def Add_FileList():
+def add_file_list():
     global FileList, File_BOX
     a = set(askopenfilenames(title=f'选择要add的文件(取消为全选)'))
     b = set(FileList)
     dic = list(a - (a & b))#筛选出重复
     FileList += dic
-    Update_FileBox()
+    update_file_box()
 
-def Add_FileInput():
+def add_file_input():
     global File_Input
     dic = File_Input.get()
     if dic.replace(' ','') != '' and dic not in FileList:
         FileList.append(dic)
-    Update_FileBox()
+    update_file_box()
 
-def Add_FileByGit():
+def add_file_by_git():
     global File_Input
     dic = File_Input.get()
     if dic.replace(' ', '') != '':
-        name = get_Name()
+        name = get_repo_name()
         new_dir = Git.make_Dir(name,dic)
         if new_dir not in FileList:
             FileList.append(new_dir)
-    Update_FileBox()
+    update_file_box()
 
-def Del_FileBox():
+def del_file():
     global FileList, File_BOX
     try:
         del FileList[File_BOX.curselection()]
-        Update_FileBox()
+        update_file_box()
     except:pass
 
-def Tra_FileBox():
+def clean_file():
     global FileList
     FileList = []
-    Update_FileBox()
+    update_file_box()
 
-def Update_FileBox():
+def update_file_box():
     global FileList, File_BOX
     File_BOX.delete(0, tkinter.END)
     File_BOX.insert(tkinter.END, *FileList)
 
-def update_Git_Dir():
+def update_git_file_last():
     global Last_Name
     if Last_Name == None:return False
-    Git_dir(Last_Name)
+    update_git_file_core(Last_Name)
 
-def get_Git_Dir():
-    name = get_Name()
-    Git_dir(name)
+def update_git_file_select():
+    name = get_repo_name()
+    update_git_file_core(name)
 
-def Git_dir(name):
+def update_git_file_core(name):
     global Git, Git_Dir,Last_Name
     dir_list = Git.get_Dir(name)
     try:#窗口可能已经关闭
@@ -778,14 +778,14 @@ def Git_dir(name):
         pass
     Last_Name = name
 
-def init_git():#创建仓库
+def repo_init():#创建仓库
     global Git
     new_Dic = askdirectory(title = '选择仓库地址')
     if new_Dic == '':return False
     Git.Add_init(new_Dic,)
-    Updata_GitBox()
+    update_repo_box()
 
-def get_Name():  # 获得名字统一接口
+def get_repo_name():  # 获得名字统一接口
     global Git,Git_List,Git_Box
     try:
         return Git_List[Git_Box.curselection()[0]]
@@ -795,26 +795,26 @@ def get_Name():  # 获得名字统一接口
         except:
             return None
 
-def Updata_GitBox():
+def update_repo_box():
     global Git,Git_List,Git_Box
     Git_List = list(Git.get_git_Dic().keys())
     Git_Box.delete(0,tkinter.END)
     Git_Box.insert(tkinter.END,*Git_List)
 
-def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> 命令行'):
+def show_cli(out_func, close_func, keepFunc, not_out, pipeFunc, name='CoTan_Git >>> 命令行'):
     global bg
     new_top = tkinter.Toplevel(bg=bg)
     new_top.title(name)
     new_top.geometry('+10+10')  # 设置所在位置
     new_top.resizable(width=False, height=False)
 
-    class ScrolledText_new(ScrolledText):
+    class ScrolledCli(ScrolledText):
         def __init__(self,*args,**kwargs):
-            super(ScrolledText_new, self).__init__(*args,**kwargs)
+            super(ScrolledCli, self).__init__(*args,**kwargs)
 
         def insert(self, index, chars, *args):
             text.config(state=tkinter.NORMAL)
-            super(ScrolledText_new, self).insert(index, chars, *args)
+            super(ScrolledCli, self).insert(index, chars, *args)
             text.config(state=tkinter.DISABLED)
 
         def clear(self):
@@ -822,7 +822,7 @@ def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> �
             self.delete('0.0',tkinter.END)
             text.config(state=tkinter.DISABLED)
 
-    text = ScrolledText_new(new_top, font=('黑体', 11), height=30,width=100)
+    text = ScrolledCli(new_top, font=('黑体', 11), height=30,width=100)
     text.grid(column=0, row=0,columnspan=5, sticky=tkinter.E + tkinter.W)
     text.config(state=tkinter.DISABLED)
     tkinter.Button(new_top, bg=bg, fg=fg, text='输出文档', font=('黑体', 11),width=20, height=2, command=out_func).grid(
@@ -838,7 +838,7 @@ def show_Now(out_func,close_func,keepFunc,not_out,pipeFunc,name='CoTan_Git >>> �
     new_top.update()
     return text,new_top,[close,keep]
 
-def up(*args,name='CoTan_Git >>> 运行中...',**kwargs):
+def progress_bar(*args, name='CoTan_Git >>> 运行中...', **kwargs):
     new_top = tkinter.Toplevel(bg=bg)
     new_top.title(name)
     new_top.geometry('+10+10')  # 设置所在位置
