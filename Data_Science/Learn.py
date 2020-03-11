@@ -1,7 +1,6 @@
 from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
-import sklearn as sk
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import *
 from sklearn.model_selection import train_test_split
@@ -20,88 +19,88 @@ CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 
 class Form:
     def __init__(self, *args, **kwargs):
-        class DEL:
+        class Del:
             pass
 
-        self.Sheet_Dic = {}
-        self.Clean_Func = {}
-        self.Clean_Func_Exp = {}
-        self.DEL = DEL()
+        self.sheet_dict = {}
+        self.clean_func = {}
+        self.clean_func_code = {}
+        self.DEL = Del()
         self.Name = {
             'pd': pd,
             'DEL': self.DEL,
             're': re,
-            'Sheet': self.Sheet_Dic}
-        self.R_Dic = {}  # 存放所有的图
+            'Sheet': self.sheet_dict}
+        self.all_render = {}  # 存放所有的图
 
-    def get_Sheet(self, name, all_Row=None, all_Colunms=None) -> pd.DataFrame:
+    def get_sheet(self, name, all_row=None, all_colunm=None) -> pd.DataFrame:
         try:
-            pd.set_option('display.max_rows', all_Row)
-            pd.set_option('display.max_columns', all_Colunms)
+            pd.set_option('display.max_rows', all_row)
+            pd.set_option('display.max_columns', all_colunm)
         except BaseException:
             pass
-        return self.Sheet_Dic[name]
+        return self.sheet_dict[name]
 
-    def Describe(self, name, make_Sheet=False):  # 生成描述
-        get = self.get_Sheet(name)
-        Des = get.describe()
-        if make_Sheet:
-            self.Add_Form(Des, f'{name}_describe[{len(self.Sheet_Dic)}]')
+    def describe(self, name, new=False):  # 生成描述
+        get = self.get_sheet(name)
+        des = get.describe()
+        if new:
+            self.add_sheet(des, f'{name}_describe[{len(self.sheet_dict)}]')
         shape = get.shape
         dtype = get.dtypes
         n = get.ndim
         head = get.head()
         tail = get.tail(3)
-        return f'1)基本\n{Des}\n\n2)形状:{shape}\n\n3)数据类型\n{dtype}\n\n4)数据维度:{n}\n\n5)头部数据\n{head}\n\n6)尾部数据\n{tail}' \
-               f'\n\n7)行名\n{get.index}\n\n8)列名\n{get.columns}'
+        return f'1)基本\n{des}\n\n2)形状:{shape}\n\n3)数据类型\n{dtype}\n\n4)数据维度:{n}\n\n5)头部数据\n{head}' \
+               f'\n\n6)尾部数据\n{tail}\n\n7)行名\n{get.index}\n\n8)列名\n{get.columns}'
 
-    def Add_Form(self, Data, name=''):
+    def add_sheet(self, data, name=''):
         if name == '':
-            name = f'Sheet[{len(self.Sheet_Dic)}]'
+            name = f'Sheet[{len(self.sheet_dict)}]'
         else:
-            name += f'_[{len(self.Sheet_Dic)}]'
-        self.Sheet_Dic[name] = Data
-        return Data
+            name += f'_[{len(self.sheet_dict)}]'
+        self.sheet_dict[name] = data
+        return data
 
-    def Del_Form(self, name):
-        del self.Sheet_Dic[name]
+    def del_sheet(self, name):
+        del self.sheet_dict[name]
 
-    def __Add_Form(self, Dic, Func, name='', Index=True, **kwargs):  # 新增表格的核心方式
+    def __add_sheet(self, data_dir, func, name='', index=True, **kwargs):  # 新增表格的核心方式
         try:
-            Data = Func(Dic, **kwargs)
+            data = func(data_dir, **kwargs)
         except UnicodeDecodeError:  # 找不到编码方式
             return False
-        if not Index:
-            Data.index = Data.iloc[:, 0].tolist()
-            Data.drop(Data.columns.values.tolist()[0], inplace=True, axis=1)
-        return self.Add_Form(Data, name)
+        if not index:
+            data.index = data.iloc[:, 0].tolist()
+            data.drop(data.columns.values.tolist()[0], inplace=True, axis=1)
+        return self.add_sheet(data, name)
 
-    def Add_CSV(
+    def add_csv(
             self,
-            Dic,
+            data_dir,
             name='',
-            Sep=',',
-            code='utf-8',
+            sep=',',
+            encodeding='utf-8',
             str_=True,
             Index=True):
         if str_:
             k = {'dtype': 'object'}
         else:
             k = {}
-        return self.__Add_Form(
-            Dic,
+        return self.__add_sheet(
+            data_dir,
             pd.read_csv,
             name,
             Index,
-            sep=Sep,
-            encoding=code,
+            sep=sep,
+            encoding=encodeding,
             **k)
 
-    def Add_Python(self, Text, sheet_name='') -> pd.DataFrame:
-        name = {'Sheet': self.get_Sheet}
+    def add_python(self, python_file, sheet_name='') -> pd.DataFrame:
+        name = {'Sheet': self.get_sheet}
         name.update(globals().copy())
         name.update(locals().copy())
-        exec(Text, name)
+        exec(python_file, name)
         exec('get = Creat()', name)
         if isinstance(name['get'], pd.DataFrame):  # 已经是DataFram
             get = name['get']
@@ -124,30 +123,30 @@ class Form:
                 get = pd.DataFrame(name['get'])
             except BaseException:
                 get = pd.DataFrame([name['get']])
-        self.Add_Form(get, sheet_name)
+        self.add_sheet(get, sheet_name)
         return get
 
-    def Add_Html(self, Dic, name='', code='utf-8', str_=True, Index=True):
+    def add_html(self, data_dir, name='', encoding='utf-8', str_=True, index=True):
         if str_:
             k = {'dtype': 'object'}
         else:
             k = {}
-        return self.__Add_Form(
-            Dic,
+        return self.__add_sheet(
+            data_dir,
             pd.read_html,
             name,
-            Index,
-            encoding=code,
+            index,
+            encoding=encoding,
             **k)
 
-    def get_FormList(self):
-        return list(self.Sheet_Dic.keys())  # 返回列表
+    def get_sheet_list(self):
+        return list(self.sheet_dict.keys())  # 返回列表
 
-    def to_Html_One(self, name, Dic=''):
-        if Dic == '':
-            Dic = f'{name}.html'
-        get = self.get_Sheet(name)
-        headers = [f'{name}'] + self.get_Column(name, True).tolist()
+    def render_html_one(self, name, render_dir=''):
+        if render_dir == '':
+            render_dir = f'{name}.html'
+        get = self.get_sheet(name)
+        headers = [f'{name}'] + self.get_column(name, True).tolist()
         rows = []
         table = Table()
         for i in get.iterrows():  # 按行迭代
@@ -159,81 +158,84 @@ class Form:
             title_opts=opts.ComponentTitleOpts(
                 title=f"表格:{name}",
                 subtitle="CoTan~数据处理:查看表格"))
-        table.render(Dic)
-        return Dic
+        table.render(render_dir)
+        return render_dir
 
-    def to_Html(self, name, Dic='', type_=0):
-        if Dic == '':
-            Dic = f'{name}.html'
+    def render_html_all(self, name, tab_render_dir='', render_type=0):
+        if tab_render_dir == '':
+            tab_render_dir = f'{name}.html'
         # 把要画的sheet放到第一个
-        Sheet_Dic = self.Sheet_Dic.copy()
-        del Sheet_Dic[name]
-        Sheet_list = [name] + list(Sheet_Dic.keys())
+        sheet_dict = self.sheet_dict.copy()
+        del sheet_dict[name]
+        sheet_list = [name] + list(sheet_dict.keys())
 
-        class TAB_F:
-            def __init__(self, q):
-                self.tab = q  # 一个Tab
+        class TabNew:
+            def __init__(self, original_tab):
+                self.original_tab = original_tab  # 一个Tab
 
-            def render(self, Dic):
-                return self.tab.render(Dic)
+            def render(self, render_dir):
+                return self.original_tab.render(render_dir)
 
         # 生成一个显示页面
-        if type_ == 0:
-            class TAB(TAB_F):
-                def add(self, table, k, *f):
-                    self.tab.add(table, k)
+        if render_type == 0:
+            class TabZero(TabNew):
+                def add(self, render, k, *more):
+                    self.original_tab.add(render, k)
 
-            tab = TAB(Tab(page_title='CoTan:查看表格'))  # 一个Tab
-        elif type_ == 1:
-            class TAB(TAB_F):
-                def add(self, table, *k):
-                    self.tab.add(table)
+            tab = TabZero(Tab(page_title='CoTan:查看表格'))  # 一个Tab
+        elif render_type == 1:
+            class TabOne(TabNew):
+                def add(self, render, *more):
+                    self.original_tab.add(render)
 
-            tab = TAB(
+            tab = TabOne(
                 Page(
                     page_title='CoTan:查看表格',
                     layout=Page.DraggablePageLayout))
         else:
-            class TAB(TAB_F):
-                def add(self, table, *k):
-                    self.tab.add(table)
+            class TabTwo(TabNew):
+                def add(self, render, *more):
+                    self.original_tab.add(render)
 
-            tab = TAB(
+            tab = TabTwo(
                 Page(
                     page_title='CoTan:查看表格',
                     layout=Page.SimplePageLayout))
         # 迭代添加内容
-        for name in Sheet_list:
-            get = self.get_Sheet(name)
-            headers = [f'{name}'] + self.get_Column(name, True).tolist()
-            rows = []
-            table = Table()
-            for i in get.iterrows():  # 按行迭代
-                q = i[1].tolist()
-                rows.append([f'{i[0]}'] + q)
-            table.add(
-                headers,
-                rows).set_global_opts(
-                title_opts=opts.ComponentTitleOpts(
-                    title=f"表格:{name}",
-                    subtitle="CoTan~数据处理:查看表格"))
-            tab.add(table, f'表格:{name}')
-        tab.render(Dic)
-        return Dic
+        for name in sheet_list:
+            try:
+                get = self.get_sheet(name)
+                headers = [f'{name}'] + self.get_column(name, True).tolist()
+                rows = []
+                table = Table()
+                for i in get.iterrows():  # 按行迭代
+                    q = i[1].tolist()
+                    rows.append([f'{i[0]}'] + q)
+                table.add(
+                    headers,
+                    rows).set_global_opts(
+                    title_opts=opts.ComponentTitleOpts(
+                        title=f"表格:{name}",
+                        subtitle="CoTan~数据处理:查看表格"))
+                tab.add(table, f'表格:{name}')
+            except BaseException:
+                pass
+        tab.render(tab_render_dir)
+        return tab_render_dir
 
-    def To_Sheet_Des(self, Sheet, Dic):
-        re = pp.ProfileReport(Sheet)
-        re.to_file(Dic)
+    def sheet_profile_report_core(self, sheet, save_dir):
+        report = pp.ProfileReport(sheet)
+        report.to_file(save_dir)
 
-    def to_Report(self, name, Dic=''):
-        if Dic == '':
-            Dic = f'{name}.html'
-        Sheet = self.get_Sheet(name)
-        self.To_Sheet_Des(Sheet, Dic)
-        return Dic
+    def to_report(self, name, save_dir=''):
+        if save_dir == '':
+            save_dir = f'{name}.html'
+        sheet = self.get_sheet(name)
+        self.sheet_profile_report_core(sheet, save_dir)
+        return save_dir
 
-    def get_Column(self, name, only=False):  # 列名
-        get = self.get_Sheet(name)
+    def get_column(self, name, only=False):  # 列名
+        get = self.get_sheet(name)
         if only:
             re = get.columns.values
         else:
@@ -246,197 +248,181 @@ class Form:
                 a += 1
         return re
 
-    def get_Index(self, name, only=False):
-        get = self.get_Sheet(name)
+    def get_index(self, name, only=False):
+        get = self.get_sheet(name)
         if only:
-            re = get.index.values
+            values = get.index.values
         else:
-            re = []
+            values = []
             loc_list = get.index.values
             a = 0
             for i in range(len(loc_list)):
                 l = loc_list[i]
                 data = get.iloc[i].to_list()
-                re.append(f'[行号:{a}]{l} -> {data}')
+                values.append(f'[行号:{a}]{l} -> {data}')
                 a += 1
-        return re
+        return values
 
-    def Sorted(self, name, row: bool, new=False, a=True):
-        get = self.get_Sheet(name)
+    def sorted_index(self, name, row: bool, new=False, a=True):
+        get = self.get_sheet(name)
         if row:  # row-行名排序
-            so = get.sort_index(axis=0, ascending=a)
+            sorted_sheet = get.sort_index(axis=0, ascending=a)
         else:
-            so = get.sort_index(axis=1, ascending=a)
+            sorted_sheet = get.sort_index(axis=1, ascending=a)
         if new:
-            self.Add_Form(so, f'{name}:排序')
-        return so
+            self.add_sheet(sorted_sheet, f'{name}:排序')
+        return sorted_sheet
 
-    def Stored_Valuse(self, name, F, new=False):
-        get = self.get_Sheet(name)
+    def stored_value(self, name, F, new=False):
+        get = self.get_sheet(name)
         row = get.columns.values
-        a = []
-        b = []
+        by = []
+        ascending = []
         for i in F:
-            a.append(row[i[0]])
-            b.append(i[1])
-        if len(a) == 1:
-            a = a[0]
-            b = b[0]
-        so = get.sort_values(by=a, ascending=b)
+            by.append(row[i[0]])
+            ascending.append(i[1])
+        if len(by) == 1:
+            by = by[0]
+            ascending = ascending[0]
+        sorted_sheet = get.sort_values(by=by, ascending=ascending)
         if new:
-            self.Add_Form(so, f'{name}:排序')
-        return so
+            self.add_sheet(sorted_sheet, f'{name}:排序')
+        return sorted_sheet
 
-    def T(self, name, new=True):
-        get = self.get_Sheet(name)
-        re = get.T.copy()  # 复制一份，防止冲突
+    def transpose(self, name, new=True):
+        get = self.get_sheet(name)
+        t = get.T.copy()  # 复制一份，防止冲突
         if new:
-            self.Add_Form(re, f'{name}.T')
-        return re
+            self.add_sheet(t, f'{name}.T')
+        return t
 
-    def get_Clice(self, name, Column, Row, U_iloc=True, new=False):  # iloc(Row,Column) or loc
-        get = self.get_Sheet(name)
-        if U_iloc:
-            Cli = get.iloc[Row, Column]
+    def get_slice(self, name, column, row, is_iloc=True, new=False):  # iloc(Row,Column) or loc
+        get = self.get_sheet(name)
+        if is_iloc:
+            new_sheet = get.iloc[row, column]
         else:
-            Cli = get.loc[Row, Column]
+            new_sheet = get.loc[row, column]
         if new:
-            self.Add_Form(Cli, f'{name}:切片')
-        return Cli
+            self.add_sheet(new_sheet, f'{name}:切片')
+        return new_sheet
 
-    def Delete(self, name, Column, Row, new):
-        get = self.get_Sheet(name)
-        Column_List = get.columns.values
-        for i in Column:
+    def del_slice(self, name, column, row, new):
+        new_sheet = self.get_sheet(name)
+        column_list = new_sheet.columns.values
+        for i in column:
             try:
-                get = get.drop(Column_List[int(i)], axis=1)
+                new_sheet = new_sheet.drop(column_list[int(i)], axis=1)
             except BaseException:
                 pass
-        Row_List = get.index.values
-        for i in Row:
+        row_list = new_sheet.index.values
+        for i in row:
             try:
-                get = get.drop(Row_List[int(i)])
+                new_sheet = new_sheet.drop(row_list[int(i)])
             except BaseException:
                 pass
         if new:
-            self.Add_Form(get, f'{name}:删减')
-        return get
+            self.add_sheet(new_sheet, f'{name}:删减')
+        return new_sheet
 
-    def Done_Bool(self, name, Exp, new=False):
-        get = self.get_Sheet(name)
+    def to_bool(self, name, exp, new=False):
+        get = self.get_sheet(name)
         try:
-            re = eval(Exp, {'S': get, 'Sheet': get.iloc})
+            bool_sheet = eval(exp, {'S': get, 'Sheet': get.iloc})
             if new:
-                self.Add_Form(re, f'{name}:布尔')
-            return re
+                self.add_sheet(bool_sheet, f'{name}:布尔')
+            return bool_sheet
         except BaseException:
             return None
-            # raise
 
-    def is_Na(self, name):
-        get = self.get_Sheet(name)
-        Na = pd.isna(get)
-        return Na
+    def is_nan(self, name):
+        get = self.get_sheet(name)
+        bool_nan = pd.isna(get)
+        return bool_nan
 
-    def Dropna(self, name, new):
-        get = self.get_Sheet(name)
-        Clean = get.dropna(axis=0)
+    def del_nan(self, name, new):
+        get = self.get_sheet(name)
+        clean_sheet = get.dropna(axis=0)
         if new:
-            self.Add_Form(Clean, f'{name}:清洗')
-        return Clean
+            self.add_sheet(clean_sheet, f'{name}:清洗')
+        return clean_sheet
 
-    def Add_CleanFunc(self, Exp):
-        Name = self.Name.copy()
+    def add_clean_func(self, code):
+        name = self.Name.copy()
         try:
-            exec(Exp, Name)
+            exec(code, name)
         except BaseException:
             return False
-        Sava = {}
-        Sava['Done_Row'] = Name.get('Done_Row', [])
-        Sava['Done_Column'] = Name.get('Done_Column', [])
-        Sava['axis'] = Name.get('axis', True)
-        Sava['check'] = Name.get('check', lambda data, x, b, c, d, e: True)
-        Sava['done'] = Name.get('done', lambda data, x, b, c, d, e: data)
-        print(f'{len(self.Clean_Func)}')
-        title = f"[{Name.get('name', f'[{len(self.Clean_Func)}')}] Done_Row={Sava['Done_Row']}_Done_Column={Sava['Done_Column']}_axis={Sava['axis']}"
-        self.Clean_Func[title] = Sava
-        self.Clean_Func_Exp[title] = Exp
+        func_dict = {}
+        func_dict['Done_Row'] = name.get('Done_Row', [])
+        func_dict['Done_Column'] = name.get('Done_Column', [])
+        func_dict['axis'] = name.get('axis', True)
+        func_dict['check'] = name.get('check', lambda data, x, b, c, d, e: True)
+        func_dict['done'] = name.get('done', lambda data, x, b, c, d, e: data)
+        title = f"[{name.get('name', f'[{len(self.clean_func)}')}] Done_Row={func_dict['Done_Row']}_Done_Column=" \
+                f"{func_dict['Done_Column']}_axis={func_dict['axis']}"
+        self.clean_func[title] = func_dict
+        self.clean_func_code[title] = code
 
-    def Return_CleanFunc(self):
-        return list(self.Clean_Func.keys())
+    def get_clean_func(self):
+        return list(self.clean_func.keys())
 
-    def Delete_CleanFunc(self, key):
+    def del_clean_func(self, key):
         try:
-            del self.Clean_Func[key]
-            del self.Clean_Func_Exp[key]
+            del self.clean_func[key]
+            del self.clean_func_code[key]
         except BaseException:
             pass
 
-    def Tra_Clean(self):
-        self.Clean_Func = {}
-        self.Clean_Func_Exp = {}
+    def del_all_clean_func(self):
+        self.clean_func = {}
+        self.clean_func_code = {}
 
-    def Return_CleanExp(self, key):
-        return self.Clean_Func_Exp[key]
+    def get_clean_code(self, key):
+        return self.clean_func_code[key]
 
-    def Done_CleanFunc(self, name):
-        get = self.get_Sheet(name).copy()
-        for i in list(self.Clean_Func.values()):
-            Done_Row = i['Done_Row']
-            Done_Column = i['Done_Column']
-            if Done_Row == []:
-                Done_Row = range(get.shape[0])  # shape=[行,列]#不需要回调
-            if Done_Column == []:
-                Done_Column = range(get.shape[1])  # shape=[行,列]#不需要回调
+    def data_clean(self, name):
+        get = self.get_sheet(name).copy()
+        for i in list(self.clean_func.values()):
+            done_row = i['Done_Row']
+            done_column = i['Done_Column']
+            if done_row == []:
+                done_row = range(get.shape[0])  # shape=[行,列]#不需要回调
+            if done_column == []:
+                done_column = range(get.shape[1])  # shape=[行,列]#不需要回调
             if i['axis']:
                 axis = 0
             else:
                 axis = 1
             check = i['check']
             done = i['done']
-            for r in Done_Row:
-                for c in Done_Column:
+            for row in done_row:
+                for column in done_column:
                     try:
-                        n = eval(f"get.iloc[{r},{c}]")  # 第一个是行号，然后是列号
-                        r_h = eval(f"get.iloc[{r}]")
-                        c_h = eval(f"get.iloc[:,{c}]")
+                        data = eval(f"get.iloc[{row},{column}]", {'get':get})  # 第一个是行号，然后是列号
+                        column_data = eval(f"get.iloc[{row}]", {'get':get})
+                        row_data = eval(f"get.iloc[:,{column}]", {'get':get})
                         if not check(
-                                n, r, c, get.copy(), r_h.copy(), c_h.copy()):
+                                data, row, column, get.copy(), column_data.copy(), row_data.copy()):
                             d = done(
-                                n, r, c, get.copy(), r_h.copy(), c_h.copy())
+                                data, row, column, get.copy(), column_data.copy(), row_data.copy())
                             if d == self.DEL:
                                 if axis == 0:  # 常规删除
-                                    Row_List = get.index.values
-                                    get = get.drop(Row_List[int(r)])
+                                    row_list = get.index.values
+                                    get = get.drop(row_list[int(row)])
                                 else:  # 常规删除
-                                    Columns_List = get.columns.values
+                                    columns_list = get.columns.values
                                     get = get.drop(
-                                        Columns_List[int(r)], axis=1)
+                                        columns_list[int(row)], axis=1)
                             else:
                                 # 第一个是行名，然后是列名
-                                exec(f"get.iloc[{r},{c}] = {d}")
+                                exec(f"get.iloc[{row},{column}] = {d}", {'get':get})
                     except BaseException:
                         pass
-        self.Add_Form(get, f'{name}:清洗')
+        self.add_sheet(get, f'{name}:清洗')
         return get
 
-    def Import_c(self, text):
-        Name = {}
-        Name.update(locals())
-        Name.update(globals())
-        exec(text, Name)
-        exec('c = Page()', Name)
-        self.R_Dic[f'自定义图[{len(self.R_Dic)}]'] = Name['c']
-        return Name['c']
-
-    def retunr_RDic(self):
-        return self.R_Dic.copy()
-
-    def Delete_RDic(self, key):
-        del self.R_Dic[key]
-
-    def Reasonable_Type(self, name, column, dtype, wrong):
-        get = self.get_Sheet(name).copy()
+    def set_dtype(self, name, column, dtype, wrong):
+        get = self.get_sheet(name).copy()
         for i in range(len(column)):
             try:
                 column[i] = int(column[i])
@@ -444,36 +430,35 @@ class Form:
                 pass
 
         if dtype != '':
-            func_Dic = {
+            func_dic = {
                 'Num': pd.to_numeric,
                 'Date': pd.to_datetime,
                 'Time': pd.to_timedelta}
             if column != []:
                 get.iloc[:, column] = get.iloc[:, column].apply(
-                    func_Dic.get(dtype, pd.to_numeric), errors=wrong)
+                    func_dic.get(dtype, pd.to_numeric), errors=wrong)
             else:
                 get = get.apply(
-                    func_Dic.get(
+                    func_dic.get(
                         dtype,
                         pd.to_numeric),
                     errors=wrong)
         else:
             if column != []:
                 get.iloc[:, column] = get.iloc[:, column].infer_objects()
-                print('A')
             else:
                 get = get.infer_objects()
-        self.Add_Form(get, f'{name}')
+        self.add_sheet(get, f'{name}')
         return get
 
-    def as_Type(self, name, column, dtype, wrong):
-        get = self.get_Sheet(name).copy()
+    def as_dtype(self, name, column, dtype, wrong):
+        get = self.get_sheet(name).copy()
         for i in range(len(column)):
             try:
                 column[i] = int(column[i])
             except BaseException:
                 pass
-        func_Dic = {
+        func_dic = {
             'Int': int,
             'Float': float,
             'Str': str,
@@ -481,133 +466,131 @@ class Form:
             'TimeDelta': pd.Timedelta}
         if column != []:
             get.iloc[:, column] = get.iloc[:, column].astype(
-                func_Dic.get(dtype, dtype), errors=wrong)
-            print('A')
+                func_dic.get(dtype, dtype), errors=wrong)
         else:
-            get = get.astype(func_Dic.get(dtype, dtype), errors=wrong)
-        self.Add_Form(get, f'{name}')
+            get = get.astype(func_dic.get(dtype, dtype), errors=wrong)
+        self.add_sheet(get, f'{name}')
         return get
 
-    def Replace_Index(self, name, is_column, Dic, save):
-        get = self.get_Sheet(name)
+    def replace_index(self, name, is_column, rename, save):
+        get = self.get_sheet(name)
         if is_column:
             if save:  # 保存原数据
-                get.loc['column'] = self.get_Column(name, True)
-            new = get.rename(columns=Dic)
+                get.loc['column'] = self.get_column(name, True)
+            new = get.rename(columns=rename)
         else:
             if save:
-                get.loc[:, 'row'] = self.get_Index(name, True)
-            new = get.rename(index=Dic)
-        self.Add_Form(new, f'{name}')
+                get.loc[:, 'row'] = self.get_index(name, True)
+            new = get.rename(index=rename)
+        self.add_sheet(new, f'{name}')
         return new
 
-    def Change_Index(
+    def change_index(
             self,
             name: str,
             is_column: bool,
             iloc: int,
             save: bool = True,
             drop: bool = False):
-        get = self.get_Sheet(name).copy()
+        get = self.get_sheet(name).copy()
         if is_column:  # 列名
-            Row = self.get_Index(name, True)  # 行数据
-            t = Row.tolist()[iloc]
+            row = self.get_index(name, True)  # 行数据
+            t = row.tolist()[iloc]
             if save:  # 保存原数据
-                get.loc['column'] = self.get_Column(name, True)
+                get.loc['column'] = self.get_column(name, True)
             # new_colums = get.loc[t].values
             get.columns = get.loc[t].values
             if drop:
                 get.drop(t, axis=0, inplace=True)  # 删除行
         else:
-            Col = self.get_Column(name, True)
-            t = Col.tolist()[iloc]
-            print(t)
+            column = self.get_column(name, True)
+            t = column.tolist()[iloc]
             if save:
-                get.loc[:, 'row'] = self.get_Index(name, True)
+                get.loc[:, 'row'] = self.get_index(name, True)
             get.index = get.loc[:, t].values  # 调整
             if drop:
                 get.drop(t, axis=1, inplace=True)  # 删除行
-        self.Add_Form(get, f'{name}')
+        self.add_sheet(get, f'{name}')
         return get
 
-    def num_toName(self, name, is_column, save):
-        get = self.get_Sheet(name).copy()
+    def number_naming(self, name, is_column, save):
+        get = self.get_sheet(name).copy()
         if is_column:  # 处理列名
-            Col = self.get_Column(name, True)
+            column = self.get_column(name, True)
             if save:  # 保存原数据
-                get.loc['column'] = Col
-            get.columns = [i for i in range(len(Col))]
+                get.loc['column'] = column
+            get.columns = [i for i in range(len(column))]
         else:
-            Row = self.get_Index(name, True)
+            row = self.get_index(name, True)
             if save:
-                get.loc[:, 'row'] = Row
-            get.index = [i for i in range(len(Row))]
-        self.Add_Form(get, f'{name}')
+                get.loc[:, 'row'] = row
+            get.index = [i for i in range(len(row))]
+        self.add_sheet(get, f'{name}')
         return get
 
-    def num_withName(self, name, is_column, save):
-        get = self.get_Sheet(name).copy()
+    def name_with_number(self, name, is_column, save):
+        get = self.get_sheet(name).copy()
         if is_column:  # 处理列名
-            Col = self.get_Column(name, True)
+            column = self.get_column(name, True)
             if save:  # 保存原数据
-                get.loc['column'] = Col
-            get.columns = [f'[{i}]{Col[i]}' for i in range(len(Col))]
+                get.loc['column'] = column
+            get.columns = [f'[{i}]{column[i]}' for i in range(len(column))]
         else:
-            Row = self.get_Index(name, True)
+            row = self.get_index(name, True)
             if save:
-                get.loc[:, 'row'] = Row
-            get.index = [f'[{i}]{Row[i]}' for i in range(len(Row))]
-        self.Add_Form(get, f'{name}')
+                get.loc[:, 'row'] = row
+            get.index = [f'[{i}]{row[i]}' for i in range(len(row))]
+        self.add_sheet(get, f'{name}')
         return get
 
-    def Date_Index(self, name, is_column, save, **Date_Init):
+    def data_naming(self, name, is_column, save, **data_init):
         # Date_Init:start,end,freq 任意两样
-        get = self.get_Sheet(name)
+        get = self.get_sheet(name)
         if is_column:  # 处理列名
-            Col = self.get_Column(name, True)
+            column = self.get_column(name, True)
             if save:  # 保存原数据
-                get.loc['column'] = Col
-            Date_Init['periods'] = len(Col)
-            get.columns = pd.date_range(**Date_Init)
+                get.loc['column'] = column
+            data_init['periods'] = len(column)
+            get.columns = pd.date_range(**data_init)
         else:
-            Row = self.get_Index(name, True)
+            row = self.get_index(name, True)
             if save:
-                get.loc[:, 'row'] = Row
-            Date_Init['periods'] = len(Row)
-            get.index = pd.date_range(**Date_Init)
-        self.Add_Form(get, f'{name}')
+                get.loc[:, 'row'] = row
+            data_init['periods'] = len(row)
+            get.index = pd.date_range(**data_init)
+        self.add_sheet(get, f'{name}')
         return get
 
-    def Time_Index(self, name, is_column, save, **Time_Init):
+    def time_naming(self, name, is_column, save, **time_init):
         # Date_Init:start,end,freq 任意两样
-        get = self.get_Sheet(name)
+        get = self.get_sheet(name)
         if is_column:  # 处理列名
-            Col = self.get_Column(name, True)
+            column = self.get_column(name, True)
             if save:  # 保存原数据
-                get.loc['column'] = Col
-            Time_Init['periods'] = len(Col)
-            get.columns = pd.timedelta_range(**Time_Init)
+                get.loc['column'] = column
+            time_init['periods'] = len(column)
+            get.columns = pd.timedelta_range(**time_init)
         else:
-            Row = self.get_Index(name, True)
+            row = self.get_index(name, True)
             if save:
-                get.loc[:, 'row'] = Row
-            Time_Init['periods'] = len(Row)
-            get.index = pd.timedelta_range(**Time_Init)
-        self.Add_Form(get, f'{name}')
+                get.loc[:, 'row'] = row
+            time_init['periods'] = len(row)
+            get.index = pd.timedelta_range(**time_init)
+        self.add_sheet(get, f'{name}')
         return get
 
-    def Sample(self, name, new):
-        get = self.get_Sheet(name)
+    def sample(self, name, new):
+        get = self.get_sheet(name)
         sample = get.sample(frac=1)  # 返回比，默认按行打乱
         if new:
-            self.Add_Form(sample, f'{name}:打乱')
+            self.add_sheet(sample, f'{name}:打乱')
         return sample
 
-    def to_CSV(self, name, Dic, Sep=','):
+    def to_csv(self, name, save_dir, Sep=','):
         if Sep == '':
             Sep = ','
-        get = self.get_Sheet(name)
-        get.to_csv(Dic, sep=Sep, na_rep='')
+        get = self.get_sheet(name)
+        get.to_csv(save_dir, sep=Sep, na_rep='')
 
 
 class Draw(Form):
@@ -619,7 +602,7 @@ class Draw(Form):
     # 5）title配置
     # 6）是否显示刻度线、数轴类型、分割线
 
-    def Parsing_Parameters(self, text):  # 解析文本参数
+    def parsing_parameters(self, text):  # 解析文本参数
         args = {}  # 解析到的参数
         exec(text, args)
         args_use = {}  # 真实的参数
@@ -740,10 +723,10 @@ class Draw(Form):
             self,
             args_use,
             title,
-            Min,
-            Max,
-            DataZoom=False,
-            Visual_mapping=True,
+            min_,
+            max_,
+            data_zoom=False,
+            visual_mapping=True,
             axis=()):
         k = {}
         # 标题设置
@@ -765,17 +748,17 @@ class Draw(Form):
         # 视觉映射
         if not args_use['show_Visual_mapping']:
             pass
-        elif not Visual_mapping:
+        elif not visual_mapping:
             pass
         else:
             if args_use['min_Visual_mapping'] is not None:
-                Min = args_use['min_Visual_mapping']
+                min_ = args_use['min_Visual_mapping']
             if args_use['max_Visual_mapping'] is not None:
-                Max = args_use['max_Visual_mapping']
+                max_ = args_use['max_Visual_mapping']
             k['visualmap_opts'] = opts.VisualMapOpts(
                 type_='color'if args_use['is_color_Visual_mapping'] else 'size',
-                max_=Max,
-                min_=Min,
+                max_=max_,
+                min_=min_,
                 range_color=args_use['color_Visual_mapping'],
                 range_size=args_use['size_Visual_mapping'],
                 range_text=args_use['text_Visual_mapping'],
@@ -785,7 +768,7 @@ class Draw(Form):
 
         k['toolbox_opts'] = opts.ToolboxOpts(is_show=args_use['Tool_BOX'])
 
-        if DataZoom:
+        if data_zoom:
             if args_use['Datazoom'] == 'all':
                 k['datazoom_opts'] = [
                     opts.DataZoomOpts(), opts.DataZoomOpts(
@@ -800,7 +783,7 @@ class Draw(Form):
                 opts.DataZoomOpts(type_="inside", orient="horizontal")
 
         # 坐标轴设定，输入设定的坐标轴即可
-        def axis_Seeting(args_use, axis='x'):
+        def axis_seeting(args_use, axis='x'):
             axis_k = {}
             if args_use[f'{axis[0]}_type'] == 'Display' or not args_use['show_Axis']:
                 axis_k[f'{axis[0]}axis_opts'] = opts.AxisOpts(is_show=False)
@@ -811,11 +794,11 @@ class Draw(Form):
                         is_show=args_use['show_Axis_Scale']))
             return axis_k
         for i in axis:
-            k.update(axis_Seeting(args_use, i))
+            k.update(axis_seeting(args_use, i))
         return k
 
     # 初始化设定
-    def initSetting(self, args_use):
+    def init_setting(self, args_use):
         k = {}
         # 设置标题
         if args_use['page_Title'] == '':
@@ -833,11 +816,11 @@ class Draw(Form):
         return k
 
     # 获取title专用
-    def get_name(self, args_use):
+    def get_title(self, args_use):
         return f":{args_use['title']}"
 
     # 标记符，包含线标记、点
-    def Mark(self, args_use):
+    def mark(self, args_use):
         k = {}
         line = []
         for i in args_use['make_Line']:
@@ -856,14 +839,14 @@ class Draw(Form):
         return k
 
     # 标签设定，可以放在系列设置中或者坐标轴y轴设置中
-    def y_Label(self, args_use, position="inside"):
+    def yaxis_label(self, args_use, position="inside"):
         return {
             'label_opts': opts.LabelOpts(
                 is_show=args_use['show_Text'],
                 position=position)}
 
     # 放在不同的图~.add中的设定
-    def Per_Seeting(self, args_use, type_):  # 私人设定
+    def special_setting(self, args_use, type_):  # 私人设定
         k = {}
         if type_ == 'Bar':  # 设置y的重叠
             if args_use['bar_Stacking']:
@@ -896,13 +879,29 @@ class Draw(Form):
             k['symbol'] = args_use['Symbol']  # 雷达图symbol
         return k
 
+
+    def custom_graph(self, text):
+        NAME = {}
+        NAME.update(locals())
+        NAME.update(globals())
+        exec(text, NAME)
+        exec('c = Page()', NAME)
+        self.all_render[f'自定义图[{len(self.all_render)}]'] = NAME['c']
+        return NAME['c']
+
+    def get_all_render(self):
+        return self.all_render.copy()
+
+    def del_render(self, key):
+        del self.all_render[key]
+
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_Bar(self, name, text) -> Bar:  # Bar:数据堆叠
-        get = self.get_Sheet(name)
-        x = self.get_Index(name, True).tolist()
-        args = self.Parsing_Parameters(text)
+    def to_bar(self, name, text) -> Bar:  # Bar:数据堆叠
+        get = self.get_sheet(name)
+        x = self.get_index(name, True).tolist()
+        args = self.parsing_parameters(text)
         c = (
-            Bar(**self.initSetting(args))
+            Bar(**self.init_setting(args))
             .add_xaxis(list(map(str, list(set(x)))))  # 转变为str类型
         )
         y = []
@@ -912,11 +911,11 @@ class Draw(Form):
                 c.add_yaxis(
                     f'{name}_{i[0]}',
                     q,
-                    **self.Per_Seeting(
+                    **self.special_setting(
                         args,
                         'Bar'),
-                    **self.y_Label(args),
-                    color=self.get_Color())  # i[0]是名字，i是tuple，其中i[1]是data
+                    **self.yaxis_label(args),
+                    color=self.get_random_color())  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
             except BaseException:
@@ -926,17 +925,17 @@ class Draw(Form):
             y = [0, 100]
         c.set_global_opts(
             **self.global_set(args, f"{name}柱状图", min(y), max(y), True, axis=['x', 'y']))
-        c.set_series_opts(**self.Mark(args))
-        self.R_Dic[f'{name}柱状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c.set_series_opts(**self.mark(args))
+        self.all_render[f'{name}柱状图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_Line(self, name, text) -> Line:  # 折线图：连接空数据、显示数值、平滑曲线、面积图以及紧贴Y轴
-        get = self.get_Sheet(name)
-        x = self.get_Index(name, True).tolist()
-        args = self.Parsing_Parameters(text)
+    def to_line(self, name, text) -> Line:  # 折线图：连接空数据、显示数值、平滑曲线、面积图以及紧贴Y轴
+        get = self.get_sheet(name)
+        x = self.get_index(name, True).tolist()
+        args = self.parsing_parameters(text)
         c = (
-            Line(**self.initSetting(args))
+            Line(**self.init_setting(args))
             .add_xaxis(list(map(str, list(set(x)))))  # 转变为str类型
         )
         y = []
@@ -946,11 +945,11 @@ class Draw(Form):
                 c.add_yaxis(
                     f'{name}_{i[0]}',
                     q,
-                    **self.Per_Seeting(
+                    **self.special_setting(
                         args,
                         'Line'),
-                    **self.y_Label(args),
-                    color=self.get_Color())  # i[0]是名字，i是tuple，其中i[1]是data
+                    **self.yaxis_label(args),
+                    color=self.get_random_color())  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
             except BaseException:
@@ -960,23 +959,23 @@ class Draw(Form):
             y = [0, 100]
         c.set_global_opts(
             **self.global_set(args, f"{name}折线图", min(y), max(y), True, axis=['x', 'y']))
-        c.set_series_opts(**self.Mark(args))
-        self.R_Dic[f'{name}折线图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c.set_series_opts(**self.mark(args))
+        self.all_render[f'{name}折线图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_Scatter(self, name, text) -> Scatter:  # 散点图标记形状和大小、特效、标记线
-        get = self.get_Sheet(name)
-        args = self.Parsing_Parameters(text)
-        x = self.get_Index(name, True).tolist()
-        type_ = self.Per_Seeting(args, 'Scatter')
+    def to_scatter(self, name, text) -> Scatter:  # 散点图标记形状和大小、特效、标记线
+        get = self.get_sheet(name)
+        args = self.parsing_parameters(text)
+        x = self.get_index(name, True).tolist()
+        type_ = self.special_setting(args, 'Scatter')
         if type_['Beautiful']:
-            Func = EffectScatter
+            func = EffectScatter
         else:
-            Func = Scatter
+            func = Scatter
         del type_['Beautiful']
         c = (
-            Func(**self.initSetting(args))
+            func(**self.init_setting(args))
             .add_xaxis(list(map(str, list(set(x)))))  # 转变为str类型
         )
         y = []
@@ -987,8 +986,8 @@ class Draw(Form):
                     f'{name}_{i[0]}',
                     q,
                     **type_,
-                    **self.y_Label(args),
-                    color=self.get_Color())  # i[0]是名字，i是tuple，其中i[1]是data
+                    **self.yaxis_label(args),
+                    color=self.get_random_color())  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
             except BaseException:
@@ -998,22 +997,22 @@ class Draw(Form):
             y = [0, 100]
         c.set_global_opts(
             **self.global_set(args, f"{name}散点图", min(y), max(y), True, axis=['x', 'y']))
-        c.set_series_opts(**self.Mark(args))
-        self.R_Dic[f'{name}散点图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c.set_series_opts(**self.mark(args))
+        self.all_render[f'{name}散点图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_Pictorialbar(self, name, text) -> PictorialBar:  # 象形柱状图：图形、剪裁图像、元素重复和间隔
-        get = self.get_Sheet(name)
-        x = self.get_Index(name, True).tolist()
-        args = self.Parsing_Parameters(text)
+    def to_pictorialbar(self, name, text) -> PictorialBar:  # 象形柱状图：图形、剪裁图像、元素重复和间隔
+        get = self.get_sheet(name)
+        x = self.get_index(name, True).tolist()
+        args = self.parsing_parameters(text)
         c = (
-            PictorialBar(**self.initSetting(args))
+            PictorialBar(**self.init_setting(args))
             .add_xaxis(list(map(str, list(set(x)))))  # 转变为str类型
             .reversal_axis()
         )
         y = []
-        k = self.Per_Seeting(args, 'PictorialBar')
+        k = self.special_setting(args, 'PictorialBar')
         for i in get.iteritems():  # 按列迭代
             q = i[1].tolist()  # 转换为列表
             try:
@@ -1023,7 +1022,7 @@ class Draw(Form):
                     symbol_repeat=True,
                     is_symbol_clip=True,
                     symbol=SymbolType.ROUND_RECT,
-                    **k, color=self.get_Color())
+                    **k, color=self.get_random_color())
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
             except BaseException:
@@ -1033,23 +1032,23 @@ class Draw(Form):
             y = [0, 100]
         c.set_global_opts(
             **self.global_set(args, f"{name}象形柱状图", min(y), max(y), True, axis=['x', 'y']))
-        c.set_series_opts(**self.Mark(args))
-        self.R_Dic[f'{name}[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c.set_series_opts(**self.mark(args))
+        self.all_render[f'{name}[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_Boxpolt(self, name, text) -> Boxplot:
-        get = self.get_Sheet(name)
-        args = self.Parsing_Parameters(text)
+    def to_boxpolt(self, name, text) -> Boxplot:
+        get = self.get_sheet(name)
+        args = self.parsing_parameters(text)
         c = (
-            Boxplot(**self.initSetting(args))
+            Boxplot(**self.init_setting(args))
             .add_xaxis([f'{name}'])
         )
         y = []
         for i in get.iteritems():  # 按列迭代
             q = i[1].tolist()  # 转换为列表
             try:
-                c.add_yaxis(f'{name}_{i[0]}', [q], **self.y_Label(args))
+                c.add_yaxis(f'{name}_{i[0]}', [q], **self.yaxis_label(args))
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(float, q))
             except BaseException:
@@ -1059,71 +1058,64 @@ class Draw(Form):
             y = [0, 100]
         c.set_global_opts(
             **self.global_set(args, f"{name}箱形图", min(y), max(y), True, axis=['x', 'y']))
-        c.set_series_opts(**self.Mark(args))
-        self.R_Dic[f'{name}箱形图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c.set_series_opts(**self.mark(args))
+        self.all_render[f'{name}箱形图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 坐标系图像:水平和垂直的数据轴：DataZoom+inside
-    def to_HeatMap(self, name, text) -> HeatMap:  # 显示数据
-        get = self.get_Sheet(name)
-        x = self.get_Column(name, True).tolist()  # 图的x轴，下侧，列名
-        y = self.get_Index(name, True).tolist()  # 图的y轴，左侧，行名
+    def to_heatmap(self, name, text) -> HeatMap:  # 显示数据
+        get = self.get_sheet(name)
+        x = self.get_column(name, True).tolist()  # 图的x轴，下侧，列名
+        y = self.get_index(name, True).tolist()  # 图的y轴，左侧，行名
         value_list = []
         q = []
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = float(eval(f'get.iloc[{r},{c}]'))  # 先行后列
+                    v = float(eval(f'get.iloc[{r},{c}]',{'get':get}))  # 先行后列
                 except BaseException:
                     continue
                 q.append(v)
                 value_list.append([c, r, v])
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         try:
-            MAX, MIN = max(q), min(q)
+            max_, min_ = max(q), min(q)
         except BaseException:
             args['show_Visual_mapping'] = False  # 关闭视觉映射
-            MAX, MIN = 0, 100
+            max_, min_ = 0, 100
         c = (
-            HeatMap(**self.initSetting(args))
+            HeatMap(**self.init_setting(args))
             .add_xaxis(list(map(str, list(set(x)))))  # 转变为str类型
-            .add_yaxis(f'{name}', list(map(str, y)), value_list, **self.y_Label(args))
-            .set_global_opts(**self.global_set(args, f"{name}热力图", MIN, MAX, True, axis=['x', 'y']))
-            .set_series_opts(**self.Mark(args))
+            .add_yaxis(f'{name}', list(map(str, y)), value_list, **self.yaxis_label(args))
+            .set_global_opts(**self.global_set(args, f"{name}热力图", min_, max_, True, axis=['x', 'y']))
+            .set_series_opts(**self.mark(args))
         )
-        self.R_Dic[f'{name}热力图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}热力图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     # 数据哪部全，要设置More
-    def to_Funnel(self, name, text) -> Funnel:
-        get = self.get_Sheet(name)
-        y_name = self.get_Index(name, True).tolist()  # 拿行名
-        x = self.get_Column(name, True).tolist()[0]
+    def to_funnel(self, name, text) -> Funnel:
+        get = self.get_sheet(name)
+        y_name = self.get_index(name, True).tolist()  # 拿行名
+        x = self.get_column(name, True).tolist()[0]
         value = []
         y = []
         for r in range(len(y_name)):
             try:
-                v = float(eval(f'get.iloc[{r},0]'))
+                v = float(eval(f'get.iloc[{r},0]', {'get':get}))
             except BaseException:
                 continue
             value.append([f'{y_name[r]}', v])
             y.append(v)
-        args = self.Parsing_Parameters(text)
-        c = (Funnel(**self.initSetting(args)) .add(f'{name}',
-                                                   value,
-                                                   **self.y_Label(args,
-                                                                  'top')) .set_global_opts(**self.global_set(args,
-                                                                                                             f"{name}漏斗图",
-                                                                                                             min(y),
-                                                                                                             max(y),
-                                                                                                             True,
-                                                                                                             False)))
-        self.R_Dic[f'{name}漏斗图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        args = self.parsing_parameters(text)
+        c = (Funnel(**self.init_setting(args)) .add(f'{name}',value,**self.yaxis_label(args,'top')).
+             set_global_opts(**self.global_set(args,f"{name}漏斗图",min(y),max(y),True,False)))
+        self.all_render[f'{name}漏斗图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Graph(self, name, text) -> Graph:
-        get = self.get_Sheet(name)
-        y_name = self.get_Index(name, True).tolist()  # 拿行名
+    def to_format_graph(self, name, text) -> Graph:
+        get = self.get_sheet(name)
+        y_name = self.get_index(name, True).tolist()  # 拿行名
         nodes = []
         link = []
         for i in get.iterrows():  # 按行迭代
@@ -1146,28 +1138,28 @@ class Draw(Form):
                 for j in nodes:
                     link.append({"source": i.get("name"), "target": j.get(
                         "name"), "value": abs(i.get("value") - j.get("value"))})
-        args = self.Parsing_Parameters(text)
-        c = (Graph(**self.initSetting(args)) .add(f"{y_name[0]}",
-                                                  nodes,
-                                                  link,
-                                                  repulsion=args['Repulsion'],
-                                                  **self.y_Label(args)) .set_global_opts(**self.global_set(args,
+        args = self.parsing_parameters(text)
+        c = (Graph(**self.init_setting(args)) .add(f"{y_name[0]}",
+                                                   nodes,
+                                                   link,
+                                                   repulsion=args['Repulsion'],
+                                                   **self.yaxis_label(args)) .set_global_opts(**self.global_set(args,
                                                                                                            f"{name}关系图",
-                                                                                                           0,
-                                                                                                           100,
-                                                                                                           False,
-                                                                                                           False)))
-        self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+                                                                                                                0,
+                                                                                                                100,
+                                                                                                                False,
+                                                                                                                False)))
+        self.all_render[f'{name}关系图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_XY_Graph(self, name, text) -> Graph:  # XY关系图，新的书写方式
-        get = self.get_Sheet(name)
-        args = self.Parsing_Parameters(text)
+    def to_graph(self, name, text) -> Graph:  # XY关系图，新的书写方式
+        get = self.get_sheet(name)
+        args = self.parsing_parameters(text)
         size = args['Size'] * 3
 
         # 生成节点信息
-        y_name = self.get_Index(name, True).tolist()  # 拿行名
-        x_name = self.get_Column(name, True).tolist()  # 拿列名
+        y_name = self.get_index(name, True).tolist()  # 拿行名
+        x_name = self.get_column(name, True).tolist()  # 拿列名
         nodes_list = list(set(y_name + x_name))  # 处理重复，作为nodes列表
         nodes = []
         for i in nodes_list:
@@ -1191,27 +1183,19 @@ class Draw(Form):
                     link.append({"source": y_n, "target": x_n, "value": v})
                 except BaseException:
                     pass
-        c = (Graph(**self.initSetting(args)) .add(f"{y_name[0]}",
-                                                  nodes,
-                                                  link,
-                                                  repulsion=args['Repulsion'],
-                                                  **self.y_Label(args)) .set_global_opts(**self.global_set(args,
-                                                                                                           f"{name}关系图",
-                                                                                                           0,
-                                                                                                           100,
-                                                                                                           False,
-                                                                                                           False)))
-        self.R_Dic[f'{name}关系图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        c = (Graph(**self.init_setting(args)) .add(f"{y_name[0]}",nodes,link,repulsion=args['Repulsion'],
+                                                   **self.yaxis_label(args)) .
+             set_global_opts(**self.global_set(args,f"{name}关系图",0,100,False,False)))
+        self.all_render[f'{name}关系图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Sankey(self, name, text):
-        get = self.get_Sheet(name)
-        args = self.Parsing_Parameters(text)
-        size = args['Size'] * 3
+    def to_sankey(self, name, text):
+        get = self.get_sheet(name)
+        args = self.parsing_parameters(text)
 
         # 生成节点信息
-        y_name = self.get_Index(name, True).tolist()  # 拿行名
-        x_name = self.get_Column(name, True).tolist()  # 拿列名
+        y_name = self.get_index(name, True).tolist()  # 拿行名
+        x_name = self.get_column(name, True).tolist()  # 拿列名
         nodes_list = list(set(y_name + x_name))  # 处理重复，作为nodes列表
         nodes = []
         source = {}
@@ -1238,7 +1222,7 @@ class Draw(Form):
                 if source[y_n] & target[x_n] != set():
                     continue
                 try:
-                    v = float(eval(f'get.iloc[{y},{x}]'))  # 取得value
+                    v = float(eval(f'get.iloc[{y},{x}]'), {'get':get})  # 取得value
                     link.append({"source": y_n, "target": x_n, "value": v})
                     target[y_n].add(x_n)
                     source[x_n].add(y_n)
@@ -1251,50 +1235,44 @@ class Draw(Form):
                     position="right"), ) .set_global_opts(
                 **self.global_set(
                     args, f"{name}桑基图", 0, 100, False, False)))
-        self.R_Dic[f'{name}桑基图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}桑基图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Parallel(self, name, text) -> Parallel:
-        get = self.get_Sheet(name)
+    def to_parallel(self, name, text) -> Parallel:
+        get = self.get_sheet(name)
         dim = []
-        dim_list = self.get_Index(name, True).tolist()
+        dim_list = self.get_index(name, True).tolist()
         for i in range(len(dim_list)):
             dim.append({"dim": i, "name": f"{dim_list[i]}"})
-        args = self.Parsing_Parameters(text)
-        c = (Parallel(**self.initSetting(args)) .add_schema(dim) .set_global_opts(**
+        args = self.parsing_parameters(text)
+        c = (Parallel(**self.init_setting(args)) .add_schema(dim) .set_global_opts(**
                                                                                   self.global_set(args, f"{name}多轴图", 0, 100, False, False)))
         for i in get.iteritems():  # 按列迭代
             q = i[1].tolist()  # 转换为列表
-            c.add(f"{i[0]}", [q], **self.y_Label(args))
-        self.R_Dic[f'{name}多轴图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+            c.add(f"{i[0]}", [q], **self.yaxis_label(args))
+        self.all_render[f'{name}多轴图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
     def to_Pie(self, name, text) -> Pie:
-        get = self.get_Sheet(name)
+        get = self.get_sheet(name)
         data = []
         for i in get.iterrows():  # 按行迭代
             try:
                 data.append([f'{i[0]}', float(i[1].tolist()[0])])
             except BaseException:
                 pass
-        args = self.Parsing_Parameters(text)
-        c = (Pie(**self.initSetting(args)) .add(f"{name}",
-                                                data,
-                                                **self.y_Label(args,
-                                                               'top')) .set_global_opts(**self.global_set(args,
-                                                                                                          f"{name}饼图",
-                                                                                                          0,
-                                                                                                          100,
-                                                                                                          False,
-                                                                                                          False)) .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}")))
-        self.R_Dic[f'{name}饼图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        args = self.parsing_parameters(text)
+        c = (Pie(**self.init_setting(args)) .add(f"{name}",data,**self.yaxis_label(args,'top'))
+             .set_global_opts(**self.global_set(args,f"{name}饼图",0,100,False,False))
+             .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}")))
+        self.all_render[f'{name}饼图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Polar(self, name, text) -> Polar:
-        get = self.get_Sheet(name)
+    def to_polar(self, name, text) -> Polar:
+        get = self.get_sheet(name)
         data = []
-        args = self.Parsing_Parameters(text)
-        setting = self.Per_Seeting(args, 'Polar')
+        args = self.parsing_parameters(text)
+        setting = self.special_setting(args, 'Polar')
         if setting == 'rad':  # 弧度制
             D = 0.0628
         elif setting == '360':  # 角度制
@@ -1308,17 +1286,17 @@ class Draw(Form):
             except BaseException:
                 pass
         c = (
-            Polar(**self.initSetting(args))
-            .add(f"{name}", data, type_="scatter", **self.y_Label(args))
+            Polar(**self.init_setting(args))
+            .add(f"{name}", data, type_="scatter", **self.yaxis_label(args))
             .set_global_opts(**self.global_set(args, f"{name}极坐标图", 0, 100, False, False))
         )
-        self.R_Dic[f'{name}极坐标图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}极坐标图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Radar(self, name, text) -> Radar:
-        get = self.get_Sheet(name)
-        x = self.get_Index(name, True).tolist()
-        Max_list = [[] for i in range(len(x))]  # 保存每个x栏目的最大值
+    def to_radar(self, name, text) -> Radar:
+        get = self.get_sheet(name)
+        x = self.get_index(name, True).tolist()
+        max_list = [[] for _ in range(len(x))]  # 保存每个x栏目的最大值
         data = []  # y的组成数据，包括name和list
         x_list = []  # 保存x的数据
 
@@ -1328,36 +1306,36 @@ class Draw(Form):
             for a in range(len(q)):
                 try:
                     f = float(q[a])
-                    Max_list[a].append(f)
+                    max_list[a].append(f)
                     add.append(f)
                 except BaseException:
                     pass
             data.append([f'{i[0]}', [add]])  # add是包含在一个list中的
 
-        for i in range(len(Max_list)):  # 计算x_list
+        for i in range(len(max_list)):  # 计算x_list
             x_list.append(
                 opts.RadarIndicatorItem(
                     name=x[i], max_=max(
-                        Max_list[i])))
-        args = self.Parsing_Parameters(text)
+                        max_list[i])))
+        args = self.parsing_parameters(text)
         c = (
-            Radar(**self.initSetting(args))
+            Radar(**self.init_setting(args))
             .add_schema(
                 schema=x_list
             )
             .set_global_opts(**self.global_set(args, f"{name}雷达图", 0, 100, False, False))
         )
-        k = self.Per_Seeting(args, 'Radar')
+        k = self.special_setting(args, 'Radar')
         for i in data:
             c.add(
                 *i,
-                **self.y_Label(args),
-                color=self.get_Color(),
+                **self.yaxis_label(args),
+                color=self.get_random_color(),
                 **k)  # 对i解包，取得name和data 随机颜色
-        self.R_Dic[f'{name}雷达图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}雷达图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def get_Color(self):
+    def get_random_color(self):
         # 随机颜色，雷达图默认非随机颜色
         rgb = [randint(0, 255), randint(0, 255), randint(0, 255)]
         color = '#'
@@ -1366,44 +1344,44 @@ class Draw(Form):
             color += str(hex(a))[-2:].replace('x', '0').upper()
         return color
 
-    def to_WordCloud(self, name, text) -> WordCloud:
-        get = self.get_Sheet(name)
+    def to_word_cloud(self, name, text) -> WordCloud:
+        get = self.get_sheet(name)
         data = []
         for i in get.iterrows():  # 按行迭代
             try:
                 data.append([str(i[0]), float(i[1].tolist()[0])])
             except BaseException:
                 pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         c = (
-            WordCloud(**self.initSetting(args))
-            .add(f"{name}", data, **self.Per_Seeting(args, 'WordCloud'))
+            WordCloud(**self.init_setting(args))
+            .add(f"{name}", data, **self.special_setting(args, 'WordCloud'))
             .set_global_opts(**self.global_set(args, f"{name}词云", 0, 100, False, False))
         )
-        self.R_Dic[f'{name}词云[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}词云[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Liquid(self, name, text) -> Liquid:
-        get = self.get_Sheet(name)
+    def to_liquid(self, name, text) -> Liquid:
+        get = self.get_sheet(name)
         data = str(get.iloc[0, 0])
         c = data.split('.')
         try:
             data = float(f'0.{c[1]}')
         except BaseException:
             data = float(f'0.{c[0]}')
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         c = (
             Liquid(
-                **self.initSetting(args)) .add(
+                **self.init_setting(args)) .add(
                 f"{name}", [
                     data, data]) .set_global_opts(
                     title_opts=opts.TitleOpts(
                         title=f"{name}水球图", subtitle="CoTan~数据处理")))
-        self.R_Dic[f'{name}水球图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}水球图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Gauge(self, name, text) -> Gauge:
-        get = self.get_Sheet(name)
+    def to_gauge(self, name, text) -> Gauge:
+        get = self.get_sheet(name)
         data = float(get.iloc[0, 0])
         if data > 100:
             data = str(data / 100)
@@ -1412,49 +1390,49 @@ class Draw(Form):
                 data = float(f'0.{c[1]}') * 100
             except BaseException:
                 data = float(f'0.{data}') * 100
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         c = (
             Gauge(
-                **self.initSetting(args)) .add(
+                **self.init_setting(args)) .add(
                 f"{name}", [
                     (f"{name}", data)]) .set_global_opts(
                     title_opts=opts.TitleOpts(
                         title=f"{name}仪表图", subtitle="CoTan~数据处理")))
-        self.R_Dic[f'{name}仪表图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}仪表图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Calendar(self, name, text) -> Calendar:
-        get = self.get_Sheet(name)
-        data = [[] for i in self.get_Column(name, True)]
-        x_name = self.get_Column(name, True).tolist()
+    def to_calendar(self, name, text) -> Calendar:
+        get = self.get_sheet(name)
+        data = [[] for _ in self.get_column(name, True)]
+        x_name = self.get_column(name, True).tolist()
         y = []
         for i in get.iterrows():
-            Date = str(i[0])  # 时间数据
+            date = str(i[0])  # 时间数据
             q = i[1].tolist()
             for a in range(len(q)):
                 try:
-                    data[a].append([Date, q[a]])
+                    data[a].append([date, q[a]])
                     y.append(float(q[a]))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         if y == []:
             y = [0, 100]
             args['show_Visual_mapping'] = False  # 关闭视觉映射
-        c = (Calendar(**self.initSetting(args)) .set_global_opts(**
+        c = (Calendar(**self.init_setting(args)) .set_global_opts(**
                                                                  self.global_set(args, f"{name}日历图", min(y), max(y), True)))
         for i in range(len(x_name)):
-            start_Date = data[i][0][0]
-            end_Date = data[i][-1][0]
+            start_date = data[i][0][0]
+            end_date = data[i][-1][0]
             c.add(str(x_name[i]), data[i], calendar_opts=opts.CalendarOpts(
-                range_=[start_Date, end_Date]), **self.y_Label(args))
-        self.R_Dic[f'{name}日历图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+                range_=[start_date, end_date]), **self.yaxis_label(args))
+        self.all_render[f'{name}日历图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_ThemeRiver(self, name, text) -> ThemeRiver:
-        get = self.get_Sheet(name)
+    def to_theme_river(self, name, text) -> ThemeRiver:
+        get = self.get_sheet(name)
         data = []
-        x_name = self.get_Column(name, True).tolist()
+        x_name = self.get_column(name, True).tolist()
         y = []
         for i in get.iterrows():
             Date = str(i[0])
@@ -1465,31 +1443,31 @@ class Draw(Form):
                     y.append(float(q[a]))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         if y == []:
             y = [0, 100]
             args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
-            ThemeRiver(**self.initSetting(args))
+            ThemeRiver(**self.init_setting(args))
             # 抑制大小
             .add(x_name, data, singleaxis_opts=opts.SingleAxisOpts(type_=args['x_type'], pos_bottom="10%"))
             .set_global_opts(**self.global_set(args, f"{name}河流图", min(y), max(y), True, False))
         )
-        self.R_Dic[f'{name}河流图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}河流图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Sunburst(self, name, text) -> Sunburst:
-        get = self.get_Sheet(name)
+    def to_sunburst(self, name, text) -> Sunburst:
+        get = self.get_sheet(name)
 
-        def Done(Iter, name):
+        def done(Iter, name):
             k = {'name': name, 'children': []}
             v = 0
             for i in Iter:
                 content = Iter[i]
                 if isinstance(content, dict):
-                    new_C = Done(content, str(i))
-                    v += new_C['value']
-                    k['children'].append(new_C)
+                    new_c = done(content, str(i))
+                    v += new_c['value']
+                    k['children'].append(new_c)
                 else:
                     try:
                         q = float(content)
@@ -1500,8 +1478,8 @@ class Draw(Form):
                         {'name': f'{i}={content}', 'value': q})
             k['value'] = v
             return k
-        data = Done(get.to_dict(), name)['children']
-        args = self.Parsing_Parameters(text)
+        data = done(get.to_dict(), name)['children']
+        args = self.parsing_parameters(text)
         c = (
             Sunburst() .add(
                 series_name=f'{name}',
@@ -1519,11 +1497,11 @@ class Draw(Form):
                     False)) .set_series_opts(
                 label_opts=opts.LabelOpts(
                     formatter="{b}")))
-        self.R_Dic[f'{name}旭日图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}旭日图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Tree(self, name, text) -> Tree:
-        get = self.get_Sheet(name)
+    def to_tree(self, name, text) -> Tree:
+        get = self.get_sheet(name)
 
         def Done(Iter, name):
             k = {'name': name, 'children': []}
@@ -1537,24 +1515,24 @@ class Draw(Form):
                         {'name': f'{i}', 'children': [{'name': f'{content}'}]})
             return k
         data = [Done(get.to_dict(), name)]
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         c = (Tree() .add(f"{name}", data) .set_global_opts(
             **self.global_set(args, f"{name}树状图", 0, 100, False, False)))
-        self.R_Dic[f'{name}树状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}树状图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_TreeMap(self, name, text) -> TreeMap:
-        get = self.get_Sheet(name)
+    def to_tree_map(self, name, text) -> TreeMap:
+        get = self.get_sheet(name)
 
-        def Done(Iter, name):
+        def done(Iter, name):
             k = {'name': name, 'children': []}
             v = 0
             for i in Iter:
                 content = Iter[i]
                 if isinstance(content, dict):
-                    new_C = Done(content, str(i))
-                    v += new_C['value']
-                    k['children'].append(new_C)
+                    new_c = done(content, str(i))
+                    v += new_c['value']
+                    k['children'].append(new_c)
                 else:
                     try:
                         q = float(content)
@@ -1565,8 +1543,8 @@ class Draw(Form):
                         {'name': f'{i}={content}', 'value': q})
             k['value'] = v
             return k
-        data = Done(get.to_dict(), name)['children']
-        args = self.Parsing_Parameters(text)
+        data = done(get.to_dict(), name)['children']
+        args = self.parsing_parameters(text)
         c = (
             TreeMap() .add(
                 f"{name}",
@@ -1581,13 +1559,13 @@ class Draw(Form):
                     100,
                     False,
                     False)))
-        self.R_Dic[f'{name}矩形树图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}矩形树图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_ScatterGeo(self, name, text) -> Geo:
-        get = self.get_Sheet(name)
-        column = self.get_Column(name, True).tolist()
-        data_Type = ["scatter" for _ in column]
+    def to_scattergeo(self, name, text) -> Geo:
+        get = self.get_sheet(name)
+        column = self.get_column(name, True).tolist()
+        data_type = ["scatter" for _ in column]
         data = [[] for _ in column]
         y = []
         for i in get.iterrows():  # 按行迭代
@@ -1605,7 +1583,7 @@ class Draw(Form):
                             v = float(v[5:])
                             y.append(v)
                             column.append(column[a])
-                            data_Type.append(GeoType.EFFECT_SCATTER)
+                            data_type.append(GeoType.EFFECT_SCATTER)
                             data.append([])
                             a = -1
                         elif v[:5] == '[##H]':
@@ -1613,15 +1591,15 @@ class Draw(Form):
                             v = float(v[5:])
                             y.append(v)
                             column.append(column[a])
-                            data_Type.append(GeoType.HEATMAP)
+                            data_type.append(GeoType.HEATMAP)
                             data.append([])
                             a = -1
                         else:
                             raise Exception
                     except BaseException:
-                        data_Type[a] = GeoType.LINES  # 当前变为Line
+                        data_type[a] = GeoType.LINES  # 当前变为Line
                 data[a].append((map, v))
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         args['show_Visual_mapping'] = True  # 必须视觉映射
         if y == []:
             y = [0, 100]
@@ -1641,7 +1619,7 @@ class Draw(Form):
             .set_global_opts(**self.global_set(args, f"{name}Geo点地图", min(y), max(y), False))
         )
         for i in range(len(data)):
-            if data_Type[i] != GeoType.LINES:
+            if data_type[i] != GeoType.LINES:
                 ka = dict(
                     symbol=args['Symbol'],
                     symbol_size=args['Size'],
@@ -1657,16 +1635,16 @@ class Draw(Form):
                     linestyle_opts=opts.LineStyleOpts(
                         curve=0.2,
                         color='#FFF8DC' if args['is_Dark'] else '#000000'))
-            c.add(f'{column[i]}', data[i], type_=data_Type[i], **ka)
+            c.add(f'{column[i]}', data[i], type_=data_type[i], **ka)
         c.set_series_opts(
             label_opts=opts.LabelOpts(
                 is_show=False))  # 不显示数据,必须放在add后面生效
-        self.R_Dic[f'{name}Geo点地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}Geo点地图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Map(self, name, text) -> Map:
-        get = self.get_Sheet(name)
-        column = self.get_Column(name, True).tolist()
+    def to_map(self, name, text) -> Map:
+        get = self.get_sheet(name)
+        column = self.get_column(name, True).tolist()
         data = [[] for _ in column]
         y = []
         for i in get.iterrows():  # 按行迭代
@@ -1679,15 +1657,15 @@ class Draw(Form):
                     data[a].append((map, v))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         args['show_Visual_mapping'] = True  # 必须视觉映射
         if y == []:
             y = [0, 100]
         if args['map_Type'] == 'GLOBE':
-            Func = MapGlobe
+            func = MapGlobe
         else:
-            Func = Map
-        c = Func().set_global_opts(**self.global_set(args,
+            func = Map
+        c = func().set_global_opts(**self.global_set(args,
                                                      f"{name}Map地图", min(y), max(y), False))  # 必须要有视觉映射(否则会显示奇怪的数据)
         for i in range(len(data)):
             c.add(f'{column[i]}',
@@ -1695,15 +1673,15 @@ class Draw(Form):
                   str(args['Map']),
                   is_map_symbol_show=args['show_Map_Symbol'],
                   symbol=args['Symbol'],
-                  **self.y_Label(args))
-        self.R_Dic[f'{name}Map地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+                  **self.yaxis_label(args))
+        self.all_render[f'{name}Map地图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Geo(self, name, text) -> Geo:
-        get = self.get_Sheet(name)
-        column = self.get_Column(name, True).tolist()
-        index = self.get_Index(name, True).tolist()
-        args = self.Parsing_Parameters(text)
+    def to_geo(self, name, text) -> Geo:
+        get = self.get_sheet(name)
+        column = self.get_column(name, True).tolist()
+        index = self.get_index(name, True).tolist()
+        args = self.parsing_parameters(text)
         args['show_Visual_mapping'] = True  # 必须视觉映射
         if args['is_Dark']:
             g = {
@@ -1778,29 +1756,29 @@ class Draw(Form):
         c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示
         c.set_global_opts(
             **self.global_set(args, f"{name}Geo地图", min(m), max(m), False))
-        self.R_Dic[f'{name}Geo地图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}Geo地图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Bar3d(self, name, text) -> Bar3D:
-        get = self.get_Sheet(name)
-        x = self.get_Column(name, True).tolist()  # 图的x轴，下侧，列名
-        y = self.get_Index(name, True).tolist()  # 图的y轴，左侧，行名
+    def to_bar3d(self, name, text) -> Bar3D:
+        get = self.get_sheet(name)
+        x = self.get_column(name, True).tolist()  # 图的x轴，下侧，列名
+        y = self.get_index(name, True).tolist()  # 图的y轴，左侧，行名
         value_list = []
         q = []
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    v = eval(f'get.iloc[{r},{c}]', {'get':get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         if q == []:
             q = [0, 100]
             args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
-            Bar3D(**self.initSetting(args))
+            Bar3D(**self.init_setting(args))
             .add(f"{name}", value_list,
                  xaxis3d_opts=opts.Axis3DOpts(list(map(str, x)), type_=args["x_type"]),
                  yaxis3d_opts=opts.Axis3DOpts(list(map(str, y)), type_=args["y_type"]),
@@ -1810,29 +1788,29 @@ class Draw(Form):
                              ))
         if args['bar_Stacking']:
             c.set_series_opts(**{"stack": "stack"})  # 层叠
-        self.R_Dic[f'{name}3D柱状图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}3D柱状图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Scatter3D(self, name, text) -> Scatter3D:
-        get = self.get_Sheet(name)
-        x = self.get_Column(name, True).tolist()  # 图的x轴，下侧，列名
-        y = self.get_Index(name, True).tolist()  # 图的y轴，左侧，行名
+    def to_scatter3d(self, name, text) -> Scatter3D:
+        get = self.get_sheet(name)
+        x = self.get_column(name, True).tolist()  # 图的x轴，下侧，列名
+        y = self.get_index(name, True).tolist()  # 图的y轴，左侧，行名
         value_list = []
         q = []
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    v = eval(f'get.iloc[{r},{c}]', {'get':get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         if q == []:
             q = [0, 100]
             args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
-            Scatter3D(**self.initSetting(args))
+            Scatter3D(**self.init_setting(args))
             .add(f"{name}", value_list,
                  xaxis3d_opts=opts.Axis3DOpts(list(map(str, x)), type_=args["x_type"]),
                  yaxis3d_opts=opts.Axis3DOpts(list(map(str, y)), type_=args["y_type"]),
@@ -1840,29 +1818,29 @@ class Draw(Form):
                  )
             .set_global_opts(**self.global_set(args, f"{name}3D散点图", min(q), max(q), True))
         )
-        self.R_Dic[f'{name}3D散点图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}3D散点图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def to_Line3D(self, name, text) -> Line3D:
-        get = self.get_Sheet(name)
-        x = self.get_Column(name, True).tolist()  # 图的x轴，下侧，列名
-        y = self.get_Index(name, True).tolist()  # 图的y轴，左侧，行名
+    def to_line3d(self, name, text) -> Line3D:
+        get = self.get_sheet(name)
+        x = self.get_column(name, True).tolist()  # 图的x轴，下侧，列名
+        y = self.get_index(name, True).tolist()  # 图的y轴，左侧，行名
         value_list = []
         q = []
         for c in range(len(x)):  # c-列，r-行
             for r in range(len(y)):
                 try:
-                    v = eval(f'get.iloc[{r},{c}]')  # 先行后列
+                    v = eval(f'get.iloc[{r},{c}]', {'get':get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
                 except BaseException:
                     pass
-        args = self.Parsing_Parameters(text)
+        args = self.parsing_parameters(text)
         if q == []:
             q = [0, 100]
             args['show_Visual_mapping'] = False  # 关闭视觉映射
         c = (
-            Line3D(**self.initSetting(args))
+            Line3D(**self.init_setting(args))
             .add(f"{name}", value_list,
                  xaxis3d_opts=opts.Axis3DOpts(list(map(str, x)), type_=args["x_type"]),
                  yaxis3d_opts=opts.Axis3DOpts(list(map(str, y)), type_=args["y_type"]),
@@ -1871,66 +1849,66 @@ class Draw(Form):
                  )
             .set_global_opts(**self.global_set(args, f"{name}3D折线图", min(q), max(q), True))
         )
-        self.R_Dic[f'{name}3D折线图[{len(self.R_Dic)}]{self.get_name(args)}'] = c
+        self.all_render[f'{name}3D折线图[{len(self.all_render)}]{self.get_title(args)}'] = c
         return c
 
-    def Tra_RDic(self):
-        self.R_Dic = {}
+    def clean_render(self):
+        self.all_render = {}
 
-    def Draw_Page(self, text, Dic) -> Page:
-        args = self.Parsing_Parameters(text)
+    def render_all(self, text, Dic) -> Page:
+        args = self.parsing_parameters(text)
         if args['page_Title'] == '':
             title = 'CoTan_数据处理'
         else:
             title = f"CoTan_数据处理:{args['page_Title']}"
         if args['HTML_Type'] == 1:
             page = Page(page_title=title, layout=Page.DraggablePageLayout)
-            page.add(*self.R_Dic.values())
+            page.add(*self.all_render.values())
         elif args['HTML_Type'] == 2:
             page = Page(page_title=title, layout=Page.SimplePageLayout)
-            page.add(*self.R_Dic.values())
+            page.add(*self.all_render.values())
         else:
             page = Tab(page_title=title)
-            for i in self.R_Dic:
-                page.add(self.R_Dic[i], i)
+            for i in self.all_render:
+                page.add(self.all_render[i], i)
         page.render(Dic)
         return Dic
 
-    def Overlap(self, down, up):
-        Over_Down = self.R_Dic[down]
-        Over_Up = self.R_Dic[up]
-        Over_Down.overlap(Over_Up)
-        return Over_Down
+    def overlap(self, down, up):
+        over_down = self.all_render[down]
+        over_up = self.all_render[up]
+        over_down.overlap(over_up)
+        return over_down
 
 
-class Machine_Learner(Draw):  # 数据处理者
+class MachineLearner(Draw):  # 数据处理者
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.Learner = {}  # 记录机器
-        self.Learn_Dic = {'Line': (LinearRegression, ()),
+        self.learner = {}  # 记录机器
+        self.learn_dict = {'Line': (LinearRegression, ()),
                           'Ridge': (Ridge, ('alpha', 'max_iter',)),
                           'Lasso': (Lasso, ('alpha', 'max_iter',)),
                           'LogisticRegression': (LogisticRegression, ('C')),
                           'Knn': (KNeighborsClassifier, ('n_neighbors',)),
                           'Knn_class': (KNeighborsRegressor, ('n_neighbors',)),
-                          }
-        self.Learner_Type = {}  # 记录机器的类型
+                           }
+        self.learner_type = {}  # 记录机器的类型
 
-    def DecisionTreeClassifier(self, name):  # 特征提取
-        get = self.get_Sheet(name)
-        Dver = DictVectorizer()
-        get_Dic = get.to_dict(orient='records')
-        new = Dver.fit_transform(get_Dic).toarray()
-        Dec = pd.DataFrame(new, columns=Dver.feature_names_)
-        self.Add_Form(Dec, f'{name}:特征')
-        return Dec
+    def decision_tree_classifier(self, name):  # 特征提取
+        get = self.get_sheet(name)
+        dver = DictVectorizer()
+        get_dic = get.to_dict(orient='records')
+        new = dver.fit_transform(get_dic).toarray()
+        dec = pd.DataFrame(new, columns=dver.feature_names_)
+        self.add_sheet(dec, f'{name}:特征')
+        return dec
 
-    def p_Args(self, Text):  # 解析参数
+    def parsing(self, parameters):  # 解析参数
         args = {}
         args_use = {}
         # 输入数据
-        exec(Text, args)
+        exec(parameters, args)
         # 处理数据
         args_use['alpha'] = float(args.get('alpha', 1.0))  # L1和L2正则化用
         args_use['C'] = float(args.get('C', 1.0))  # L1和L2正则化用
@@ -1939,56 +1917,56 @@ class Machine_Learner(Draw):  # 数据处理者
         args_use['nDim_2'] = bool(args.get('nDim_2', True))  # 数据是否降维
         return args_use
 
-    def Add_Learner(self, Learner, Text=''):
-        get, args_Tuple = self.Learn_Dic[Learner]
-        name = f'Le[{len(self.Learner)}]{Learner}'
+    def add_learner(self, learner, parameters=''):
+        get, args_tuple = self.learn_dict[learner]
+        name = f'Le[{len(self.learner)}]{learner}'
         # 参数调节
-        args_use = self.p_Args(Text)
+        args_use = self.parsing(parameters)
         args = {}
-        for i in args_Tuple:
+        for i in args_tuple:
             args[i] = args_use[i]
         # 生成学习器
-        self.Learner[name] = get(**args)
-        self.Learner_Type[name] = Learner
+        self.learner[name] = get(**args)
+        self.learner_type[name] = learner
 
-    def Return_Learner(self):
-        return self.Learner.copy()
+    def return_learner(self):
+        return self.learner.copy()
 
-    def get_Learner(self, name):
-        return self.Learner[name]
+    def get_learner(self, name):
+        return self.learner[name]
 
-    def get_Learner_Type(self, name):
-        return self.Learner_Type[name]
+    def get_learner_type(self, name):
+        return self.learner_type[name]
 
-    def Fit(self, name, Learnner, Text='', **kwargs):
-        Type = self.get_Learner_Type(Learnner)
-        args_use = self.p_Args(Text)
-        if Type in (
+    def training_machine(self, name, learnner, parameters='', **kwargs):
+        type_ = self.get_learner_type(learnner)
+        args_use = self.parsing(parameters)
+        if type_ in (
             'Line',
             'Ridge',
             'Lasso',
             'LogisticRegression',
             'Knn',
                 'Knn_class'):
-            return self.Fit_Simp(
+            return self.training_machine_core(
                 name,
-                Learnner,
-                Down_Ndim=args_use['nDim_2'],
+                learnner,
+                down_ndim=args_use['nDim_2'],
                 **kwargs)
 
-    # Score_Only表示仅评分 Fit_Simp 是普遍类操作
-    def Fit_Simp(
+    # Score_Only表示仅评分
+    def training_machine_core(
             self,
             name,
-            Learner,
-            Score_Only=False,
-            Down_Ndim=True,
+            learner,
+            score_only=False,
+            down_ndim=True,
             split=0.3,
             **kwargs):
-        get = self.get_Sheet(name)
+        get = self.get_sheet(name)
         x = get.to_numpy()
-        y = self.get_Index(name, True)  # 获取y值(用index作为y)
-        if Down_Ndim or x.ndim == 1:  # 执行降维处理（也包括升维，ravel让一切变成一维度，包括数字）
+        y = self.get_index(name, True)  # 获取y值(用index作为y)
+        if down_ndim or x.ndim == 1:  # 执行降维处理（也包括升维，ravel让一切变成一维度，包括数字）
             a = x
             x = []
             for i in a:
@@ -1998,8 +1976,8 @@ class Machine_Learner(Draw):  # 数据处理者
                 except BaseException:
                     x.append(i)
             x = np.array(x)
-        model = self.get_Learner(Learner)
-        if not Score_Only:  # 只计算得分，全部数据用于测试
+        model = self.get_learner(learner)
+        if not score_only:  # 只计算得分，全部数据用于测试
             train_x, test_x, train_y, test_y = train_test_split(
                 x, y, test_size=split)
             model.fit(train_x, train_y)
@@ -2009,24 +1987,24 @@ class Machine_Learner(Draw):  # 数据处理者
         test_Score = model.score(x, y)
         return 0, test_Score
 
-    def Predict(self, name, Learner, Text='', **kwargs):
-        Type = self.get_Learner_Type(Learner)
-        args_use = self.p_Args(Text)
-        if Type in (
+    def predict(self, name, learner, parameters='', **kwargs):
+        type_ = self.get_learner_type(learner)
+        args_use = self.parsing(parameters)
+        if type_ in (
             'Line',
             'Ridge',
             'Lasso',
             'LogisticRegression',
             'Knn',
                 'Knn_class'):
-            return self.Predict_Simp(
-                name, Learner, Down_Ndim=args_use['nDim_2'], **kwargs)
+            return self.predict_simp(
+                name, learner, down_ndim=args_use['nDim_2'], **kwargs)
 
-    def Predict_Simp(self, name, Learner, Down_Ndim=True, **kwargs):
-        get = self.get_Sheet(name)
-        column = self.get_Column(name, True)
+    def predict_simp(self, name, learner, down_ndim=True, **kwargs):
+        get = self.get_sheet(name)
+        column = self.get_column(name, True)
         x = get.to_numpy()
-        if Down_Ndim or x.ndim == 1:  # 执行降维处理（也包括升维，ravel让一切变成一维度，包括数字）
+        if down_ndim or x.ndim == 1:  # 执行降维处理（也包括升维，ravel让一切变成一维度，包括数字）
             a = x
             x = []
             for i in a:
@@ -2036,28 +2014,28 @@ class Machine_Learner(Draw):  # 数据处理者
                 except BaseException:
                     x.append(i)
             x = np.array(x)
-        model = self.get_Learner(Learner)
+        model = self.get_learner(learner)
         answer = model.predict(x)
         data = pd.DataFrame(x, index=answer, columns=column)
-        self.Add_Form(data, f'{name}:预测')
+        self.add_sheet(data, f'{name}:预测')
         return data
 
-    def Show_Args(self, Learner, new=False):  # 显示参数
-        learner = self.get_Learner(Learner)
-        learner_Type = self.get_Learner_Type(Learner)
-        if learner_Type in ('Ridge', 'Lasso'):
-            Alpha = learner.alpha  # 阿尔法
+    def visual_learner(self, learner, new=False):  # 显示参数
+        learner = self.get_learner(learner)
+        learner_type = self.get_learner_type(learner)
+        if learner_type in ('Ridge', 'Lasso'):
+            alpha = learner.alpha  # 阿尔法
             w = learner.coef_.tolist()  # w系数
             b = learner.intercept_  # 截距
             max_iter = learner.max_iter
             w_name = [f'权重:W[{i}]' for i in range(len(w))]
             index = ['阿尔法:Alpha'] + w_name + ['截距:b', '最大迭代数']
-            data = [Alpha] + w + [b] + [max_iter]
+            data = [alpha] + w + [b] + [max_iter]
             # 文档
             doc = (
-                f'阿尔法:alpha = {Alpha}\n\n权重:\nw = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\n最大迭代数:{max_iter}\n\n\nEND')
+                f'阿尔法:alpha = {alpha}\n\n权重:\nw = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\n最大迭代数:{max_iter}\n\n\nEND')
             data = pd.DataFrame(data, index=index)
-        elif learner_Type in ('Line'):
+        elif learner_type in ('Line'):
             w = learner.coef_.tolist()  # w系数
             b = learner.intercept_
             index = [f'权重:W[{i}]' for i in range(len(w))] + ['截距:b']
@@ -2065,7 +2043,7 @@ class Machine_Learner(Draw):  # 数据处理者
             # 文档
             doc = (f'权重:w = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\n\nEND')
             data = pd.DataFrame(data, index=index)
-        elif learner_Type in ('Knn'):  # Knn_class
+        elif learner_type in ('Knn'):  # Knn_class
             classes = learner.classes_.tolist()  # 分类
             n = learner.n_neighbors  # 个数
             p = {1: '曼哈顿距离', 2: '欧几里得距离'}.get(learner.p)
@@ -2074,29 +2052,29 @@ class Machine_Learner(Draw):  # 数据处理者
             data = classes + [n, p]
             doc = f'分类类目:\n{pd.DataFrame(classes)}\n\n邻居个数:{n}\n\n计算距离的方式:{p}\n\n\nEND'
             data = pd.DataFrame(data, index=index)
-        elif learner_Type in ('Knn_class'):
+        elif learner_type in ('Knn_class'):
             n = learner.n_neighbors  # 个数
             p = {1: '曼哈顿距离', 2: '欧几里得距离'}.get(learner.p)
             index = ['邻居个数', '距离公式']
             data = [n, p]
             doc = f'邻居个数:{n}\n\n计算距离的方式:{p}\n\n\nEND'
             data = pd.DataFrame(data, index=index)
-        elif learner_Type in ('LogisticRegression',):
+        elif learner_type in ('LogisticRegression',):
             classes = learner.classes_.tolist()  # 分类
             w = learner.coef_.tolist()  # w系数
             b = learner.intercept_
-            C = learner.C
+            c = learner.C
             index = [f'类目[{i}]' for i in range(len(classes))] + [f'权重:W[{j}][{i}]' for i in range(
                 len(w)) for j in range(len(w[i]))] + [f'截距:b[{i}]' for i in range(len(b))] + ['C']
-            data = classes + [j for i in w for j in i] + [i for i in b] + [C]
-            doc = f'分类类目:\n{pd.DataFrame(classes)}\n\n权重:w = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\nC={C}\n\n\n'
+            data = classes + [j for i in w for j in i] + [i for i in b] + [c]
+            doc = f'分类类目:\n{pd.DataFrame(classes)}\n\n权重:w = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\nC={c}\n\n\n'
             data = pd.DataFrame(data, index=index)
         else:
             return '', []
         if new:
-            self.Add_Form(data, f'{Learner}:属性')
+            self.add_sheet(data, f'{learner}:属性')
         return doc, data
 
-    def Del_Leaner(self, Leaner):
-        del self.Learner[Leaner]
-        del self.Learner_Type[Leaner]
+    def del_leaner(self, leaner):
+        del self.learner[leaner]
+        del self.learner_type[leaner]
