@@ -10,7 +10,7 @@ from tkinter.filedialog import asksaveasfile
 import tkinter.messagebox
 from os import path
 from HSCH.HS import HS_lambda, HS_CSV
-from HSCH.Func_advanced import Advanced_Control
+from HSCH.Func_advanced import function_factory_main
 
 
 def Float(IN, si=float, n=True):  # Float筛选系统

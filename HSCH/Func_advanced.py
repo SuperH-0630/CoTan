@@ -11,7 +11,7 @@ from HSCH.HS import HS_lambda as HS_L
 import numpy as np
 
 
-def Float(IN, si=float, n=True):  # Float筛选系统
+def type_selection(IN, si=float, n=True):  # Float筛选系统
     x = []
     for i in IN:
         try:
@@ -23,27 +23,27 @@ def Float(IN, si=float, n=True):  # Float筛选系统
     return x
 
 
-def Fucn_Save():  # 导出CSV
+def save_to_csv():  # 导出CSV
     try:
         succ = HS.Out()  # 是否成功
         if not succ:
             raise Exception
-        addNews('CSV导出成功')
+        output_prompt('CSV导出成功')
     except BaseException:
-        addNews('CSV导出失败')
+        output_prompt('CSV导出失败')
 
 
-def Fucn_Numpy():  # 生成表格
+def to_sheet():  # 生成表格
     global HS, Pr_BOX
     try:
         Pr_BOX.delete(0, tkinter.END)
         Pr_BOX.insert(tkinter.END, *HS.returnList())
-        addNews('表格创建成功')
+        output_prompt('表格创建成功')
     except BaseException:
-        addNews('无法创建表格')
+        output_prompt('无法创建表格')
 
 
-def Change_Sympy(c):
+def sympy_computing(c) -> tuple:
     try:
         Name = {
             'Pi': sympy.pi,
@@ -66,94 +66,94 @@ def Change_Sympy(c):
     except BaseException:
         return None, False
 
-
-def Change_S(c):
-    get = Change_Sympy(c)
+# 确认表达式被正确计算
+def confirmation_expression(c):
+    get = sympy_computing(c)
     if not get[1]:
-        get[0] = c
+        return c
     return get[0]
 
 
-def Check_Center_of_symmetry():
+def check_center_of_symmetry():
     global HS, YC_Input, YC_BOX, XZ_JD
-    a, must = Change_Sympy(XZ_JD.get())
+    a, must = sympy_computing(XZ_JD.get())
     try:
-        G = HS.Check_Center_of_symmetry(Change_S(YC_Input.get()), addNews, a)
+        G = HS.Check_Center_of_symmetry(confirmation_expression(YC_Input.get()), output_prompt, a)
         if G[1]:
             YC_BOX.insert(tkinter.END, G[1])
-            addNews('预测完成')
+            output_prompt('预测完成')
         else:
             raise Exception
     except BaseException:
-        addNews('预测失败')
+        output_prompt('预测失败')
 
 
-def Check_Symmetry_axis():
+def check_symmetry_axis():
     global HS, YC_Input, YC_BOX, XZ_JD
-    a, must = Change_Sympy(XZ_JD.get())
+    a, must = sympy_computing(XZ_JD.get())
     try:
-        G = HS.Check_Symmetry_axis(Change_S(YC_Input.get()), addNews, a)
+        G = HS.Check_Symmetry_axis(confirmation_expression(YC_Input.get()), output_prompt, a)
         if G[1]:
             YC_BOX.insert(tkinter.END, G[1])
-            addNews('预测完成')
+            output_prompt('预测完成')
         else:
             raise Exception
     except BaseException:
-        addNews('预测失败')
+        output_prompt('预测失败')
 
 
-def Check_Periodic():
+def check_periodic():
     global HS, YC_Input, YC_BOX, XZ_JD
-    a, must = Change_Sympy(XZ_JD.get())
+    a, must = sympy_computing(XZ_JD.get())
     try:
-        G = HS.Check_Periodic(Change_S(YC_Input.get()), addNews, a)
+        G = HS.Check_Periodic(confirmation_expression(YC_Input.get()), output_prompt, a)
         if G[1]:
             YC_BOX.insert(tkinter.END, G[1])
-            addNews('预测完成')
+            output_prompt('预测完成')
         else:
             raise Exception
     except BaseException:
-        addNews('预测失败')
+        output_prompt('预测失败')
 
 
-def Check_Monotonic():
+def check_monotonic():
     global HS, YC_Input, YC_BOX, XZ_JD
-    a, must = Change_Sympy(XZ_JD.get())
+    a, must = sympy_computing(XZ_JD.get())
     try:
-        G = HS.Check_Monotonic(YC_Input.get(), addNews, a)
+        G = HS.Check_Monotonic(YC_Input.get(), output_prompt, a)
         if G[1]:
             YC_BOX.insert(tkinter.END, G[1])
-            addNews('预测完成')
+            output_prompt('预测完成')
         else:
             raise Exception
     except BaseException:
-        addNews('预测失败')
+        output_prompt('预测失败')
 
 
-def Cul_Y_Clear():
+def clear_memory():
     global HS
     try:
         if tkinter.messagebox.askokcancel('提示', f'确定删除{HS}的记忆吗？'):
             R_cul.delete(0, tkinter.END)
             HS.Clear_Memory()
-            addNews('删除完毕')
+            output_prompt('删除完毕')
         else:
-            addNews('删除取消')
+            output_prompt('删除取消')
     except BaseException:
-        addNews('删除失败')
+        output_prompt('删除失败')
 
 
-def Cul_Y_YC():  # 显示xy
+def show_hidden_memory():  # 显示xy
     global HS, R_cul
     try:
         R_cul.delete(0, tkinter.END)
         HS.YC_On_Off()
-        addNews('已清空卡槽')
+        output_prompt('已清空卡槽')
     except BaseException:
-        addNews('隐藏（显示）失败')
+        output_prompt('隐藏（显示）失败')
 
 
-def Cul_Y_Check():  # 显示xy
+def show_memory():  # 显示xy
     global HS, R_cul
     try:
         Fucn = HS[lb.curselection()[0]]
@@ -163,50 +163,50 @@ def Cul_Y_Check():  # 显示xy
         for i in range(len(m_x)):
             answer.append(f'x={m_x[i]} -> y={m_y[i]}')
         R_cul.insert(tkinter.END, *answer)
-        addNews('输出完成')
+        output_prompt('输出完成')
     except BaseException:
-        addNews('操作失败')
+        output_prompt('操作失败')
 
 
-def Cul_X_TD():
+def gradient_method_calculation():
     global HS, Xcul_TD_Input, Xcul_TD_CS, R_cul
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)  # 清空
         E = []
         for i in Xcul_TD_CS:
             E.append(i.get())
-        addNews('系统运算中')
+        output_prompt('系统运算中')
         answer = HS.Iterative_method_Of_Huan(Xcul_TD_Input.get(), *E)
         if answer[1] is not None:
             R_cul.insert(tkinter.END, answer[0])
-            addNews('系统运算完成')
+            output_prompt('系统运算完成')
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except BaseException:
-        addNews('系统运算失败，请注意参数设置')
+        output_prompt('系统运算失败，请注意参数设置')
 
 
-def Cul_Y():
+def calculate():
     global Ycul_Input, HS, R_cul
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)
         x = Ycul_Input.get().split(',')
         answer = HS.Cul_Y(x)
         if answer != []:
             R_cul.insert(tkinter.END, *answer)
-            addNews('系统运算完毕')
+            output_prompt('系统运算完毕')
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except BaseException:
-        addNews('计算失败')
+        output_prompt('计算失败')
 
 
-def Cul_X_Sympy():
+def sympy_calculation_x():
     global Xcul_DS_Input, HS, R_cul
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)
         x = Xcul_DS_Input.get().split(',')
         answer = []
@@ -214,17 +214,17 @@ def Cul_X_Sympy():
             answer += HS.Sympy_Cul(i)[0]
         if answer != []:
             R_cul.insert(tkinter.END, *answer)
-            addNews('系统运算完毕')
+            output_prompt('系统运算完毕')
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except BaseException:
-        addNews('计算失败')
+        output_prompt('计算失败')
 
 
-def Cul_DS():
+def function_differentiation():
     global DScul_Input, HS, R_cul, DScul_JD_Input
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)
         x = DScul_Input.get().split(',')
         JD = DScul_JD_Input.get()
@@ -235,17 +235,17 @@ def Cul_DS():
                 answer.append(get)
         if answer != []:
             R_cul.insert(tkinter.END, *answer)
-            addNews('系统运算完毕')
+            output_prompt('系统运算完毕')
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except IndexError:
-        addNews('计算失败')
+        output_prompt('计算失败')
 
 
-def Cul_DS_BJ():
+def approximation():# 逼近法
     global DScul_Input, HS, R_cul, DScul_JD_Input
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)
         x = DScul_Input.get().split(',')
         JD = DScul_JD_Input.get()
@@ -256,17 +256,17 @@ def Cul_DS_BJ():
                 answer.append(get)
         if answer != []:
             R_cul.insert(tkinter.END, *answer)
-            addNews('系统运算完毕')
+            output_prompt('系统运算完毕')
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except IndexError:
-        addNews('计算失败')
+        output_prompt('计算失败')
 
 
-def Cul_X():
+def dichotomy():# 二分法
     global Xcul_Input, Xcul_CS, HS, R_cul
     try:
-        addNews('计算过程程序可能无响应')
+        output_prompt('计算过程程序可能无响应')
         R_cul.delete(0, tkinter.END)  # 清空
         y = Xcul_Input.get().split(',')  # 拆解输入
         E = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
@@ -280,35 +280,35 @@ def Cul_X():
             except BaseException:
                 pass
         answer = []
-        addNews('系统运算中')
+        output_prompt('系统运算中')
         for i in y:
             try:
                 answer += HS.Cul_dichotomy(float(i), *E)[0]
             except BaseException:
                 pass
         if answer:
-            addNews('系统运算完成')
+            output_prompt('系统运算完成')
             R_cul.insert(tkinter.END, *answer)
         else:
-            addNews('系统运算无结果')
+            output_prompt('系统运算无结果')
     except BaseException:
-        addNews('系统运算失败')
+        output_prompt('系统运算失败')
 
 
-def Fucn_XZ():
+def property_prediction():
     global HS, lb, XZ_BOX, XZ_JD
     try:
-        a, must = Change_Sympy(XZ_JD.get())
-        addNews('预测过程程序可能无响应')
+        a, must = sympy_computing(XZ_JD.get())
+        output_prompt('预测过程程序可能无响应')
         XZ_BOX.delete(0, tkinter.END)
-        answer = HS.Nature(addNews, True, a, must)
+        answer = HS.Nature(output_prompt, True, a, must)
         XZ_BOX.insert(tkinter.END, *answer)
-        addNews('性质预测完成')
+        output_prompt('性质预测完成')
     except IndexError:
-        addNews('性质预测失败')
+        output_prompt('性质预测失败')
 
 
-def Fucn_Draw():
+def function_drawing():
     global XZ_Input, XZstart_Input, XZend_Input, XZkd_Input, YZ_Input, YZstart_Input, YZend_Input, YZkd_Input
     global Xlimstart_Input, Xlimend_Input, Ylimstart_Input, Ylimend_Input
     global HS, fig, Point_Draw, Best_Draw, Test_Draw, Draw_BOX, ZL_Input
@@ -317,7 +317,7 @@ def Fucn_Draw():
     except BaseException:
         Draw_Type = 0
     # 画板创造
-    addNews('生成绘制取...')
+    output_prompt('生成绘制取...')
     fig = plt.figure(num='CoTan函数')  # 定义一个图像窗口
     if Draw_Type in (0, 1, 2, 3, 8, 9):
         plt.grid(True, ls='--')  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
@@ -351,7 +351,7 @@ def Fucn_Draw():
                 except BaseException:  # 迭代匹配直到出现错误
                     pass
                 _HS = P
-                x = Float(
+                x = type_selection(
                     HS_L(
                         _HS[0],
                         'x',
@@ -367,7 +367,7 @@ def Fucn_Draw():
                 x_major_locator = plt.MultipleLocator(x)
                 ax.xaxis.set_major_locator(x_major_locator)
             else:  # 输入纯数字
-                x = Float(XZ_Input.get().split(','))
+                x = type_selection(XZ_Input.get().split(','))
                 ax.set_xticks(x)
         except BaseException:
             x_major_locator = plt.MultipleLocator(2)
@@ -392,7 +392,7 @@ def Fucn_Draw():
                 except BaseException:  # 迭代匹配直到出现错误
                     pass
                 _HS = P
-                y = Float(
+                y = type_selection(
                     HS_L(
                         _HS[0],
                         'y',
@@ -407,16 +407,16 @@ def Fucn_Draw():
                 y_major_locator = plt.MultipleLocator(y)
                 ax.yaxis.set_major_locator(y_major_locator)
             else:
-                y = Float(YZ_Input.get().split(','))
+                y = type_selection(YZ_Input.get().split(','))
                 ax.set_yticks(y)
         except BaseException:
             y_major_locator = plt.MultipleLocator(2)
             ax.yaxis.set_major_locator(y_major_locator)
         # 极限设计
         try:
-            xlim_IN = Float(
+            xlim_IN = type_selection(
                 [Xlimstart_Input.get(), Xlimend_Input.get()], si=int, n=False)
-            ylim_IN = Float(
+            ylim_IN = type_selection(
                 [Ylimstart_Input.get(), Ylimend_Input.get()], si=int, n=False)
             try:
                 _xlim = [xlim_IN[0], xlim_IN[1]]
@@ -438,7 +438,7 @@ def Fucn_Draw():
         text_y = _ylim[1] - abs(_ylim[1]) * 0.01
     init()
     # 函数绘图系统
-    addNews('图像绘制中...')
+    output_prompt('图像绘制中...')
     if HS is None:
         return False
     if Draw_Type in (0, 1, 4, 5):
@@ -568,7 +568,7 @@ def Fucn_Draw():
         l = len(HS_List)
         m = []  # 每个群组中fx分类的个数
         for i in HS_List:  # 预先生成函数
-            addNews(f'迭代计算中...(共{l}次)')
+            output_prompt(f'迭代计算中...(共{l}次)')
             get = i.Draw_Cul()
             m.append(len(get[0]))
             pr_List.append(get)
@@ -610,17 +610,17 @@ def Fucn_Draw():
             init_func=_init,
             interval=ZL,
             blit=False)  # 动态绘图
-    addNews('绘制完毕')
+    output_prompt('绘制完毕')
     plt.show()  # 显示图像
     return True
 
 
-def Add_HS():
+def set_function():
     global Func_Input, start_Input, end_Input, kd_Input, JD_Input, FuncName_Input, FuncView_Input, View_C, View_Co, HS, top
     global a_MR, a_start, a_end, a_kd
     getHS = Func_Input.get().replace(' ', '')
     if getHS == '':
-        addNews('应用失败')
+        output_prompt('应用失败')
         return None
     X_I = [-10, 10, 0.1, 2, 1, -10, 10, 1]
     get = [
@@ -683,13 +683,13 @@ def Add_HS():
         name = getHS
     try:
         HS = HS_L(getHS, name, V, *X_I, c_Son=True)
-        addNews('应用成功')
+        output_prompt('应用成功')
         top.title(f'CoTan函数工厂  {HS}')
     except BaseException:
-        addNews('应用失败')
+        output_prompt('应用失败')
 
 
-def addNews(News):
+def output_prompt(News):
     global News_BOX, T, top
     T += 1
     News = str(News)
@@ -697,7 +697,7 @@ def addNews(News):
     top.update()
 
 
-def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
+def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
     global View_C, View_Co, HS, T, top
     HS = None
     T = 0
@@ -968,7 +968,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='应用函数',
-        command=Add_HS,
+        command=set_function,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -981,7 +981,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='绘制图像',
-        command=Fucn_Draw,
+        command=function_drawing,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -995,7 +995,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='性质预测',
-        command=Fucn_XZ,
+        command=property_prediction,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1630,7 +1630,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='计算(y)',
-        command=Cul_Y,
+        command=calculate,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1641,7 +1641,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='二分法计算(x)',
-        command=Cul_X,
+        command=dichotomy,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1652,7 +1652,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='梯度法计算(x)',
-        command=Cul_X_TD,
+        command=gradient_method_calculation,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1665,7 +1665,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='代数法计算',
-        command=Cul_X_Sympy,
+        command=sympy_calculation_x,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1679,7 +1679,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='逼近法导数计算',
-        command=Cul_DS_BJ,
+        command=approximation,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1694,7 +1694,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='导数计算',
-        command=Cul_DS,
+        command=function_differentiation,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1746,7 +1746,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='周期性',
-        command=Check_Periodic,
+        command=check_periodic,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1760,7 +1760,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='对称轴',
-        command=Check_Symmetry_axis,
+        command=check_symmetry_axis,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1775,7 +1775,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='对称中心',
-        command=Check_Center_of_symmetry,
+        command=check_center_of_symmetry,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1792,7 +1792,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='单调性',
-        command=Check_Monotonic,
+        command=check_monotonic,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1839,7 +1839,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='生成表格',
-        command=Fucn_Numpy,
+        command=to_sheet,
         font=FONT,
         width=width_B * 2,
         height=height_B).grid(
@@ -1851,7 +1851,7 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         bg=bbg,
         fg=fg,
         text='导出表格',
-        command=Fucn_Save,
+        command=save_to_csv,
         font=FONT,
         width=width_B,
         height=height_B).grid(
@@ -1872,5 +1872,5 @@ def Advanced_Control():  # H_S-默认函数GF-关闭时询问返回函数
         tkinter.E +
         tkinter.W)
 
-    addNews('加载完毕')
+    output_prompt('加载完毕')
     tkinter.mainloop()
