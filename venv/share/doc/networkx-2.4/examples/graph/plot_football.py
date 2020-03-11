@@ -46,8 +46,8 @@ G = nx.parse_gml(gml)  # parse gml data
 
 print(txt)
 # print degree for each team - number of games
-for n, d in G.degree():
-    print('%s %d' % (n, d))
+for n, pen_weight in G.degree():
+    print('%s %d' % (n, pen_weight))
 
 options = {
     'node_color': 'black',

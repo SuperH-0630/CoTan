@@ -13,7 +13,7 @@ import networkx as nx
 
 G = nx.gnp_random_graph(100, 0.02)
 
-degree_sequence = sorted([d for n, d in G.degree()], reverse=True)  # degree sequence
+degree_sequence = sorted([pen_weight for n, pen_weight in G.degree()], reverse=True)  # degree sequence
 # print "Degree sequence", degree_sequence
 degreeCount = collections.Counter(degree_sequence)
 deg, cnt = zip(*degreeCount.items())
@@ -24,7 +24,7 @@ plt.bar(deg, cnt, width=0.80, color='b')
 plt.title("Degree Histogram")
 plt.ylabel("Count")
 plt.xlabel("Degree")
-ax.set_xticks([d + 0.4 for d in deg])
+ax.set_xticks([pen_weight + 0.4 for pen_weight in deg])
 ax.set_xticklabels(deg)
 
 # draw graph in inset

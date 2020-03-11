@@ -63,8 +63,8 @@ if __name__ == '__main__':
     G = mbox_graph()
 
     # print edges with message subject
-    for (u, v, d) in G.edges(data=True):
-        print("From: %s To: %s Subject: %s" % (u, v, d['message']["Subject"]))
+    for (u, v, pen_weight) in G.edges(data=True):
+        print("From: %s To: %s Subject: %s" % (u, v, pen_weight['message']["Subject"]))
 
     pos = nx.spring_layout(G, iterations=10)
     nx.draw(G, pos, node_size=0, alpha=0.4, edge_color='r', font_size=16, with_labels=True)

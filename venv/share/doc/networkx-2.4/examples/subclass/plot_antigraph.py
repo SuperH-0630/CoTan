@@ -173,10 +173,10 @@ if __name__ == '__main__':
         node = list(G.nodes())[0]
         nodes = list(G.nodes())[1:4]
         assert G.degree(node) == A.degree(node)
-        assert sum(d for n, d in G.degree()) == sum(d for n, d in A.degree())
+        assert sum(pen_weight for n, pen_weight in G.degree()) == sum(pen_weight for n, pen_weight in A.degree())
         # AntiGraph is a ThinGraph, so all the weights are 1
-        assert sum(d for n, d in A.degree()) == sum(d for n, d in A.degree(weight='weight'))
-        assert sum(d for n, d in G.degree(nodes)) == sum(d for n, d in A.degree(nodes))
+        assert sum(pen_weight for n, pen_weight in A.degree()) == sum(pen_weight for n, pen_weight in A.degree(weight='weight'))
+        assert sum(pen_weight for n, pen_weight in G.degree(nodes)) == sum(pen_weight for n, pen_weight in A.degree(nodes))
 
     nx.draw(Gnp)
     plt.show()

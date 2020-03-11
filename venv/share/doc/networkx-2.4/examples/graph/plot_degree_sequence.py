@@ -25,18 +25,18 @@ print(nx.is_graphical(z))
 
 print("Configuration model")
 G = nx.configuration_model(z)  # configuration model
-degree_sequence = [d for n, d in G.degree()]  # degree sequence
+degree_sequence = [pen_weight for n, pen_weight in G.degree()]  # degree sequence
 print("Degree sequence %s" % degree_sequence)
 print("Degree histogram")
 hist = {}
-for d in degree_sequence:
-    if d in hist:
-        hist[d] += 1
+for pen_weight in degree_sequence:
+    if pen_weight in hist:
+        hist[pen_weight] += 1
     else:
-        hist[d] = 1
+        hist[pen_weight] = 1
 print("degree #nodes")
-for d in hist:
-    print('%d %d' % (d, hist[d]))
+for pen_weight in hist:
+    print('%d %d' % (pen_weight, hist[pen_weight]))
 
 nx.draw(G)
 plt.show()

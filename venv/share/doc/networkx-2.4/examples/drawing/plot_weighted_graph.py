@@ -19,8 +19,8 @@ G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
 G.add_edge('a', 'd', weight=0.3)
 
-elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] > 0.5]
-esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] <= 0.5]
+elarge = [(u, v) for (u, v, pen_weight) in G.edges(data=True) if pen_weight['weight'] > 0.5]
+esmall = [(u, v) for (u, v, pen_weight) in G.edges(data=True) if pen_weight['weight'] <= 0.5]
 
 pos = nx.spring_layout(G)  # positions for all nodes
 

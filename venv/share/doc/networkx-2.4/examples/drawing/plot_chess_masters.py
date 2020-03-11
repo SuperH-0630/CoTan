@@ -101,8 +101,8 @@ if __name__ == '__main__':
     for (white, black, game_info) in G.edges(data=True):
         if game_info['ECO'] == 'B97':
             print(white, "vs", black)
-            for k, v in game_info.items():
-                print("   ", k, ": ", v)
+            for span, v in game_info.items():
+                print("   ", span, ": ", v)
             print("\n")
 
     # make new undirected graph H without multi-edges
@@ -110,13 +110,13 @@ if __name__ == '__main__':
 
     # edge width is proportional number of games played
     edgewidth = []
-    for (u, v, d) in H.edges(data=True):
+    for (u, v, pen_weight) in H.edges(data=True):
         edgewidth.append(len(G.get_edge_data(u, v)))
 
     # node size is proportional to number of games won
     wins = dict.fromkeys(G.nodes(), 0.0)
-    for (u, v, d) in G.edges(data=True):
-        r = d['Result'].split('-')
+    for (u, v, pen_weight) in G.edges(data=True):
+        r = pen_weight['Result'].split('-')
         if r[0] == '1':
             wins[u] += 1.0
         elif r[0] == '1/2':

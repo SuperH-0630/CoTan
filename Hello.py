@@ -35,8 +35,8 @@ def Hsch():
 
 
 def Function_factory():
-    from HSCH import Advanced_Control
-    Advanced_Control()
+    from HSCH import function_factory_main
+    function_factory_main()
 
 
 def HSGC():

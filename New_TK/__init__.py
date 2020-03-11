@@ -1,11 +1,10 @@
 import tkinter as tk
 
-
 class DragWindow(tk.Tk):
     root_x, root_y, abs_x, abs_y = 0, 0, 0, 0
     width, height = None, None
 
-    def __init__(self, topmost=True, alpha=0.97, width=None, height=None):
+    def __init__(self, alpha=0.97, width=None, height=None):
         super().__init__()
         self.width, self.height = width, height
         # self.overrideredirect(True)

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 G = nx.gnp_random_graph(100, 0.02)
 
-degree_sequence = sorted([d for n, d in G.degree()], reverse=True)
+degree_sequence = sorted([pen_weight for n, pen_weight in G.degree()], reverse=True)
 # print "Degree sequence", degree_sequence
 dmax = max(degree_sequence)
 

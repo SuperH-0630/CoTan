@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # Draw block model with weighted edges and nodes sized by number of internal nodes
     node_size = [BM.nodes[x]['nnodes'] * 10 for x in BM.nodes()]
-    edge_width = [(2 * d['weight']) for (u, v, d) in BM.edges(data=True)]
+    edge_width = [(2 * pen_weight['weight']) for (u, v, pen_weight) in BM.edges(data=True)]
     # Set positions to mean of positions of internal nodes from original graph
     posBM = {}
     for n in BM:

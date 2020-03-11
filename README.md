@@ -21,6 +21,25 @@ CoTan是基于python3x的一款用于数据科学等多方面的数理化系统�
 * CoTan将会是一个开源项目
 ### 如何使用CoTan？
 CoTan的主程序入口时Hello.py，使用**Python3.7**以上版本运行该程序。  
+你可能需要通过**pip**或其他方式安装以下模块才可以正常使用:
+```
+Pillow==7.0.0
+pygame==1.9.6
+selenium==3.141.0
+requests==2.22.0
+bs4==0.0.1
+urllib3==1.24.3
+Gitpython==3.1.0
+numpy==1.18.1
+pandas==0.25.3
+pandas-profiling==2.5.0
+scipy==1.4.1
+sympy==1.5.1
+matplotlib
+pyecharts==1.7.0
+sklearn(sciket-learn==0.22.2.post1)==0.0
+pip==20.0.2
+```
 进入程序后，将会出现**CoTan~别来无恙**的字样，表示系统启动成功。  
 主页面左侧为功能按钮，目前实现的有：  
 * Git仓库控制器：基于git的可视化仓库管理器，可以管理git仓库  
@@ -44,4 +63,4 @@ CoTan目前处于核心成员开发阶段，暂不对外公布
 * 感谢匿名帮助
   
 #### 最后编辑时间
-* 2020年3月10日 广州
+* 2020年3月11日 广州

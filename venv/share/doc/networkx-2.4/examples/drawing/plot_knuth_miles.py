@@ -89,8 +89,8 @@ if __name__ == '__main__':
     H = nx.Graph()
     for v in G:
         H.add_node(v)
-    for (u, v, d) in G.edges(data=True):
-        if d['weight'] < 300:
+    for (u, v, pen_weight) in G.edges(data=True):
+        if pen_weight['weight'] < 300:
             H.add_edge(u, v)
 
     # draw with matplotlib/pylab

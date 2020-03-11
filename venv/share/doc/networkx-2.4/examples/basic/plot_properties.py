@@ -41,8 +41,8 @@ for p in pathlengths:
 print('')
 print("length #paths")
 verts = dist.keys()
-for d in sorted(verts):
-    print('%s %d' % (d, dist[d]))
+for pen_weight in sorted(verts):
+    print('%s %d' % (pen_weight, dist[pen_weight]))
 
 print("radius: %d" % nx.radius(G))
 print("diameter: %d" % nx.diameter(G))
