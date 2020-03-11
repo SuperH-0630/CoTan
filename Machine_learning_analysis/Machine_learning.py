@@ -2095,7 +2095,7 @@ def T():
         Func = eval(f'[{Shape_Input.get()}]')
     except BaseException:
         Func = None
-    ML.T(get_Name(), Func)
+    ML.transpose(get_Name(), Func)
     Update_BOX()
 
 

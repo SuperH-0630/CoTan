@@ -463,7 +463,7 @@ def bar(w_heard, w):
 
 def see_Line(x_trainData, y_trainData, w, w_sum, b):
     y = y_trainData.tolist()
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     re = []
     for i in range(len(x_data)):
         x = x_data[i]
@@ -524,7 +524,7 @@ def make_Cat(x_data):
 
 # 根据不同类别绘制x-x分类散点图(可以绘制更多的图)
 def Training_visualization_More_NoCenter(x_trainData, class_, y):
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     Cat = make_Cat(x_data)
@@ -573,7 +573,7 @@ def Training_visualization_More_NoCenter(x_trainData, class_, y):
 
 # 根据不同类别绘制x-x分类散点图(可以绘制更多的图)
 def Training_visualization_More(x_trainData, class_, y, center):
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     Cat = make_Cat(x_data)
@@ -645,7 +645,7 @@ def Training_visualization_More(x_trainData, class_, y, center):
 
 # 根据不同类别绘制x-x分类散点图(可以绘制更多的图)
 def Training_visualization_Center(x_trainData, class_, y, center):
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     Cat = make_Cat(x_data)
@@ -717,7 +717,7 @@ def Training_visualization_Center(x_trainData, class_, y, center):
 
 
 def Training_visualization(x_trainData, class_, y):  # 根据不同类别绘制x-x分类散点图
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     Cat = make_Cat(x_data)
@@ -764,7 +764,7 @@ def Training_visualization(x_trainData, class_, y):  # 根据不同类别绘制x
 
 
 def Training_visualization_NoClass(x_trainData):  # 根据绘制x-x分类散点图(无类别)
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     Cat = make_Cat(x_data)
@@ -801,7 +801,7 @@ def Training_visualization_NoClass(x_trainData):  # 根据绘制x-x分类散点�
 
 
 def Training_W(x_trainData, class_, y, w_list, b_list, means: list):  # 针对分类问题绘制决策边界
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     o_cList = []
@@ -862,7 +862,7 @@ def Training_W(x_trainData, class_, y, w_list, b_list, means: list):  # 针对�
 
 
 def Regress_W(x_trainData, y, w: np.array, b, means: list):  # 针对回归问题(y-x图)
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     o_cList = []
@@ -899,7 +899,7 @@ def Regress_W(x_trainData, y, w: np.array, b, means: list):  # 针对回归问�
 
 
 def regress_visualization(x_trainData, y):  # y-x数据图
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     y_con = is_continuous(y)
     Cat = make_Cat(x_data)
     o_cList = []
@@ -944,7 +944,7 @@ def regress_visualization(x_trainData, y):  # y-x数据图
 
 def Feature_visualization(x_trainData, data_name=''):  # x-x数据图
     seeting = global_Set if data_name else global_Leg
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     only = False
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
@@ -983,7 +983,7 @@ def Feature_visualization(x_trainData, data_name=''):  # x-x数据图
 
 def Feature_visualization_Format(x_trainData, data_name=''):  # x-x数据图
     seeting = global_Set if data_name else global_Leg
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     only = False
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
@@ -1029,7 +1029,7 @@ def Feature_visualization_Format(x_trainData, data_name=''):  # x-x数据图
 
 def Discrete_Feature_visualization(x_trainData, data_name=''):  # 必定离散x-x数据图
     seeting = global_Set if data_name else global_Leg
-    x_data = x_trainData.T
+    x_data = x_trainData.transpose
     if len(x_data) == 1:
         x_data = np.array([x_data[0], np.zeros(len(x_data[0]))])
     o_cList = []
@@ -1098,10 +1098,10 @@ def Conversion_SeparateWH(w_data, h_data, tab):  # 并列显示两x-x图
     if isinstance(w_data, np.ndarray) and isinstance(w_data, np.ndarray):
         get_x = Feature_visualization_Format(w_data, 'W矩阵数据')  # 原来
         get_y = Feature_visualization(
-            h_data.T, 'H矩阵数据')  # 转换(先转T，再转T变回原样，W*H是横对列)
+            h_data.transpose, 'H矩阵数据')  # 转换(先转T，再转T变回原样，W*H是横对列)
         print(h_data)
         print(w_data)
-        print(h_data.T)
+        print(h_data.transpose)
         for i in range(len(get_x)):
             try:
                 tab.add(get_x[i], f'[{i}]W矩阵x-x散点图')
@@ -1313,7 +1313,7 @@ class Learner:
     def T(self, name, Func: list):
         sheet = self.get_Sheet(name)
         if sheet.ndim <= 2:
-            self.Add_Form(sheet.T.copy(), f'{name}.T')
+            self.Add_Form(sheet.transpose.copy(), f'{name}.T')
         else:
             self.Add_Form(np.transpose(sheet, Func).copy(), f'{name}.T')
 
@@ -1908,7 +1908,7 @@ class Cluster_Tree(To_PyeBase):  # 聚类树状图
 class Class_To_Bar(To_PyeBase):  # 类型柱状图
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        x_data = self.x_trainData.T
+        x_data = self.x_trainData.transpose
         y_data = self.y_trainData
         class_ = np.unique(y_data).tolist()  # 类型
         class_list = []
@@ -2004,7 +2004,7 @@ class Numpy_To_HeatMap(To_PyeBase):  # Numpy矩阵绘制热力图
                                               pos_right='3%'))  # 显示
              )
         tab.add(c, '矩阵热力图')
-        tab.add(make_Tab(x, data.T.tolist()), f'矩阵热力图:表格')
+        tab.add(make_Tab(x, data.transpose.tolist()), f'矩阵热力图:表格')
 
         save = Dic + r'/矩阵热力图.HTML'
         tab.render(save)  # 生成HTML
@@ -2066,7 +2066,7 @@ class Predictive_HeatMap_Base(To_PyeBase):  # 绘制预测型热力图
                 except BaseException:
                     pass
             get = Decision_boundary(
-                x_range, x_means, self.Learner.Predict, class_, Type)
+                x_range, x_means, self.Learner.predict, class_, Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
 
@@ -2078,7 +2078,7 @@ class Predictive_HeatMap_Base(To_PyeBase):  # 绘制预测型热力图
             get, x_means, x_range, Type = regress_visualization(x_data, y)
 
             get = Prediction_boundary(
-                x_range, x_means, self.Learner.Predict, Type)
+                x_range, x_means, self.Learner.predict, Type)
             for i in range(len(get)):
                 tab.add(get[i], f'{i}预测热力图')
 
@@ -2170,7 +2170,7 @@ class Near_feature_scatter_class(To_PyeBase):  # 临近特征散点图：分类�
 class Near_feature_scatter(To_PyeBase):  # 临近特征散点图：连续数据
     def Des(self, Dic, *args, **kwargs):
         tab = Tab()
-        x_data = self.x_trainData.T
+        x_data = self.x_trainData.transpose
         y = self.y_trainData
 
         get, x_means, x_range, Type = Training_visualization_NoClass(x_data)
@@ -3869,8 +3869,8 @@ class MLP_Model(Study_MachineBase):  # 神经网络(多层感知机)，有监督
                                                   pos_right='3%'))  # 显示
                  )
             tab.add(c, name)
-            tab.add(make_Tab(x, data.T.tolist()), f'{name}:表格')
-            desTo_CSV(Dic, f'{name}:表格', data.T.tolist(), x, y)
+            tab.add(make_Tab(x, data.transpose.tolist()), f'{name}:表格')
+            desTo_CSV(Dic, f'{name}:表格', data.transpose.tolist(), x, y)
 
         get, x_means, x_range, Type = regress_visualization(x_data, y_data)
         for i in range(len(get)):
@@ -4530,7 +4530,7 @@ class Machine_Learner(Learner):  # 数据处理者
     def Predict(self, x_name, Learner, Text='', **kwargs):
         x_data = self.get_Sheet(x_name)
         model = self.get_Learner(Learner)
-        y_data, name = model.Predict(
+        y_data, name = model.predict(
             x_data, x_name=x_name, Add_Func=self.Add_Form)
         self.Add_Form(y_data, f'{x_name}:{name}')
         return y_data
