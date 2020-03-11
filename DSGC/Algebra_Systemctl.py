@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.messagebox
 import tkinter.font as tkFont
-from DSGC.Algebra import Algebra_Polynomial
+from DSGC.Algebra import AlgebraPolynomial
 
 # 树状图打印核心组件
 
@@ -9,7 +9,7 @@ from DSGC.Algebra import Algebra_Polynomial
 def draw_algebra_core():
     global alg, Can_Input, kd_bool, logkd_bool
     name = get_algebraic_name()
-    get = alg.Draw(name)
+    get = alg.get_expression_from_name(name)
     try:
         wh = Can_Input.get().split(',')
         w = int(wh[0])
@@ -169,7 +169,7 @@ def show_algebraic_expression(str_, w=40, h=20, jh=True):
     global New_Text, alg, bg
     if jh:
         try:
-            str_ = alg.rprint_expression(str_)
+            str_ = alg.print_expression_str(str_)
             output_prompt('树状图计算成功')
         except BaseException:
             output_prompt('树状图计算失败')
@@ -209,7 +209,7 @@ def show_algebraic():
 def clear_algebra():
     global alg
     try:
-        alg.Tra_Alg()
+        alg.clean_expression()
         update_symbol_algebraic_box()
         output_prompt('删除完成')
     except BaseException:
@@ -220,7 +220,7 @@ def del_algebra():
     global alg
     name = get_algebraic_name()
     try:
-        alg.del_Alg(name)
+        alg.del_expression(name)
         update_symbol_algebraic_box()
         output_prompt('删除完成')
     except BaseException:
@@ -235,7 +235,7 @@ def delete_symbol():
         output_prompt('请选定符号')
         return False
     try:
-        alg.del_Symbol(value)
+        alg.del_symbol(value)
         update_symbol_algebraic_box()
         output_prompt('删除完成')
     except BaseException:
@@ -254,7 +254,7 @@ def drawing_image():
         if ty == 1 and p3D_Value is None:
             raise Exception
         name = get_algebraic_name()
-        alg.Plot(name, p2D_Value, p3D_Value)
+        alg.plot(name, p2D_Value, p3D_Value)
     except BaseException:
         output_prompt('画图失败')
 
@@ -319,15 +319,15 @@ def update_plot_value():
 
 
 def rewrite_algebra():
-    global alg, Rewrite_Input, Rewrite_F_Input, Rewrite_deep
+    global alg, Rewrite_Input, rewrite_object, rewrite_deep
     Func = Rewrite_Input.get()
-    DX = Rewrite_F_Input.get().split(',')
+    DX = rewrite_object.get().split(',')
     if DX == ['']:
         DX = []
-    deep = bool(Rewrite_deep.get())
+    deep = bool(rewrite_deep.get())
     name = get_algebraic_name()
     try:
-        get = alg.rewrite_algebra(name, Func, DX, deep)
+        get = alg.rewrite_exp(name, Func, DX, deep)
         output_prompt('运行完成')
     except BaseException:
         output_prompt('运行失败')
@@ -356,7 +356,7 @@ def inequality_solve():
     if Z_Inequality is not None and Y_Inequality is not None:
         type = Inequality_Type.get()
         try:
-            get = alg.Solve_Inequality([Z_Inequality, Y_Inequality], type)
+            get = alg.solving_inequality([Z_Inequality, Y_Inequality], type)
             AnswerInequality_BOX.delete(0, tkinter.END)
             AnswerInequality_BOX.insert(tkinter.END, *get)
             output_prompt('运行完成')
@@ -401,7 +401,7 @@ def add_to_algebraic_value_box():
 def solve_simultaneous_equations():
     global Solve_list, Answer_BOX, Answer_List
     try:
-        get = alg.Solve(Solve_list)
+        get = alg.solving_equations(Solve_list)
         output_prompt('运行成功')
     except BaseException:
         output_prompt('解方程失败')
@@ -462,12 +462,12 @@ def add_equation_right():
     update_simultaneous_equations_box()
 
 
-# 代数运算
+# 代入数字的运算
 def algebraic_assignment():
     global alg, Value_Sub_Dic
     name = get_algebraic_name()
     try:
-        get = alg.SubNum_Value(name, Value_Sub_Dic)
+        get = alg.algebraic_assignment(name, Value_Sub_Dic)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('代数运算失败')
@@ -498,7 +498,7 @@ def add_variable_assignment():
     except BaseException:
         output_prompt('请选定符号')
         return False
-    value_num = alg.Creat_Num(ValueNUM_Input.get(), Num_Type.get())  # 不同类型
+    value_num = alg.creat_num(ValueNUM_Input.get(), Num_Type.get())  # 不同类型
     Value_Sub_Dic[value_name] = value_num
     update_variable_assignment_box()
 
@@ -509,7 +509,7 @@ def algebragic_value_simultaneous():
     global alg, RSub_Dic
     name = get_algebraic_name()
     try:
-        get = alg.RSub_Value(name, RSub_Dic)
+        get = alg.algebragic_value_simultaneous(name, RSub_Dic)
         output_prompt('反向联立完成')
     except BaseException:
         output_prompt('无法联立')
@@ -575,7 +575,7 @@ def value_algebraic_simultaneous():
     global alg, Sub_Dic
     name = get_algebraic_name()
     try:
-        get = alg.Sub_Value(name, Sub_Dic)
+        get = alg.value_algebraic_simultaneous(name, Sub_Dic)
         output_prompt('联立完成')
     except BaseException:
         output_prompt('无法联立')
@@ -642,7 +642,7 @@ def algebraic_digitization():
     except BaseException:
         num = 5
     try:
-        get = alg.to_num(num)
+        get = alg.algebraic_digitization(num)
         output_prompt('数字化完成')
     except BaseException:
         output_prompt('数字化失败')
@@ -654,7 +654,7 @@ def expand_special():
     global alg
     name = get_algebraic_name()
     try:
-        get = alg.func_Ex(name)
+        get = alg.expand_special(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -666,7 +666,7 @@ def expand_complex():
     global alg
     name = get_algebraic_name()
     try:
-        get = alg.complex_Ex(name)
+        get = alg.expand_complex(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -679,7 +679,7 @@ def merger_of_similar_items():
     x = CollX_Input.get().split('#')
     name = get_algebraic_name()
     try:
-        get = alg.Collect(name, x)
+        get = alg.merger_of_similar_items(name, x)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -688,11 +688,11 @@ def merger_of_similar_items():
 
 
 def general_expansion():
-    global alg, EX_IM
-    IM = bool(EX_IM.get())
+    global alg, expand_complex
+    complex = bool(expand_complex.get())
     name = get_algebraic_name()
     try:
-        get = alg.expansion(name, IM)
+        get = alg.expansion(name, complex)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -739,17 +739,17 @@ def standardization():
 
 def apply_algebraic_tips(re, message):
     if tkinter.messagebox.askokcancel('提示', message):
-        alg.addAlgebra('', re)
+        alg.add_expression('', re)
         update_symbol_algebraic_box()
 
 
 def expand_log():
-    global alg, Fo_log, Deep_log
-    Fo = not bool(Fo_log.get())
+    global alg, ignore_assumptions_log, Deep_log
+    ignore_assumptions = not bool(ignore_assumptions_log.get())
     Deep = bool(Deep_log.get())
     name = get_algebraic_name()
     try:
-        get = alg.log_Expansion(name, Fo, Deep)
+        get = alg.log_expansion(name, ignore_assumptions, Deep)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -758,11 +758,11 @@ def expand_log():
 
 
 def reduce_log():
-    global alg, Fo_log
-    Fo = not bool(Fo_log.get())
+    global alg, ignore_assumptions_log
+    Fo = not bool(ignore_assumptions_log.get())
     name = get_algebraic_name()
     try:
-        get = alg.log_Simp(name, Fo)
+        get = alg.log_simp(name, Fo)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -771,10 +771,10 @@ def reduce_log():
 
 
 def expand_mul():
-    global alg, Fo_exp
+    global alg, ignore_assumptions
     name = get_algebraic_name()
     try:
-        get = alg.Mul_Expansion(name)
+        get = alg.mul_expansion(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -783,10 +783,10 @@ def expand_mul():
 
 
 def expand_additive_index():
-    global alg, Fo_exp
+    global alg, ignore_assumptions
     name = get_algebraic_name()
     try:
-        get = alg.Multinomial_Expansion(name)
+        get = alg.multinomial_expansion(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -795,10 +795,10 @@ def expand_additive_index():
 
 
 def composite_index():
-    global alg, Fo_exp
+    global alg, ignore_assumptions
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Simp_Multinomial(name)
+        get = alg.pow_simp_multinomial(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -807,11 +807,11 @@ def composite_index():
 
 
 def expand_exp_base():
-    global alg, Fo_exp
+    global alg, ignore_assumptions
     deep = bool(Deep_exp.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Expansion_base(name, deep)
+        get = alg.pow_expansion_base(name, deep)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -824,7 +824,7 @@ def expand_exp_index():
     deep = bool(Deep_exp.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Expansion_exp(name, deep)
+        get = alg.pow_expansion_exp(name, deep)
     except BaseException:
         output_prompt('运算失败')
         return False
@@ -836,7 +836,7 @@ def expand_power():
     deep = bool(Deep_exp.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Expansion(name, deep)
+        get = alg.pow_expansion_core(name, deep)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -845,11 +845,11 @@ def expand_power():
 
 
 def reduce_exp_base():
-    global alg, Fo_exp
-    Fo = not bool(Fo_exp.get())
+    global alg, ignore_assumptions
+    Fo = not bool(ignore_assumptions.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Simp_base(name, Fo)
+        get = alg.pow_simp_base(name, Fo)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -858,11 +858,11 @@ def reduce_exp_base():
 
 
 def reduce_exp_index():
-    global alg, Fo_exp
-    Fo = not bool(Fo_exp.get())
+    global alg, ignore_assumptions
+    Fo = not bool(ignore_assumptions.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Simp_exp(name, Fo)
+        get = alg.pow_simp_exp(name, Fo)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -871,11 +871,11 @@ def reduce_exp_index():
 
 
 def reduced_power():
-    global alg, Fo_exp
-    Fo = not bool(Fo_exp.get())
+    global alg, ignore_assumptions
+    Fo = not bool(ignore_assumptions.get())
     name = get_algebraic_name()
     try:
-        get = alg.Pow_Simp(name, Fo)
+        get = alg.pow_simp_core(name, Fo)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -887,7 +887,7 @@ def reduced_trigonometric():  # 三角函数化简
     global alg
     name = get_algebraic_name()
     try:
-        get = alg.Trig_Simp(name)
+        get = alg.trig_simp(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -900,7 +900,7 @@ def expand_trigonometric():  # 三角展开
     deep = bool(simp_deep.get())
     name = get_algebraic_name()
     try:
-        get = alg.Trig_Expansion(name, deep)
+        get = alg.trig_expansion(name, deep)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -912,7 +912,7 @@ def fractional_division():  # 通分
     global alg
     name = get_algebraic_name()
     try:
-        get = alg.Fractional_merge(name)
+        get = alg.fractional_merge(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -924,7 +924,7 @@ def fraction_reduction():  # 约分
     global alg
     name = get_algebraic_name()
     try:
-        get = alg.Fraction_reduction(name)
+        get = alg.fraction_reduction(name)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -939,7 +939,7 @@ def fractional_fission():  # 裂项
         x = None
     name = get_algebraic_name()
     try:
-        get = alg.Fractional_fission(name, x)
+        get = alg.fractional_fission(name, x)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -952,7 +952,7 @@ def fractional_synthesis():  # together
     deep = bool(together_deep.get())
     name = get_algebraic_name()
     try:
-        get = alg.as_Fraction(name, deep)
+        get = alg.as_fraction(name, deep)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -961,17 +961,17 @@ def fractional_synthesis():  # together
 
 
 def denominator_rationalization():  # 分母有理化
-    global alg, radsymbol, radMax_Input
+    global alg, rationalized_unknown, maximum_irrational_term
     # Max
     try:
-        M = int(radMax_Input.get())
+        M = int(maximum_irrational_term.get())
     except BaseException:
         M = 4
     # Symbol
-    s = bool(radsymbol.get())
+    s = bool(rationalized_unknown.get())
     name = get_algebraic_name()
     try:
-        get = alg.Fractional_rat(name, s, M)
+        get = alg.fractional_rat(name, s, M)
         output_prompt('运算成功')
     except BaseException:
         output_prompt('运算失败')
@@ -1014,13 +1014,13 @@ def algebraic_composition():
     if len(name) < 2:
         raise Exception
     try:
-        re = alg.Merge_Func(name, Merge_Func_Input.get())
+        re = alg.merge_func(name, Merge_Func_Input.get())
         output_prompt('合成成功')
     except BaseException:
         output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
-        alg.addAlgebra('', re)
+        alg.add_expression('', re)
         update_symbol_algebraic_box()
 
 
@@ -1030,13 +1030,13 @@ def algebraic_multiplication():
     if len(name) < 2:
         raise Exception
     try:
-        re = alg.Merge_Mul(name)
+        re = alg.merge_mul(name)
         output_prompt('合成成功')
     except BaseException:
         output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
-        alg.addAlgebra('', re)
+        alg.add_expression('', re)
         update_symbol_algebraic_box()
 
 
@@ -1046,13 +1046,13 @@ def algebraic_addition():
     if len(name) < 2:
         raise Exception
     try:
-        re = alg.Merge_Add(name)
+        re = alg.merge_add(name)
         output_prompt('合成成功')
     except BaseException:
         output_prompt('合成失败')
         return False
     if tkinter.messagebox.askokcancel('提示', f'合成结果为:{re}，是否应用?'):
-        alg.addAlgebra('', re)
+        alg.add_expression('', re)
         update_symbol_algebraic_box()
 
 
@@ -1067,7 +1067,7 @@ def algebraic_partition():
     else:
         must = True
     try:
-        re = alg.Split_Func(name, Deep, f, must)
+        re = alg.split_func(name, Deep, f, must)
         output_prompt('拆分成功')
     except BaseException:
         output_prompt('拆分失败')
@@ -1075,7 +1075,7 @@ def algebraic_partition():
     if tkinter.messagebox.askokcancel(
             '提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
-            alg.addAlgebra('', in_alg)
+            alg.add_expression('', in_alg)
             update_symbol_algebraic_box()
 
 
@@ -1085,7 +1085,7 @@ def algebraic_similarity_split():
     Value = Object_Input.get().split('#')
     f = Split_XS.get()
     try:
-        re = alg.Split_Add(name, Value, f)
+        re = alg.split_add(name, Value, f)
         output_prompt('拆分成功')
     except BaseException:
         output_prompt('拆分失败')
@@ -1093,7 +1093,7 @@ def algebraic_similarity_split():
     if tkinter.messagebox.askokcancel(
             '提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
-            alg.addAlgebra('', in_alg)
+            alg.add_expression('', in_alg)
             update_symbol_algebraic_box()
 
 
@@ -1108,7 +1108,7 @@ def algebraic_factorization():
     else:
         k = [True, True]
     try:
-        re = alg.Split_Mul(name, *k)
+        re = alg.split_mul(name, *k)
         output_prompt('拆分成功')
     except BaseException:
         output_prompt('拆分失败')
@@ -1116,7 +1116,7 @@ def algebraic_factorization():
     if tkinter.messagebox.askokcancel(
             '提示', f'{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?'):
         for in_alg in re[0]:
-            alg.addAlgebra('', in_alg)
+            alg.add_expression('', in_alg)
             update_symbol_algebraic_box()
 
 # 统一接口：得到alg的名字(提取第一个)
@@ -1146,7 +1146,7 @@ def add__algebraic():
             if new_alg is not None and tkinter.messagebox.askokcancel(
                     '提示', f'约简函数为:{new_alg}，是否应用?'):
                 in_alg = new_alg
-        if not alg.addAlgebra(name, in_alg):
+        if not alg.add_expression(name, in_alg):
             raise Exception
         update_symbol_algebraic_box()
         output_prompt('代数式新增成功')
@@ -1164,7 +1164,7 @@ def get_predictions():
             output_prompt('请选定符号')
             return False
         JS_BOX.delete(0, tkinter.END)
-        JS_BOX.insert(tkinter.END, *alg.Value_assumptions0(n))
+        JS_BOX.insert(tkinter.END, *alg.variable_prediction(n))
         output_prompt('性质预测成功')
     except BaseException:
         output_prompt('性质预测失败')
@@ -1284,7 +1284,7 @@ def __add_symbot_core(
     name_list = ValueName_Input.get().split(',')
     for name in name_list:
         try:
-            if not alg.addSymbol(
+            if not alg.add_symbol(
                     name,
                     AT,
                     RI,
@@ -1316,7 +1316,7 @@ def algebraic_factory_main():
     global Z_alg, Y_alg, Solve_list, Answer_List, Z_Inequality, Y_Inequality, p2D_Value, p3D_Value, T
     global bg, bbg, fg, F2, FONT, F3
 
-    alg = Algebra_Polynomial(output_prompt)
+    alg = AlgebraPolynomial(output_prompt)
 
     alg_list = []
     Value_List = []
@@ -1902,7 +1902,7 @@ def algebraic_factory_main():
         tkinter.S +
         tkinter.N)
 
-    global Object_Input, Split_XS, Deep_Split, Func_Input, Rewrite_Input, Rewrite_F_Input, Rewrite_deep
+    global Object_Input, Split_XS, Deep_Split, Func_Input, Rewrite_Input, rewrite_object, rewrite_deep
     a_y += 4
     tkinter.Label(
         top,
@@ -1914,8 +1914,8 @@ def algebraic_factory_main():
         height=height_B).grid(
         column=a_x,
         row=a_y)  # 设置说明
-    Rewrite_F_Input = tkinter.Entry(top, width=width_B * 2)
-    Rewrite_F_Input.grid(
+    rewrite_object = tkinter.Entry(top, width=width_B * 2)
+    rewrite_object.grid(
         column=a_x +
         1,
         columnspan=2,
@@ -1944,7 +1944,7 @@ def algebraic_factory_main():
         tkinter.E)
 
     a_y += 1
-    Rewrite_deep = tkinter.IntVar()
+    rewrite_deep = tkinter.IntVar()
     tkinter.Checkbutton(
         top,
         bg=bg,
@@ -1953,7 +1953,7 @@ def algebraic_factory_main():
         activeforeground=fg,
         selectcolor=bg,
         text='重写子代数式',
-        variable=Rewrite_deep).grid(
+        variable=rewrite_deep).grid(
         column=a_x + 2,
         row=a_y,
         sticky=tkinter.W)
@@ -2258,7 +2258,7 @@ def algebraic_factory_main():
         row=a_y,
         columnspan=3)  # 设置说明
 
-    global apart_Input, together_deep, radsymbol, radMax_Input
+    global apart_Input, together_deep, rationalized_unknown, maximum_irrational_term
     a_y += 1
     together_deep = tkinter.IntVar()
     tkinter.Label(
@@ -2287,7 +2287,7 @@ def algebraic_factory_main():
         sticky=tkinter.W)
 
     a_y += 1
-    radsymbol = tkinter.IntVar()
+    rationalized_unknown = tkinter.IntVar()
     tkinter.Label(
         top,
         text='最大无理项:',
@@ -2298,8 +2298,8 @@ def algebraic_factory_main():
         height=height_B).grid(
         column=a_x,
         row=a_y)  # 设置说明
-    radMax_Input = tkinter.Entry(top, width=width_B)
-    radMax_Input.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
+    maximum_irrational_term = tkinter.Entry(top, width=width_B)
+    maximum_irrational_term.grid(column=a_x + 1, row=a_y, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(
         top,
         bg=bg,
@@ -2308,7 +2308,7 @@ def algebraic_factory_main():
         activeforeground=fg,
         selectcolor=bg,
         text='有理化符号分母',
-        variable=radsymbol).grid(
+        variable=rationalized_unknown).grid(
         column=a_x + 2,
         row=a_y,
         sticky=tkinter.W)
@@ -2442,7 +2442,7 @@ def algebraic_factory_main():
         row=a_y,
         sticky=tkinter.W)
 
-    global Fo_exp, Deep_exp
+    global ignore_assumptions, Deep_exp
     a_y += 1
     tkinter.Label(
         top,
@@ -2457,7 +2457,7 @@ def algebraic_factory_main():
         columnspan=3)  # 设置说明
 
     a_y += 1
-    Fo_exp = tkinter.IntVar()
+    ignore_assumptions = tkinter.IntVar()
     Deep_exp = tkinter.IntVar()
     tkinter.Checkbutton(
         top,
@@ -2467,7 +2467,7 @@ def algebraic_factory_main():
         activeforeground=fg,
         selectcolor=bg,
         text='忽略假设',
-        variable=Fo_exp).grid(
+        variable=ignore_assumptions).grid(
         column=a_x + 1,
         row=a_y,
         sticky=tkinter.W)
@@ -2614,8 +2614,8 @@ def algebraic_factory_main():
         sticky=tkinter.E +
         tkinter.W)
 
-    global Fo_log, Deep_log
-    Fo_log = tkinter.IntVar()
+    global ignore_assumptions_log, Deep_log
+    ignore_assumptions_log = tkinter.IntVar()
     Deep_log = tkinter.IntVar()
 
     a_y += 1
@@ -2639,7 +2639,7 @@ def algebraic_factory_main():
         activeforeground=fg,
         selectcolor=bg,
         text='忽略假设',
-        variable=Fo_log).grid(
+        variable=ignore_assumptions_log).grid(
         column=a_x + 1,
         row=a_y,
         sticky=tkinter.W)
@@ -2837,9 +2837,9 @@ def algebraic_factory_main():
         columnspan=2,
         sticky=tkinter.W)
 
-    global EX_IM, CollX_Input
+    global expand_complex, CollX_Input
     a_y += 1
-    EX_IM = tkinter.IntVar()
+    expand_complex = tkinter.IntVar()
     tkinter.Label(
         top,
         text='同类项对象:',
@@ -2860,7 +2860,7 @@ def algebraic_factory_main():
         activeforeground=fg,
         selectcolor=bg,
         text='展开复数',
-        variable=EX_IM).grid(
+        variable=expand_complex).grid(
         column=a_x + 2,
         row=a_y,
         sticky=tkinter.W)

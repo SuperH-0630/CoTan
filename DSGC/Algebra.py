@@ -2,19 +2,18 @@ from sympy import *
 from sympy.plotting import plot3d, plot
 
 
-class Algebra_base:
+class AlgebraBase:
     def __init__(self, new=lambda x: x):
-        self.Name = {'self': self}  # 命名空间
-        self.Name.update(globals())
-        self.Name.update(locals())
-        self.Algebra_dict = {}
-        self.Algebra_dict_View = {}  # 门面
-        self.Symbol_MS = {}  # 描述文件
-        self.Take_News = new
+        self.symbol_dict = {'self': self}  # 命名空间
+        self.symbol_dict.update(globals())
+        self.symbol_dict.update(locals())
+        self.algebra_dict = {}
+        self.algebra_dict_view = {}  # 门面(str)
+        self.symbol_describe = {}  # 描述文件
+        self.out_status = new
 
-    def Draw_Core(self, f):
-        print(f'alg = {f}')
-        re = []
+    def formula_export(self, f):
+        result_str = []
         try:
             name = f.func.__name__
             args = f.args
@@ -22,57 +21,51 @@ class Algebra_base:
                 try:
                     if args[1] < 0:
                         a = [['A', '1']]
-                        b = self.Draw_Core(f.func(args[0], -args[1]))
-                        print(b)
-                        re.append(['D', a, b])
-                        print(f'Qre = {re}')
+                        b = self.formula_export(f.func(args[0], -args[1]))
+                        result_str.append(['D', a, b])
                     else:
                         raise Exception
                 except BaseException:
-                    a = self.Draw_Core(args[0])
-                    b = self.Draw_Core(args[1])
-                    re.append(['B', a, b])
+                    a = self.formula_export(args[0])
+                    b = self.formula_export(args[1])
+                    result_str.append(['B', a, b])
             elif name == 'log':
-                # a = [['A', '']]
-                b = self.Draw_Core(args[0])
-                re.append(['C', [['A', 'ln ']], b])
+                b = self.formula_export(args[0])
+                result_str.append(['C', [['A', 'ln ']], b])
             elif name == 'Add':
                 a = 0
                 for i in args:
-                    get = self.Draw_Core(i)
+                    get = self.formula_export(i)
                     if a != 0:
-                        re.append(['A', ' + '])
-                    re += get
+                        result_str.append(['A', ' + '])
+                    result_str += get
                     a += 1
             elif name == 'Mul':
                 a = 0
                 for i in args:
-                    get = self.Draw_Core(i)
+                    get = self.formula_export(i)
                     if a != 0:
-                        re.append(['A', ' × '])
-                    re += get
+                        result_str.append(['A', ' × '])
+                    result_str += get
                     a += 1
             elif name == 'Rational':
                 q = str(f).split('/')
                 a = [['A', q[0]]]
                 b = [['A', q[1]]]
-                re.append(['D', a, b])
-            # elif name in ['Symbol', 'One', 'Zero', 'NegativeOne', 'Float', 'Rational', 'Half']:
-            #     raise Exception
+                result_str.append(['D', a, b])
             elif len(args) < 1:
                 raise Exception
             else:  # 增添逗号
-                re.append(['A', f'{str(name)}( '])
+                result_str.append(['A', f'{str(name)}( '])
                 a = 0
                 for i in args:
-                    get = self.Draw_Core(i)
+                    get = self.formula_export(i)
                     if a != 0:
-                        re.append(['A', ' , '])
-                    re += get
+                        result_str.append(['A', ' , '])
+                    result_str += get
                     a += 1
-                re.append(['A', ' )'])
-            print(f'bRe={re}')
-            return re
+                result_str.append(['A', ' )'])
+            return result_str
         except BaseException:
             a = str(f)
             try:
@@ -80,14 +73,14 @@ class Algebra_base:
                     a = f'({a})'
             except BaseException:
                 pass
-            re.append(['A', a])
-            return re
+            result_str.append(['A', a])
+            return result_str
 
-    def Simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
+    def simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
         if func is None:
             func = count_ops
         try:
-            self.Take_News('正在标准化')
+            self.out_status('正在标准化')
             return simplify(
                 alg,
                 ratio=radio,
@@ -97,13 +90,13 @@ class Algebra_base:
         except BaseException:
             return None
 
-    def rprint_expression(self, e, level=0, First=True):  # 直接打印
+    def print_expression_str(self, e, level=0, first=True):  # 直接打印
         e = simplify(e)  # 转换为sympy可以执行的对象
-        return self.print_expression_core(e, level, First)
+        return self.print_expression_core(e, level, first)
 
-    def print_expression_core(self, e, level=0, First=True, q=1):  # 递归
+    def print_expression_core(self, e, level=0, first=True, q=1):  # 递归
         str_print = ' ' * level
-        if First:
+        if first:
             str_print = f'[{e}]\n' + str_print
         try:
             name = e.func.__name__
@@ -115,14 +108,14 @@ class Algebra_base:
             str_print += f'({q}){name}\n'
             n = len(name)
             for i in args:
-                self.Take_News('正在迭代运算中')
+                self.out_status('正在迭代运算中')
                 str_print += self.print_expression_core(
-                    i, level + n, First=False, q=q + 1)
+                    i, level + n, first=False, q=q + 1)
             return str_print
         except BaseException:
             return str_print + f'({q}){str(e)}\n'
 
-    def Split_Func_core(self, e, deep, f, first=True):  # 递归
+    def split_func_core(self, e, deep, f, first=True):  # 递归
         try:
             name = e.func.__name__
             args = e.args
@@ -137,8 +130,8 @@ class Algebra_base:
                 else:
                     re = []
                 for i in args:
-                    self.Take_News('正在迭代运算中')
-                    get = self.Split_Func_core(i, deep, f, False)
+                    self.out_status('正在迭代运算中')
+                    get = self.split_func_core(i, deep, f, False)
                     re += get
                 return re
             else:
@@ -146,15 +139,15 @@ class Algebra_base:
         except BaseException:
             return [e]
 
-    def Merge_Func_Core(self, name_list, Func):
+    def merge_func_core(self, name_list, func):
         if len(name_list) < 2:
             return None
         st = name_list[0]
         for n in name_list[1:]:
-            st = Func(st, n)
+            st = func(st, n)
         return st
 
-    def Creat_Num(self, num, num_type):
+    def creat_num(self, num, num_type):
         try:
             if num_type == 0:  # 浮点数
                 return Float(num)
@@ -164,138 +157,138 @@ class Algebra_base:
                 n = num.split('/')
                 return Rational(n[0], n[1])
             else:
-                return sympify(num, locals=self.Name)
+                return sympify(num, locals=self.symbol_dict)
         except BaseException:
             return Integer(1)
 
 
-class Algebra_Polynomial(Algebra_base):
+class AlgebraPolynomial(AlgebraBase):
     def __call__(self):
         alg_view = []
         alg = []
-        for name in self.Algebra_dict:
+        for name in self.algebra_dict:
             alg.append(name)
-            alg_view.append(f'{name} --> {self.Algebra_dict[name]}')
+            alg_view.append(f'{name} --> {self.algebra_dict[name]}')
         value = []
         value_view = []
-        for name in self.Symbol_MS:
+        for name in self.symbol_describe:
             value.append(name)
-            value_view.append(f'符号:{name} --> {self.Symbol_MS[name]}')
+            value_view.append(f'符号:{name} --> {self.symbol_describe[name]}')
         return (value_view, value), (alg_view, alg)
 
-    def del_Symbol(self, x):
-        del self.Symbol_MS[x]
-        del self.Name[x]
+    def del_symbol(self, x):
+        del self.symbol_describe[x]
+        del self.symbol_dict[x]
 
-    def addSymbol(self, name, AT=0, RI=0, PC=0, EO=0, FI=0, CIR=None, NZ=None, INT=0, NONE=0, ms='自定义符号'):  # 创建符号(ms=描述)
+    def add_symbol(self, name, is_generation=0, is_rational=0, is_prime=0, is_even=0, is_finite=0, is_complex=None,
+                   is_natural=None, is_integer=0, no_constraint=0, describe='自定义符号'):
         k = {}
         try:
             name = name.replace(' ', '')
             exec(f'{name} = 5', {})  # 测试name有没有做符号名字的资质
-            if NONE == 1:
+            if no_constraint == 1:
                 raise Exception
-            if AT == 1:  # 代数
+            if is_generation == 1:  # 代数
                 k['algebraic'] = True
-            elif AT == 2:  # 超越数
+            elif is_generation == 2:  # 超越数
                 k['transcendental'] = True
-            if RI == 1:  # 有理数
+            if is_rational == 1:  # 有理数
                 k['rational'] = True
-            elif RI == 2:  # 无理数
+            elif is_rational == 2:  # 无理数
                 k['irrational'] = True
-            if PC == 1:  # 质数
+            if is_prime == 1:  # 质数
                 k['prime'] = True
-            elif PC == 2:  # 合数
+            elif is_prime == 2:  # 合数
                 k['composite'] = True
-            if EO == 1:  # 偶数
+            if is_even == 1:  # 偶数
                 k['even'] = True
-            elif EO == 2:  # 奇数
+            elif is_even == 2:  # 奇数
                 k['odd'] = True
-            if FI == 1:  # 有限实数
+            if is_finite == 1:  # 有限实数
                 k['finite'] = True
-            elif FI == 2:  # 无穷
+            elif is_finite == 2:  # 无穷
                 k['infinite'] = True
-            elif FI == 3:  # 广义实数
+            elif is_finite == 3:  # 广义实数
                 k['extended_real'] = True
-            if INT == 1:
+            if is_integer == 1:
                 k['integer'] = True
             try:  # 避免CIR不是list而是None
-                k[CIR[0]] = CIR[1]
+                k[is_complex[0]] = is_complex[1]
             except BaseException:
                 pass
             try:  # 避免NZ不是list而是None
-                k[NZ[0]] = NZ[1]
+                k[is_natural[0]] = is_natural[1]
             except BaseException:
                 pass
         except BaseException:
             pass
-        new_Name = self.Name.copy()
-        new_Name.update({'k': k})
+        new_name = self.symbol_dict.copy()
+        new_name.update({'k': k})
         try:
             exec(
                 f"self.Name['{name}'] = Symbol('{name}',**k)",
-                new_Name)  # 创建一个Symbols
-            self.Symbol_MS[name] = ms
+                new_name)  # 创建一个Symbols
+            self.symbol_describe[name] = describe
             return True
         except BaseException:
             return False
             # raise
 
-    def Value_assumptions0(self, n):
-        value = self.Name[n]
+    def variable_prediction(self, n):
+        value = self.symbol_dict[n]
         get = value.assumptions0
-        R_T = []
-        R_F = []
+        establish_forecast = []  # 成立的预测
+        no_prediction = []  # 不成立的预测
         for i in get:
             if get[i]:
-                R_T.append(f'{FY(i)} >>> {get[i]}')
+                establish_forecast.append(f'{interpreter(i)} >>> {get[i]}')
             else:
-                R_F.append(f'{FY(i)} >>> {get[i]}')
-        return R_T + R_F
+                no_prediction.append(f'{interpreter(i)} >>> {get[i]}')
+        return establish_forecast + no_prediction
 
-    def addAlgebra(self, name, alg):  # 设置代数式
+    def add_expression(self, name, alg):  # 添加表达式
         try:
             name = name.replace(' ', '')
             try:
                 exec(f'{name}=5', {})  # 检查name是否符合标准
             except BaseException:
-                name = f'F{str(len(self.Algebra_dict))}'
-            eval(f'{alg}', self.Name)  # 检查
-            self.Algebra_dict[name] = sympify(alg, locals=self.Name)
-            self.Algebra_dict_View[name] = str(alg)
+                name = f'F{str(len(self.algebra_dict))}'
+            eval(f'{alg}', self.symbol_dict)  # 检查
+            self.algebra_dict[name] = sympify(alg, locals=self.symbol_dict)
+            self.algebra_dict_view[name] = str(alg)
             return True
         except BaseException:
             return False
 
-    def del_Alg(self, name):
-        del self.Algebra_dict[name]
-        del self.Algebra_dict_View[name]
+    def del_expression(self, name):
+        del self.algebra_dict[name]
+        del self.algebra_dict_view[name]
 
-    def Tra_Alg(self):
-        self.Algebra_dict = {}
-        self.Algebra_dict_View = {}
+    def clean_expression(self):
+        self.algebra_dict = {}
+        self.algebra_dict_view = {}
 
-    def get_Algebra(self, name, str=False):
+    def get_expression(self, name, str=False):
         if str:
-            return self.Algebra_dict_View[name]
+            return self.algebra_dict_view[name]
         else:
-            return self.Algebra_dict[name]
+            return self.algebra_dict[name]
 
     def print_expression(self, name, level=0, First=True):  # 根据名字打印
-        print(name)
-        return self.print_expression_core(self.get_Algebra(name), level, First)
+        return self.print_expression_core(self.get_expression(name), level, First)
 
-    def Split_Mul(self, name, renum=False, reone=False):
-        alg = self.get_Algebra(name)
-        r = factor(alg)
-        b = list(factor_list(alg))
-        c = []
-        for i in b:
+    def split_mul(self, name, return_num=False, return_one=False):
+        exp = self.get_expression(name)
+        factor_exp = factor(exp)  # 因式分解
+        split_list = list(factor_list(exp))
+        useful_exp = []
+        for i in split_list:
             if type(i) in (list, tuple):
-                b += list(i)
+                split_list += list(i)
             else:
                 try:
-                    if renum:
-                        if reone:
+                    if return_num:
+                        if return_one:
                             raise Exception
                         else:
                             if i == 1:
@@ -305,17 +298,17 @@ class Algebra_Polynomial(Algebra_base):
                         continue  # 排除数字
                 except BaseException:
                     pass
-                c.append(i)
-        return c, r
+                useful_exp.append(i)
+        return useful_exp, factor_exp
 
-    def Split_Add(self, name, Object, f):
-        alg = self.get_Algebra(name)
-        alg = expand(alg)
-        coll = collect(alg, Object)
-        coll_Dic = collect(alg, Object, evaluate=False)
-        if f == 0:
+    def split_add(self, name, collect_exp, return_type):
+        exp = self.get_expression(name)
+        exp = expand(exp)
+        coll = collect(exp, collect_exp)
+        coll_Dic = collect(exp, collect_exp, evaluate=False)
+        if return_type == 0:
             return list(coll_Dic.keys()), coll
-        elif f == 1:
+        elif return_type == 1:
             return list(coll_Dic.values()), coll
         else:
             re = []
@@ -323,16 +316,16 @@ class Algebra_Polynomial(Algebra_base):
                 re.append(i * coll_Dic[i])
             return re, coll
 
-    def Split_Func(self, name, deep, f, must=True):
-        alg = self.get_Algebra(name)
-        if f == ['']:
+    def split_func(self, name, deep, func_name, return_all=True):
+        alg = self.get_expression(name)
+        if func_name == ['']:
             try:
                 return alg.args, alg
             except BaseException:
                 return None, alg
-        get = self.Split_Func_core(alg, deep, f)
+        get = self.split_func_core(alg, deep, func_name)
         re = []
-        if not must:
+        if not return_all:
             for i in get:
                 try:
                     if i.args != ():
@@ -342,253 +335,253 @@ class Algebra_Polynomial(Algebra_base):
             return re, alg
         return get, alg
 
-    def Merge_Add(self, name_list):
-        name = []
+    def merge_add(self, name_list):
+        exp = []
         for n in name_list:
             try:
-                name.append(self.get_Algebra(n))
+                exp.append(self.get_expression(n))
             except BaseException:
                 pass
-        return self.Merge_Func_Core(name, Add)
+        return self.merge_func_core(exp, Add)
 
-    def Merge_Mul(self, name_list):
-        name = []
+    def merge_mul(self, name_list):
+        exp = []
         for n in name_list:
             try:
-                name.append(self.get_Algebra(n))
+                exp.append(self.get_expression(n))
             except BaseException:
                 pass
-        return self.Merge_Func_Core(name, Mul)
+        return self.merge_func_core(exp, Mul)
 
-    def Merge_Func(self, name_list, f):
+    def merge_func(self, name_list, f):
         name = []
-        func = self.Name[f]
+        func = self.symbol_dict[f]
         for n in name_list:
             try:
-                name.append(self.get_Algebra(n))
+                name.append(self.get_expression(n))
             except BaseException:
                 pass
-        return self.Merge_Func_Core(name, func)
+        return self.merge_func_core(name, func)
 
-    def Fractional_merge(self, name):  # 最小公分母合并
-        alg = self.get_Algebra(name)
+    def fractional_merge(self, name):  # 最小公分母合并
+        alg = self.get_expression(name)
         return ratsimp(alg)
 
-    def Fraction_reduction(self, name):  # 分式化简
-        alg = self.get_Algebra(name)
+    def fraction_reduction(self, name):  # 分式化简
+        alg = self.get_expression(name)
         return cancel(alg)
 
-    def Fractional_fission(self, name, x):  # 分式裂项
-        x = self.Name[x]
-        alg = self.get_Algebra(name)
+    def fractional_fission(self, name, x):  # 分式裂项
+        x = self.symbol_dict[x]
+        alg = self.get_expression(name)
         return apart(alg, x)
 
-    def as_Fraction(self, name, deep):  # 合成分式
-        alg = self.get_Algebra(name)
+    def as_fraction(self, name, deep):  # 合成分式
+        alg = self.get_expression(name)
         return together(alg, deep)
 
-    def Fractional_rat(self, name, s, Max):  # 分母有理化
-        alg = self.get_Algebra(name)
-        return radsimp(alg, s, Max)
+    def fractional_rat(self, name, rationalized_unknown, maximum_irrational_term):  # 分母有理化
+        alg = self.get_expression(name)
+        return radsimp(alg, rationalized_unknown, maximum_irrational_term)
 
-    def Trig_Simp(self, name):  # 三角化简
-        alg = self.get_Algebra(name)
+    def trig_simp(self, name):  # 三角化简
+        alg = self.get_expression(name)
         return trigsimp(alg)
 
-    def Trig_Expansion(self, name, deep):  # 三角化简
-        alg = self.get_Algebra(name)
+    def trig_expansion(self, name, deep):  # 三角化简
+        alg = self.get_expression(name)
         return expand_trig(alg, deep)
 
-    def Mul_Expansion(self, name):
-        alg = self.get_Algebra(name)
+    def mul_expansion(self, name):
+        alg = self.get_expression(name)
         return expand_mul(alg)
 
-    def Multinomial_Expansion(self, name):
-        alg = self.get_Algebra(name)
+    def multinomial_expansion(self, name):
+        alg = self.get_expression(name)
         return expand_multinomial(alg)
 
-    def Pow_Simp_Multinomial(self, name):
-        alg = self.get_Algebra(name)
+    def pow_simp_multinomial(self, name):
+        alg = self.get_expression(name)
         return powdenest(alg)
 
-    def Pow_Simp_base(self, name, JS):  # 处理底数
-        return self.Pow_Simp(name, JS, 'base')
+    def pow_simp_base(self, name, keep_assumptions):  # 处理底数
+        return self.pow_simp_core(name, keep_assumptions, 'base')
 
-    def Pow_Simp_exp(self, name, JS):  # 处理指数
-        return self.Pow_Simp(name, JS, 'exp')
+    def pow_simp_exp(self, name, keep_assumptions):  # 处理指数
+        return self.pow_simp_core(name, keep_assumptions, 'exp')
 
-    def Pow_Simp(self, name, JS, combine='all'):  # 均处理
-        alg = self.get_Algebra(name)
-        return powsimp(alg, force=JS, combine=combine)
+    def pow_simp_core(self, name, keep_assumptions, combine='all'):  # 均处理
+        alg = self.get_expression(name)
+        return powsimp(alg, force=keep_assumptions, combine=combine)
 
-    def Pow_Expansion_base(self, name, deep):
-        alg = self.get_Algebra(name)
+    def pow_expansion_base(self, name, deep):
+        alg = self.get_expression(name)
         return expand_power_base(alg, deep)
 
-    def Pow_Expansion_exp(self, name, deep):
-        alg = self.get_Algebra(name)
+    def pow_expansion_exp(self, name, deep):
+        alg = self.get_expression(name)
         return expand_power_exp(alg, deep)
 
-    def Pow_Expansion(self, name, deep):
-        alg = self.get_Algebra(name)
+    def pow_expansion_core(self, name, deep):
+        alg = self.get_expression(name)
         return expand(alg, deep=deep, log=False, mul=False,
                       power_exp=True, power_base=True, multinomial=True,
                       basic=False)
 
-    def log_Simp(self, name, fo):
-        alg = self.get_Algebra(name)
-        return logcombine(alg, fo)
+    def log_simp(self, name, keep_assumptions):
+        alg = self.get_expression(name)
+        return logcombine(alg, keep_assumptions)
 
-    def log_Expansion(self, name, deep, fo):
-        alg = self.get_Algebra(name)
-        return expand_log(alg, deep, fo)
+    def log_expansion(self, name, deep, keep_assumptions):
+        alg = self.get_expression(name)
+        return expand_log(alg, deep, keep_assumptions)
 
     def simplify(self, name, ratdio=1.7, func=None, rat=True, inv=False):
-        alg = self.get_Algebra(name)
-        self.Simplify(alg, ratdio, func, rat, inv)
+        alg = self.get_expression(name)
+        self.simplify(alg, ratdio, func, rat, inv)
 
-    def expansion(self, name, IM):
-        alg = self.get_Algebra(name)
-        return expand(alg, complex=IM)
+    def expansion(self, name, is_expand_complex):
+        alg = self.get_expression(name)
+        return expand(alg, complex=is_expand_complex)
 
-    def factor(self, name, M, GS, Deep, Rat):
+    def factor(self, name, modulus, is_gaussian, deep, rat):
         k = {}
-        if M is not None:
-            k['modulus'] = M
-        if GS:
+        if modulus is not None:
+            k['modulus'] = modulus
+        if is_gaussian:
             k['gaussian'] = True
-        alg = self.get_Algebra(name)
-        return factor(alg, deep=Deep, fraction=Rat, **k)
+        alg = self.get_expression(name)
+        return factor(alg, deep=deep, fraction=rat, **k)
 
-    def Collect(self, name, x):
-        alg = self.get_Algebra(name)
+    def merger_of_similar_items(self, name, x):
+        alg = self.get_expression(name)
         try:
             return collect(alg, x)
         except BaseException:
             return ceiling(alg)
 
-    def complex_Ex(self, name):
-        alg = self.get_Algebra(name)
+    def expand_complex(self, name):
+        alg = self.get_expression(name)
         return expand_complex(alg)
 
-    def func_Ex(self, name):
-        alg = self.get_Algebra(name)
+    def expand_special(self, name):
+        alg = self.get_expression(name)
         return expand_func(alg)
 
-    def to_num(self, name, n):
-        alg = self.get_Algebra(name)
+    def algebraic_digitization(self, name, n):
+        alg = self.get_expression(name)
         return alg.evalf(n)
 
-    def Sub_Value(self, name, Dic):
-        alg = self.get_Algebra(name)
+    def value_algebraic_simultaneous(self, name, simultaneous_dict):
+        alg = self.get_expression(name)
         sympy_Dic = {}
-        for i in Dic:  # i是符号，Dic[i]是代数式名字
+        for i in simultaneous_dict:  # i是符号，Dic[i]是代数式名字
             try:
-                v_alg = self.get_Algebra(Dic[i])  # 获得代数式
-                get = self.Name[i]  # 处理符号
+                v_alg = self.get_expression(simultaneous_dict[i])  # 获得代数式
+                get = self.symbol_dict[i]  # 处理符号
                 sympy_Dic[get] = v_alg
             except BaseException:
                 pass
         return alg.subs(sympy_Dic)
 
-    def RSub_Value(self, name, Dic):
-        alg = self.get_Algebra(name)
+    def algebragic_value_simultaneous(self, name, simultaneous_dict):
+        alg = self.get_expression(name)
         sympy_Dic = {}
-        for i in Dic:  # i是代数式名字，Dic[i]是符号
+        for i in simultaneous_dict:  # i是代数式名字，Dic[i]是符号
             try:
-                v_alg = self.get_Algebra(i)  # 获得代数式
-                get = self.Name[Dic[i]]  # 处理符号
+                v_alg = self.get_expression(i)  # 获得代数式
+                get = self.symbol_dict[simultaneous_dict[i]]  # 处理符号
                 sympy_Dic[v_alg] = get
             except BaseException:
                 pass
         return alg.subs(sympy_Dic)
 
-    def SubNum_Value(self, name, Dic):
-        alg = self.get_Algebra(name)
+    def algebraic_assignment(self, name, simultaneous_dict):
+        alg = self.get_expression(name)
         sympy_Dic = {}
-        for i in Dic:  # i是符号，Dic[i]是数字
+        for i in simultaneous_dict:  # i是符号，Dic[i]是数字
             try:
-                get = self.Name[i]  # 处理符号
-                sympy_Dic[get] = Dic[i]
+                get = self.symbol_dict[i]  # 处理符号
+                sympy_Dic[get] = simultaneous_dict[i]
             except BaseException:
                 pass
         return alg.subs(sympy_Dic)
 
-    def Solve(self, alg_list):
+    def solving_equations(self, equation_set):
         alg = []
         x_list = set()
-        for i in alg_list:
-            z = self.get_Algebra(i[0])
-            y = self.get_Algebra(i[1])
+        for i in equation_set:
+            z = self.get_expression(i[0])
+            y = self.get_expression(i[1])
             alg.append(Eq(z, y))
             x_list = x_list | alg[-1].atoms(Symbol)
         x_list = list(x_list)
-        re = []
+        result = []
         for x in x_list:  # 遍历原子
             get = solve(alg, x, dict=True)
             for i in get:  # 遍历答案
                 for a in i:
-                    re.append((a, i[a]))
-        return re
+                    result.append((a, i[a]))
+        return result
 
-    def Solve_Inequality(self, alg_list, Type_Num):
-        Type = ['>', '<', '>=', '<='][Type_Num]
-        z = self.get_Algebra(alg_list[0])
-        y = self.get_Algebra(alg_list[1])
-        f = sympify(f'{z} {Type} {y}', locals=self.Name)
+    def solving_inequality(self, inequalities, inequality_symbol):
+        inequality_symbol = ['>', '<', '>=', '<='][inequality_symbol]
+        z = self.get_expression(inequalities[0])
+        y = self.get_expression(inequalities[1])
+        f = sympify(f'{z} {inequality_symbol} {y}', locals=self.symbol_dict)
         print(f)
         answer = solve(f)
         if answer:
             return ['恒成立']
         elif answer == False:
             return ['恒不成立']
-        get = self.Split_Func_core(answer, 1, ('Or'))
+        get = self.split_func_core(answer, 1, ('Or'))
         return get
 
-    def Rewrite(self, name, Func, DX, deep=False):
-        alg = self.get_Algebra(name)
-        f = sympify(Func, locals=self.Name)  # 重新函数
-        if DX != []:
-            ff = []  # 重写对象
-            for i in DX:
-                ff.append(sympify(i, locals=self.Name))
-            return alg.rewrite(ff, f, deep=deep)
+    def rewrite_exp(self, name, rewrite_func, rewrite_object, deep=False):
+        alg = self.get_expression(name)
+        initial_object = sympify(rewrite_func, locals=self.symbol_dict)
+        if rewrite_object != []:
+            sympify_rewrite_object = []  # 重写对象
+            for i in rewrite_object:
+                sympify_rewrite_object.append(sympify(i, locals=self.symbol_dict))
+            return alg.rewrite(sympify_rewrite_object, initial_object, deep=deep)
         else:
-            return alg.rewrite(f, deep=deep)
+            return alg.rewrite(initial_object, deep=deep)
 
-    def Plot(self, name, list_2D, list_3D=None):
-        list_2D = list_2D.copy()
-        alg = self.get_Algebra(name)
-        list_2D[0] = self.Name[list_2D[0]]
-        if list_3D is None:
-            self.Take_News('正在绘制图像')
+    def plot(self, name, list_2d, list_3d=None):
+        list_2d = list_2d.copy()
+        alg = self.get_expression(name)
+        list_2d[0] = self.symbol_dict[list_2d[0]]
+        if list_3d is None:
+            self.out_status('正在绘制图像')
             plot(
                 alg,
-                tuple(list_2D),
-                xlabel=f'{list_2D[0]}',
+                tuple(list_2d),
+                xlabel=f'{list_2d[0]}',
                 ylabel=f'{alg}',
                 title='CoTan Algebra')
         else:
-            list_3D = list_3D.copy()
-            list_3D[0] = self.Name[list_3D[0]]
-            self.Take_News('正在绘制图像')
+            list_3d = list_3d.copy()
+            list_3d[0] = self.symbol_dict[list_3d[0]]
+            self.out_status('正在绘制图像')
             plot3d(
                 alg,
-                tuple(list_2D),
-                tuple(list_3D),
-                xlabel=f'{list_2D[0]}',
-                ylabel=f'{list_3D[0]}',
+                tuple(list_2d),
+                tuple(list_3d),
+                xlabel=f'{list_2d[0]}',
+                ylabel=f'{list_3d[0]}',
                 zlable=f'{alg}',
                 title='CoTan Algebra')
 
-    def Draw(self, name):
-        alg = self.get_Algebra(name)
-        return self.Draw_Core(alg)
+    def get_expression_from_name(self, name):
+        alg = self.get_expression(name)
+        return self.formula_export(alg)
 
 # 提供翻译服务
 
 
-def FY(word):
+def interpreter(word: str):
     book = {
         'algebraic': '代数',
         'transcendental': '超越数',
@@ -620,7 +613,7 @@ def FY(word):
         'extended_nonnegative': '广义非负数',
         'extended_positive': '广义正数'}
     try:
-        CN = book[word]
-        return f'{CN}({word})'
+        results = book[word]
+        return f'{results}({word})'
     except BaseException:
         return word
