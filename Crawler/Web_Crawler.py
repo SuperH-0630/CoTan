@@ -7,235 +7,235 @@ import threading
 
 
 def Main():
-    global top, Git, PATH, bg, bbg, fg, cookies_list, Attributes_Dict, DataBase_list
-    DataBase_list = []
-    Attributes_Dict = {}
+    global SCREEN, PATH, bg_color, buttom_bg_color, word_color, cookies_list, attributes_dict, database_list
+    database_list = []
+    attributes_dict = {}
     PATH = os.getcwd()
-    top = tkinter.Tk()
+    SCREEN = tkinter.Tk()
     cookies_list = []
-    bg = '#FFFAFA'  # 主颜色
-    bbg = '#FFFAFA'  # 按钮颜色
-    fg = '#000000'  # 文字颜色
-    top["bg"] = bg
+    bg_color = '#FFFAFA'  # 主颜色
+    buttom_bg_color = '#FFFAFA'  # 按钮颜色
+    word_color = '#000000'  # 文字颜色
+    SCREEN["bg"] = bg_color
     FONT = ('黑体', 11)  # 设置字体
-    top.title('CoTan自动化网页')
-    top.resizable(width=False, height=False)
-    top.geometry('+10+10')  # 设置所在位置
+    SCREEN.title('CoTan自动化网页')
+    SCREEN.resizable(width=False, height=False)
+    SCREEN.geometry('+10+10')  # 设置所在位置
 
-    width_B = 13  # 标准宽度
-    height_B = 2
-    a_y = 0
-    a_x = 0
+    gui_width = 13  # 标准宽度
+    gui_height = 2
+    row = 0
+    column = 0
 
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='添加url对象',
         command=add_url,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除url对象',
         command=del_url,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='应用过滤机制',
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global URL_BOX, URL_Input, Func_BOX
-    a_y += 1
+    global url_box, url_input, filter_func_box
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='添加url:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    URL_Input = tkinter.Entry(top, width=width_B * 2)
-    URL_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    url_input = tkinter.Entry(SCREEN, width=gui_width * 2)
+    url_input.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    global URL_ARGS, UA_Input, use_Cookies_Input, FUNC_Input, DATA_Input, TimeOut_Input
-    a_y += 1
-    URL_ARGS = []
+    global url_parameter, user_agent_input, applied_cookies, mode_input, requests_data, time_out
+    row += 1
+    url_parameter = []
     lable = ['不加载js', '不加载java', '不加载插件']  # 复选框
     for i in range(3):
-        URL_ARGS.append(tkinter.IntVar())
-        tkinter.Checkbutton(top,
-                            bg=bg,
-                            fg=fg,
-                            activebackground=bg,
-                            activeforeground=fg,
-                            selectcolor=bg,
+        url_parameter.append(tkinter.IntVar())
+        tkinter.Checkbutton(SCREEN,
+                            bg=bg_color,
+                            fg=word_color,
+                            activebackground=bg_color,
+                            activeforeground=word_color,
+                            selectcolor=bg_color,
                             text=lable[i],
-                            variable=URL_ARGS[-1]).grid(column=a_x + i,
-                                                        row=a_y,
-                                                        sticky=tkinter.W)
+                            variable=url_parameter[-1]).grid(column=column + i,
+                                                             row=row,
+                                                             sticky=tkinter.W)
 
-    a_y += 1
+    row += 1
     lable = ['第一次启动', '隐藏网页', '不加载图片']  # 复选框
     for i in range(3):
-        URL_ARGS.append(tkinter.IntVar())
-        tkinter.Checkbutton(top,
-                            bg=bg,
-                            fg=fg,
-                            activebackground=bg,
-                            activeforeground=fg,
-                            selectcolor=bg,
+        url_parameter.append(tkinter.IntVar())
+        tkinter.Checkbutton(SCREEN,
+                            bg=bg_color,
+                            fg=word_color,
+                            activebackground=bg_color,
+                            activeforeground=word_color,
+                            selectcolor=bg_color,
                             text=lable[i],
-                            variable=URL_ARGS[-1]).grid(column=a_x + i,
-                                                        row=a_y,
-                                                        sticky=tkinter.W)
+                            variable=url_parameter[-1]).grid(column=column + i,
+                                                             row=row,
+                                                             sticky=tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='UA设置:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    UA_Input = tkinter.Entry(top, width=width_B * 2)
-    UA_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    user_agent_input = tkinter.Entry(SCREEN, width=gui_width * 2)
+    user_agent_input.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='DATA:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    DATA_Input = tkinter.Entry(top, width=width_B * 2)
-    DATA_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    requests_data = tkinter.Entry(SCREEN, width=gui_width * 2)
+    requests_data.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='请求方式:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    FUNC_Input = tkinter.Entry(top, width=width_B * 2)
-    FUNC_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    mode_input = tkinter.Entry(SCREEN, width=gui_width * 2)
+    mode_input.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='请求超时:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    TimeOut_Input = tkinter.Entry(top, width=width_B * 2)
-    TimeOut_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    time_out = tkinter.Entry(SCREEN, width=gui_width * 2)
+    time_out.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='Cookies:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    use_Cookies_Input = tkinter.Entry(top, width=width_B)
-    use_Cookies_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    applied_cookies = tkinter.Entry(SCREEN, width=gui_width)
+    applied_cookies.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
-    URL_ARGS.append(tkinter.IntVar())
-    tkinter.Checkbutton(top,
-                        bg=bg,
-                        fg=fg,
-                        activebackground=bg,
-                        activeforeground=fg,
-                        selectcolor=bg,
+    url_parameter.append(tkinter.IntVar())
+    tkinter.Checkbutton(SCREEN,
+                        bg=bg_color,
+                        fg=word_color,
+                        activebackground=bg_color,
+                        activeforeground=word_color,
+                        selectcolor=bg_color,
                         text='新启动网页',
-                        variable=URL_ARGS[-1]).grid(column=a_x + 2,
-                                                    row=a_y,
-                                                    sticky=tkinter.W)
+                        variable=url_parameter[-1]).grid(column=column + 2,
+                                                         row=row,
+                                                         sticky=tkinter.W)
 
-    a_y += 1
-    URL_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 4)
-    URL_BOX.grid(
-        column=a_x,
-        row=a_y,
+    row += 1
+    url_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)
+    url_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=4,
         sticky=tkinter.E +
@@ -243,84 +243,84 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    a_y += 4
+    row += 4
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='HTTPS过滤器',
-        command=add_filter_func_HTTPS,
+        command=add_filter_func_https,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='WWW过滤器',
-        command=add_filter_func_WWW,
+        command=add_filter_func_www,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除过滤器',
-        command=del_func,
+        command=del_filter_func,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='自定义过滤器',
-        command=add_filter_func_HTTPS,
+        command=add_filter_func_https,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='清空过滤器',
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global Func_BOX, cookies_fixed
-    a_y += 1
-    Func_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
-    Func_BOX.grid(
-        column=a_x,
-        row=a_y,
+    global filter_func_box, cookies_fixed
+    row += 1
+    filter_func_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 3)
+    filter_func_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=3,
         sticky=tkinter.E +
@@ -329,86 +329,86 @@ def Main():
         tkinter.N)
 
     global wait_Func_BOX, Wait_Input, cookies_BOX
-    a_y += 3
+    row += 3
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='单点爬虫运行',
-        command=startDownloader,
+        command=crawler_run_one,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='爬虫运行',
-        command=Crawler_Run,
+        command=crawler_run,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='单点爬虫停止',
-        command=Crawler_Stop,
+        command=crawler_stop,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     cookies_fixed = tkinter.Variable()
     tkinter.Label(
-        top,
+        SCREEN,
         text='【曲奇监视】',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W +
         tkinter.W +
         tkinter.S +
         tkinter.N)  # 设置说明
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='固定曲奇',
         variable=cookies_fixed).grid(
-        column=a_x + 2,
-        row=a_y,
+        column=column + 2,
+        row=row,
         sticky=tkinter.W)
     cookies_fixed.set('0')
 
-    a_y += 1
-    cookies_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 3)
+    row += 1
+    cookies_BOX = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 3)
     cookies_BOX.grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=3,
         sticky=tkinter.E +
@@ -416,271 +416,271 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    a_y += 3
+    row += 3
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='清空曲奇',
-        command=Tra_cookies,
+        command=clean_cookies,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='更新曲奇',
-        command=Update_cookies,
+        command=update_cookies,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除曲奇',
-        command=Del_cookies,
+        command=del_cookies,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global cookies_Input, PAGE_BOX
-    a_y += 1
-    cookies_Input = tkinter.Entry(top, width=width_B * 3)
-    cookies_Input.grid(
-        column=a_x,
-        row=a_y,
+    global new_cookies
+    row += 1
+    new_cookies = tkinter.Entry(SCREEN, width=gui_width * 3)
+    new_cookies.grid(
+        column=column,
+        row=row,
         columnspan=3,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='添加曲奇',
-        command=Add_cookies,
+        command=add_cookies,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_x += 3
+    column += 3
     tkinter.Label(
-        top,
+        SCREEN,
         text='',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
         width=1).grid(
-        column=a_x,
-        row=a_y)  # 设置说明
-    a_x += 1
-    a_y = 0
+        column=column,
+        row=row)  # 设置说明
+    column += 1
+    row = 0
 
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据id搜查',
-        command=lambda: Page_Parser_addFindFunc('id'),
+        command=lambda: addFindFunc('id'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据name搜查',
-        command=lambda: Page_Parser_addFindFunc('name'),
+        command=lambda: addFindFunc('name'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据class搜查',
-        command=lambda: Page_Parser_addFindFunc('class'),
+        command=lambda: addFindFunc('class'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据xpath搜查',
-        command=lambda: Page_Parser_addFindFunc('xpath'),
+        command=lambda: addFindFunc('xpath'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据css搜查',
-        command=lambda: Page_Parser_addFindFunc('css'),
+        command=lambda: addFindFunc('css'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据元素名搜查',
-        command=lambda: Page_Parser_addFindFunc('tag'),
+        command=lambda: addFindFunc('tag'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global search_all, search_Input, Parser_Func_BOX
-    a_y += 1
+    global search_all, search_key, parser_func_box
+    row += 1
     search_all = tkinter.Variable()
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据link搜查',
-        command=lambda: Page_Parser_addFindFunc('link'),
+        command=lambda: addFindFunc('link'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='link模糊搜查',
-        command=lambda: Page_Parser_addFindFunc('partial_link'),
+        command=lambda: addFindFunc('partial_link'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='匹配全部',
         variable=search_all).grid(
-        column=a_x + 2,
-        row=a_y,
+        column=column + 2,
+        row=row,
         sticky=tkinter.W)
     search_all.set('0')
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='搜查参数:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    search_Input = tkinter.Entry(top, width=width_B * 2)
-    search_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    search_key = tkinter.Entry(SCREEN, width=gui_width * 2)
+    search_key.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除方法',
-        command=Del_Parser_Func,
+        command=del_parser_func,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='清空方法',
-        command=Tra_Parser_Func,
+        command=clean_parser_func,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
-    Parser_Func_BOX = tkinter.Listbox(
-        top, width=width_B * 3, height=height_B * 5)
-    Parser_Func_BOX.grid(
-        column=a_x,
-        row=a_y,
+    row += 1
+    parser_func_box = tkinter.Listbox(
+        SCREEN, width=gui_width * 3, height=gui_height * 5)
+    parser_func_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=5,
         sticky=tkinter.E +
@@ -688,531 +688,531 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    global Var_Input, VarIndex_Input, Send_Input, UserPW_Input, SELE_Input, JS_Input, Time_Input
-    a_y += 5
+    global operation_object, object_index, send_text, password, select_object, js_code, wait_time
+    row += 5
     tkinter.Label(
-        top,
+        SCREEN,
         text='操作元素:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Var_Input = tkinter.Entry(top, width=width_B * 2)
-    Var_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    operation_object = tkinter.Entry(SCREEN, width=gui_width * 2)
+    operation_object.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='操作索引:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    VarIndex_Input = tkinter.Entry(top, width=width_B * 2)
-    VarIndex_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    object_index = tkinter.Entry(SCREEN, width=gui_width * 2)
+    object_index.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='发送信息:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Send_Input = tkinter.Entry(top, width=width_B * 2)
-    Send_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    send_text = tkinter.Entry(SCREEN, width=gui_width * 2)
+    send_text.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='认证用户名:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    UserName_Input = tkinter.Entry(top, width=width_B * 2)
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    UserName_Input = tkinter.Entry(SCREEN, width=gui_width * 2)
     UserName_Input.grid(
-        column=a_x +
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='认证密码:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    UserPW_Input = tkinter.Entry(top, width=width_B * 2)
-    UserPW_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    password = tkinter.Entry(SCREEN, width=gui_width * 2)
+    password.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='选择参数:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    SELE_Input = tkinter.Entry(top, width=width_B * 2)
-    SELE_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    select_object = tkinter.Entry(SCREEN, width=gui_width * 2)
+    select_object.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='等待时间:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Time_Input = tkinter.Entry(top, width=width_B * 2)
-    Time_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    wait_time = tkinter.Entry(SCREEN, width=gui_width * 2)
+    wait_time.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='JavaScript:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    JS_Input = tkinter.Entry(top, width=width_B * 2)
-    JS_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    js_code = tkinter.Entry(SCREEN, width=gui_width * 2)
+    js_code.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='发送字符',
-        command=lambda: Page_Parser_addActionFunc('send_keys'),
+        command=lambda: first_add_action_func('send_keys'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='清空字符',
-        command=lambda: Page_Parser_addActionFunc('clear'),
+        command=lambda: first_add_action_func('clear'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='提交表单',
-        command=lambda: Page_Parser_addActionFunc('submit'),
+        command=lambda: first_add_action_func('submit'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='点击按钮',
-        command=lambda: Page_Parser_addActionFunc('click'),
+        command=lambda: first_add_action_func('click'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='取得源代码',
-        command=lambda: Page_Parser_addActionFunc('get_Page'),
+        command=lambda: first_add_action_func('get_Page'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='输出HTML',
-        command=lambda: Page_Parser_addActionFunc('out'),
+        command=lambda: first_add_action_func('out'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='切换Frame(id)',
-        command=Page_Parser_addFrameFunc_id,
+        command=addFrameFunc_id,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='切换Frame',
-        command=lambda: Page_Parser_addFindFunc('frame'),
+        command=lambda: addFindFunc('frame'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='定位焦点元素',
-        command=lambda: Page_Parser_addFindFunc('active_element'),
+        command=lambda: addFindFunc('active_element'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='捕获弹窗',
-        command=lambda: Page_Parser_addFindFunc('alert'),
+        command=lambda: addFindFunc('alert'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='回到主Frame',
-        command=lambda: Page_Parser_addFrameFunc_FP(False),
+        command=lambda: addFrameFunc_Father(False),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='回到父Frame',
-        command=lambda: Page_Parser_addFrameFunc_FP(True),
+        command=lambda: addFrameFunc_Father(True),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='弹出框认证',
-        command=lambda: Page_Parser_addActionFunc('User_Passwd'),
+        command=lambda: first_add_action_func('User_Passwd'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='弹出框确定',
-        command=lambda: Page_Parser_addActionFunc('accept'),
+        command=lambda: first_add_action_func('accept'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='弹出框取消',
-        command=lambda: Page_Parser_addActionFunc('dismiss'),
+        command=lambda: first_add_action_func('dismiss'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='取消选择index',
-        command=lambda: Page_Parser_addActionFunc('deselect_by_index'),
+        command=lambda: first_add_action_func('deselect_by_index'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='取消选择text',
-        command=lambda: Page_Parser_addActionFunc('deselect_by_text'),
+        command=lambda: first_add_action_func('deselect_by_text'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='取消选择value',
-        command=lambda: Page_Parser_addActionFunc('deselect_by_value'),
+        command=lambda: first_add_action_func('deselect_by_value'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='选择index',
-        command=lambda: Page_Parser_addActionFunc('select_by_index'),
+        command=lambda: first_add_action_func('select_by_index'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='选择text',
-        command=lambda: Page_Parser_addActionFunc('select_by_text'),
+        command=lambda: first_add_action_func('select_by_text'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='选择value',
-        command=lambda: Page_Parser_addActionFunc('select_by_value'),
+        command=lambda: first_add_action_func('select_by_value'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_x += 3
+    column += 3
     tkinter.Label(
-        top,
+        SCREEN,
         text='',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
         width=1).grid(
-        column=a_x,
-        row=a_y)  # 设置说明
-    a_x += 1
-    a_y = 0
+        column=column,
+        row=row)  # 设置说明
+    column += 1
+    row = 0
 
-    global Func_Output, Status_Output, FuncValue_BOX
-    Func_Output = tkinter.StringVar()
-    Status_Output = tkinter.StringVar()
+    global now_running, status_output, variable_box
+    now_running = tkinter.StringVar()
+    status_output = tkinter.StringVar()
     tkinter.Label(
-        top,
+        SCREEN,
         text='正在执行:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
     tkinter.Entry(
-        top,
-        width=width_B * 2,
+        SCREEN,
+        width=gui_width * 2,
         state=tkinter.DISABLED,
-        textvariable=Func_Output).grid(
-        column=a_x + 1,
-        row=a_y,
+        textvariable=now_running).grid(
+        column=column + 1,
+        row=row,
         columnspan=2,
         sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='上一次状态:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
     tkinter.Entry(
-        top,
-        width=width_B * 2,
+        SCREEN,
+        width=gui_width * 2,
         state=tkinter.DISABLED,
-        textvariable=Status_Output).grid(
-        column=a_x + 1,
-        row=a_y,
+        textvariable=status_output).grid(
+        column=column + 1,
+        row=row,
         columnspan=2,
         sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
-    FuncValue_BOX = tkinter.Listbox(
-        top, width=width_B * 3, height=height_B * 5)
-    FuncValue_BOX.grid(
-        column=a_x,
-        row=a_y,
+    row += 1
+    variable_box = tkinter.Listbox(
+        SCREEN, width=gui_width * 3, height=gui_height * 5)
+    variable_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=5,
         sticky=tkinter.E +
@@ -1220,159 +1220,159 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    global CookiesName_Input, Cookies_Input, Tag_Input, AttributesName_Input, AttributesValue_Input
-    global FindAllText_Input, text_re, attribute_re, limit_Input, recursive_Input, FindAllPATH_Input, Attributes_BOX
+    global cookies_name_input, new_cookies, element_name, attributes_name, attributes_value
+    global find_text, text_regex, attribute_regex, limit, is_recursive, find_path, attributes_box
 
-    a_y += 5
+    row += 5
     tkinter.Label(
-        top,
+        SCREEN,
         text='cookies名:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    CookiesName_Input = tkinter.Entry(top, width=width_B * 2)
-    CookiesName_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    cookies_name_input = tkinter.Entry(SCREEN, width=gui_width * 2)
+    cookies_name_input.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='cookies:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Cookies_Input = tkinter.Entry(top, width=width_B * 2)
-    Cookies_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    new_cookies = tkinter.Entry(SCREEN, width=gui_width * 2)
+    new_cookies.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='定位标签:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Tag_Input = tkinter.Entry(top, width=width_B * 2)
-    Tag_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    element_name = tkinter.Entry(SCREEN, width=gui_width * 2)
+    element_name.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='定位属性名:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    AttributesName_Input = tkinter.Entry(top, width=width_B * 2)
-    AttributesName_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    attributes_name = tkinter.Entry(SCREEN, width=gui_width * 2)
+    attributes_name.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    attribute_re = tkinter.IntVar()
-    a_y += 1
+    attribute_regex = tkinter.IntVar()
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='定位属性值:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    AttributesValue_Input = tkinter.Entry(top, width=width_B)
-    AttributesValue_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    attributes_value = tkinter.Entry(SCREEN, width=gui_width)
+    attributes_value.grid(
+        column=column +
         1,
         columnspan=2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='添加属性',
-        command=add_Attributes,
+        command=add_attributes,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除属性',
-        command=del_Attributes,
+        command=del_attributes,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='清空属性',
-        command=tra_Attributes,
+        command=clean_attributes,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
-    Attributes_BOX = tkinter.Listbox(
-        top, width=width_B * 3, height=height_B * 3)
-    Attributes_BOX.grid(
-        column=a_x,
-        row=a_y,
+    row += 1
+    attributes_box = tkinter.Listbox(
+        SCREEN, width=gui_width * 3, height=gui_height * 3)
+    attributes_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=3,
         sticky=tkinter.E +
@@ -1380,479 +1380,479 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    a_y += 3
+    row += 3
     tkinter.Label(
-        top,
+        SCREEN,
         text='定位文本:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    FindAllText_Input = tkinter.Entry(top, width=width_B)
-    FindAllText_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    find_text = tkinter.Entry(SCREEN, width=gui_width)
+    find_text.grid(
+        column=column +
         1,
         columnspan=2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    recursive_Input = tkinter.IntVar()
-    text_re = tkinter.IntVar()
-    a_y += 1
+    is_recursive = tkinter.IntVar()
+    text_regex = tkinter.IntVar()
+    row += 1
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='递归查找',
-        variable=recursive_Input).grid(
-        column=a_x,
-        row=a_y,
+        variable=is_recursive).grid(
+        column=column,
+        row=row,
         sticky=tkinter.W)
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='文本使用正则',
-        variable=text_re).grid(
-        column=a_x + 1,
-        row=a_y,
+        variable=text_regex).grid(
+        column=column + 1,
+        row=row,
         sticky=tkinter.W)
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='属性值使用正则',
-        variable=attribute_re).grid(
-        column=a_x + 2,
-        row=a_y,
+        variable=attribute_regex).grid(
+        column=column + 2,
+        row=row,
         sticky=tkinter.W)
-    attribute_re.set(1)
-    text_re.set('1')
-    recursive_Input.set('1')
+    attribute_regex.set(1)
+    text_regex.set('1')
+    is_recursive.set('1')
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='查找个数:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    limit_Input = tkinter.Entry(top, width=width_B * 2)
-    limit_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+    limit.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='定位路径:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    FindAllPATH_Input = tkinter.Entry(top, width=width_B * 2)
-    FindAllPATH_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    find_path = tkinter.Entry(SCREEN, width=gui_width * 2)
+    find_path.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除所有曲奇',
-        command=lambda: Page_Parser_addActionFunc2('del_all_cookies'),
+        command=lambda: second_add_action_func('del_all_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除指定曲奇',
-        command=lambda: Page_Parser_addActionFunc2('del_cookies'),
+        command=lambda: second_add_action_func('del_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='添加新的曲奇',
-        command=lambda: Page_Parser_addActionFunc2('add_cookies'),
+        command=lambda: second_add_action_func('add_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='更新指定曲奇',
-        command=lambda: Page_Parser_addActionFunc2('update_cookies'),
+        command=lambda: second_add_action_func('update_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得所有曲奇',
-        command=lambda: Page_Parser_addActionFunc2('get_cookies'),
+        command=lambda: second_add_action_func('get_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得指定曲奇',
-        command=lambda: Page_Parser_addActionFunc2('get_all_cookies'),
+        command=lambda: second_add_action_func('get_all_cookies'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='解析网页',
-        command=lambda: Page_Parser_addActionFunc2('make_bs'),
+        command=lambda: second_add_action_func('make_bs'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据标签定位',
-        command=lambda: Page_Parser_addActionFunc2('findAll'),
+        command=lambda: second_add_action_func('findAll'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='根据文本定位',
-        command=lambda: Page_Parser_addActionFunc2('findAll_by_text'),
+        command=lambda: second_add_action_func('findAll_by_text'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得子标签',
-        command=lambda: Page_Parser_addActionFunc2('get_children'),
+        command=lambda: second_add_action_func('get_children'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得后代标签',
-        command=lambda: Page_Parser_addActionFunc2('get_offspring'),
+        command=lambda: second_add_action_func('get_offspring'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得弟标签',
-        command=lambda: Page_Parser_addActionFunc2('get_down'),
+        command=lambda: second_add_action_func('get_down'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得兄标签',
-        command=lambda: Page_Parser_addActionFunc2('get_up'),
+        command=lambda: second_add_action_func('get_up'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获得兄弟标签',
-        command=lambda: Page_Parser_addActionFunc2('brothers'),
+        command=lambda: second_add_action_func('brothers'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='路径定位',
-        command=lambda: Page_Parser_addActionFunc2('get_by_path'),
+        command=lambda: second_add_action_func('get_by_path'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_x += 3
+    column += 3
     tkinter.Label(
-        top,
+        SCREEN,
         text='',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
         width=1).grid(
-        column=a_x,
-        row=a_y)  # 设置说明
-    a_x += 1
-    a_y = 0
+        column=column,
+        row=row)  # 设置说明
+    column += 1
+    row = 0
 
     tkinter.Label(
-        top,
+        SCREEN,
         text='【数据库操作】',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT).grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3)  # 设置说明
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='元素式存入',
-        command=lambda: to_Database(True),
+        command=lambda: to_database(True),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='正则式存入',
-        command=lambda: to_Database(False),
+        command=lambda: to_database(False),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='新增数据表',
-        command=add_DataBase,
+        command=add_database,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='删除数据表',
-        command=remove_DataBase,
+        command=remove_database,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='导出数据表',
         command=out,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='关闭数据表',
         command=close,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global Data_Input, DataBase_BOX, DataName_Input, URLTAG_Input
-    a_y += 1
+    global data_format, database_box, database_name, url_tag
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='数据存入格式:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Data_Input = tkinter.Entry(top, width=width_B * 2)
-    Data_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    data_format = tkinter.Entry(SCREEN, width=gui_width * 2)
+    data_format.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='数据表名字:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    DataName_Input = tkinter.Entry(top, width=width_B * 2)
-    DataName_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    database_name = tkinter.Entry(SCREEN, width=gui_width * 2)
+    database_name.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
-    DataBase_BOX = tkinter.Listbox(top, width=width_B * 3, height=height_B * 5)
-    DataBase_BOX.grid(
-        column=a_x,
-        row=a_y,
+    row += 1
+    database_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
+    database_box.grid(
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=5,
         sticky=tkinter.E +
@@ -1860,630 +1860,630 @@ def Main():
         tkinter.S +
         tkinter.N)
 
-    a_y += 5
+    row += 5
     tkinter.Label(
-        top,
+        SCREEN,
         text='URL标签:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    URLTAG_Input = tkinter.Entry(top, width=width_B * 2)
-    URLTAG_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    url_tag = tkinter.Entry(SCREEN, width=gui_width * 2)
+    url_tag.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='导出页面快照',
-        command=lambda: Page_Parser_addActionFunc2('png'),
+        command=lambda: second_add_action_func('png'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='回调添加URL',
         command=add_url_from_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='解析为json',
-        command=lambda: Page_Parser_addActionFunc2('to_json'),
+        command=lambda: second_add_action_func('to_json'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    global Special_keys, Chains_Input, element_value2_Input, index2_Input, run_time, key_Input
+    global is_special_keys, chains, drag_element, drag_element_index, run_time, type_value
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='操作动作链:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    Chains_Input = tkinter.Entry(top, width=width_B * 2)
-    Chains_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    chains = tkinter.Entry(SCREEN, width=gui_width * 2)
+    chains.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='拽拖至元素:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    element_value2_Input = tkinter.Entry(top, width=width_B * 2)
-    element_value2_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    drag_element = tkinter.Entry(SCREEN, width=gui_width * 2)
+    drag_element.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='拽拖索引:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    index2_Input = tkinter.Entry(top, width=width_B * 2)
-    index2_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    drag_element_index = tkinter.Entry(SCREEN, width=gui_width * 2)
+    drag_element_index.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='键入值:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    key_Input = tkinter.Entry(top, width=width_B * 2)
-    key_Input.grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    type_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+    type_value.grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
-        top,
+        SCREEN,
         text='运行时长:',
-        bg=bg,
-        fg=fg,
+        bg=bg_color,
+        fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    run_time = tkinter.Entry(top, width=width_B * 2)
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row)
+    run_time = tkinter.Entry(SCREEN, width=gui_width * 2)
     run_time.grid(
-        column=a_x +
+        column=column +
         1,
-        row=a_y,
+        row=row,
         columnspan=2,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='点击左键',
-        command=lambda: Page_Parser_addActionFunc3('click'),
+        command=lambda: third_add_action_func('click'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='双击左键',
-        command=lambda: Page_Parser_addActionFunc3('double_click'),
+        command=lambda: third_add_action_func('double_click'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='点击右键',
-        command=lambda: Page_Parser_addActionFunc3('click_right'),
+        command=lambda: third_add_action_func('click_right'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='按住左键',
-        command=lambda: Page_Parser_addActionFunc3('click_and_hold'),
+        command=lambda: third_add_action_func('click_and_hold'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='松开左键',
-        command=lambda: Page_Parser_addActionFunc3('release'),
+        command=lambda: third_add_action_func('release'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='拽托元素',
-        command=lambda: Page_Parser_addActionFunc2('drag_and_drop'),
+        command=lambda: second_add_action_func('drag_and_drop'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='移动鼠标',
-        command=lambda: Page_Parser_addActionFunc3('move'),
+        command=lambda: third_add_action_func('move'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='按下按键',
-        command=lambda: Page_Parser_addActionFunc3('key_down'),
+        command=lambda: third_add_action_func('key_down'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='抬起按键',
-        command=lambda: Page_Parser_addActionFunc3('key_up'),
+        command=lambda: third_add_action_func('key_up'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    Special_keys = tkinter.IntVar()
-    a_y += 1
+    is_special_keys = tkinter.IntVar()
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='发送文本到焦点',
-        command=lambda: Page_Parser_addActionFunc3('send_keys'),
+        command=lambda: third_add_action_func('send_keys'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='发送文本',
-        command=lambda: Page_Parser_addActionFunc3('send_keys_to_element'),
+        command=lambda: third_add_action_func('send_keys_to_element'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Checkbutton(
-        top,
-        bg=bg,
-        fg=fg,
-        activebackground=bg,
-        activeforeground=fg,
-        selectcolor=bg,
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
         text='转换为特殊按钮',
-        variable=Special_keys).grid(
-        column=a_x + 2,
-        row=a_y,
+        variable=is_special_keys).grid(
+        column=column + 2,
+        row=row,
         sticky=tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='生成动作链',
-        command=lambda: Page_Parser_addActionFunc3('make_ActionChains'),
+        command=lambda: third_add_action_func('make_ActionChains'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='运行动作链',
-        command=lambda: Page_Parser_addActionFunc3('ActionChains_run'),
+        command=lambda: third_add_action_func('ActionChains_run'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
         columnspan=2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获取当前窗口',
-        command=lambda: Page_Parser_addActionFunc('get_now_windows'),
+        command=lambda: first_add_action_func('get_now_windows'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='获取所有窗口',
-        command=lambda: Page_Parser_addActionFunc('get_all_windows'),
+        command=lambda: first_add_action_func('get_all_windows'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='切换窗口',
-        command=lambda: Page_Parser_addActionFunc('switch_to_windwos'),
+        command=lambda: first_add_action_func('switch_to_windwos'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='暴力等待',
-        command=lambda: Page_Parser_addActionFunc('wait_sleep'),
+        command=lambda: first_add_action_func('wait_sleep'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='元素检查等待',
-        command=lambda: Page_Parser_addActionFunc('set_wait'),
+        command=lambda: first_add_action_func('set_wait'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='运行js',
-        command=lambda: Page_Parser_addActionFunc('run_JS'),
+        command=lambda: first_add_action_func('run_JS'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='页面后退',
-        command=lambda: Page_Parser_addActionFunc('back'),
+        command=lambda: first_add_action_func('back'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
+        width=gui_width,
+        height=gui_height).grid(
+        column=column,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='页面刷新',
-        command=lambda: Page_Parser_addActionFunc('refresh'),
+        command=lambda: first_add_action_func('refresh'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         1,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
     tkinter.Button(
-        top,
-        bg=bbg,
-        fg=fg,
+        SCREEN,
+        bg=buttom_bg_color,
+        fg=word_color,
         text='页面前进',
-        command=lambda: Page_Parser_addActionFunc('forward'),
+        command=lambda: first_add_action_func('forward'),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
+        width=gui_width,
+        height=gui_height).grid(
+        column=column +
         2,
-        row=a_y,
+        row=row,
         sticky=tkinter.E +
         tkinter.W)
 
-    top.update()  # 要预先update一下，否则会卡住
-    global url, loader, Page_Parser, DataBase, save_dir
+    SCREEN.update()  # 要预先update一下，否则会卡住
+    global url, loader, page_parser, database, save_dir
     save_dir = askdirectory(title='选择项目位置')  # 项目位置
     url = Crawler_controller.url(save_dir, save_dir)  # url管理器
-    loader = Crawler_controller.Page_Downloader(url, save_dir)  # 页面下载器
-    Page_Parser = Crawler_controller.Page_Parser(loader)  # 页面解析器
-    DataBase = Crawler_controller.data_base  # 数据库
+    loader = Crawler_controller.PageDownloader(url, save_dir)  # 页面下载器
+    page_parser = Crawler_controller.PageParser(loader)  # 页面解析器
+    database = Crawler_controller.data_base  # 数据库
 
-    top.mainloop()
+    SCREEN.mainloop()
     # 关闭操作
     loader.stop()
-    DataBase.close_all()
+    database.close_all()
     url.close()
     loader.close()
 
 
-def to_Database(is_tag=True):
-    global VarIndex_Input, Var_Input, Data_Input, Page_Parser
+def to_database(is_tag=True):
+    global object_index, operation_object, data_format, page_parser
     try:
-        index = eval(VarIndex_Input.get(), {})
+        index = eval(object_index.get(), {})
     except BaseException:
         index = slice(None, None)
     if is_tag:
-        func = Page_Parser.to_Database
+        func = page_parser.to_Database
     else:
-        func = Page_Parser.to_Database_by_re
+        func = page_parser.to_Database_by_re
     func(
-        element_value=Var_Input.get(),
+        element_value=operation_object.get(),
         index=index,
-        data=Data_Input.get(),
-        dataBase_name=get_DataBase_Name())
-    Update_Parser_Func_BOX()
+        data=data_format.get(),
+        dataBase_name=get_datadase_name())
+    update_parser_func_box()
 
 
 def close():
-    global DataBase
-    name = get_DataBase_Name()
-    DataBase.close(name)
-    update_DataBase_BOX()
+    global database
+    name = get_datadase_name()
+    database.close(name)
+    update_database_box()
 
 
 def out():
-    global save_dir, DataBase
-    name = get_DataBase_Name()
-    DataBase.out(name, save_dir)
-    update_DataBase_BOX()
+    global save_dir, database
+    name = get_datadase_name()
+    database.out(name, save_dir)
+    update_database_box()
 
 
-def remove_DataBase():
-    global DataBase
-    name = get_DataBase_Name()
-    DataBase.rm_dataBase(name)
-    update_DataBase_BOX()
+def remove_database():
+    global database
+    name = get_datadase_name()
+    database.rm_database(name)
+    update_database_box()
 
 
-def add_DataBase():
-    global DataName_Input, DataBase
-    name = DataName_Input.get()
-    DataBase.add_DataBase(name)
-    update_DataBase_BOX()
+def add_database():
+    global database_name, database
+    name = database_name.get()
+    database.add_database(name)
+    update_database_box()
 
 
-def get_DataBase_Name():
-    global DataBase_BOX, DataBase_list
+def get_datadase_name():
+    global database_box, database_list
     try:
-        return DataBase_list[DataBase_BOX.curselection()[0]]
+        return database_list[database_box.curselection()[0]]
     except BaseException:
         try:
-            return DataBase_list[0]
+            return database_list[0]
         except BaseException:
             return None
 
 
-def update_DataBase_BOX():
-    global DataBase_BOX, DataBase_list
-    DataBase_list = DataBase.return_database()
-    DataBase_BOX.delete(0, tkinter.END)
-    DataBase_BOX.insert(tkinter.END, *DataBase_list)
+def update_database_box():
+    global database_box, database_list
+    database_list = database.return_database()
+    database_box.delete(0, tkinter.END)
+    database_box.insert(tkinter.END, *database_list)
 
 
-def update_Status(now_func, status, Value_BOX):
-    global Func_Output, Status_Output, FuncValue_BOX
-    Func_Output.set(now_func)
-    Status_Output.set(status)
-    FuncValue_BOX.delete(0, tkinter.END)
-    FuncValue_BOX.insert(0, *Value_BOX)
+def update_run_status(now_func, status, Value_BOX):
+    global now_running, status_output, variable_box
+    now_running.set(now_func)
+    status_output.set(status)
+    variable_box.delete(0, tkinter.END)
+    variable_box.insert(0, *Value_BOX)
 
 
-def tra_Attributes():
-    global Attributes_Dict
-    Attributes_Dict = {}
-    update_Attributes_BOX()
+def clean_attributes():
+    global attributes_dict
+    attributes_dict = {}
+    update_attributes_box()
 
 
-def del_Attributes():
-    global Attributes_BOX, Attributes_Dict
-    del Attributes_Dict[list(Attributes_Dict.keys())[
-        Attributes_BOX.curselection()[0]]]
-    update_Attributes_BOX()
+def del_attributes():
+    global attributes_box, attributes_dict
+    del attributes_dict[list(attributes_dict.keys())[
+        attributes_box.curselection()[0]]]
+    update_attributes_box()
 
 
-def add_Attributes():
-    global AttributesName_Input, AttributesValue_Input, attribute_re, Attributes_Dict
-    name = AttributesName_Input.get()
-    value = AttributesValue_Input.get()
+def add_attributes():
+    global attributes_name, attributes_value, attribute_regex, attributes_dict
+    name = attributes_name.get()
+    value = attributes_value.get()
     if name == '' or value == '':
         return False
-    value = re.compile(value) if bool(attribute_re.get()) else value
-    Attributes_Dict[name] = value
-    update_Attributes_BOX()
+    value = re.compile(value) if bool(attribute_regex.get()) else value
+    attributes_dict[name] = value
+    update_attributes_box()
 
 
-def update_Attributes_BOX():
-    global Attributes_BOX, Attributes_Dict
+def update_attributes_box():
+    global attributes_box, attributes_dict
     show = []
-    for i in Attributes_Dict:
-        show.append(f'{i} -> {Attributes_Dict[i]}')
-    Attributes_BOX.delete(0, tkinter.END)
-    Attributes_BOX.insert(tkinter.END, *show)
+    for i in attributes_dict:
+        show.append(f'{i} -> {attributes_dict[i]}')
+    attributes_box.delete(0, tkinter.END)
+    attributes_box.insert(tkinter.END, *show)
 
 
-def Func_Args3():  # 方法args统一转换(第三栏目)
-    global Special_keys, Chains_Input, element_value2_Input, index2_Input, run_time, Var_Input, VarIndex_Input, key_Input
+def third_func_args():  # 方法args统一转换(第三栏目)
+    global is_special_keys, chains, drag_element, drag_element_index, run_time, operation_object, object_index, type_value
     try:
-        index = int(VarIndex_Input.get())
+        index = int(object_index.get())
     except BaseException:
         index = 0
     try:
-        index2 = int(index2_Input.get())
+        index2 = int(drag_element_index.get())
     except BaseException:
         index2 = 0
     try:
@@ -2491,261 +2491,261 @@ def Func_Args3():  # 方法args统一转换(第三栏目)
     except BaseException:
         time = 1
     return dict(
-        Chains=Chains_Input.get(),
-        element_value=Var_Input.get(),
+        Chains=chains.get(),
+        element_value=operation_object.get(),
         index=index,
-        element_value2=element_value2_Input.get(),
+        element_value2=drag_element.get(),
         index2=index2,
         run_time=time,
         is_special_keys=bool(
-            Special_keys.get()),
-        key=key_Input.get())
+            is_special_keys.get()),
+        key=type_value.get())
 
 
-def Func_Args2():  # 方法args统一转换(第二栏目)
-    global CookiesName_Input, Cookies_Input, Tag_Input, Attributes_Dict, Var_Input, VarIndex_Input
-    global FindAllText_Input, text_re, limit_Input, recursive_Input, FindAllPATH_Input
+def second_func_args():  # 方法args统一转换(第二栏目)
+    global cookies_name_input, new_cookies, element_name, attributes_dict, operation_object, object_index
+    global find_text, text_regex, limit, is_recursive, find_path
     try:
-        index = eval(VarIndex_Input.get(), {})
+        index = eval(object_index.get(), {})
     except BaseException:
         index = slice(None, None)
     try:
-        cookies = eval(Cookies_Input.get(), {})
+        cookies = eval(new_cookies.get(), {})
     except BaseException:
         cookies = {}
     return dict(
-        element_value=Var_Input.get(),
+        element_value=operation_object.get(),
         index=index,
-        cookies_name=CookiesName_Input.get(),
+        cookies_name=cookies_name_input.get(),
         cookies=cookies,
-        tag=Tag_Input.get().split(','),
-        attribute=Attributes_Dict,
+        tag=element_name.get().split(','),
+        attribute=attributes_dict,
         text=re.compile(
-            FindAllText_Input.get()) if bool(
-            text_re.get()) else FindAllText_Input.get(),
-        limit=limit_Input.get(),
+            find_text.get()) if bool(
+            text_regex.get()) else find_text.get(),
+        limit=limit.get(),
         recursive=bool(
-                recursive_Input.get()),
-        path=FindAllPATH_Input.get())
+                is_recursive.get()),
+        path=find_path.get())
 
 
-def Func_Args():  # 方法args统一转换(不支持Frame)
-    global Var_Input, VarIndex_Input, Send_Input, UserPW_Input, SELE_Input, JS_Input, Time_Input
+def first_func_args():  # 方法args统一转换(不支持Frame)
+    global operation_object, object_index, send_text, password, select_object, js_code, wait_time
     try:
-        time = int(Time_Input.get())
+        time = int(wait_time.get())
     except BaseException:
         time = 2
     try:
-        index = int(VarIndex_Input.get())
+        index = int(object_index.get())
     except BaseException:
         index = 0
     return dict(
-        element_value=Var_Input.get(),
+        element_value=operation_object.get(),
         index=index,
-        text=Send_Input.get(),
-        User=UserPW_Input.get(),
-        Passwd=UserPW_Input.get(),
-        deselect=SELE_Input.get(),
-        JS=JS_Input.get(),
+        text=send_text.get(),
+        User=password.get(),
+        Passwd=password.get(),
+        deselect=select_object.get(),
+        JS=js_code.get(),
         time=time
     )
 
 
-def Page_Parser_addActionFunc3(func):
-    global Page_Parser
-    args = Func_Args3()
+def third_add_action_func(func):
+    global page_parser
+    args = third_func_args()
     FUNC = {
-        'make_ActionChains': Page_Parser.make_ActionChains,
-        'click': Page_Parser.ActionChains_click,
-        'double_click': Page_Parser.ActionChains_double_click,
-        'click_right': Page_Parser.ActionChains_click_right,
-        'click_and_hold': Page_Parser.ActionChains_click_and_hold,
-        'release': Page_Parser.ActionChains_release,
-        'drag_and_drop': Page_Parser.ActionChains_drag_and_drop,
-        'move': Page_Parser.ActionChains_move,
-        'key_down': Page_Parser.ActionChains_key_down,
-        'key_up': Page_Parser.ActionChains_key_up,
-        'send_keys_to_element': Page_Parser.ActionChains_send_keys_to_element,
-        'send_keys': Page_Parser.ActionChains_send_keys,
-        'ActionChains_run': Page_Parser.ActionChains_run}.get(
+        'make_ActionChains': page_parser.make_action_chains,
+        'click': page_parser.action_click,
+        'double_click': page_parser.action_double_click,
+        'click_right': page_parser.action_click_right,
+        'click_and_hold': page_parser.action_click_and_hold,
+        'release': page_parser.action_release,
+        'drag_and_drop': page_parser.action_drag_and_drop,
+        'move': page_parser.action_move,
+        'key_down': page_parser.action_key_down,
+        'key_up': page_parser.action_key_up,
+        'send_keys_to_element': page_parser.action_send_keys_to_element,
+        'send_keys': page_parser.action_send_keys,
+        'ActionChains_run': page_parser.action_run}.get(
         func,
-        Page_Parser.make_ActionChains)
+        page_parser.make_action_chains)
     FUNC(**args)
-    Update_Parser_Func_BOX()
+    update_parser_func_box()
 
 
-def Page_Parser_addActionFunc2(func):
-    global Page_Parser
-    args = Func_Args2()
+def second_add_action_func(func):
+    global page_parser
+    args = second_func_args()
     FUNC = {
-        'del_all_cookies': Page_Parser.del_all_cookies,
-        'del_cookies': Page_Parser.del_cookies,
-        'add_cookies': Page_Parser.add_cookies,
-        'update_cookies': Page_Parser.update_cookies,
-        'get_cookies': Page_Parser.get_cookies,
-        'get_all_cookies': Page_Parser.get_all_cookies,
-        'make_bs': Page_Parser.make_bs,
-        'findAll': Page_Parser.findAll,
-        'findAll_by_text': Page_Parser.findAll_by_text,
-        'get_children': Page_Parser.get_children,
-        'get_offspring': Page_Parser.get_offspring,
-        'get_up': Page_Parser.get_up,
-        'get_down': Page_Parser.get_down,
-        'get_by_path': Page_Parser.get_by_path,
-        'brothers': Page_Parser.get_brothers,
-        'png': Page_Parser.Webpage_snapshot,
-        'to_json': Page_Parser.to_json}.get(
+        'del_all_cookies': page_parser.del_all_cookies,
+        'del_cookies': page_parser.del_cookies,
+        'add_cookies': page_parser.add_cookies,
+        'update_cookies': page_parser.update_cookies,
+        'get_cookies': page_parser.get_cookies,
+        'get_all_cookies': page_parser.get_all_cookies,
+        'make_bs': page_parser.make_bs,
+        'findAll': page_parser.findAll,
+        'findAll_by_text': page_parser.findAll_by_text,
+        'get_children': page_parser.get_children,
+        'get_offspring': page_parser.get_offspring,
+        'get_up': page_parser.get_up,
+        'get_down': page_parser.get_down,
+        'get_by_path': page_parser.get_by_path,
+        'brothers': page_parser.get_brothers,
+        'png': page_parser.Webpage_snapshot,
+        'to_json': page_parser.to_json}.get(
         func,
-        Page_Parser.make_bs)
+        page_parser.make_bs)
     FUNC(**args)
-    Update_Parser_Func_BOX()
+    update_parser_func_box()
 
 
-def Page_Parser_addActionFunc(func):
-    global Page_Parser
-    args = Func_Args()
+def first_add_action_func(func):
+    global page_parser
+    args = first_func_args()
     FUNC = {
-        'send_keys': Page_Parser.send_keys,
-        'clear': Page_Parser.clear,
-        'click': Page_Parser.click,
-        'User_Passwd': Page_Parser.User_Passwd,
-        'accept': Page_Parser.accept,
-        'dismiss': Page_Parser.dismiss,
-        'submit': Page_Parser.submit,
-        'deselect_by_index': Page_Parser.deselect_by_index,
-        'deselect_by_value': Page_Parser.deselect_by_value,
-        'deselect_by_text': Page_Parser.deselect_by_text,
-        'select_by_index': Page_Parser.select_by_index,
-        'select_by_value': Page_Parser.select_by_value,
-        'select_by_text': Page_Parser.select_by_text,
-        'back': Page_Parser.back,
-        'forward': Page_Parser.forward,
-        'refresh': Page_Parser.refresh,
-        'wait_sleep': Page_Parser.wait_sleep,
-        'set_wait': Page_Parser.set_wait,
-        'run_JS': Page_Parser.run_JS,
-        'out': Page_Parser.out_html,
-        'get_Page': Page_Parser.to_text,
-        'get_all_windows': Page_Parser.get_all_windows,
-        'get_now_windows': Page_Parser.get_now_windows,
-        'switch_to_windwos': Page_Parser.switch_to_windwos}.get(
+        'send_keys': page_parser.send_keys,
+        'clear': page_parser.clear,
+        'click': page_parser.click,
+        'User_Passwd': page_parser.authentication,
+        'accept': page_parser.accept,
+        'dismiss': page_parser.dismiss,
+        'submit': page_parser.submit,
+        'deselect_by_index': page_parser.deselect_by_index,
+        'deselect_by_value': page_parser.deselect_by_value,
+        'deselect_by_text': page_parser.deselect_by_text,
+        'select_by_index': page_parser.select_by_index,
+        'select_by_value': page_parser.select_by_value,
+        'select_by_text': page_parser.select_by_text,
+        'back': page_parser.back,
+        'forward': page_parser.forward,
+        'refresh': page_parser.refresh,
+        'wait_sleep': page_parser.wait_sleep,
+        'set_wait': page_parser.set_wait,
+        'run_JS': page_parser.run_JS,
+        'out': page_parser.out_html,
+        'get_Page': page_parser.to_text,
+        'get_all_windows': page_parser.get_all_windows,
+        'get_now_windows': page_parser.get_now_windows,
+        'switch_to_windwos': page_parser.switch_to_windwos}.get(
         func,
-        Page_Parser.send_keys)
+        page_parser.send_keys)
     FUNC(**args)
-    Update_Parser_Func_BOX()
+    update_parser_func_box()
 
 
-def Page_Parser_addFrameFunc_FP(F=True):
-    global Page_Parser, search_Input
-    search = None if F else ''
-    Page_Parser.find_switch_to_frame(search, True)
-    Update_Parser_Func_BOX()
+def addFrameFunc_Father(is_main=True):
+    global page_parser, search_key
+    search = None if is_main else ''
+    page_parser.find_switch_to_frame(search, True)
+    update_parser_func_box()
 
 
-def Page_Parser_addFrameFunc_id():
-    global Page_Parser, search_Input
-    search = search_Input.get()
-    Page_Parser.find_switch_to_frame(search, True)
-    Update_Parser_Func_BOX()
+def addFrameFunc_id():
+    global page_parser, search_key
+    search = search_key.get()
+    page_parser.find_switch_to_frame(search, True)
+    update_parser_func_box()
 
 
-def Page_Parser_addFindFunc(func):
-    global search_all, search_Input, Page_Parser
+def addFindFunc(func):
+    global search_all, search_key, page_parser
     not_all = not(bool(search_all.get()))
-    search = search_Input.get()
+    search = search_key.get()
     FUNC = {
-        'id': Page_Parser.find_ID,
-        'name': Page_Parser.find_name,
-        'class': Page_Parser.find_class,
-        'xpath': Page_Parser.find_xpath,
-        'css': Page_Parser.find_css,
-        'tag': Page_Parser.find_tag_name,
-        'link': Page_Parser.find_link_text,
-        'partial_link': Page_Parser.find_partial_link_text,
-        'alert': Page_Parser.find_switch_to_alert,
-        'active_element': Page_Parser.find_switch_to_active_element,
-        'frame': Page_Parser.find_switch_to_frame}.get(
+        'id': page_parser.find_id,
+        'name': page_parser.find_name,
+        'class': page_parser.find_class,
+        'xpath': page_parser.find_xpath,
+        'css': page_parser.find_css,
+        'tag': page_parser.find_tag_name,
+        'link': page_parser.find_link_text,
+        'partial_link': page_parser.find_partial_link_text,
+        'alert': page_parser.find_switch_to_alert,
+        'active_element': page_parser.find_switch_to_active_element,
+        'frame': page_parser.find_switch_to_frame}.get(
         func,
-        Page_Parser.find_ID)
+        page_parser.find_id)
     FUNC(search, not_all=not_all)
-    Update_Parser_Func_BOX()
+    update_parser_func_box()
 
 
-def Del_Parser_Func():
-    global Page_Parser
+def del_parser_func():
+    global page_parser
     try:
-        index = Parser_Func_BOX.curselection()[0]
-        Page_Parser.del_func(index, True)
-        Update_Parser_Func_BOX()
+        index = parser_func_box.curselection()[0]
+        page_parser.del_func(index, True)
+        update_parser_func_box()
     except BaseException:
         pass
 
 
-def Tra_Parser_Func():
-    global Page_Parser
+def clean_parser_func():
+    global page_parser
     try:
-        Page_Parser.tra_func()
-        Update_Parser_Func_BOX()
+        page_parser.tra_func()
+        update_parser_func_box()
     except BaseException:
         pass
 
 
-def Update_Parser_Func_BOX():
-    global Parser_Func_BOX, Page_Parser
-    Parser_Func_BOX.delete(0, tkinter.END)
-    Parser_Func_BOX.insert(tkinter.END, *Page_Parser.return_func(False)[::-1])
+def update_parser_func_box():
+    global parser_func_box, page_parser
+    parser_func_box.delete(0, tkinter.END)
+    parser_func_box.insert(tkinter.END, *page_parser.return_filter_func(False)[::-1])
 
 
-def Update_cookies():
-    global cookies_BOX, cookies_list, cookies_Input
-    cookies = eval(cookies_Input.get(), {})
+def update_cookies():
+    global cookies_BOX, cookies_list, new_cookies
+    cookies = eval(new_cookies.get(), {})
     if cookies_fixed.get() == '0':
         return False
     try:
         name = cookies_list[cookies_BOX.curselection()[0]].get('name')
-        loader.update_cookies(name, cookies)
+        loader.monitoring_update_cookies(name, cookies)
         cookies_fixed.set('0')
     except BaseException:
         pass
 
 
-def Add_cookies():
-    global cookies_BOX, cookies_list, cookies_Input
-    cookies = eval(cookies_Input.get(), {})
+def add_cookies():
+    global cookies_BOX, cookies_list, new_cookies
+    cookies = eval(new_cookies.get(), {})
     if cookies_fixed.get() == '0':
         return False
     try:
-        loader.Add_cookies(cookies)
+        loader.monitoring_add_cookies(cookies)
         cookies_fixed.set('0')
     except BaseException:
         raise
 
 
-def Tra_cookies():
+def clean_cookies():
     global cookies_BOX, cookies_list
     if cookies_fixed.get() == '0':
         return False
     try:
-        loader.Tra_cookies()
+        loader.monitoring_clear_cookier()
         cookies_fixed.set('0')
     except BaseException:
         pass
 
 
-def Del_cookies():
+def del_cookies():
     global cookies_BOX, cookies_list
     if cookies_fixed.get() == '0':
         return False
     try:
         name = cookies_list[cookies_BOX.curselection()[0]].get('name')
         print(name)
-        loader.Del_cookies(name)
+        loader.monitoring_del_cookies(name)
         cookies_fixed.set('0')
     except BaseException:
         pass
 
 
-def cookies_BOX_Update(cookies):
+def update_cookies_box(cookies):
     global cookies_BOX, cookies_list
     if cookies_fixed.get() == '0':
         cookies_list = cookies
@@ -2753,90 +2753,90 @@ def cookies_BOX_Update(cookies):
         cookies_BOX.insert(0, *cookies)
 
 
-def Crawler_Stop():
-    global startLoader_Stop
-    startLoader_Stop = False
+def crawler_stop():
+    global start_loader_stop
+    start_loader_stop = False
     loader.stop()
 
 
-def Crawler_Run():
-    global startLoader_Stop
+def crawler_run():
+    global start_loader_stop
 
     def startLoader():
-        global loader, Page_Parser, url, startLoader_Stop
+        global loader, page_parser, url, start_loader_stop
         loader.stop()  # 把之前的停止
-        while startLoader_Stop:
-            if url.finish():
+        while start_loader_stop:
+            if url.is_finish():
                 break
-            loader.strat_urlGet(func_cookie=cookies_BOX_Update)
-            update_URLBOX()
-            Page_Parser.Element_interaction(update_Status)
+            loader.start_to_run(func_cookie=update_cookies_box)
+            update_url_box()
+            page_parser.element_interaction(update_run_status)
         loader.stop()
 
-    startLoader_Stop = True
+    start_loader_stop = True
     new = threading.Thread(target=startLoader)
     new.start()
-    update_URLBOX()
+    update_url_box()
 
 
-def startDownloader():
+def crawler_run_one():
     def startLoader():
-        global loader, Page_Parser
-        loader.strat_urlGet(func_cookie=cookies_BOX_Update)
-        update_URLBOX()
-        Page_Parser.Element_interaction(update_Status)
+        global loader, page_parser
+        loader.start_to_run(func_cookie=update_cookies_box)
+        update_url_box()
+        page_parser.element_interaction(update_run_status)
         loader.stop()
 
     new = threading.Thread(target=startLoader)
     new.start()
 
 
-def add_filter_func_HTTPS():
+def add_filter_func_https():
     global url
-    url.Add_func(lambda url: re.match(re.compile('^https://'), url), 'HTTPS过滤')
-    update_Func_BOX()
+    url.add_filter_func(lambda url: re.match(re.compile('^https://'), url), 'HTTPS过滤')
+    update_filter_func_box()
 
 
-def add_filter_func_WWW():
+def add_filter_func_www():
     global url
-    url.Add_func(lambda url: re.match(re.compile(r'.*www\.'), url), 'www过滤')
-    update_Func_BOX()
+    url.add_filter_func(lambda url: re.match(re.compile(r'.*www\.'), url), 'www过滤')
+    update_filter_func_box()
 
 
-def del_func():
-    global URL_BOX
-    index = Func_BOX.curselection()[0]
-    url.Del_func(index)
-    update_Func_BOX()
+def del_filter_func():
+    global url_box
+    index = filter_func_box.curselection()[0]
+    url.del_filter_func(index)
+    update_filter_func_box()
 
 
-def update_Func_BOX():
-    global url, Func_BOX
-    Func_BOX.delete(0, tkinter.END)
-    Func_BOX.insert(tkinter.END, *url.return_func())
+def update_filter_func_box():
+    global url, filter_func_box
+    filter_func_box.delete(0, tkinter.END)
+    filter_func_box.insert(tkinter.END, *url.return_filter_func())
 
 
 def del_url():
-    global URL_BOX
-    index = URL_BOX.curselection()[0]
+    global url_box
+    index = url_box.curselection()[0]
     url.del_url(index)
-    update_URLBOX()
+    update_url_box()
 
 
-def add_args():
-    global URL_ARGS, UA_Input, use_Cookies_Input, FUNC_Input, DATA_Input, TimeOut_Input
+def get_url_parameter():
+    global url_parameter, user_agent_input, applied_cookies, mode_input, requests_data, time_out
     try:
-        data = eval(DATA_Input.get(), {})
+        data = eval(requests_data.get(), {})
     except BaseException:
         data = {}
     try:
-        TimeOut = int(TimeOut_Input.get())
+        TimeOut = int(time_out.get())
     except BaseException:
         TimeOut = 5
     re = dict(
-        func=FUNC_Input.get(),
-        UA=UA_Input.get(),
-        cookies=use_Cookies_Input.get(),
+        func=mode_input.get(),
+        UA=user_agent_input.get(),
+        cookies=applied_cookies.get(),
         data=data,
         time_out=TimeOut
     )
@@ -2849,36 +2849,36 @@ def add_args():
         'no_img',
         'new']
     for i in range(len(name)):
-        re[name[i]] = bool(URL_ARGS[i].get())
+        re[name[i]] = bool(url_parameter[i].get())
     return re
 
 
 def add_url():
-    global URL_Input, url
-    args = add_args()
-    new_url = URL_Input.get()
+    global url_input, url
+    args = get_url_parameter()
+    new_url = url_input.get()
     if new_url == '':
         return
     url.add_url(new_url, **args)
-    update_URLBOX()
+    update_url_box()
 
 
 def add_url_from_tag():
-    global URLTAG_Input, Page_Parser, Var_Input
+    global url_tag, page_parser, operation_object
     try:
-        index = eval(VarIndex_Input.get(), {})
+        index = eval(object_index.get(), {})
     except BaseException:
         index = slice(None, None)
-    Page_Parser.add_url(
-        element_value=Var_Input.get(),
+    page_parser.add_url(
+        element_value=operation_object.get(),
         index=index,
-        url_name=URLTAG_Input.get(),
-        update_func=update_URLBOX,
-        url_args=add_args())
-    Update_Parser_Func_BOX()
+        url_name=url_tag.get(),
+        update_func=update_url_box,
+        url_args=get_url_parameter())
+    update_parser_func_box()
 
 
-def update_URLBOX():
-    global url, URL_BOX
-    URL_BOX.delete(0, tkinter.END)
-    URL_BOX.insert(tkinter.END, *url.return_url())
+def update_url_box():
+    global url, url_box
+    url_box.delete(0, tkinter.END)
+    url_box.insert(tkinter.END, *url.return_url())

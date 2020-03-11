@@ -39,17 +39,17 @@ class Database:
                 f.write(g.read())
 
 
-class DataBase_Home:  # data base控制器
+class DatabaseController:  # data base控制器
     def __init__(self):
         self.database = {}
 
-    def add_DataBase(self, name):  # 添加数据表
+    def add_database(self, name):  # 添加数据表
         self.database[name] = Database(name)
 
     def add_new(self, name, data):  # 添加新内容
         database = self.database.get(name)
         if database is None:
-            self.add_DataBase(name)
+            self.add_database(name)
             database = self.database.get(name)
         database.add_new(data)
 
@@ -65,7 +65,7 @@ class DataBase_Home:  # data base控制器
             self.database[i].close()
         self.database = {}
 
-    def rm_dataBase(self, name):  # 删除数据表
+    def rm_database(self, name):  # 删除数据表
         self.database[name].remove()
         del self.database[name]
 
