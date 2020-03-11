@@ -40,18 +40,18 @@ class FunctionExpression:
         return eval(self.FUNC, self.NAME)
 
 
-def determine():
-    global HS_Input, HS, help_doc
-    Input = HS_Input.get().replace(' ', '')
+def custom():
+    global func_input, func, help_doc
+    Input = func_input.get().replace(' ', '')
     if Input:
         if tkinter.messagebox.askokcancel(
-                '提示', f'是否确认生成自定义函数:\n{HS_Input.get()}\n(点击取消可撤销未执行的制造函数)'):
-            HS = FunctionExpression(HS_Input.get())
+                '提示', f'是否确认生成自定义函数:\n{func_input.get()}\n(点击取消可撤销未执行的制造函数)'):
+            func = FunctionExpression(func_input.get())
         else:
-            HS = None
+            func = None
     else:
         if tkinter.messagebox.askokcancel('提示', f'点击确定撤销为执行的制造函数'):
-            HS = None
+            func = None
 
 
 def get_help():
@@ -59,27 +59,27 @@ def get_help():
 
 
 def make_func():
-    global HS_Input, HS, top
-    HS = None
-    top = tkinter.Tk()  # 设置屏幕
-    top.title('')
-    top.resizable(width=False, height=False)
-    top.geometry(f'+350+10')
+    global func_input, func, SCREEN
+    func = None
+    SCREEN = tkinter.Tk()  # 设置屏幕
+    SCREEN.title('')
+    SCREEN.resizable(width=False, height=False)
+    SCREEN.geometry(f'+350+10')
     button = tkinter.Button(
-        top,
+        SCREEN,
         text="制造函数",
-        command=determine,
+        command=custom,
         width=28,
         height=1)  # 收到消息执行这个函数
     help = tkinter.Button(
-        top,
+        SCREEN,
         text="帮助",
         command=get_help,
         width=28,
         height=1)  # 帮助菜单
-    HS_Input = tkinter.Entry(top)
-    HS_Input.pack(fill=tkinter.BOTH)
+    func_input = tkinter.Entry(SCREEN)
+    func_input.pack(fill=tkinter.BOTH)
     button.pack()
     help.pack()
-    top.mainloop()
-    return HS
+    SCREEN.mainloop()
+    return func

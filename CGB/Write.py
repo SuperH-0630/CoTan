@@ -5,24 +5,24 @@ import time
 import os
 
 # 定义一些变量
-PEN_C = [0, 0, 0]  # 画笔颜色
-Z_C = [0, 0, 255]
-J_C = [255, 0, 0]
-PEN_THICKNESS = 2  # 圆形的粗细（线条*2）=中笔
-m_x = None
-m_y = None  # 为画图所准备的
+pen_color = [0, 0, 0]  # 画笔颜色
+increasing_color = [0, 0, 255]
+subtraction_color = [255, 0, 0]
+pen_weight = 2  # 圆形的粗细（线条*2）=中笔
+previous_x = None
+previous_y = None  # 为画图所准备的
 continuous_draw = False  # 设置免按
-XY = 0
-axy = [0, 0, 0]  # 坐标系
-XY_x = 0
-XY_y = 0  # 原点坐标
-X_P = []  # X点
-Y_C = []  # Y点
-X_L = []  # X个数
-Y_L = []  # Y个数
-X_M = []
-Y_M = []
-_span = 60  # 坐标系跨度调节
+coordinate_system_drawing_method = 0
+coordinate_click_point = [0, 0, 0]  # 根据点击中键记录坐标系的点，没有记录则为数字0，记录则为数组
+record_origin_x = 0
+record_origin_y = 0  # 原点坐标
+horizontal_pixels = []  # X点
+ordinate_pixels = []  # Y点
+horizontal_scale = []  # X个数
+ordinate_scale = []  # Y个数
+anchor_x = []
+anchor_y = []
+span = 60  # 坐标系跨度调节
 
 middle_key = 0  # 中键模式
 line = []  # 画线列表
@@ -31,8 +31,8 @@ poly = []  # 画多边形列表
 
 tips = ''  # 设置备注
 
-BC_Dic = ''  # 保存路径
-Tip = [0, 0, 0, 0, 0]  # 底部显示信息[x,y,左键，中间，右键]
+save_dir = ''  # 保存路径
+bottom_tip = [0, 0, 0, 0, 0]  # 底部显示信息[x,y,左键，中间，右键]
 
 mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '线条矩形(s)',
         5: '绘制横线(k)', 6: '绘制竖线(l)', 7: '绘制多段线(j)',
@@ -40,210 +40,213 @@ mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '�
         11: '绘制虚线(q)', 12: '填充圆形(c)', 13: '线条圆形(v)', 14: '多边形(n-填充,m-线条)',
         15: '填充椭圆形(e)', 16: '线条椭圆形(r)', 0: 'None'}  # 快捷键名字
 
-# 绘制函数
 
-
-def func_draw(HS_list, JD=1000):
-    global X_P, X_L, Y_C, Y_L, Y_M, X_M, PEN_C, Z_C, J_C
+def func_draw(func_list, pixel_accuracy=1000):
+    global horizontal_pixels, horizontal_scale, ordinate_pixels, ordinate_scale, anchor_y, anchor_x, pen_color, increasing_color, subtraction_color
     c = [0, 0, 0]  # 增函数颜色
-    def X_Done(x): return (
-        x - X_L[0]) / (X_L[1] - X_L[0]) * (X_P[1] - X_P[0]) + X_P[0]  # x是数值,换算为像素
-    def Y_Done(y): return (
-        y - Y_L[0]) / (Y_L[1] - Y_L[0]) * (Y_C[1] - Y_C[0]) + Y_C[0]  # x是数值,换算为像素
-    for i in HS_list:
-        x1 = None  # 上一组X和Y
-        y1 = None
-        if HS_list is None:
+
+    def x_convert_pixels(x_coordinate):
+        return ((x_coordinate - horizontal_scale[0]) / (horizontal_scale[1] - horizontal_scale[0]) *
+                (horizontal_pixels[1] - horizontal_pixels[0]) + horizontal_pixels[0])
+
+    def y_convert_pixels(y_coordinate):
+        return ((y_coordinate - ordinate_scale[0]) / (ordinate_scale[1] - ordinate_scale[0]) *
+                (ordinate_pixels[1] - ordinate_pixels[0]) + ordinate_pixels[0])
+
+    for i in func_list:
+        last_x = None  # 上一组X和Y
+        last_y = None
+        if func_list is None:
             continue
-        D = HS_list[i]
+        func = func_list[i]
         try:
-            for x in range((X_L[0] - 1) * JD, (X_L[1] + 1) * JD, 1):
-                x /= JD
+            for x in range((horizontal_scale[0] - 1) * pixel_accuracy, (horizontal_scale[1] + 1) * pixel_accuracy, 1):
+                x /= pixel_accuracy
                 try:
-                    y = D(x)
+                    y = func(x)
                 except BaseException:
-                    x1 = None
-                    y1 = None
+                    last_x = None
+                    last_y = None
                     continue
                 try:
-                    x2 = X_Done(x)
-                    y2 = Y_Done(y)
-                    if y2 > Y_M[0] or y2 < Y_M[1] or x2 < X_M[0] or x2 > X_M[1]:
-                        x1 = None
-                        y1 = None
+                    now_x = x_convert_pixels(x)
+                    now_y = y_convert_pixels(y)
+                    if now_y > anchor_y[0] or now_y < anchor_y[1] or now_x < anchor_x[0] or now_x > anchor_x[1]:
+                        last_x = None
+                        last_y = None
                         continue
                 except TypeError:  # 预防复数
                     continue
-                if x1 is not None:
-                    if y1 > y2:
-                        c = Z_C  # 增函数
-                    elif y1 < y2:
-                        c = J_C  # 减函数#改为检查Y数值而不是坐标
+                if last_x is not None:
+                    if last_y > now_y:
+                        c = increasing_color  # 增函数
+                    elif last_y < now_y:
+                        c = subtraction_color  # 减函数#改为检查Y数值而不是坐标
                     pygame.draw.line(
-                        root, c, (int(x1), int(y1)), (int(x2), int(y2)), PEN_THICKNESS)
-                x1 = x2
-                y1 = y2
+                        SCREEN, c, (int(last_x), int(last_y)), (int(now_x), int(now_y)), pen_weight)
+                last_x = now_x
+                last_y = now_y
         except IndexError:
             break
 
-# 画曲线系统
+
+def draw_line(xy_coordinates:tuple, with_point=False):
+    global previous_x, previous_y
+    if with_point:
+        pygame.draw.circle(SCREEN, pen_color, xy_coordinates, pen_weight, 0)
+    if previous_x is not None:
+        pygame.draw.line(SCREEN, pen_color, (previous_x, previous_y), xy_coordinates, pen_weight)
+    previous_x = xy_coordinates[0]
+    previous_y = xy_coordinates[1]
 
 
-def draw_line(xy, c=False):  # c-是否带点
-    global m_x, m_y
-    if c:
-        pygame.draw.circle(root, PEN_C, xy, PEN_THICKNESS, 0)
-    if m_x is not None:
-        pygame.draw.line(root, PEN_C, (m_x, m_y), xy, PEN_THICKNESS)
-    m_x = xy[0]
-    m_y = xy[1]
-
-# 绘制XY坐标系
-
-
-def coordinate_draw(s_x, s_y, p=(-100, 100),
-                    c=(-200, 100), kd=10, b=3, jt=3, r=3):
-    kd = abs(kd)  # kd大于0
-    global PEN_THICKNESS, XY_x, XY_y, X_L, X_P, Y_L, Y_C, X_M, Y_M
-    XY_x = s_x
-    XY_y = s_y  # 存储原点坐标
-    X_M = [s_x + p[0], s_x + p[1]]
-    Y_M = [s_y + c[1], s_y + c[0]]
-    pygame.draw.circle(root, PEN_C, (s_x, s_y), r, 0)  # 绘制原点
+def coordinate_draw(origin_x, origin_y, x_interval=(-100, 100),  # 三个点中，两边的两个点距离原点距离的一个list
+                    y_interval=(-200, 100), scale_span=10, width=3, arrow=3, origin=3):
+    scale_span = abs(scale_span)  # kd大于0
+    global pen_weight, record_origin_x, record_origin_y, horizontal_scale, horizontal_pixels, ordinate_scale
+    global ordinate_pixels, anchor_x, anchor_y
+    record_origin_x = origin_x
+    record_origin_y = origin_y  # 存储原点坐标
+    anchor_x = [origin_x + x_interval[0], origin_x + x_interval[1]]  # 定位点
+    anchor_y = [origin_y + y_interval[1], origin_y + y_interval[0]]
+    pygame.draw.circle(SCREEN, pen_color, (origin_x, origin_y), origin, 0)  # 绘制原点
     pygame.draw.line(
-        root, PEN_C, (s_x + p[0], s_y), (s_x + p[1], s_y), PEN_THICKNESS)  # X轴，Y定
+        SCREEN, pen_color, (origin_x + x_interval[0], origin_y), (origin_x + x_interval[1], origin_y), pen_weight)
     pygame.draw.line(
-        root, PEN_C, (s_x, s_y + c[0]), (s_x, s_y + c[1]), PEN_THICKNESS)  # y轴，x定
-    _a = 0  # 刻度统计
-    _c = 0
-    for i in range(s_x, s_x + p[0], -kd):  # 右
-        _a -= 1
-        pygame.draw.line(root, PEN_C, (i, s_y + b), (i, s_y), PEN_THICKNESS)
-        _c = i
-    _b = 0
-    _d = 0
-    for i in range(s_x, s_x + p[1], kd):  # 刻度#左
-        _b += 1
-        pygame.draw.line(root, PEN_C, (i, s_y + b), (i, s_y), PEN_THICKNESS)
-        _d = i
-    X_L = [_a + 1, _b - 1]
-    X_P = [_c, _d]
-    _a = 0
-    _c = 0
-    for i in range(s_y, s_y + c[0], -kd):  # 上
-        _a += 1
-        pygame.draw.line(root, PEN_C, (s_x + b, i), (s_x, i), PEN_THICKNESS)
-        _c = i
-    _b = 0
-    _d = 0
-    for i in range(s_y, s_y + c[1], kd):  # 下
-        _b -= 1
-        pygame.draw.line(root, PEN_C, (s_x + b, i), (s_x, i), PEN_THICKNESS)
-        _d = i
-    Y_L = [_b + 1, _a - 1]
-    Y_C = [_d, _c]
+        SCREEN, pen_color, (origin_x, origin_y + y_interval[0]), (origin_x, origin_y + y_interval[1]), pen_weight)
+    negative_scale = 0  # 刻度统计
+    negative_pixels = 0
+    for i in range(origin_x, origin_x + x_interval[0], -scale_span):  # 右
+        negative_scale -= 1
+        pygame.draw.line(SCREEN, pen_color, (i, origin_y + width), (i, origin_y), pen_weight)
+        negative_pixels = i
+    positive_scale = 0
+    positive_pixels = 0
+    for i in range(origin_x, origin_x + x_interval[1], scale_span):  # 刻度#左
+        positive_scale += 1
+        pygame.draw.line(SCREEN, pen_color, (i, origin_y + width), (i, origin_y), pen_weight)
+        positive_pixels = i
+    horizontal_scale = [negative_scale + 1, positive_scale - 1]
+    horizontal_pixels = [negative_pixels, positive_pixels]
+    negative_scale = 0
+    negative_pixels = 0
+    for i in range(origin_y, origin_y + y_interval[0], -scale_span):  # 上
+        negative_scale += 1
+        pygame.draw.line(SCREEN, pen_color, (origin_x + width, i), (origin_x, i), pen_weight)
+        negative_pixels = i
+    positive_scale = 0
+    positive_pixels = 0
+    for i in range(origin_y, origin_y + y_interval[1], scale_span):  # 下
+        positive_scale -= 1
+        pygame.draw.line(SCREEN, pen_color, (origin_x + width, i), (origin_x, i), pen_weight)
+        positive_pixels = i
+    ordinate_scale = [positive_scale + 1, negative_scale - 1]
+    ordinate_pixels = [positive_pixels, negative_pixels]
 
     # 箭头
     pygame.draw.line(
-        root,
-        PEN_C,
-        (s_x + p[1],
-         s_y),
-        (s_x + p[1] - jt,
-         s_y + jt),
-        PEN_THICKNESS)  # X上
+        SCREEN,
+        pen_color,
+        (origin_x + x_interval[1],
+         origin_y),
+        (origin_x + x_interval[1] - arrow,
+         origin_y + arrow),
+        pen_weight)  # X上
     pygame.draw.line(
-        root,
-        PEN_C,
-        (s_x + p[1],
-         s_y),
-        (s_x + p[1] - jt,
-         s_y - jt),
-        PEN_THICKNESS)  # X下
+        SCREEN,
+        pen_color,
+        (origin_x + x_interval[1],
+         origin_y),
+        (origin_x + x_interval[1] - arrow,
+         origin_y - arrow),
+        pen_weight)  # X下
 
     pygame.draw.line(
-        root,
-        PEN_C,
-        (s_x,
-         s_y + c[0]),
-        (s_x - jt,
-         s_y + c[0] + jt),
-        PEN_THICKNESS)  # y左
+        SCREEN,
+        pen_color,
+        (origin_x,
+         origin_y + y_interval[0]),
+        (origin_x - arrow,
+         origin_y + y_interval[0] + arrow),
+        pen_weight)  # y左
     pygame.draw.line(
-        root,
-        PEN_C,
-        (s_x,
-         s_y + c[0]),
-        (s_x + jt,
-         s_y + c[0] + jt),
-        PEN_THICKNESS)  # X下
+        SCREEN,
+        pen_color,
+        (origin_x,
+         origin_y + y_interval[0]),
+        (origin_x + arrow,
+         origin_y + y_interval[0] + arrow),
+        pen_weight)  # X下
 
 
 def top_draw():
     # 绘制顶部
-    global PEN_THICKNESS, Font, Tip, Screen_x, Screen_y, middle_key, BC_Dic, mode, continuous_draw, XY_x, XY_y, tips, line, rect, poly, PEN_C, Z_C, J_C, axy, _span
+    global pen_weight, FONT, bottom_tip, SCREEN_X, SCREEN_Y, middle_key, save_dir, mode, continuous_draw, tips, line
+    global record_origin_x, record_origin_y, rect, poly, pen_color, increasing_color, subtraction_color
+    global coordinate_click_point, span
     if continuous_draw:
-        mod_d = '启动无点击画线(点击d关闭)'
+        key_d = '启动无点击画线(点击d关闭)'
     else:
-        mod_d = '关闭无点击画线'
-    pygame.draw.rect(root, [255, 255, 255], [0, 0, Screen_x, 16], 0)
+        key_d = '关闭无点击画线'
+    pygame.draw.rect(SCREEN, [255, 255, 255], [0, 0, SCREEN_X, 16], 0)
     pygame.draw.rect(
-        root, [
+        SCREEN, [
             255, 255, 255], [
-            0, Screen_y - 16, Screen_x, Screen_y], 0)
-    p = ''
+            0, SCREEN_Y - 16, SCREEN_X, SCREEN_Y], 0)
+    point = ''
     if middle_key == 0:
         tips = ''
-    if axy != [0, 0, 0]:
+    if coordinate_click_point != [0, 0, 0]:
         a = []
-        for i in axy:
+        for i in coordinate_click_point:
             if i != 0:
                 a.append(i)
-        p += f'坐标端点:{str(a)}  '
+        point += f'坐标端点:{str(a)}  '
     if line:
-        p += f'端点:{str(line)}  '
+        point += f'端点:{str(line)}  '
     if rect:
-        p += f'顶点(圆心):{str(rect)}  '
+        point += f'顶点(圆心):{str(rect)}  '
     if poly:
-        p += f'多顶点:{str(poly)}  '
+        point += f'多顶点:{str(poly)}  '
     if continuous_draw or middle_key != 0:
-        TIP3 = Font.render(
-            f'模式:{mod_d} , {mode[middle_key]} {tips}', True, (0, 0, 0))
+        model_tip = FONT.render(
+            f'模式:{key_d} , {mode[middle_key]} {tips}', True, (0, 0, 0))
     else:
         s = ''
-        if BC_Dic:
-            s = f'保存路径（w）:{BC_Dic}'
-        TIP3 = Font.render(
+        if save_dir:
+            s = f'保存路径（w）:{save_dir}'
+        model_tip = FONT.render(
             f'{time.strftime("%Y/%m/%d  %I:%M")}  {s}', True, (0, 0, 0))
-        p = ''
-    if p == '':
-        p = f'主色调:{PEN_C} 增函数颜色:{Z_C} 减函数颜色:{J_C}'
-    TIP = Font.render(f'鼠标:{Tip[0]},{Tip[1]}', True, (0, 0, 0))
-    TIP2 = Font.render(
-        f'{Tip[2]},{Tip[3]},{Tip[4]} ; 大小:{PEN_THICKNESS} ; 原点:{XY_x},{XY_y} ; 跨度:{_span} ; {p}',
+        point = ''
+    if point == '':
+        point = f'主色调:{pen_color} 增函数颜色:{increasing_color} 减函数颜色:{subtraction_color}'
+    mouse_tip = FONT.render(f'鼠标:{bottom_tip[0]},{bottom_tip[1]}', True, (0, 0, 0))
+    status_tip = FONT.render(
+        f'{bottom_tip[2]},{bottom_tip[3]},{bottom_tip[4]} ; 大小:{pen_weight} ; 原点:{record_origin_x},{record_origin_y}'
+        f' ; 跨度:{span} ; {point}',
         True,
         (0,
          0,
          0))
-    root.blit(TIP, (0, 0))
-    root.blit(TIP2, (100, 0))
-    root.blit(TIP3, (0, Screen_y - 16))
-
-# 主程序
+    SCREEN.blit(mouse_tip, (0, 0))
+    SCREEN.blit(status_tip, (100, 0))
+    SCREEN.blit(model_tip, (0, SCREEN_Y - 16))
 
 
 def draw_main(dis_x=900, dis_y=700):
-    global m_x, m_y, PEN_C, PEN_THICKNESS, BG, XY, axy, XY_x, XY_y, _span, line, continuous_draw, middle_key, rect, poly, root, root_caption, done, m_x, m_y, BC_Dic  # 定义全局变量
-    global Z_C, J_C, Tip, Font, Screen_x, Screen_y, tips, Font
-    Screen_x = dis_x
-    Screen_y = dis_y
-    done = pygame.init()  # 初始化所有模块
-    if done[1] != 0:
+    global previous_x, previous_y, pen_color, pen_weight, background, coordinate_system_drawing_method, coordinate_click_point, record_origin_x
+    global record_origin_y, span, line
+    global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir  # 定义全局变量
+    global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips, FONT
+    SCREEN_X = dis_x
+    SCREEN_Y = dis_y
+    init_done = pygame.init()  # 初始化所有模块
+    if init_done[1] != 0:
         print('Init!')  # 检查是否错误
-    Font = pygame.font.Font(r'Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
-    root = pygame.display.set_mode((dis_x, dis_y), 0)  # 创建屏幕
-    root_caption = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
-    root.fill([255, 255, 255])  # 默认用白色填充窗口
+    FONT = pygame.font.Font(r'Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
+    SCREEN = pygame.display.set_mode((dis_x, dis_y), 0)  # 创建屏幕
+    SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
+    SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
     flat = True  # 循环条件（不是全局）
     while flat:
         top_draw()
@@ -254,88 +257,88 @@ def draw_main(dis_x=900, dis_y=700):
                 flat = False
                 break
             elif event.type == MOUSEMOTION:  # 鼠标移动事件
-                Tip[0], Tip[1] = event.pos
-                Tip[2], Tip[3], Tip[4] = event.buttons
+                bottom_tip[0], bottom_tip[1] = event.pos
+                bottom_tip[2], bottom_tip[3], bottom_tip[4] = event.buttons
                 if event.buttons == (1, 0, 0):  # 左键点击
                     draw_line(event.pos)
                 elif event.buttons == (0, 0, 0):  # 无点击绘图（启动快捷键d）
                     if continuous_draw:
                         draw_line(event.pos)
                     else:  # m_x和m_y是指上一点的xy，用于画线系统
-                        m_x = None
-                        m_y = None
+                        previous_x = None
+                        previous_y = None
             elif event.type == MOUSEBUTTONDOWN:  # 鼠标按下
                 event.pos = list(event.pos)
                 if event.button == 3:  # 右键点击
-                    Tip[4] = 1
-                    pygame.image.save(root, '$CoTanCC.png')  # 保存当前环境
-                    root = pygame.display.set_mode(
+                    bottom_tip[4] = 1
+                    pygame.image.save(SCREEN, '$CoTanCC.png')  # 保存当前环境
+                    SCREEN = pygame.display.set_mode(
                         (dis_x, dis_y), pygame.NOFRAME)  # 隐藏关闭按钮
-                    bg = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
-                    root.blit(bg, (0, 0))  # 绘制位图
+                    background_image = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
+                    SCREEN.blit(background_image, (0, 0))  # 绘制位图
                     pygame.display.update()  # 更新屏幕
-                    g = tool_box()  # 启动工具箱
-                    root = pygame.display.set_mode((dis_x, dis_y), 0)  # 显示关闭按钮
-                    bg = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
-                    root.blit(bg, (0, 0))  # 绘制位图
+                    tool_set = tool_box()  # 启动工具箱
+                    SCREEN = pygame.display.set_mode((dis_x, dis_y), 0)  # 显示关闭按钮
+                    background_image = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
+                    SCREEN.blit(background_image, (0, 0))  # 绘制位图
                     pygame.display.update()  # 更新屏幕
                     os.remove('$CoTanCC.png')
-                    if g[0] is not None:
-                        PEN_C = g[0]  # 设置颜色
-                    if g[1] is not None:
-                        PEN_THICKNESS = g[1]  # 设置笔的粗细
-                    if g[2] is not None:
-                        root.fill(g[2])  # 设置背景填充
-                    if g[3] == 1:  # 绘制坐标系
+                    if tool_set[0] is not None:
+                        pen_color = tool_set[0]  # 设置颜色
+                    if tool_set[1] is not None:
+                        pen_weight = tool_set[1]  # 设置笔的粗细
+                    if tool_set[2] is not None:
+                        SCREEN.fill(tool_set[2])  # 设置背景填充
+                    if tool_set[3] == 1:  # 绘制坐标系
                         tips = '选择坐标三个端点'
                         middle_key = 1
-                        XY = 3
-                        _span = 60
-                    elif g[3] == 2:  # 绘制坐标系2（小跨度）
+                        coordinate_system_drawing_method = 3
+                        span = 60
+                    elif tool_set[3] == 2:  # 绘制坐标系2（小跨度）
                         tips = '选择坐标三个端点'
                         middle_key = 1
-                        XY = 3
-                        _span = 20
-                    elif g[3] == 3:  # 绘制坐标系3（大跨度）
+                        coordinate_system_drawing_method = 3
+                        span = 20
+                    elif tool_set[3] == 3:  # 绘制坐标系3（大跨度）
                         tips = '选择坐标三个端点'
                         middle_key = 1
-                        XY = 3
-                        _span = 120  # 坐标系跨度（字定义跨度再下面）
+                        coordinate_system_drawing_method = 3
+                        span = 120  # 坐标系跨度（字定义跨度再下面）
                     else:
                         middle_key = 0
-                        XY = 0  # 恢复选项
-                    if g[6] is not None:
-                        Z_C = g[6]  # 增函数颜色（要在函数绘制之前设置好）
-                    if g[7] is not None:
-                        J_C = g[7]  # 减函数颜色
-                    if g[4] != {}:
-                        func_draw(g[4])  # 函数绘制
-                    if g[5] is not None:
-                        pygame.image.save(root, g[5])  # 保存当前环境
-                        BC_Dic = g[5]
-                    if g[8] is not None:
-                        _span = g[8]  # 自定义跨度
-                    if g[9] is not None:
+                        coordinate_system_drawing_method = 0  # 恢复选项
+                    if tool_set[6] is not None:
+                        increasing_color = tool_set[6]  # 增函数颜色（要在函数绘制之前设置好）
+                    if tool_set[7] is not None:
+                        subtraction_color = tool_set[7]  # 减函数颜色
+                    if tool_set[4] != {}:
+                        func_draw(tool_set[4])  # 函数绘制
+                    if tool_set[5] is not None:
+                        pygame.image.save(SCREEN, tool_set[5])  # 保存当前环境
+                        save_dir = tool_set[5]
+                    if tool_set[8] is not None:
+                        span = tool_set[8]  # 自定义跨度
+                    if tool_set[9] is not None:
                         try:
-                            bg_im = pygame.image.load(g[9]).convert()  # 加载位图
-                            root.blit(bg_im, (0, 0))  # 绘制位图
+                            bg_im = pygame.image.load(tool_set[9]).convert()  # 加载位图
+                            SCREEN.blit(bg_im, (0, 0))  # 绘制位图
                         except BaseException:
                             pass
                     # 恢复参数
-                    m_x = None
-                    m_y = None
+                    previous_x = None
+                    previous_y = None
                     continuous_draw = False
                     pygame.event.clear()
                 elif event.button == 2:  # 中键点击，ZJ是指中键的模式，来自快捷键和工具箱
-                    Tip[3] = 1
+                    bottom_tip[3] = 1
                     if middle_key == 1:  # 坐标系模式
                         tips = '选择下一个端点（共3个）'
-                        axy[XY - 1] = event.pos  # 存储
-                        XY -= 1
-                        if XY == 0:
+                        coordinate_click_point[coordinate_system_drawing_method - 1] = event.pos  # 存储
+                        coordinate_system_drawing_method -= 1
+                        if coordinate_system_drawing_method == 0:
                             x = []
                             y = []
-                            for i in axy:
+                            for i in coordinate_click_point:
                                 x.append(i[0])
                                 y.append(i[1])
                             x.sort()
@@ -344,18 +347,18 @@ def draw_main(dis_x=900, dis_y=700):
                             s_y = y[1]
                             p = (-abs(x[0] - x[1]), abs(x[1] - x[2]))
                             c = (-abs(y[0] - y[1]), abs(y[1] - y[2]))
-                            b = 2 * PEN_THICKNESS
-                            r = 2 * PEN_THICKNESS
-                            jt = 3 * PEN_THICKNESS
-                            coordinate_draw(s_x, s_y, p, c, _span, b, jt, r)
-                            axy = [0, 0, 0]
+                            b = 2 * pen_weight
+                            r = 2 * pen_weight
+                            jt = 3 * pen_weight
+                            coordinate_draw(s_x, s_y, p, c, span, b, jt, r)
+                            coordinate_click_point = [0, 0, 0]
                             middle_key = 0
                     elif middle_key == 2:  # 画线模式
                         line.append(event.pos)
                         # pygame.draw.circle(root, pen_C, event.pos, d, 0)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], line[1], PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], line[1], pen_weight)
                             middle_key = 0
                     elif middle_key == 3 or middle_key == 4:  # 画矩形模式
                         rect.append(event.pos)
@@ -367,69 +370,69 @@ def draw_main(dis_x=900, dis_y=700):
                             if middle_key == 3:
                                 dx = 0
                             else:
-                                dx = PEN_THICKNESS
+                                dx = pen_weight
                             pygame.draw.rect(
-                                root, PEN_C, [
+                                SCREEN, pen_color, [
                                     x[0], y[0], x[1] - x[0], y[1] - y[0]], dx)
                             middle_key = 0
                     elif middle_key == 5:  # 画横线模式
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[1][0], line[0][1]), PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], (line[1][0], line[0][1]), pen_weight)
                             middle_key = 0
                     elif middle_key == 6:  # 画竖线模式
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[0][0], line[1][1]), PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], (line[0][0], line[1][1]), pen_weight)
                             middle_key = 0
                     elif middle_key == 7:  # 画线多段线
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], line[1], PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], line[1], pen_weight)
                             del line[0]
                     elif middle_key == 8:  # 画横线多段线
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[1][0], line[0][1]), PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], (line[1][0], line[0][1]), pen_weight)
                             pygame.draw.circle(
-                                root, PEN_C, (line[1][0], line[0][1]), PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, (line[1][0], line[0][1]), pen_weight * 2, 0)
                             del line[1]
                         else:
                             pygame.draw.circle(
-                                root, PEN_C, event.pos, PEN_THICKNESS, 0)
+                                SCREEN, pen_color, event.pos, pen_weight, 0)
                     elif middle_key == 9:  # 画竖线多段线
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[0][0], line[1][1]), PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], (line[0][0], line[1][1]), pen_weight)
                             pygame.draw.circle(
-                                root, PEN_C, (line[0][0], line[1][1]), PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, (line[0][0], line[1][1]), pen_weight * 2, 0)
                             del line[1]
                         else:
                             pygame.draw.circle(
-                                root, PEN_C, event.pos, PEN_THICKNESS, 0)
+                                SCREEN, pen_color, event.pos, pen_weight, 0)
                     elif middle_key == 10:  # 画竖线和横线多段线
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[1][0], line[0][1]), PEN_THICKNESS)  # 横线
+                                SCREEN, pen_color, line[0], (line[1][0], line[0][1]), pen_weight)  # 横线
                             pygame.draw.circle(
-                                root, PEN_C, (line[1][0], line[0][1]), PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, (line[1][0], line[0][1]), pen_weight * 2, 0)
                             pygame.draw.circle(
-                                root, PEN_C, (line[1][0], line[1][1]), PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, (line[1][0], line[1][1]), pen_weight * 2, 0)
                             pygame.draw.line(
-                                root, PEN_C, line[0], (line[0][0], line[1][1]), PEN_THICKNESS)  # 竖线
+                                SCREEN, pen_color, line[0], (line[0][0], line[1][1]), pen_weight)  # 竖线
                             pygame.draw.circle(
-                                root, PEN_C, (line[0][0], line[1][1]), PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, (line[0][0], line[1][1]), pen_weight * 2, 0)
                             # 垂直于横线的虚线
                             p = sorted([line[1][1], line[0][1]])
-                            Y1 = p[0]
-                            Y2 = p[1]
-                            a = list(range(Y1, Y2, 10))
+                            y1 = p[0]
+                            y2 = p[1]
+                            a = list(range(y1, y2, 10))
                             for i in range(
                                     int(len(a) / 2)):  # 向下取整，可用math.ceil代替
                                 i += 1
@@ -437,13 +440,13 @@ def draw_main(dis_x=900, dis_y=700):
                                 y1 = a[i - 1]  # 计算两点的y坐标
                                 y2 = a[i]
                                 pygame.draw.line(
-                                    root, PEN_C, (line[1][0], y1), (line[1][0], y2), PEN_THICKNESS)  # 横线
+                                    SCREEN, pen_color, (line[1][0], y1), (line[1][0], y2), pen_weight)  # 横线
                             # 垂直于竖线的虚线
                             p = [line[1][0], line[0][0]]
                             p.sort()
-                            X1 = p[0]
-                            X2 = p[1]
-                            a = list(range(X1, X2, 10))
+                            x1 = p[0]
+                            x2 = p[1]
+                            a = list(range(x1, x2, 10))
                             for i in range(
                                     int(len(a) / 2)):  # 向下取整，可用math.ceil代替
                                 i += 1
@@ -451,15 +454,15 @@ def draw_main(dis_x=900, dis_y=700):
                                 x1 = a[i - 1]  # 计算两点的x坐标
                                 x2 = a[i]
                                 pygame.draw.line(
-                                    root, PEN_C, (x1, line[1][1]), (x2, line[1][1]), PEN_THICKNESS)  # 横线
+                                    SCREEN, pen_color, (x1, line[1][1]), (x2, line[1][1]), pen_weight)  # 横线
                             del line[1]
                         else:
                             pygame.draw.circle(
-                                root, PEN_C, event.pos, PEN_THICKNESS, 0)
+                                SCREEN, pen_color, event.pos, pen_weight, 0)
                     elif middle_key == 11:  # 画虚线线模式
                         line.append(event.pos)
                         pygame.draw.circle(
-                            root, PEN_C, event.pos, PEN_THICKNESS, 0)
+                            SCREEN, pen_color, event.pos, pen_weight, 0)
                         if len(line) == 2:
                             if abs(line[0][0] - line[1][0]) >= 100:
                                 p1 = [line[0][0], line[1][0]]
@@ -467,45 +470,45 @@ def draw_main(dis_x=900, dis_y=700):
                                     line[0][0]: line[0][1],
                                     line[1][0]: line[1][1]}
                                 p1.sort()
-                                X1 = p1[0]
-                                Y1 = p2[X1]
-                                X2 = p1[1]
-                                Y2 = p2[X2]
-                                a = list(range(X1, X2, 10))
+                                x1 = p1[0]
+                                y1 = p2[x1]
+                                x2 = p1[1]
+                                y2 = p2[x2]
+                                a = list(range(x1, x2, 10))
                                 for i in range(
                                         int(len(a) / 2)):  # 向下取整，可用math.ceil代替
                                     i += 1
                                     i = 2 * i - 1
                                     x1 = a[i - 1]  # 计算两点的x坐标
                                     x2 = a[i]
-                                    y1 = (x1 - X1) / (X2 - X1) * (Y2 - Y1) + Y1
-                                    y2 = (x2 - X1) / (X2 - X1) * (Y2 - Y1) + Y1
+                                    y1 = (x1 - x1) / (x2 - x1) * (y2 - y1) + y1
+                                    y2 = (x2 - x1) / (x2 - x1) * (y2 - y1) + y1
                                     pygame.draw.line(
-                                        root, PEN_C, (x1, y1), (x2, y2), PEN_THICKNESS)  # 横线
+                                        SCREEN, pen_color, (x1, y1), (x2, y2), pen_weight)  # 横线
                             elif abs(line[0][1] - line[1][1]) >= 100:
                                 p1 = [line[0][1], line[1][1]]
                                 p2 = {
                                     line[0][1]: line[0][0],
                                     line[1][1]: line[1][0]}
                                 p1.sort()
-                                Y1 = p1[0]
-                                X1 = p2[Y1]
-                                Y2 = p1[1]
-                                X2 = p2[Y2]
-                                a = list(range(Y1, Y2, 10))
+                                y1 = p1[0]
+                                x1 = p2[y1]
+                                y2 = p1[1]
+                                x2 = p2[y2]
+                                a = list(range(y1, y2, 10))
                                 for i in range(
                                         int(len(a) / 2)):  # 向下取整，可用math.ceil代替
                                     i += 1
                                     i = 2 * i - 1
                                     y1 = a[i - 1]  # 计算两点的x坐标
                                     y2 = a[i]
-                                    x1 = (y1 - Y1) / (Y2 - Y1) * (X2 - X1) + X1
-                                    x2 = (y2 - Y1) / (Y2 - Y1) * (X2 - X1) + X1
+                                    x1 = (y1 - y1) / (y2 - y1) * (x2 - x1) + x1
+                                    x2 = (y2 - y1) / (y2 - y1) * (x2 - x1) + x1
                                     pygame.draw.line(
-                                        root, PEN_C, (x1, y1), (x2, y2), PEN_THICKNESS)  # 横线
+                                        SCREEN, pen_color, (x1, y1), (x2, y2), pen_weight)  # 横线
                             else:
                                 pygame.draw.line(
-                                    root, PEN_C, line[1], line[0], PEN_THICKNESS)
+                                    SCREEN, pen_color, line[1], line[0], pen_weight)
                             middle_key = 0
                     elif middle_key == 12:  # 画圆模式
                         rect.append(event.pos)
@@ -513,11 +516,11 @@ def draw_main(dis_x=900, dis_y=700):
                             # 两点间求距离
                             r = int(
                                 ((rect[0][0] - rect[1][0]) ** 2 + (rect[0][1] - rect[1][1]) ** 2) ** (1 / 2))
-                            pygame.draw.circle(root, PEN_C, rect[0], r, 0)
+                            pygame.draw.circle(SCREEN, pen_color, rect[0], r, 0)
                             middle_key = 0
                         else:
                             pygame.draw.circle(
-                                root, PEN_C, rect[0], PEN_THICKNESS * 2, 0)
+                                SCREEN, pen_color, rect[0], pen_weight * 2, 0)
                     elif middle_key == 13:  # 画圆线框模式
                         rect.append(event.pos)
                         if len(rect) == 2:
@@ -525,16 +528,16 @@ def draw_main(dis_x=900, dis_y=700):
                             r = int(
                                 ((rect[0][0] - rect[1][0]) ** 2 + (rect[0][1] - rect[1][1]) ** 2) ** (1 / 2))
                             pygame.draw.circle(
-                                root, PEN_C, rect[0], r, PEN_THICKNESS)
+                                SCREEN, pen_color, rect[0], r, pen_weight)
                             middle_key = 0
                         else:
                             pygame.draw.circle(
-                                root, PEN_C, rect[0], PEN_THICKNESS, 0)
+                                SCREEN, pen_color, rect[0], pen_weight, 0)
                     elif middle_key == 14:  # 画多边形模式
                         line.append(event.pos)
                         if len(line) == 2:
                             pygame.draw.line(
-                                root, PEN_C, line[0], line[1], PEN_THICKNESS)
+                                SCREEN, pen_color, line[0], line[1], pen_weight)
                             del line[0]
                         poly.append(event.pos)
                     elif middle_key == 15:  # 画椭圆模式
@@ -545,7 +548,7 @@ def draw_main(dis_x=900, dis_y=700):
                             x.sort()
                             y.sort()
                             pygame.draw.ellipse(
-                                root, PEN_C, [
+                                SCREEN, pen_color, [
                                     x[0], y[0], x[1] - x[0], y[1] - y[0]], 0)
                             middle_key = 0
                     elif middle_key == 16:  # 画椭圆边框模式
@@ -556,23 +559,23 @@ def draw_main(dis_x=900, dis_y=700):
                             x.sort()
                             y.sort()
                             pygame.draw.ellipse(
-                                root, PEN_C, [
-                                    x[0], y[0], x[1] - x[0], y[1] - y[0]], PEN_THICKNESS)
+                                SCREEN, pen_color, [
+                                    x[0], y[0], x[1] - x[0], y[1] - y[0]], pen_weight)
                             middle_key = 0
                 elif event.button == 1:
-                    Tip[2] = 1
+                    bottom_tip[2] = 1
                     pygame.draw.circle(
-                        root, PEN_C, event.pos, PEN_THICKNESS, 0)
-                    m_x = event.pos[0]
-                    m_y = event.pos[1]
+                        SCREEN, pen_color, event.pos, pen_weight, 0)
+                    previous_x = event.pos[0]
+                    previous_y = event.pos[1]
             elif event.type == KEYDOWN:  # 键盘按下（长按不算）快捷键
                 if event.key == K_d:  # 不用点击左键画线
                     if continuous_draw:
                         continuous_draw = False
                     else:
                         continuous_draw = True
-                        m_x = None
-                        m_y = None
+                        previous_x = None
+                        previous_y = None
                 elif event.key == K_g:  # 画直线
                     tips = '根据两个端点画直线'
                     middle_key = 2
@@ -659,40 +662,40 @@ def draw_main(dis_x=900, dis_y=700):
                     poly = []
                 elif event.key == K_o:  # 捕捉
                     tips = '起点已经捕捉到坐标系原点了'
-                    line = [[XY_x, XY_y]]
-                    rect = [[XY_x, XY_y]]
-                    poly = [[XY_x, XY_y]]
+                    line = [[record_origin_x, record_origin_y]]
+                    rect = [[record_origin_x, record_origin_y]]
+                    poly = [[record_origin_x, record_origin_y]]
                 elif event.key == K_y:  # 捕捉上y轴
                     if len(line) >= 1:
                         tips = '起点已经移动到坐标系y轴上了'
-                        line[0][0] = XY_x
+                        line[0][0] = record_origin_x
                     if len(rect) >= 1:
                         tips = '起点已经移动到坐标系y轴上了'
-                        rect[0][0] = XY_x
+                        rect[0][0] = record_origin_x
                     if len(poly) >= 1:
                         tips = '起点已经移动到坐标系y轴上了'
-                        rect[0][0] = XY_x
+                        rect[0][0] = record_origin_x
                 elif event.key == K_x:  # 捕捉上x轴
                     if len(line) >= 1:
                         tips = '起点已经移动到坐标系x轴上了'
-                        line[0][1] = XY_y
+                        line[0][1] = record_origin_y
                     if len(rect) >= 1:
                         tips = '起点已经移动到坐标系x轴上了'
-                        rect[0][1] = XY_y
+                        rect[0][1] = record_origin_y
                     if len(poly) >= 1:
                         tips = '起点已经移动到坐标系x轴上了'
-                        rect[0][1] = XY_y
+                        rect[0][1] = record_origin_y
                 elif event.key == K_n:  # 画多边形
                     if middle_key == 14:
                         middle_key = 0
-                        pygame.draw.polygon(root, PEN_C, poly, 0)
+                        pygame.draw.polygon(SCREEN, pen_color, poly, 0)
                     else:
                         tips = '依次选择多边形的各个端点(点击n闭合并填充)'
                         middle_key = 14
                 elif event.key == K_m:  # 画多边形边框
                     if middle_key == 14:
                         middle_key = 0
-                        pygame.draw.polygon(root, PEN_C, poly, PEN_THICKNESS)
+                        pygame.draw.polygon(SCREEN, pen_color, poly, pen_weight)
                     else:
                         tips = '依次选择多边形的各个端点(点击m闭合)'
                         middle_key = 14
@@ -712,8 +715,8 @@ def draw_main(dis_x=900, dis_y=700):
                     rect = []
                     poly = []
                 elif event.key == K_w:  # 保存
-                    if BC_Dic != '':
-                        pygame.image.save(root, BC_Dic)  # 保存当前环境
+                    if save_dir != '':
+                        pygame.image.save(SCREEN, save_dir)  # 保存当前环境
                 elif event.key == K_b:  # 清空当前操作
                     middle_key = 0
                     line = []
