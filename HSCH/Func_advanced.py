@@ -7,7 +7,7 @@ import tkinter.messagebox
 import random
 from New_TK import DragWindow
 from matplotlib.animation import FuncAnimation
-from HSCH.HS import HS_lambda as ExpFunc
+from HSCH.HS import ExpFunc as ExpFunc
 
 
 def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
@@ -24,7 +24,7 @@ def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
 
 def save_to_csv():  # 导出CSV
     try:
-        succ = func.Out()  # 是否成功
+        succ = func.save_csv()  # 是否成功
         if not succ:
             raise Exception
         output_prompt('CSV导出成功')
@@ -36,7 +36,7 @@ def to_sheet():  # 生成表格
     global func, sheet_box
     try:
         sheet_box.delete(0, tkinter.END)
-        sheet_box.insert(tkinter.END, *func.returnList())
+        sheet_box.insert(tkinter.END, *func.return_list())
         output_prompt('表格创建成功')
     except BaseException:
         output_prompt('无法创建表格')
@@ -77,7 +77,7 @@ def check_center_of_symmetry():
     global func, projection_value, projection_box, prediction_accuracy
     a, must = sympy_computing(prediction_accuracy.get())
     try:
-        result = func.Check_Center_of_symmetry(confirmation_expression(projection_value.get()), output_prompt, a)
+        result = func.check_symmetry_center(confirmation_expression(projection_value.get()), output_prompt, a)
         if result[1]:
             projection_box.insert(tkinter.END, result[1])
             output_prompt('预测完成')
@@ -91,7 +91,7 @@ def check_symmetry_axis():
     global func, projection_value, projection_box, prediction_accuracy
     a, must = sympy_computing(prediction_accuracy.get())
     try:
-        result = func.Check_Symmetry_axis(confirmation_expression(projection_value.get()), output_prompt, a)
+        result = func.check_symmetry_axis(confirmation_expression(projection_value.get()), output_prompt, a)
         if result[1]:
             projection_box.insert(tkinter.END, result[1])
             output_prompt('预测完成')
@@ -105,7 +105,7 @@ def check_periodic():
     global func, projection_value, projection_box, prediction_accuracy
     a, must = sympy_computing(prediction_accuracy.get())
     try:
-        result = func.Check_Periodic(confirmation_expression(projection_value.get()), output_prompt, a)
+        result = func.check_periodic(confirmation_expression(projection_value.get()), output_prompt, a)
         if result[1]:
             projection_box.insert(tkinter.END, result[1])
             output_prompt('预测完成')
@@ -119,7 +119,7 @@ def check_monotonic():
     global func, projection_value, projection_box, prediction_accuracy
     a, must = sympy_computing(prediction_accuracy.get())
     try:
-        result = func.Check_Monotonic(projection_value.get(), output_prompt, a)
+        result = func.check_monotonic(projection_value.get(), output_prompt, a)
         if result[1]:
             projection_box.insert(tkinter.END, result[1])
             output_prompt('预测完成')
@@ -133,8 +133,8 @@ def clear_memory():
     global func
     try:
         if tkinter.messagebox.askokcancel('提示', f'确定删除{func}的记忆吗？'):
-            memory_box.delete(0, tkinter.END)
-            func.Clear_Memory()
+            result_box.delete(0, tkinter.END)
+            func.clean_memory()
             output_prompt('删除完毕')
         else:
             output_prompt('删除取消')
@@ -143,41 +143,27 @@ def clear_memory():
 
 
 def show_hidden_memory():  # 显示xy
-    global func, memory_box
+    global func, result_box
     try:
-        memory_box.delete(0, tkinter.END)
-        func.YC_On_Off()
+        result_box.delete(0, tkinter.END)
+        func.hide_or_show()
         output_prompt('已清空卡槽')
     except BaseException:
         output_prompt('隐藏（显示）失败')
 
 
-def show_memory():  # 显示xy
-    global func, memory_box
-    try:
-        memory_box.delete(0, tkinter.END)
-        m_x, m_y = func.getMemory()
-        answer = []
-        for i in range(len(m_x)):
-            answer.append(f'x={m_x[i]} -> y={m_y[i]}')
-        memory_box.insert(tkinter.END, *answer)
-        output_prompt('输出完成')
-    except BaseException:
-        output_prompt('操作失败')
-
-
 def gradient_method_calculation():
-    global func, y_value_gradient, gradient_parameters, memory_box
+    global func, y_value_gradient, gradient_parameters, result_box
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)  # 清空
+        result_box.delete(0, tkinter.END)  # 清空
         E = []
         for i in gradient_parameters:
             E.append(i.get())
         output_prompt('系统运算中')
-        answer = func.Iterative_method_Of_Huan(y_value_gradient.get(), *E)
+        answer = func.gradient_calculation(y_value_gradient.get(), *E)
         if answer[1] is not None:
-            memory_box.insert(tkinter.END, answer[0])
+            result_box.insert(tkinter.END, answer[0])
             output_prompt('系统运算完成')
         else:
             output_prompt('系统运算无结果')
@@ -186,14 +172,14 @@ def gradient_method_calculation():
 
 
 def calculate():
-    global x_value, func, memory_box
+    global x_value, func, result_box
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)
+        result_box.delete(0, tkinter.END)
         x = x_value.get().split(',')
-        answer = func.Cul_Y(x)
+        answer = func.calculate(x)
         if answer != []:
-            memory_box.insert(tkinter.END, *answer)
+            result_box.insert(tkinter.END, *answer)
             output_prompt('系统运算完毕')
         else:
             output_prompt('系统运算无结果')
@@ -202,16 +188,16 @@ def calculate():
 
 
 def sympy_calculation_x():
-    global y_value_symbol, func, memory_box
+    global y_value_symbol, func, result_box
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)
+        result_box.delete(0, tkinter.END)
         x = y_value_symbol.get().split(',')
         answer = []
         for i in x:
-            answer += func.Sympy_Cul(i)[0]
+            answer += func.sympy_calculation(i)[0]
         if answer != []:
-            memory_box.insert(tkinter.END, *answer)
+            result_box.insert(tkinter.END, *answer)
             output_prompt('系统运算完毕')
         else:
             output_prompt('系统运算无结果')
@@ -220,19 +206,19 @@ def sympy_calculation_x():
 
 
 def function_differentiation():
-    global x_value_derivation, func, memory_box, proximity_accuracy
+    global x_value_derivation, func, result_box, proximity_accuracy
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)
+        result_box.delete(0, tkinter.END)
         x = x_value_derivation.get().split(',')
         JD = proximity_accuracy.get()
         answer = []
         for i in x:
-            get = func.Sympy_DHS(i, JD)[0]
+            get = func.derivative(i, JD)[0]
             if get is not None:
                 answer.append(get)
         if answer != []:
-            memory_box.insert(tkinter.END, *answer)
+            result_box.insert(tkinter.END, *answer)
             output_prompt('系统运算完毕')
         else:
             output_prompt('系统运算无结果')
@@ -241,19 +227,19 @@ def function_differentiation():
 
 
 def approximation():# 逼近法
-    global x_value_derivation, func, memory_box, proximity_accuracy
+    global x_value_derivation, func, result_box, proximity_accuracy
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)
+        result_box.delete(0, tkinter.END)
         x = x_value_derivation.get().split(',')
         JD = proximity_accuracy.get()
         answer = []
         for i in x:
-            get = func.Sympy_DHS(i, JD, True)[0]
+            get = func.derivative(i, JD, True)[0]
             if get is not None:
                 answer.append(get)
         if answer != []:
-            memory_box.insert(tkinter.END, *answer)
+            result_box.insert(tkinter.END, *answer)
             output_prompt('系统运算完毕')
         else:
             output_prompt('系统运算无结果')
@@ -262,10 +248,10 @@ def approximation():# 逼近法
 
 
 def dichotomy():# 二分法
-    global y_value, dicon_parameters, func, memory_box
+    global y_value, dicon_parameters, func, result_box
     try:
         output_prompt('计算过程程序可能无响应')
-        memory_box.delete(0, tkinter.END)  # 清空
+        result_box.delete(0, tkinter.END)  # 清空
         y = y_value.get().split(',')  # 拆解输入
         E = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
         for i in range(11):
@@ -281,12 +267,12 @@ def dichotomy():# 二分法
         output_prompt('系统运算中')
         for i in y:
             try:
-                answer += func.Cul_dichotomy(float(i), *E)[0]
+                answer += func.dichotomy(float(i), *E)[0]
             except BaseException:
                 pass
         if answer:
             output_prompt('系统运算完成')
-            memory_box.insert(tkinter.END, *answer)
+            result_box.insert(tkinter.END, *answer)
         else:
             output_prompt('系统运算无结果')
     except BaseException:
@@ -299,7 +285,7 @@ def property_prediction():
         a, must = sympy_computing(prediction_accuracy.get())
         output_prompt('预测过程程序可能无响应')
         prediction_box.delete(0, tkinter.END)
-        answer = func.Nature(output_prompt, True, a, must)
+        answer = func.property_prediction(output_prompt, True, a)
         prediction_box.insert(tkinter.END, *answer)
         output_prompt('性质预测完成')
     except IndexError:
@@ -319,18 +305,18 @@ def function_drawing():
     fig = plt.figure(num='CoTan函数')  # 定义一个图像窗口
     if draw_type in (0, 1, 2, 3, 8, 9):
         plt.grid(True, ls='--')  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
-    ax = plt.gca()
+    axis = plt.gca()
     text_y = ''
     text_x = ''
     def init():
         nonlocal text_x, text_y
         if draw_type in (0, 2, 4, 6, 8):
-            ax.spines['right'].set_color('none')
-            ax.spines['top'].set_color('none')
-            ax.xaxis.set_ticks_position('bottom')
-            ax.yaxis.set_ticks_position('left')
-            ax.spines['bottom'].set_position(('data', 0))  # 设置x轴, y轴在(0, 0)的位置
-            ax.spines['left'].set_position(('data', 0))
+            axis.spines['right'].set_color('none')
+            axis.spines['top'].set_color('none')
+            axis.xaxis.set_ticks_position('bottom')
+            axis.yaxis.set_ticks_position('left')
+            axis.spines['bottom'].set_position(('data', 0))  # 设置x轴, y轴在(0, 0)的位置
+            axis.spines['left'].set_position(('data', 0))
         # 检测x
         try:
             if x_scale.get()[0] == 'c':  # 如果输入函数cx#-10#10#1#1
@@ -359,19 +345,19 @@ def function_drawing():
                         plot_parameter[1],
                         plot_parameter[2],
                         plot_parameter[3],
-                        plot_parameter[4]).Cul()[1])  # 取y
-                ax.set_xticks(x_exp_scale)  # 输入表达式计算刻度
+                        plot_parameter[4]).data_packet()[1])  # 取y
+                axis.set_xticks(x_exp_scale)  # 输入表达式计算刻度
             elif x_scale.get()[0] == 'y':  # 输入函数y
                 # 不错要错误捕捉，外围有个大的捕捉
                 x_exp_scale = abs(int(start_x_plot.get()))
                 x_major_locator = plt.MultipleLocator(x_exp_scale)
-                ax.xaxis.set_major_locator(x_major_locator)
+                axis.xaxis.set_major_locator(x_major_locator)
             else:  # 输入纯数字
                 x_exp_scale = type_selection(x_scale.get().split(','))
-                ax.set_xticks(x_exp_scale)
+                axis.set_xticks(x_exp_scale)
         except BaseException:
             x_major_locator = plt.MultipleLocator(2)
-            ax.xaxis.set_major_locator(x_major_locator)
+            axis.xaxis.set_major_locator(x_major_locator)
         # 检测y
         try:  # 意外捕捉
             if y_scale.get()[0] == 'c':  # 如果输入函数cx#-10#10#1#1
@@ -400,19 +386,19 @@ def function_drawing():
                         plot_parameter[1],
                         plot_parameter[2],
                         plot_parameter[3],
-                        plot_parameter[4]).Cul()[1])  # 取y
-                ax.set_yticks(y_exp_scale)
+                        plot_parameter[4]).data_packet()[1])  # 取y
+                axis.set_yticks(y_exp_scale)
             elif y_scale.get()[0] == 'y':  # 输入函数y
                 y_exp_scale = abs(int(start_y_plot.get()))
                 y_major_locator = plt.MultipleLocator(y_exp_scale)
-                ax.yaxis.set_major_locator(y_major_locator)
+                axis.yaxis.set_major_locator(y_major_locator)
             else:
                 y_exp_scale = type_selection(y_scale.get().split(','))
-                ax.set_yticks(y_exp_scale)
+                axis.set_yticks(y_exp_scale)
         except BaseException:
             y_major_locator = plt.MultipleLocator(2)
-            ax.yaxis.set_major_locator(y_major_locator)
-        # 极限设计
+            axis.yaxis.set_major_locator(y_major_locator)
+        # 极限
         try:
             x_limit = type_selection(
                 [start_x_limit.get(), end_x_limit.get()], type_=int, convert=False)
@@ -423,18 +409,18 @@ def function_drawing():
             except BaseException:
                 _x_limit = [-10, 10]
             try:
-                _ylimit = [y_limit[0], y_limit[1]]
+                _y_limit = [y_limit[0], y_limit[1]]
             except BaseException:
-                _ylimit = _x_limit
+                _y_limit = _x_limit
         except BaseException:
             _x_limit = [-10, 10]
-            _ylimit = [-10, 10]
+            _y_limit = [-10, 10]
         _x_limit.sort()
-        _ylimit.sort()
-        ax.set_xlim(_x_limit)
-        ax.set_ylim(_ylimit)
+        _y_limit.sort()
+        axis.set_xlim(_x_limit)
+        axis.set_ylim(_y_limit)
         text_x = _x_limit[0] + abs(_x_limit[0]) * 0.01
-        text_y = _ylimit[1] - abs(_ylimit[1]) * 0.01
+        text_y = _y_limit[1] - abs(_y_limit[1]) * 0.01
     init()
     # 函数绘图系统
     output_prompt('图像绘制中...')
@@ -442,30 +428,30 @@ def function_drawing():
         return False
     if draw_type in (0, 1, 4, 5):
         # 绘制曲线
-        get = func.Draw_Cul()
+        get = func.get_plot_data()
         plot_x = get[0]
         plot_y = get[1]
         func_label = get[2]
-        exp_view = get[3]
+        exp_style = get[3]
         first = True
         for i in range(len(plot_x)):
             plot_x = plot_x[i]
             plot_y = plot_y[i]
             if first:
-                plt.plot(plot_x, plot_y, exp_view, label=func_label)  # plot()画出曲线
+                plt.plot(plot_x, plot_y, exp_style, label=func_label)  # plot()画出曲线
                 first = False
             else:
-                plt.plot(plot_x, plot_y, exp_view)
+                plt.plot(plot_x, plot_y, exp_style)
         # 绘制记忆点
-        get = func.getMemory()
+        get = func.get_memory()
         plot_memory_x = get[0]
         plot_memory_y = get[1]
-        max_x, max_y, min_x, min_y = func.Best_value()
+        max_x, max_y, min_x, min_y = func.best_value()
         if show_point.get():
             plt.plot(
                 plot_memory_x,
                 plot_memory_y,
-                exp_view[0] + 'o',
+                exp_style[0] + 'o',
                 label=f'Point of {func_label}')  # 画出一些点
             memory_x = sorted(list(set(plot_memory_x)))  # 去除list重复项目
             extreme_points = max_x + min_x
@@ -514,19 +500,19 @@ def function_drawing():
                                 'size': '10',
                                 'color': 'b'})  # 标出坐标
                     last_x = now_x
-            plt.plot(plot_min, [min_y] * len(plot_min), exp_view[0] + 'o')  # 画出一些点
-            plt.plot(plot_max, [max_y] * len(plot_max), exp_view[0] + 'o')  # 画出一些点
+            plt.plot(plot_min, [min_y] * len(plot_min), exp_style[0] + 'o')  # 画出一些点
+            plt.plot(plot_max, [max_y] * len(plot_max), exp_style[0] + 'o')  # 画出一些点
         plt.legend()  # 显示图示
     elif draw_type in (8, 9):
-        get = func.Cul()
+        get = func.data_packet()
         plot_x = get[0]
         plot_y = get[1]
         plot_x_len = len(plot_x)
         x_data = []
         y_data = []
         func_label = get[2]
-        exp_view = get[3]
-        plot_ln = ax.plot([], [], exp_view, label=func_label, animated=False)[0]
+        exp_style = get[3]
+        plot_ln = axis.plot([], [], exp_style, label=func_label, animated=False)[0]
         text = plt.text(
             text_x, text_y, '', fontdict={
                 'size': '10', 'color': 'b'})
@@ -561,20 +547,20 @@ def function_drawing():
         text = plt.text(
             text_x, text_y, '', fontdict={
                 'size': '10', 'color': 'b'})
-        all_func = func.Return_Son()
+        all_func = func.return_son()
         func_cul_list = []
         plot_x_len = len(all_func)
         m = []  # 每个群组中fx分类的个数
         for i in all_func:  # 预先生成函数
             output_prompt(f'迭代计算中...(共{plot_x_len}次)')
-            get = i.Draw_Cul()
+            get = i.get_plot_data()
             m.append(len(get[0]))
             func_cul_list.append(get)
         func_cul_list += func_cul_list[::-1]
         ln_list = [text]
         for i in range(max(m)):
             ln_list.append(
-                ax.plot(
+                axis.plot(
                     [],
                     [],
                     func_cul_list[0][3],
@@ -680,7 +666,7 @@ def set_function():
     if name == '':
         name = new_func
     try:
-        func = ExpFunc(new_func, name, style, *default_value, c_Son=True)
+        func = ExpFunc(new_func, name, style, *default_value, have_son=True)
         output_prompt('应用成功')
         SCREEN.title(f'CoTan函数工厂  {func}')
     except BaseException:
@@ -1420,7 +1406,7 @@ def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
         column=column,
         row=0)  # 设置说明
 
-    global x_value, y_value, dicon_parameters, y_value_gradient, gradient_parameters, memory_box
+    global x_value, y_value, dicon_parameters, y_value_gradient, gradient_parameters, result_box
     column += 1
     row = 0
     tkinter.Label(
@@ -1705,8 +1691,8 @@ def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
 
     row += 1
     k = 5
-    memory_box = tkinter.Listbox(SCREEN, height=gui_height * (k - 1))  # 暂时不启用多选
-    memory_box.grid(
+    result_box = tkinter.Listbox(SCREEN, height=gui_height * (k - 1))  # 暂时不启用多选
+    result_box.grid(
         column=column,
         row=row,
         columnspan=3,

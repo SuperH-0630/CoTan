@@ -24,8 +24,8 @@ def SJKX():
 
 
 def Function_mapping():
-    from HSCH import Func_Control
-    Func_Control()
+    from HSCH import function_mapping
+    function_mapping()
 
 
 def Hsch():
