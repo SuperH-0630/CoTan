@@ -57,8 +57,8 @@ def Dsgc():
 
 
 def Machine_Learning():
-    from Machine_learning_analysis import Main
-    Main()
+    from Machine_learning_analysis import machine_learning
+    machine_learning()
 
 
 def MLA():
@@ -79,8 +79,8 @@ def GIT_Ctrl():
 
 
 def Crawler_Main():
-    from Crawler import Main
-    Main()
+    from Crawler import crawler_main
+    crawler_main()
 
 
 def Crawlef_Run():

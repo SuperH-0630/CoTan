@@ -42,7 +42,8 @@ mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '�
 
 
 def func_draw(func_list, pixel_accuracy=1000):
-    global horizontal_pixels, horizontal_scale, ordinate_pixels, ordinate_scale, anchor_y, anchor_x, pen_color, increasing_color, subtraction_color
+    global horizontal_pixels, horizontal_scale, ordinate_pixels, ordinate_scale, anchor_y, anchor_x, pen_color
+    global increasing_color, subtraction_color
     c = [0, 0, 0]  # 增函数颜色
 
     def x_convert_pixels(x_coordinate):
@@ -222,7 +223,8 @@ def top_draw():
         point = f'主色调:{pen_color} 增函数颜色:{increasing_color} 减函数颜色:{subtraction_color}'
     mouse_tip = FONT.render(f'鼠标:{bottom_tip[0]},{bottom_tip[1]}', True, (0, 0, 0))
     status_tip = FONT.render(
-        f'{bottom_tip[2]},{bottom_tip[3]},{bottom_tip[4]} ; 大小:{pen_weight} ; 原点:{record_origin_x},{record_origin_y}'
+        f'{bottom_tip[2]},{bottom_tip[3]},{bottom_tip[4]} ; 大小:{pen_weight} ; '
+        f'原点:{record_origin_x},{record_origin_y}'
         f' ; 跨度:{span} ; {point}',
         True,
         (0,
@@ -234,9 +236,10 @@ def top_draw():
 
 
 def draw_main(dis_x=900, dis_y=700):
-    global previous_x, previous_y, pen_color, pen_weight, background, coordinate_system_drawing_method, coordinate_click_point, record_origin_x
+    global previous_x, previous_y, pen_color, pen_weight, background, coordinate_system_drawing_method
+    global coordinate_click_point, record_origin_x
     global record_origin_y, span, line
-    global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir  # 定义全局变量
+    global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir
     global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips, FONT
     SCREEN_X = dis_x
     SCREEN_Y = dis_y

@@ -3,7 +3,7 @@ from tkinter.filedialog import asksaveasfile
 import tkinter.messagebox
 from CGB import TK_HS
 
-help_doc = '''
+help_doc = """
 *快捷键：
     d-不用点击左键画线（再次点击关闭）
     g-画直线（2）
@@ -44,83 +44,85 @@ help_doc = '''
     绘制坐标系-三点绘制坐标系（使用中键选择点）
     保存-保存笔记为图片格式，保存一次后快捷键w可重复保存
     绘制函数-绘制基本初等函数和字定义解析函数
-'''
+"""
 
 
 def increasing_func_color():
     global increasing_color
-    increasing_color = askcolor(title='选择颜色')[0]
+    increasing_color = askcolor(title="选择颜色")[0]
 
 
 def subtraction_func_color():
     global subtraction_color
-    subtraction_color = askcolor(title='选择颜色')[0]
+    subtraction_color = askcolor(title="选择颜色")[0]
 
 
 def select_color():
     global pen_color
-    pen_color = askcolor(title='选择颜色')[0]
+    pen_color = askcolor(title="选择颜色")[0]
 
 
 def choose_save():
     global save_dir
     save_dir = tkinter.filedialog.asksaveasfilename(
-        title='选择保存位置', filetypes=[("PNG", ".png")])
+        title="选择保存位置", filetypes=[("PNG", ".png")]
+    )
     if not save_dir:
         save_dir = None
     else:
-        save_dir += '.png'
+        save_dir += ".png"
 
 
 def choose_open():
     global background_image
     background_image = tkinter.filedialog.askopenfilename(
-        title='选择载入图片', filetypes=[
-            ("PNG", ".png"), ("JPG", ".jpg")])
+        title="选择载入图片", filetypes=[("PNG", ".png"), ("JPG", ".jpg")]
+    )
     if not background_image:
         background_image = None
 
 
 def switch_brush():
     global pen_weight
-    if tkinter.messagebox.askokcancel('提示', '要切换到刷子吗（可当橡皮使用）'):
+    if tkinter.messagebox.askokcancel("提示", "要切换到刷子吗（可当橡皮使用）"):
         pen_weight = 10
 
 
 def switch_big():
     global pen_weight
-    if tkinter.messagebox.askokcancel('提示', '要切换到大笔吗'):
+    if tkinter.messagebox.askokcancel("提示", "要切换到大笔吗"):
         pen_weight = 3
 
 
 def set_pen():
     global pen_weight, pen_weight_input
-    Input = pen_weight_input.get().replace(' ', '')
+    pen = pen_weight_input.get().replace(" ", "")
     try:
-        Input = int(Input)
-        if tkinter.messagebox.askokcancel('提示', f'是否设定大小为{Input}(系统默认大小为：2)'):
-            pen_weight = Input
+        pen = int(pen)
+        if tkinter.messagebox.askokcancel("提示", f"是否设定大小为{pen}(系统默认大小为：2)"):
+            pen_weight = pen
     except BaseException:
-        if tkinter.messagebox.askokcancel('提示', '设置失败，是否要切换到中笔吗'):
+        if tkinter.messagebox.askokcancel("提示", "设置失败，是否要切换到中笔吗"):
             pen_weight = 2
 
 
 def switch_stroke():
     global pen_weight
-    if tkinter.messagebox.askokcancel('提示', '要切换到中笔吗'):
+    if tkinter.messagebox.askokcancel("提示", "要切换到中笔吗"):
         pen_weight = 2
 
 
 def switch_small():
     global pen_weight
-    if tkinter.messagebox.askokcancel('提示', '要切换到小笔吗？'):
+    if tkinter.messagebox.askokcancel("提示", "要切换到小笔吗？"):
         pen_weight = 1
 
 
 def plot_coordinate():
     global coordinate_system_drawing_method
     if tkinter.messagebox.askokcancel(
-            '提示', '是否绘制坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
+        "提示", "是否绘制坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+    ):
         coordinate_system_drawing_method = 1
     else:
         coordinate_system_drawing_method = None
@@ -129,7 +131,8 @@ def plot_coordinate():
 def plot_coordinate_small():
     global coordinate_system_drawing_method
     if tkinter.messagebox.askokcancel(
-            '提示', '是否绘制小跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
+        "提示", "是否绘制小跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+    ):
         coordinate_system_drawing_method = 2
     else:
         coordinate_system_drawing_method = None
@@ -138,7 +141,8 @@ def plot_coordinate_small():
 def plot_coordinate_big_span():
     global coordinate_system_drawing_method
     if tkinter.messagebox.askokcancel(
-            '提示', '是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
+        "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+    ):
         coordinate_system_drawing_method = 3
     else:
         coordinate_system_drawing_method = None
@@ -146,12 +150,13 @@ def plot_coordinate_big_span():
 
 def set_span():
     global coordinate_system_drawing_method, span, span_Input
-    Input = span_Input.get().replace(' ', '')
+    span_input = span_Input.get().replace(" ", "")
     try:
-        Input = int(Input)
+        span_input = int(span_input)
         if tkinter.messagebox.askokcancel(
-                '提示', f'是否设定跨度为{Input}(跨度代表坐标系一个单位大小的实际像素，系统默认大跨度为：120)'):
-            span = Input
+            "提示", f"是否设定跨度为{span_input}(跨度代表坐标系一个单位大小的实际像素，系统默认大跨度为：120)"
+        ):
+            span = span_input
             coordinate_system_drawing_method = 1
         else:
             coordinate_system_drawing_method = None
@@ -159,7 +164,8 @@ def set_span():
     except BaseException:
         span = None
         if tkinter.messagebox.askokcancel(
-                '提示', '是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)'):
+            "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+        ):
             coordinate_system_drawing_method = 3
         else:
             coordinate_system_drawing_method = None
@@ -167,8 +173,8 @@ def set_span():
 
 def empty():
     global background_color
-    if tkinter.messagebox.askokcancel('提示', '是否清空草稿(点击取消可撤销未执行的清空)'):
-        background_color = askcolor(title='选择背景颜色')[0]
+    if tkinter.messagebox.askokcancel("提示", "是否清空草稿(点击取消可撤销未执行的清空)"):
+        background_color = askcolor(title="选择背景颜色")[0]
     else:
         background_color = None
 
@@ -180,17 +186,17 @@ def open_func_box():
 
 def _help():
     global help_doc
-    tkinter.messagebox.showinfo(title='帮助', message=help_doc)
+    tkinter.messagebox.showinfo(title="帮助", message=help_doc)
 
 
 def close():  # 关闭屏幕事件
     global SCREEN
     try:
-        TK_HS.TK_DoneHS.top.destroy()
+        TK_HS.TK_DoneHS.SCREEN.destroy()
     except BaseException:
         pass
     try:
-        TK_HS.top.destroy()
+        TK_HS.SCREEN.destroy()
     except BaseException:
         pass
     SCREEN.destroy()
@@ -223,111 +229,75 @@ def tool_box():
     span = None
 
     SCREEN = tkinter.Tk()  # 设置屏幕
-    SCREEN.title('')
+    SCREEN.title("")
     SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry(f'+10+10')
+    SCREEN.geometry(f"+10+10")
 
-    tkinter.Button(SCREEN, text="选择颜色", command=select_color,
-                   width=w_b, height=h_b).pack()  # 选择颜色组件
     tkinter.Button(
-        SCREEN,
-        text="选择增函数颜色",
-        command=increasing_func_color,
-        width=w_b,
-        height=1).pack()  # 选择颜色组件
+        SCREEN, text="选择颜色", command=select_color, width=w_b, height=h_b
+    ).pack()  # 选择颜色组件
     tkinter.Button(
-        SCREEN,
-        text="选择减函数颜色",
-        command=subtraction_func_color,
-        width=w_b,
-        height=1).pack()  # 选择颜色组件
+        SCREEN, text="选择增函数颜色", command=increasing_func_color, width=w_b, height=1
+    ).pack()  # 选择颜色组件
     tkinter.Button(
-        SCREEN,
-        text="使用中笔(默认笔)",
-        command=switch_stroke,
-        width=w_b,
-        height=h_b).pack()  # 切换笔
+        SCREEN, text="选择减函数颜色", command=subtraction_func_color, width=w_b, height=1
+    ).pack()  # 选择颜色组件
     tkinter.Button(
-        SCREEN,
-        text="使用大笔",
-        command=switch_big,
-        width=w_b,
-        height=1).pack()  # 切换到大笔
+        SCREEN, text="使用中笔(默认笔)", command=switch_stroke, width=w_b, height=h_b
+    ).pack()  # 切换笔
     tkinter.Button(
-        SCREEN,
-        text="使用小笔",
-        command=switch_small,
-        width=w_b,
-        height=1).pack()  # 切换笔
+        SCREEN, text="使用大笔", command=switch_big, width=w_b, height=1
+    ).pack()  # 切换到大笔
     tkinter.Button(
-        SCREEN,
-        text="使用刷子",
-        command=switch_brush,
-        width=w_b,
-        height=1).pack()  # 切换笔
+        SCREEN, text="使用小笔", command=switch_small, width=w_b, height=1
+    ).pack()  # 切换笔
+    tkinter.Button(
+        SCREEN, text="使用刷子", command=switch_brush, width=w_b, height=1
+    ).pack()  # 切换笔
     pen_weight_input = tkinter.Entry(SCREEN, width=w_b - 2)
     pen_weight_input.pack(fill=tkinter.BOTH)
     tkinter.Button(
-        SCREEN,
-        text="使用自定义大小",
-        command=set_pen,
-        width=w_b,
-        height=1).pack()  # 切换笔
+        SCREEN, text="使用自定义大小", command=set_pen, width=w_b, height=1
+    ).pack()  # 切换笔
     tkinter.Button(
-        SCREEN,
-        text="清空草稿",
-        command=empty,
-        width=w_b,
-        height=h_b).pack()  # 填充背景
+        SCREEN, text="清空草稿", command=empty, width=w_b, height=h_b
+    ).pack()  # 填充背景
     tkinter.Button(
-        SCREEN,
-        text="绘制坐标系",
-        command=plot_coordinate,
-        width=w_b,
-        height=h_b).pack()  # 绘制坐标系
+        SCREEN, text="绘制坐标系", command=plot_coordinate, width=w_b, height=h_b
+    ).pack()  # 绘制坐标系
     tkinter.Button(
-        SCREEN,
-        text="绘制坐标系(小跨度)",
-        command=plot_coordinate_small,
-        width=w_b,
-        height=1).pack()  # 绘制坐标系
+        SCREEN, text="绘制坐标系(小跨度)", command=plot_coordinate_small, width=w_b, height=1
+    ).pack()  # 绘制坐标系
     tkinter.Button(
-        SCREEN,
-        text="绘制坐标系(大跨度)",
-        command=plot_coordinate_big_span,
-        width=w_b,
-        height=1).pack()  # 绘制坐标系
+        SCREEN, text="绘制坐标系(大跨度)", command=plot_coordinate_big_span, width=w_b, height=1
+    ).pack()  # 绘制坐标系
     span_Input = tkinter.Entry(SCREEN, width=w_b - 2)
     span_Input.pack(fill=tkinter.BOTH)
     tkinter.Button(
-        SCREEN,
-        text="使用自定义跨度",
-        command=set_span,
-        width=w_b,
-        height=1).pack()  # 切换笔
+        SCREEN, text="使用自定义跨度", command=set_span, width=w_b, height=1
+    ).pack()  # 切换笔
     tkinter.Button(
-        SCREEN,
-        text="绘制函数",
-        command=open_func_box,
-        width=w_b,
-        height=h_b).pack()
+        SCREEN, text="绘制函数", command=open_func_box, width=w_b, height=h_b
+    ).pack()
+    tkinter.Button(SCREEN, text="保存", command=choose_save, width=w_b, height=1).pack()
+    tkinter.Button(SCREEN, text="载入", command=choose_open, width=w_b, height=1).pack()
     tkinter.Button(
-        SCREEN,
-        text="保存",
-        command=choose_save,
-        width=w_b,
-        height=1).pack()
-    tkinter.Button(
-        SCREEN,
-        text="载入",
-        command=choose_open,
-        width=w_b,
-        height=1).pack()
-    tkinter.Button(SCREEN, text="帮助", command=_help, width=w_b,
-                   height=1).pack()  # help是系统保留关键词，用_help代替
-    SCREEN.protocol('WM_DELETE_WINDOW', close)
+        SCREEN, text="帮助", command=_help, width=w_b, height=1
+    ).pack()  # help是系统保留关键词，用_help代替
+    SCREEN.protocol("WM_DELETE_WINDOW", close)
     SCREEN.mainloop()
-    return [pen_color, pen_weight, background_color, coordinate_system_drawing_method, func_list, save_dir, increasing_color, subtraction_color, span, background_image]
+    return [
+        pen_color,
+        pen_weight,
+        background_color,
+        coordinate_system_drawing_method,
+        func_list,
+        save_dir,
+        increasing_color,
+        subtraction_color,
+        span,
+        background_image,
+    ]
     # [0]-笔的颜色
     # [1]-笔的大小
     # [2]-背景填充

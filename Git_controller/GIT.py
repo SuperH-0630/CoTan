@@ -10,26 +10,26 @@ import threading
 
 
 def git_main():
-    global SCREEN, git, PATH, bg_color, buttom_color, word_color, repo_list, last_name, file_list
+    global SCREEN, git, PATH, bg_color, buttom_color, word_color, repo_list, last_name, file_list, FONT
     file_list = []
     PATH = os.getcwd()
-    git = GitController.git_Ctrol()
+    git = GitController.GitCtrol()
     repo_list = []
     SCREEN = tkinter.Tk()
     last_name = None
-    bg_color = '#FFFAFA'  # 主颜色
-    buttom_color = '#FFFAFA'  # 按钮颜色
-    word_color = '#000000'  # 文字颜色
+    bg_color = "#FFFAFA"  # 主颜色
+    buttom_color = "#FFFAFA"  # 按钮颜色
+    word_color = "#000000"  # 文字颜色
     SCREEN["bg"] = bg_color
-    FONT = ('黑体', 11)  # 设置字体
-    SCREEN.title('CoTan仓库管理器')
+    FONT = ("黑体", 11)  # 设置字体
+    SCREEN.title("CoTan仓库管理器")
     SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry('+10+10')  # 设置所在位置
+    SCREEN.geometry("+10+10")  # 设置所在位置
 
-    width_B = 13  # 标准宽度
-    height_B = 2
-    a_y = 0
-    a_x = 0
+    gui_width = 13  # 标准宽度
+    gui_height = 2
+    row = 0
+    column = 0
 
     global clone_repo, repo_box, repo_dir
     global commit_message, head, master, no_fast_forward
@@ -41,376 +41,290 @@ def git_main():
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='克隆仓库',
+        text="克隆仓库",
         command=clone_git,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='打开仓库',
+        text="打开仓库",
         command=repo_init,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看文件',
+        text="查看文件",
         command=update_git_file_select,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='克隆URL:',
+        text="克隆URL:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    clone_repo = tkinter.Entry(SCREEN, width=width_B * 2)
-    clone_repo.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    clone_repo = tkinter.Entry(SCREEN, width=gui_width * 2)
+    clone_repo.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
-    repo_box = tkinter.Listbox(SCREEN, width=width_B * 3, height=height_B * 4)
+    row += 1
+    repo_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)
     repo_box.grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=4,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)
+        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+    )
 
-    a_y += 4
+    row += 4
     tkinter.Label(
         SCREEN,
-        text='【仓库文件列表】',
+        text="【仓库文件列表】",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B *
-        3,
-        height=height_B).grid(
-        column=a_x,
+        width=gui_width * 3,
+        height=gui_height,
+    ).grid(
+        column=column,
         columnspan=3,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)  # 设置说明
+        row=row,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+    )  # 设置说明
 
-    a_y += 1
-    repo_dir = tkinter.Listbox(SCREEN, width=width_B * 3, height=height_B * 4)
+    row += 1
+    repo_dir = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)
     repo_dir.grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=4,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)
+        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+    )
 
-    a_y += 4
+    row += 4
     tkinter.Label(
         SCREEN,
-        text='【添加文件列表】',
+        text="【添加文件列表】",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B *
-        3,
-        height=height_B).grid(
-        column=a_x,
+        width=gui_width * 3,
+        height=gui_height,
+    ).grid(
+        column=column,
         columnspan=3,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)  # 设置说明
+        row=row,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+    )  # 设置说明
 
     global file_dir, file_box
 
-    a_y += 1
-    file_dir = tkinter.Entry(SCREEN, width=width_B * 2)
+    row += 1
+    file_dir = tkinter.Entry(SCREEN, width=gui_width * 2)
     file_dir.grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.N +
-        tkinter.S)
+        sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='填充路径并添加',
+        text="填充路径并添加",
         command=add_file_by_git,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='直接添加',
+        text="直接添加",
         command=add_file_input,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='选择文件',
+        text="选择文件",
         command=add_file_list,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='把文件移除出列表',
+        text="把文件移除出列表",
         command=del_file,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='清空列表',
+        text="清空列表",
         command=clean_file,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
-    file_box = tkinter.Listbox(SCREEN, width=width_B * 3, height=height_B * 4)
+    row += 1
+    file_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)
     file_box.grid(
-        column=a_x,
-        row=a_y,
+        column=column,
+        row=row,
         columnspan=3,
         rowspan=4,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)
+        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+    )
 
-    a_y += 4
+    row += 4
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='添加暂存区文件',
+        text="添加暂存区文件",
         command=add,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='移除暂存区文件',
+        text="移除暂存区文件",
         command=remove_the_staging,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='提交到git',
+        text="提交到git",
         command=commit,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看执行日志',
-        command=lambda: not_parameters_call(
-            git.do_log),
+        text="查看执行日志",
+        command=lambda: not_parameters_call(git.do_log),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看文件日志',
+        text="查看文件日志",
         command=log,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看状态',
-        command=lambda: not_parameters_call(
-            git.status),
+        text="查看状态",
+        command=lambda: not_parameters_call(git.status),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x +
-            2,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
     global log_type, reset_type
-    a_y += 1
+    row += 1
     log_type = []
-    lable = ['显示轴', 'commit完全显示', '简化显示']  # 复选框
+    lable = ["显示轴", "commit完全显示", "简化显示"]  # 复选框
     for i in range(3):
         log_type.append(tkinter.IntVar())
-        tkinter.Checkbutton(SCREEN,
-                            bg=bg_color,
-                            fg=word_color,
-                            activebackground=bg_color,
-                            activeforeground=word_color,
-                            selectcolor=bg_color,
-                            text=lable[i],
-                            variable=log_type[-1]).grid(column=a_x + i,
-                                                        row=a_y,
-                                                        sticky=tkinter.W)
+        tkinter.Checkbutton(
+            SCREEN,
+            bg=bg_color,
+            fg=word_color,
+            activebackground=bg_color,
+            activeforeground=word_color,
+            selectcolor=bg_color,
+            text=lable[i],
+            variable=log_type[-1],
+        ).grid(column=column + i, row=row, sticky=tkinter.W)
         log_type[-1].set(1)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='版本回退',
+        text="版本回退",
         command=reset_head,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='放弃修改',
+        text="放弃修改",
         command=checkout_file,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除文件',
+        text="删除文件",
         command=remove_file,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     reset_type = tkinter.IntVar()  # 正，负，0
-    lable = ['回退到工作区', '回退到暂存区', '无痕回退']  # 复选框
+    lable = ["回退到工作区", "回退到暂存区", "无痕回退"]  # 复选框
     for i in range(3):
         tkinter.Radiobutton(
             SCREEN,
@@ -421,398 +335,286 @@ def git_main():
             selectcolor=bg_color,
             text=lable[i],
             variable=reset_type,
-            value=i).grid(
-            column=a_x + i,
-            row=a_y,
-            sticky=tkinter.W)
+            value=i,
+        ).grid(column=column + i, row=row, sticky=tkinter.W)
 
-    a_x += 3
-    tkinter.Label(
-        SCREEN,
-        text='',
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=1).grid(
-        column=a_x,
-        row=a_y)  # 设置说明
-    a_x += 1
-    a_y = 0
+    column += 3
+    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+        column=column, row=row
+    )  # 设置说明
+    column += 1
+    row = 0
 
     tkinter.Label(
         SCREEN,
-        text='【参数操作】',
+        text="【参数操作】",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B *
-        3,
-        height=height_B).grid(
-        column=a_x,
+        width=gui_width * 3,
+        height=gui_height,
+    ).grid(
+        column=column,
         columnspan=3,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)  # 设置说明
+        row=row,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+    )  # 设置说明
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='提交描述:',
+        text="提交描述:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    commit_message = tkinter.Entry(SCREEN, width=width_B * 2)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    commit_message = tkinter.Entry(SCREEN, width=gui_width * 2)
     commit_message.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='diff分支:',
+        text="diff分支:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    master = tkinter.Entry(SCREEN, width=width_B * 2)
-    master.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    master = tkinter.Entry(SCREEN, width=gui_width * 2)
+    master.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='回退版本号:',
+        text="回退版本号:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    head = tkinter.Entry(SCREEN, width=width_B * 2)
-    head.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    head = tkinter.Entry(SCREEN, width=gui_width * 2)
+    head.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='本地分支:',
+        text="本地分支:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    branch_name = tkinter.Entry(SCREEN, width=width_B * 2)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    branch_name = tkinter.Entry(SCREEN, width=gui_width * 2)
     branch_name.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='远程分支:',
+        text="远程分支:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    origin_branch = tkinter.Entry(SCREEN, width=width_B * 2)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    origin_branch = tkinter.Entry(SCREEN, width=gui_width * 2)
     origin_branch.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='远程仓库链接:',
+        text="远程仓库链接:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    remote_ssh = tkinter.Entry(SCREEN, width=width_B)
-    remote_ssh.grid(
-        column=a_x +
-        1,
-        columnspan=2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    remote_ssh = tkinter.Entry(SCREEN, width=gui_width)
+    remote_ssh.grid(column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='远程仓库名:',
+        text="远程仓库名:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    remote_name = tkinter.Entry(SCREEN, width=width_B)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    remote_name = tkinter.Entry(SCREEN, width=gui_width)
     remote_name.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='commit:',
+        text="commit:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    commit = tkinter.Entry(SCREEN, width=width_B)
-    commit.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    commit = tkinter.Entry(SCREEN, width=gui_width)
+    commit.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='标签名字:',
+        text="标签名字:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    tag_name = tkinter.Entry(SCREEN, width=width_B)
-    tag_name.grid(
-        column=a_x +
-        1,
-        columnspan=2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    tag_name = tkinter.Entry(SCREEN, width=gui_width)
+    tag_name.grid(column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='查询关键字:',
+        text="查询关键字:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    show_search_key = tkinter.Entry(SCREEN, width=width_B)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    show_search_key = tkinter.Entry(SCREEN, width=gui_width)
     show_search_key.grid(
-        column=a_x +
-        1,
-        columnspan=2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W
+    )
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='工作区序号:',
+        text="工作区序号:",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y)
-    stash_name = tkinter.Entry(SCREEN, width=width_B)
-    stash_name.grid(
-        column=a_x +
-        1,
-        row=a_y,
-        columnspan=2,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row)
+    stash_name = tkinter.Entry(SCREEN, width=gui_width)
+    stash_name.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Label(
         SCREEN,
-        text='【高级操作】',
+        text="【高级操作】",
         bg=bg_color,
         fg=word_color,
         font=FONT,
-        width=width_B *
-        3,
-        height=height_B).grid(
-        column=a_x,
+        width=gui_width * 3,
+        height=gui_height,
+    ).grid(
+        column=column,
         columnspan=3,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.W +
-        tkinter.S +
-        tkinter.N)  # 设置说明
+        row=row,
+        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+    )  # 设置说明
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看分支',
-        command=lambda: not_parameters_call(
-            git.branch_view),
+        text="查看分支",
+        command=lambda: not_parameters_call(git.branch_view),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='新建分支',
+        text="新建分支",
         command=add_new_branch,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='切换分支',
+        text="切换分支",
         command=switch_branch,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除分支',
+        text="删除分支",
         command=lambda: del_branch(1),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='丢弃分支',
+        text="丢弃分支",
         command=lambda: del_branch(0),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='合并分支',
+        text="合并分支",
         command=switch_branch,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
     no_fast_forward = tkinter.IntVar()
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='合并分支',
+        text="合并分支",
         command=branch_merge,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='退出冲突处理',
-        command=lambda: not_parameters_call(
-            git.merge_abort),
+        text="退出冲突处理",
+        command=lambda: not_parameters_call(git.merge_abort),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x +
-            2,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(
         SCREEN,
         bg=bg_color,
@@ -820,72 +622,56 @@ def git_main():
         activebackground=bg_color,
         activeforeground=word_color,
         selectcolor=bg_color,
-        text='使用快速合并',
-        variable=no_fast_forward).grid(
-        column=a_x + 1,
-        row=a_y,
-        sticky=tkinter.W)
+        text="使用快速合并",
+        variable=no_fast_forward,
+    ).grid(column=column + 1, row=row, sticky=tkinter.W)
     no_fast_forward.set(0)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='连接远程仓库',
+        text="连接远程仓库",
         command=add_remote,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='推送到远程仓库',
+        text="推送到远程仓库",
         command=lambda: pull_push_remote(1),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='从远程仓库抓取',
+        text="从远程仓库抓取",
         command=lambda: pull_push_remote(0),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
     push_bind = tkinter.IntVar()
     allow_history = tkinter.IntVar()
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='分支绑定',
+        text="分支绑定",
         command=bind_remote_branch,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Checkbutton(
         SCREEN,
         bg=bg_color,
@@ -893,11 +679,9 @@ def git_main():
         activebackground=bg_color,
         activeforeground=word_color,
         selectcolor=bg_color,
-        text='无视历史记录',
-        variable=allow_history).grid(
-        column=a_x + 1,
-        row=a_y,
-        sticky=tkinter.W)
+        text="无视历史记录",
+        variable=allow_history,
+    ).grid(column=column + 1, row=row, sticky=tkinter.W)
     tkinter.Checkbutton(
         SCREEN,
         bg=bg_color,
@@ -905,265 +689,199 @@ def git_main():
         activebackground=bg_color,
         activeforeground=word_color,
         selectcolor=bg_color,
-        text='推送时绑定',
-        variable=push_bind).grid(
-        column=a_x + 2,
-        row=a_y,
-        sticky=tkinter.W)
+        text="推送时绑定",
+        variable=push_bind,
+    ).grid(column=column + 2, row=row, sticky=tkinter.W)
     allow_history.set(0)
     push_bind.set(0)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='应用标签',
+        text="应用标签",
         command=add_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查看已有标签',
+        text="查看已有标签",
         command=lambda: show_tag(1),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='查询commit记录',
+        text="查询commit记录",
         command=lambda: show_tag(0),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='推送标签',
+        text="推送标签",
         command=push_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='推送所有标签',
+        text="推送所有标签",
         command=push_all_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除本地标签',
+        text="删除本地标签",
         command=del_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除远程标签',
+        text="删除远程标签",
         command=del_remote_tag,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除远程分支',
+        text="删除远程分支",
         command=del_remote_branch,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='刷新远程分支',
+        text="刷新远程分支",
         command=fetch_remote,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='commit补丁',
+        text="commit补丁",
         command=cherry_pick,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除远程仓库',
+        text="删除远程仓库",
         command=del_remote,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='工作区列表',
-        command=lambda: not_parameters_call(
-            git.stash_list),
+        text="工作区列表",
+        command=lambda: not_parameters_call(git.stash_list),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x +
-            2,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
     global branch_new_name
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='文件回退',
+        text="文件回退",
         command=reset_file,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='分支重命名',
+        text="分支重命名",
         command=branch_new,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
-    branch_new_name = tkinter.Entry(SCREEN, width=width_B)
-    branch_new_name.grid(column=a_x + 2, row=a_y, sticky=tkinter.E + tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+    branch_new_name = tkinter.Entry(SCREEN, width=gui_width)
+    branch_new_name.grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
-    a_y += 1
+    row += 1
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='保存工作区',
-        command=lambda: not_parameters_call(
-            git.save_stash),
+        text="保存工作区",
+        command=lambda: not_parameters_call(git.save_stash),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-            column=a_x,
-            row=a_y,
-            sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='恢复工作区',
+        text="恢复工作区",
         command=lambda: open_stash(1),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        1,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='删除工作区',
+        text="删除工作区",
         command=lambda: open_stash(0),
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 
     global customize_input, threaded_refresh, asynchronous_display
-    a_y += 1
+    row += 1
     threaded_refresh = tkinter.IntVar()
     asynchronous_display = tkinter.IntVar()
     tkinter.Checkbutton(
@@ -1173,11 +891,9 @@ def git_main():
         activebackground=bg_color,
         activeforeground=word_color,
         selectcolor=bg_color,
-        text='多进程刷新',
-        variable=threaded_refresh).grid(
-        column=0,
-        row=a_y,
-        sticky=tkinter.W)
+        text="多进程刷新",
+        variable=threaded_refresh,
+    ).grid(column=0, row=row, sticky=tkinter.W)
     tkinter.Checkbutton(
         SCREEN,
         bg=bg_color,
@@ -1185,35 +901,27 @@ def git_main():
         activebackground=bg_color,
         activeforeground=word_color,
         selectcolor=bg_color,
-        text='异步显示',
-        variable=asynchronous_display).grid(
-        column=1,
-        row=a_y,
-        sticky=tkinter.W)
-    customize_input = tkinter.Entry(SCREEN, width=width_B * 3)
+        text="异步显示",
+        variable=asynchronous_display,
+    ).grid(column=1, row=row, sticky=tkinter.W)
+    customize_input = tkinter.Entry(SCREEN, width=gui_width * 3)
     customize_input.grid(
         column=2,
-        row=a_y,
+        row=row,
         columnspan=4,
-        sticky=tkinter.E +
-        tkinter.W +
-        tkinter.N +
-        tkinter.S)
+        sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
+    )
 
     tkinter.Button(
         SCREEN,
         bg=buttom_color,
         fg=word_color,
-        text='执行操作',
+        text="执行操作",
         command=customize,
         font=FONT,
-        width=width_B,
-        height=height_B).grid(
-        column=a_x +
-        2,
-        row=a_y,
-        sticky=tkinter.E +
-        tkinter.W)
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
     threaded_refresh.set(0)
     asynchronous_display.set(1)
     tag_message = commit_message
@@ -1234,8 +942,8 @@ def branch_new():  # 克隆仓库
 
 def clone_git():  # 克隆仓库
     global clone_repo
-    new_dir = askdirectory(title='选择仓库地址')
-    if new_dir == '':
+    new_dir = askdirectory(title="选择仓库地址")
+    if new_dir == "":
         return False
     name = git.clone_repo(new_dir)
     clone_core(name, clone_repo.get())
@@ -1243,7 +951,14 @@ def clone_git():  # 克隆仓库
 
 
 def clone_core(name, url):
-    cli(git.clone, (name, url), break_time=0, tip_text=f'{url}:正在执行克隆操作', is_threaded_refresh=True, is_asynchronous_display=True)
+    cli(
+        git.clone,
+        (name, url),
+        break_time=0,
+        tip_text=f"{url}:正在执行克隆操作",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     git.after_clone(name)
     update_git_file_last()
 
@@ -1251,8 +966,14 @@ def clone_core(name, url):
 def customize():
     global git, customize_input, threaded_refresh, asynchronous_display
     command = customize_input.get()
-    cli(git.customize_command, (get_repo_name(), command), break_time=0, tip_text=f'{command}:操作进行中',
-        is_threaded_refresh=bool(threaded_refresh.get()), is_asynchronous_display=bool(asynchronous_display.get()))
+    cli(
+        git.customize_command,
+        (get_repo_name(), command),
+        break_time=0,
+        tip_text=f"{command}:操作进行中",
+        is_threaded_refresh=bool(threaded_refresh.get()),
+        is_asynchronous_display=bool(asynchronous_display.get()),
+    )
     update_git_file_last()
 
 
@@ -1261,8 +982,14 @@ def fetch_remote():
     branch = remote_branch.get()
     remote = remote_name.get()
     local = local_branch.get()
-    cli(git.fetch, (get_repo_name(), local, remote, branch), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True,
-        is_asynchronous_display=True)
+    cli(
+        git.fetch,
+        (get_repo_name(), local, remote, branch),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
@@ -1277,8 +1004,14 @@ def del_remote_branch():
     global git, remote_name, tag_name
     remote = remote_name.get()
     branch = remote_branch.get()
-    cli(git.del_branch_remote, (get_repo_name(), remote, branch), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True,
-        is_asynchronous_display=True)
+    cli(
+        git.del_branch_remote,
+        (get_repo_name(), remote, branch),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
@@ -1286,15 +1019,28 @@ def del_remote_tag():
     global git, remote_name, tag_name
     remoto = remote_name.get()
     tag = tag_name.get()
-    cli(git.del_tag_remote, (get_repo_name(), remoto, tag), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True,
-        is_asynchronous_display=True)
+    cli(
+        git.del_tag_remote,
+        (get_repo_name(), remoto, tag),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
 def push_all_tag():
     global git, remote_name
     remoto = remote_name.get()
-    cli(git.push_all_tag, (get_repo_name(), remoto), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True, is_asynchronous_display=True)
+    cli(
+        git.push_all_tag,
+        (get_repo_name(), remoto),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
@@ -1302,8 +1048,14 @@ def push_tag():
     global tag_name, git, remote_name
     tag_name = tag_name.get()
     remoto = remote_name.get()
-    cli(git.push_tag, (get_repo_name(), tag_name, remoto), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True,
-        is_asynchronous_display=True)
+    cli(
+        git.push_tag,
+        (get_repo_name(), tag_name, remoto),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
@@ -1312,15 +1064,19 @@ def add_tag():
     tag_name = tag_name.get()
     commit = tag_commit.get()
     tag_message = tag_message.get()
-    cli(git.add_tag, (get_repo_name(), tag_name, commit, tag_message), show_screen=False)
+    cli(
+        git.add_tag, (get_repo_name(), tag_name, commit, tag_message), show_screen=False
+    )
     update_git_file_last()
 
 
 def show_tag(type_):
     global show_search_key, git
     key = show_search_key.get()
-    cli({1: git.get_tag_list, 0: git.search_commit}.get(
-        type_, git.search_commit), (get_repo_name(), key))
+    cli(
+        {1: git.get_tag_list, 0: git.search_commit}.get(type_, git.search_commit),
+        (get_repo_name(), key),
+    )
     update_git_file_last()
 
 
@@ -1331,17 +1087,17 @@ def pull_push_remote(type_):
     local = local_branch.get()
     allow = bool(allow_history.get())
     parameters_u = bool(push_bind.get())
-    parameters_f = tkinter.messagebox.askokcancel('提示', f'是否需要强制推送？(强制推送不被建议)')
-    cli({0: git.pull_from_remote,
-         1: git.push_to_remote}.get(type_,
-                                    git.pull_from_remote), (get_repo_name(),
-                                                            local,
-                                                            remote,
-                                                            branch,
-                                                            allow,
-                                                            parameters_u,
-                                                            parameters_f), break_time=0, tip_text=f'此操作需要连接远程仓库，请稍等...', is_threaded_refresh=True,
-        is_asynchronous_display=True)
+    parameters_f = tkinter.messagebox.askokcancel("提示", f"是否需要强制推送？(强制推送不被建议)")
+    cli(
+        {0: git.pull_from_remote, 1: git.push_to_remote}.get(
+            type_, git.pull_from_remote
+        ),
+        (get_repo_name(), local, remote, branch, allow, parameters_u, parameters_f),
+        break_time=0,
+        tip_text=f"此操作需要连接远程仓库，请稍等...",
+        is_threaded_refresh=True,
+        is_asynchronous_display=True,
+    )
     update_git_file_last()
 
 
@@ -1378,8 +1134,8 @@ def cherry_pick():
 def open_stash(type_):
     global stash_name, git
     stash_num = stash_name.get()
-    if stash_num == '':
-        stash_num = '0'
+    if stash_num == "":
+        stash_num = "0"
     cli([git.drop_stash, git.apply_stash][type_], (get_repo_name(), stash_num))
     update_git_file_last()
 
@@ -1388,10 +1144,10 @@ def branch_merge():
     global branch_name, git, no_fast_forward, commit_message
     message = commit_message.get()
     parameters_no_ff = not bool(no_fast_forward.get())  # 对于no_ff来说，True - 使用快速合并，所以要翻转
-    if message.replace(' ', '') == '' and parameters_no_ff:
+    if message.replace(" ", "") == "" and parameters_no_ff:
         tkinter.messagebox.showinfo(
-            '警告!', '非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！'
-            '(如果你不想添加描述，请使用快速合并，但我并不建议！)')
+            "警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！" "(如果你不想添加描述，请使用快速合并，但我并不建议！)"
+        )
         return False
     name = branch_name.get()
     cli(git.merge_branch, (get_repo_name(), name, parameters_no_ff, message))
@@ -1416,7 +1172,9 @@ def add_new_branch():
     global branch_name, git, origin_branch
     name = branch_name.get()
     origin = origin_branch.get()
-    cli(git.new_branch, (get_repo_name(), name, origin), break_time=1, show_screen=False)
+    cli(
+        git.new_branch, (get_repo_name(), name, origin), break_time=1, show_screen=False
+    )
     update_git_file_last()
 
 
@@ -1439,8 +1197,8 @@ def checkout_file():  # 从暂存区、仓库返回文件
 def reset_file():  # 使用reset回退文件
     global git, head, reset_type, file_list
     repo_head = head.get()
-    if repo_head == '':
-        repo_head = 'HEAD~1'
+    if repo_head == "":
+        repo_head = "HEAD~1"
     cli(git.back_version_file, (get_repo_name(), repo_head, file_list))
     update_git_file_last()
 
@@ -1448,33 +1206,42 @@ def reset_file():  # 使用reset回退文件
 def reset_head():
     global git, head, reset_type
     repo_head = head.get()
-    if repo_head == '':
-        repo_head = 'HEAD~1'
-    Type = reset_type.get()
-    cli(git.back_version, (get_repo_name(), repo_head, Type))
+    if repo_head == "":
+        repo_head = "HEAD~1"
+    the_reset_type = reset_type.get()
+    cli(git.back_version, (get_repo_name(), repo_head, the_reset_type))
     update_git_file_last()
 
 
-def cli(func, args, name='CoTan Git', break_time=0, show_screen=True, tip_text='',
-        is_threaded_refresh=False, is_asynchronous_display=False):
+def cli(
+    func,
+    args,
+    name="CoTan Git",
+    break_time=0,
+    show_screen=True,
+    tip_text="",
+    is_threaded_refresh=False,
+    is_asynchronous_display=False,
+):
     command_thread = func(*args)
     format_flat = True
     stop_key = GitController.stop_key
 
     def save_to_txt():
         nonlocal data
-        dic = asksaveasfilename(title='选择文件保存位置', filetypes=[("TXT", ".txt")])
+        dic = asksaveasfilename(title="选择文件保存位置", filetypes=[("TXT", ".txt")])
         try:
-            if dic == '':
+            if dic == "":
                 return False
-            if dic[-4] == '.txt':
+            if dic[-4] == ".txt":
                 pass
             else:
                 raise Exception
         except BaseException:
-            dic += '.txt'
-        with open(dic, 'w', encoding='utf-8') as f:
+            dic += ".txt"
+        with open(dic, "w", encoding="utf-8") as f:
             f.write(data)
+
     keep_button = True
     stop_button = True
 
@@ -1493,11 +1260,12 @@ def cli(func, args, name='CoTan Git', break_time=0, show_screen=True, tip_text='
 
     def keep():
         nonlocal start, keep_button
-        start = float('inf')
+        start = float("inf")
         keep_button = False
         update_button()
 
-    def pipe(): pass
+    def pipe():
+        pass
 
     def format():
         nonlocal text, out_data, data, format_flat
@@ -1507,17 +1275,19 @@ def cli(func, args, name='CoTan Git', break_time=0, show_screen=True, tip_text='
         else:
             text.insert(tkinter.END, out_data)
         format_flat = not format_flat
+
     start = time.time()
-    data = ''
-    out_data = ''  # 包含out的data
+    data = ""
+    out_data = ""  # 包含out的data
     if show_screen:
         text, cli_screen, button_list = show_cli(
-            save_to_txt, stop, keep, format, pipe, name=name)  # [close,keep]
+            save_to_txt, stop, keep, format, pipe, name=name
+        )  # [close,keep]
         update_button()
-        if tip_text != '':
-            text.insert('0.0', f'载入前提示>>> {tip_text}\n')
-            out_data += f'载入前提示>>> {tip_text}\n'
-            data += f'{tip_text}\n'
+        if tip_text != "":
+            text.insert("0.0", f"载入前提示>>> {tip_text}\n")
+            out_data += f"载入前提示>>> {tip_text}\n"
+            data += f"{tip_text}\n"
         cli_screen.update()
     else:
         u = threading.Thread(target=progress_bar)
@@ -1557,39 +1327,44 @@ def cli(func, args, name='CoTan Git', break_time=0, show_screen=True, tip_text='
             nonlocal start
             command_thread.wait(break_ti)
             start = 0
-        threaded_update = threading.Thread(target=wait_command_thread)  # 这么做不是多此一举，如果没有wait，进程并不会退出
+
+        threaded_update = threading.Thread(
+            target=wait_command_thread
+        )  # 这么做不是多此一举，如果没有wait，进程并不会退出
         threaded_update.start()
         update_screen()  # 遇到sleep等主线程阻塞，top.update等会阻塞子线程，因此，必须保证主线程不会被wait所阻塞
-        out = command_thread.stdout.read().split('\n')
+        out = command_thread.stdout.read().split("\n")
         for i in out:
             if show_screen:
                 try:  # 如果界面被关掉了，会报错
-                    cli_screen.title(f'{name} : 运行中')
+                    cli_screen.title(f"{name} : 运行中")
                 except BaseException:
                     text, cli_screen, button_list = show_cli(
-                        save_to_txt, stop, keep, format, pipe, name=f'{name} : 运行中')
+                        save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                    )
                     update_button()
                     text.insert(tkinter.END, out_data)
-                if stop and i.replace(' ', '').replace('\n', '') != stop_key:
-                    text.insert(tkinter.END, f'[out]> {i}\n')
-                    data += i + '\n'
-                    out_data += f'[out]> {i}\n'
+                if stop and i.replace(" ", "").replace("\n", "") != stop_key:
+                    text.insert(tkinter.END, f"[out]> {i}\n")
+                    data += i + "\n"
+                    out_data += f"[out]> {i}\n"
             else:
                 break
         else:
-            text.insert(tkinter.END, '[END]')
-            out_data += f'[END]'
-            data += f'[END]'
+            text.insert(tkinter.END, "[END]")
+            out_data += f"[END]"
+            data += f"[END]"
         start = 0
     else:  # 即时显示
         while True:
             # 界面设置
             try:  # 如果界面被关掉了，会报错
                 if show_screen:
-                    cli_screen.title(f'{name} : 运行中')
+                    cli_screen.title(f"{name} : 运行中")
             except BaseException:
                 text, cli_screen, button_list = show_cli(
-                    save_to_txt, stop, keep, format, pipe, name=f'{name} : 运行中')
+                    save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                )
                 update_button()
                 text.insert(tkinter.END, out_data)
             # 界面刷新
@@ -1604,38 +1379,39 @@ def cli(func, args, name='CoTan Git', break_time=0, show_screen=True, tip_text='
             try:
                 # .decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
                 i = command_thread.stdout.readline()
-                bool_text = i.replace(' ', '').replace('\n', '')
-                if bool_text != '':
+                bool_text = i.replace(" ", "").replace("\n", "")
+                if bool_text != "":
                     if stop and bool_text == stop_key:
                         start = 0
                     else:
                         if show_screen:
-                            text.insert(tkinter.END, f'[out]> {i}')
+                            text.insert(tkinter.END, f"[out]> {i}")
                         data += i
-                        out_data += f'[out]> {i}'
-                if command_thread.returncode == 0 or (
-                        time.time() -
-                        start >= break_time and break_time != 0) or (
-                        break_time == 0 and start == 0):
+                        out_data += f"[out]> {i}"
+                if (
+                    command_thread.returncode == 0
+                    or (time.time() - start >= break_time and break_time != 0)
+                    or (break_time == 0 and start == 0)
+                ):
                     if show_screen:
-                        text.insert(tkinter.END, '[END]')
-                        out_data += f'[END]'
-                        data += f'[END]'
+                        text.insert(tkinter.END, "[END]")
+                        out_data += f"[END]"
+                        data += f"[END]"
                     break
                 elif command_thread.returncode is not None:
                     raise Exception
             except BaseException:
                 try:
                     if show_screen:
-                        text.insert(tkinter.END, '[ERROR]')
-                        out_data += f'[ERROR]'
-                        data += f'[ERROR]'
+                        text.insert(tkinter.END, "[ERROR]")
+                        out_data += f"[ERROR]"
+                        data += f"[ERROR]"
                     raise Exception
                 except BaseException:
                     break
         try:  # 如果界面被关掉了，会报错
             if show_screen:
-                cli_screen.title(f'{name} : 运行完毕')
+                cli_screen.title(f"{name} : 运行完毕")
         except BaseException:
             pass
         command_thread.kill()
@@ -1668,9 +1444,8 @@ def not_parameters_call(func):
 def commit():
     global git, commit_message
     m = commit_message.get()
-    if m.replace(' ', '') == '':
-        tkinter.messagebox.showinfo(
-            '警告!', '非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！')
+    if m.replace(" ", "") == "":
+        tkinter.messagebox.showinfo("警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！")
         return False
     name = get_repo_name()
     cli(git.commit_file, (name, m))
@@ -1680,8 +1455,8 @@ def commit():
 def diff():
     global git, master
     branch = master.get()
-    if branch == '':
-        branch = 'HEAD'
+    if branch == "":
+        branch = "HEAD"
     cli(git.diff_file, (get_repo_name(), branch))
     update_git_file_last()
 
@@ -1690,7 +1465,7 @@ def remove_the_staging():
     global git, last_name, file_list
     dic = file_list
     if dic == []:
-        dic = '.'
+        dic = "."
     cli(git.reset_file, (get_repo_name(), dic))
     update_git_file_last()
 
@@ -1699,14 +1474,14 @@ def add():
     global git, last_name, file_list
     dic = file_list
     if dic == []:
-        dic = '.'  # 查一下取消的dic
+        dic = "."  # 查一下取消的dic
     cli(git.add_file, (get_repo_name(), dic))
     update_git_file_last()
 
 
 def add_file_list():
     global file_list, file_box
-    new_file = set(askopenfilenames(title=f'选择文件'))
+    new_file = set(askopenfilenames(title=f"选择文件"))
     have_file = set(file_list)
     file_list += list(new_file - (new_file & have_file))  # 筛选出重复
     update_file_box()
@@ -1715,7 +1490,7 @@ def add_file_list():
 def add_file_input():
     global file_dir
     new_dir = file_dir.get()
-    if new_dir.replace(' ', '') != '' and new_dir not in file_list:
+    if new_dir.replace(" ", "") != "" and new_dir not in file_list:
         file_list.append(new_dir)
     update_file_box()
 
@@ -1723,7 +1498,7 @@ def add_file_input():
 def add_file_by_git():
     global file_dir
     new_dir = file_dir.get()
-    if new_dir.replace(' ', '') != '':
+    if new_dir.replace(" ", "") != "":
         name = get_repo_name()
         new_dir = git.make_dir(name, new_dir)
         if new_dir not in file_list:
@@ -1777,8 +1552,8 @@ def update_git_file_core(name):
 
 def repo_init():  # 创建仓库
     global git
-    new_dir = askdirectory(title='选择仓库地址')
-    if new_dir == '':
+    new_dir = askdirectory(title="选择仓库地址")
+    if new_dir == "":
         return False
     git.open_repo(new_dir)
     update_repo_box()
@@ -1803,16 +1578,12 @@ def update_repo_box():
 
 
 def show_cli(
-        out_func,
-        close_func,
-        keepFunc,
-        not_out,
-        pipeFunc,
-        name='CoTan_Git >>> 命令行'):
+    out_func, close_func, keep_func, not_out, pipe_func, name="CoTan_Git >>> 命令行"
+):
     global bg_color
     cli_screen = tkinter.Toplevel(bg=bg_color)
     cli_screen.title(name)
-    cli_screen.geometry('+10+10')  # 设置所在位置
+    cli_screen.geometry("+10+10")  # 设置所在位置
     cli_screen.resizable(width=False, height=False)
 
     class ScrolledCli(ScrolledText):
@@ -1826,95 +1597,76 @@ def show_cli(
 
         def clear(self):
             text.config(state=tkinter.NORMAL)
-            self.delete('0.0', tkinter.END)
+            self.delete("0.0", tkinter.END)
             text.config(state=tkinter.DISABLED)
 
-    text = ScrolledCli(cli_screen, font=('黑体', 11), height=30, width=100)
+    text = ScrolledCli(cli_screen, font=("黑体", 11), height=30, width=100)
     text.grid(column=0, row=0, columnspan=5, sticky=tkinter.E + tkinter.W)
     text.config(state=tkinter.DISABLED)
     tkinter.Button(
         cli_screen,
         bg=bg_color,
         fg=word_color,
-        text='输出文档',
-        font=(
-            '黑体',
-            11),
+        text="输出文档",
+        font=("黑体", 11),
         width=20,
         height=2,
-        command=out_func).grid(
-            column=4,
-            row=1,
-            sticky=tkinter.E +
-        tkinter.W)
+        command=out_func,
+    ).grid(column=4, row=1, sticky=tkinter.E + tkinter.W)
     close = tkinter.Button(
         cli_screen,
         bg=bg_color,
         fg=word_color,
-        text='关闭子线程连接',
-        font=(
-            '黑体',
-            11),
+        text="关闭子线程连接",
+        font=("黑体", 11),
         width=20,
         height=2,
-        command=close_func)
+        command=close_func,
+    )
     close.grid(column=0, row=1, sticky=tkinter.E + tkinter.W)
     keep = tkinter.Button(
         cli_screen,
         bg=bg_color,
         fg=word_color,
-        text='保持线程连接',
-        font=(
-            '黑体',
-            11),
+        text="保持线程连接",
+        font=("黑体", 11),
         width=20,
         height=2,
-        command=keepFunc)
+        command=keep_func,
+    )
     keep.grid(column=1, row=1, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         cli_screen,
         bg=bg_color,
         fg=word_color,
-        text='格式化输出',
-        font=(
-            '黑体',
-            11),
+        text="格式化输出",
+        font=("黑体", 11),
         width=20,
         height=2,
-        command=not_out).grid(
-            column=2,
-            row=1,
-            sticky=tkinter.E +
-        tkinter.W)
+        command=not_out,
+    ).grid(column=2, row=1, sticky=tkinter.E + tkinter.W)
     tkinter.Button(
         cli_screen,
         bg=bg_color,
         fg=word_color,
-        text='启动CoTan命令行',
-        font=(
-            '黑体',
-            11),
+        text="启动CoTan命令行",
+        font=("黑体", 11),
         width=20,
         height=2,
-        command=pipeFunc,
-        state=tkinter.DISABLED).grid(
-            column=3,
-            row=1,
-            sticky=tkinter.E +
-        tkinter.W)
+        command=pipe_func,
+        state=tkinter.DISABLED,
+    ).grid(column=3, row=1, sticky=tkinter.E + tkinter.W)
     cli_screen.update()
     return text, cli_screen, [close, keep]
 
 
-def progress_bar(*args, name='CoTan_Git >>> 运行中...', **kwargs):
+def progress_bar(*args, name="CoTan_Git >>> 运行中...", **kwargs):
     progress_screen = tkinter.Toplevel(bg=bg_color)
     progress_screen.title(name)
-    progress_screen.geometry('+10+10')  # 设置所在位置
+    progress_screen.geometry("+10+10")  # 设置所在位置
     mpb = ttk.Progressbar(
-        progress_screen,
-        orient="horizontal",
-        length=300,
-        mode="determinate")
+        progress_screen, orient="horizontal", length=300, mode="determinate"
+    )
     mpb.pack()
     progress_screen.resizable(width=False, height=False)
     mpb["maximum"] = 50

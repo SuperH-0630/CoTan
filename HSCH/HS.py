@@ -8,12 +8,12 @@ import sympy
 
 
 def to_bool(str_object, hope=False):
-    false_list = ['0', 'n', 'no', 'NO', 'NOT', 'No', 'Not', '不']
-    true_list = ['y', 'yes', 'Yes', 'YES', '不']
+    false_list = ["0", "n", "no", "NO", "NOT", "No", "Not", "不"]
+    true_list = ["y", "yes", "Yes", "YES", "不"]
     if hope:
-        true_list.append('')
+        true_list.append("")
     else:
-        false_list.append('')
+        false_list.append("")
     try:
         str_object = str(str_object)
         if str_object in false_list:
@@ -37,8 +37,6 @@ def find_x_by_y(x_list, y_list, y):  # 输入x和y照除In_Y的所有对应x值
         except ValueError:
             break
     return m
-
-
 
 
 class SheetFunc:
@@ -77,8 +75,8 @@ class SheetFunc:
         self.__classification_y = []
         self.__xy_sheet = []
         for i in range(len(self.__x)):
-            self.__xy_sheet.append(f'x:{self.__x[i]},y:{self.__y[i]}')
-        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=('x', 'y'))
+            self.__xy_sheet.append(f"x:{self.__x[i]},y:{self.__y[i]}")
+        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=("x", "y"))
 
         self.span = (max(x) - min(x)) / len(x)
 
@@ -100,7 +98,7 @@ class SheetFunc:
         return self.__y[self.__x.index(x)]
 
     def __str__(self):
-        return f'{self.func_name}'
+        return f"{self.func_name}"
 
     def __best_value(self):  # 计算最值和极值点
         if not self.have_data_packet:
@@ -117,7 +115,7 @@ class SheetFunc:
         self.min_x = min_x
         return self.max_x, self.max_y, self.min_x, self.min_y
 
-    def data_packet(self,*args,**kwargs):
+    def data_packet(self, *args, **kwargs):
         if self.have_data_packet:
             return self.__x, self.__y, self.func_name, self.style
         self.__classification_x = [[]]
@@ -194,7 +192,7 @@ class SheetFunc:
         self.__classification_x = new_classification_x
         self.__classification_y = new_classification_y
         self.have_data_packet = True
-        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=('x', 'y'))
+        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=("x", "y"))
         self.__best_value()
         return self.__x, self.__y, self.func_name, self.style
 
@@ -209,7 +207,8 @@ class SheetFunc:
         for i in y_list:
             try:
                 if (last_y < y_in and i > y_in) and (
-                        abs(((i + last_y) / 2) - y_in) < 0.1):
+                    abs(((i + last_y) / 2) - y_in) < 0.1
+                ):
                     result = [last_y, i]
                     break
             except BaseException:
@@ -228,15 +227,15 @@ class SheetFunc:
             return [], []
         last_x = find_x_by_y(self.__x.copy(), self.__y.copy(), result[0])  # last_y的x
         now_x = find_x_by_y(self.__x.copy(), self.__y.copy(), result[1])
-        l = min([len(now_x), len(last_x)])
+        x_len = min([len(now_x), len(last_x)])
         answer = []
         result = []
-        for i in range(l):
+        for i in range(x_len):
             r = (now_x[i] + last_x[i]) / 2
             self.memore_x.append(r)
             self.memore_y.append(y_in)
             result.append(r)
-            answer.append(f'y={y_in} -> x={r}')
+            answer.append(f"y={y_in} -> x={r}")
         self.__memory_answer += answer
         return answer, result
 
@@ -290,9 +289,9 @@ class SheetFunc:
             last_y = None
             start_x = None
             flat = None  # 当前研究反围:0-增区间,1-减区间,2-不增不减
-            for i in range(len(x_list)):
-                now_x = x_list[i]  # 正项x
-                now_y = y_list[i]  # 正项y
+            for a in range(len(x_list)):
+                now_x = x_list[a]  # 正项x
+                now_y = y_list[a]  # 正项y
                 if start_x is None:
                     start_x = now_x
                 else:
@@ -344,41 +343,45 @@ class SheetFunc:
         symmetry_axis = self.symmetry_axis(output_prompt)[0]
         center_of_symmetry = self.symmetry_center(output_prompt)[0]
         if parity[0] == 1:
-            answer.append(f'奇函数 区间:[{parity[1][0]},{parity[1][0]}]')
+            answer.append(f"奇函数 区间:[{parity[1][0]},{parity[1][0]}]")
         elif parity[0] == 0:
-            answer.append(f'偶函数 区间:[{parity[1][0]},{parity[1][0]}]')
+            answer.append(f"偶函数 区间:[{parity[1][0]},{parity[1][0]}]")
         for i in monotonic[0]:
-            answer.append(f'增区间:[{i[0]},{i[1]}]')
+            answer.append(f"增区间:[{i[0]},{i[1]}]")
         for i in monotonic[1]:
-            answer.append(f'减区间:[{i[0]},{i[1]}]')
+            answer.append(f"减区间:[{i[0]},{i[1]}]")
         for i in monotonic[2]:
-            answer.append(f'水平区间:[{i[0]},{i[1]}]')
+            answer.append(f"水平区间:[{i[0]},{i[1]}]")
         if cycles is not None:
-            answer.append(f'最小正周期：{cycles}')
+            answer.append(f"最小正周期：{cycles}")
         if symmetry_axis is not None:
-            answer.append(f'对称轴：x={symmetry_axis}')
+            answer.append(f"对称轴：x={symmetry_axis}")
         if center_of_symmetry is not None:
-            answer.append(f'对称中心：{center_of_symmetry}')
+            answer.append(f"对称中心：{center_of_symmetry}")
         return answer
 
     def hide_or_show(self):
         if self.have_prediction:
-            if tkinter.messagebox.askokcancel('提示', f'是否显示{self}的记忆数据？'):
+            if tkinter.messagebox.askokcancel("提示", f"是否显示{self}的记忆数据？"):
                 self.have_prediction = False
         else:
-            if tkinter.messagebox.askokcancel('提示', f'是否隐藏{self}的记忆数据？'):
+            if tkinter.messagebox.askokcancel("提示", f"是否隐藏{self}的记忆数据？"):
                 self.have_prediction = True
 
     def save_csv(self):
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
-        if tkinter.messagebox.askokcancel('提示', f'是否确认导出函数:\n{str(self)}'):
+        if tkinter.messagebox.askokcancel("提示", f"是否确认导出函数:\n{str(self)}"):
             try:
-                Dic = tkinter.filedialog.asksaveasfilename(
-                    title='选择导出位置', filetypes=[("CSV", ".csv")]) + '.csv'
-                if Dic == '.csv':
+                file_dir = (
+                    tkinter.filedialog.asksaveasfilename(
+                        title="选择导出位置", filetypes=[("CSV", ".csv")]
+                    )
+                    + ".csv"
+                )
+                if file_dir == ".csv":
                     raise Exception
-                self.__dataframe.to_csv(Dic)
+                self.__dataframe.to_csv(file_dir)
                 return True
             except BaseException:
                 pass
@@ -389,9 +392,9 @@ class SheetFunc:
         # if not self.HaveDone: self.Cul()  # 检查Cul的计算
         a = []
         for i in self.min_x:
-            a.append(f'极值点：{i}>最小值{self.min_y}')
+            a.append(f"极值点：{i}>最小值{self.min_y}")
         for i in self.max_x:
-            a.append(f'极值点：{i}>最大值{self.max_y}')
+            a.append(f"极值点：{i}>最大值{self.max_y}")
         return a + self.__memory_answer + self.__xy_sheet
 
     def best_value(self):
@@ -412,7 +415,12 @@ class SheetFunc:
     def get_plot_data(self):
         if not self.have_data_packet:
             self.data_packet()
-        return self.__classification_x, self.__classification_y, self.func_name, self.style
+        return (
+            self.__classification_x,
+            self.__classification_y,
+            self.func_name,
+            self.style,
+        )
 
     def calculation(self, x_list):
         answer = []
@@ -420,7 +428,7 @@ class SheetFunc:
             try:
                 i = float(i)
                 y = self(i)
-                answer.append(f'x={i} -> y={y}')
+                answer.append(f"x={i} -> y={y}")
                 if i not in self.memore_x:
                     self.memore_x.append(i)
                     self.memore_y.append(y)
@@ -431,15 +439,14 @@ class SheetFunc:
         return answer
 
     def periodic(self, output_prompt=lambda x: x):  # 计算周期
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算周期需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算周期需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
         possible_cycle_list = []  # 可能的周期
         iteration_length = len(self.__x)
         iteration_interval = int(iteration_length / 20)
-        output_prompt('正在预测可能的周期')
+        output_prompt("正在预测可能的周期")
         for i in range(0, iteration_length, iteration_interval):
             start = self.__x[i]
             try:
@@ -451,13 +458,15 @@ class SheetFunc:
                     if a == 0:
                         continue
                     possible_cycle.append(a)
-                possible_cycle_list.extend(list(set(possible_cycle)))  # 这里是extend不是append，相当于 +=
+                possible_cycle_list.extend(
+                    list(set(possible_cycle))
+                )  # 这里是extend不是append，相当于 +=
             except BaseException:
                 pass
 
         possible_cycle = []  # a的可能列表
         max_count = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_cycle_list)):
             count = possible_cycle_list.count(i)
             if count > max_count:
@@ -467,22 +476,21 @@ class SheetFunc:
                 possible_cycle.append(i)
         try:
             possible_cycle.sort()
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
         except BaseException:
-            output_prompt('无周期')
+            output_prompt("无周期")
             return None, []  # 无结果
 
     def symmetry_axis(self, output_prompt=lambda x: x):  # 计算对称轴
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算对称轴需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算对称轴需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
         possible_symmetry_axis_list = []  # 可能的对称轴
         iteration_length = len(self.__x)
         iteration_interval = int(iteration_length / 20)
-        output_prompt('正在预测可能的对称轴')
+        output_prompt("正在预测可能的对称轴")
         for i in range(0, iteration_length, iteration_interval):
             start = self.__x[i]
             try:
@@ -499,7 +507,7 @@ class SheetFunc:
 
         possible_symmetry_axis = []  # a的可能列表
         max_count = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_symmetry_axis_list)):
             count = possible_symmetry_axis_list.count(i)
             if count > max_count:
@@ -509,22 +517,21 @@ class SheetFunc:
                 possible_symmetry_axis.append(i)
         try:
             possible_symmetry_axis.sort()  #
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
         except BaseException:
-            output_prompt('无对称轴')
+            output_prompt("无对称轴")
             return None, []  # 无结果
 
     def symmetry_center(self, output_prompt=lambda x: x):  # 计算对称中心
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算对称中心需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算对称中心需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
         coordinate_points = []
         iteration_length = len(self.__x)
         iteration_interval = int(iteration_length / 20)
-        output_prompt('正在计算坐标点')
+        output_prompt("正在计算坐标点")
         for i in range(0, iteration_length, iteration_interval):
             start = self.__x[i]
             try:
@@ -535,7 +542,7 @@ class SheetFunc:
                 pass
 
         possible_center_list = []
-        output_prompt('正在预测对称中心')
+        output_prompt("正在预测对称中心")
         for i in coordinate_points:
             for o in coordinate_points:
                 x = i[0] + o[0] / 2
@@ -546,7 +553,7 @@ class SheetFunc:
 
         possible_center = []  # a的可能列表
         max_count = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_center_list)):
             count = possible_center_list.count(i)
             if count > max_count:
@@ -557,51 +564,53 @@ class SheetFunc:
         try:
             if max_count < 5:
                 raise Exception
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             possible_center.sort()
             return possible_center[int(len(possible_center) / 2)], possible_center
         except BaseException:
-            output_prompt('无对称中心')
+            output_prompt("无对称中心")
             return None, []  # 无结果
 
 
 class ExpFunc:
     def __init__(
-            self,
-            func,
-            name,
-            style,
-            start=-10,
-            end=10,
-            span=0.1,
-            accuracy=2,
-            a_default=1,
-            a_start=-10,
-            a_end=10,
-            a_span=1,
-            have_son=False):
-        self.x = sympy.Symbol('x')
-        Name = {
-            'a': a_default,
-            'x': self.x,
-            'Pi': sympy.pi,
-            'e': sympy.E,
-            'log': sympy.log,
-            'sin': sympy.sin,
-            'cos': sympy.cos,
-            'tan': sympy.tan,
-            'cot': lambda x: 1 / sympy.tan(x),
-            'csc': lambda x: 1 / sympy.sin(x),
-            'sec': lambda x: 1 / sympy.cos(x),
-            'sinh': sympy.sinh,
-            'cosh': sympy.cosh,
-            'tanh': sympy.tanh,
-            'asin': sympy.asin,
-            'acos': sympy.acos,
-            'atan': sympy.atan,
-            'abs': abs}  # 这个是函数命名域
-        self.func = eval(func.replace(' ', ''), Name)  # 函数解析式
-        self.func_str = func.replace(' ', '')
+        self,
+        func,
+        name,
+        style,
+        start=-10,
+        end=10,
+        span=0.1,
+        accuracy=2,
+        a_default=1,
+        a_start=-10,
+        a_end=10,
+        a_span=1,
+        have_son=False,
+    ):
+        self.x = sympy.Symbol("x")
+        named_domain = {
+            "a": a_default,
+            "x": self.x,
+            "Pi": sympy.pi,
+            "e": sympy.E,
+            "log": sympy.log,
+            "sin": sympy.sin,
+            "cos": sympy.cos,
+            "tan": sympy.tan,
+            "cot": lambda x: 1 / sympy.tan(x),
+            "csc": lambda x: 1 / sympy.sin(x),
+            "sec": lambda x: 1 / sympy.cos(x),
+            "sinh": sympy.sinh,
+            "cosh": sympy.cosh,
+            "tanh": sympy.tanh,
+            "asin": sympy.asin,
+            "acos": sympy.acos,
+            "atan": sympy.atan,
+            "abs": abs,
+        }  # 这个是函数命名域
+        self.func = eval(func.replace(" ", ""), named_domain)  # 函数解析式
+        self.func_str = func.replace(" ", "")
         # 函数基本信息
         self.style = style  # 绘制样式
         # 数据辨析
@@ -666,15 +675,18 @@ class ExpFunc:
             while a_start <= a_end:
                 try:
                     self.son_list.append(
-                        ExpFuncSon(func, style, start, end, span, accuracy, a_start))
+                        ExpFuncSon(func, style, start, end, span, accuracy, a_start)
+                    )
                 except BaseException:
                     pass  # 不应该出现
                 a_start += a_span
             # 这个是函数名字
-            self.func_name = f'{name}:y={func} a={a_default}({a_start},{a_end},{a_span})'
+            self.func_name = (
+                f"{name}:y={func} a={a_default}({a_start},{a_end},{a_span})"
+            )
         else:
             self.son_list = []
-            self.func_name = f'{name}:y={func} a={a_default})'  # 这个是函数名字
+            self.func_name = f"{name}:y={func} a={a_default})"  # 这个是函数名字
 
     def return_son(self):
         return self.son_list
@@ -683,7 +695,7 @@ class ExpFunc:
         return self.func.subs({self.x: x})
 
     def __str__(self):
-        return f'{self.func_name} {self.start, self.end, self.span}'
+        return f"{self.func_name} {self.start, self.end, self.span}"
 
     def __best_value(self):  # 计算最值和极值点
         # 使用ya解决了因计算器误差而没计算到的最值，但是同时本不是最值的与最值相近的数字也被当为了最值，所以使用群组击破
@@ -692,7 +704,8 @@ class ExpFunc:
         if len(self.__classification_x) != 1:  # 没有计算的必要
             if self.best_r is None:
                 self.best_r = not tkinter.messagebox.askokcancel(
-                    '建议不计算最值', f'{self}的最值计算不精确，函数可能无最值，是否不计算最值')
+                    "建议不计算最值", f"{self}的最值计算不精确，函数可能无最值，是否不计算最值"
+                )
             if not self.best_r:
                 pass
                 return self.max_x, self.max_y, self.min_x, self.min_y
@@ -797,7 +810,10 @@ class ExpFunc:
                             middle_y = self(round(accuracy_x - 0.5 * self.span))
                             if middle_y == last_y == now_y:  # 真实平衡
                                 balance = 2
-                            elif abs(middle_y - last_y) >= 10 * self.span or abs(middle_y - now_y) >= 10 * self.span:
+                            elif (
+                                abs(middle_y - last_y) >= 10 * self.span
+                                or abs(middle_y - now_y) >= 10 * self.span
+                            ):
                                 balance = 3
                                 group_score += 5
                         except BaseException:
@@ -817,7 +833,7 @@ class ExpFunc:
                     self.__x.append(accuracy_x)  # 四舍五入减少计算量
                     self.__y.append(now_y)  # 不四舍五入
                     self.__y_real.append(accuracy_y)  # 四舍五入(用于求解最值)
-                    self.__xy_sheet.append(f'x:{accuracy_x},y:{accuracy_y}')
+                    self.__xy_sheet.append(f"x:{accuracy_x},y:{accuracy_y}")
                     self.__classification_x[-1].append(accuracy_x)
                     self.__classification_y[-1].append(now_y)
                     last_y = now_y
@@ -835,7 +851,7 @@ class ExpFunc:
         for i in range(len(self.__classification_x)):  # 去除只有单个的组群
             if len(self.__classification_x[i]) <= 1 and not must_forward:  # 检测到有单个群组
                 front_reason = classification_reason[i]  # 前原因
-                back_reason = classification_reason[i+1]  # 后原因
+                back_reason = classification_reason[i + 1]  # 后原因
                 if front_reason < back_reason:  # 前原因小于后原因，连接到前面
                     try:
                         new_classification_x[-1] += self.__classification_x[i]
@@ -858,7 +874,7 @@ class ExpFunc:
         self.__classification_x = new_classification_x
         self.__classification_y = new_classification_y
         self.have_data_packet = True
-        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=('x', 'y'))
+        self.__dataframe = pandas.DataFrame((self.__x, self.__y), index=("x", "y"))
         self.__best_value()
         return self.__x, self.__y, self.func_name, self.style
 
@@ -868,7 +884,7 @@ class ExpFunc:
             start = float(start)
             end = float(end)
         except BaseException:
-            return '', None
+            return "", None
         try:
             max_iter = int(max_iter)
             accuracy = float(accuracy)
@@ -923,28 +939,29 @@ class ExpFunc:
                     right = right_history[-2]
                     contraction_direction = 1
         else:
-            return '', None
+            return "", None
         self.memore_x.append(middle)
         self.memore_y.append(y_value)
-        self.__memory_answer.append(f'y={y_value} -> x={middle}')
-        print(f'y={y_value} -> x={middle}', middle)
-        return f'y={y_value} -> x={middle}', middle
+        self.__memory_answer.append(f"y={y_value} -> x={middle}")
+        print(f"y={y_value} -> x={middle}", middle)
+        return f"y={y_value} -> x={middle}", middle
 
     def dichotomy(
-            self,
-            y_value,
-            max_iter=100,
-            accuracy=0.0001,
-            best_value_starting_offset=0.1,
-            zero_minimum_distance=0.5,
-            allow_original_value=False,
-            allow_extended_calculations=True,
-            expansion_depth=1000,
-            expansion_limit=0.1,
-            new_area_offset=0.1,
-            secondary_verification=False,
-            secondary_verification_effect=None,
-            return_all=False):
+        self,
+        y_value,
+        max_iter=100,
+        accuracy=0.0001,
+        best_value_starting_offset=0.1,
+        zero_minimum_distance=0.5,
+        allow_original_value=False,
+        allow_extended_calculations=True,
+        expansion_depth=1000,
+        expansion_limit=0.1,
+        new_area_offset=0.1,
+        secondary_verification=False,
+        secondary_verification_effect=None,
+        return_all=False,
+    ):
         # y_in输入的参数,k最大迭代数,r_Cul允许使用原来的数值,d精度,ky最值允许偏移量,kx新区间偏移量,cx扩张限制,dx两零点的最小范围,deep扩张深度
         # H_Cul允许扩展计算,f_On开启二级验证,f二级验证效果
         if secondary_verification_effect is None:
@@ -982,7 +999,10 @@ class ExpFunc:
         except BaseException:
             return [], []
         try:
-            if y_value < self.min_y - best_value_starting_offset or y_value > self.max_y + best_value_starting_offset:
+            if (
+                y_value < self.min_y - best_value_starting_offset
+                or y_value > self.max_y + best_value_starting_offset
+            ):
                 return [], []  # 返回空值
             if allow_original_value and y_value in y:  # 如果已经计算过
                 num = y.index(y_value)
@@ -1015,8 +1035,13 @@ class ExpFunc:
                                 # 增加区间（新区间不包括c，增加了一个偏移kx）
                                 iter_interval.append([left, middle - new_area_offset])
                                 expansion_depth -= 1  # 余额减一
-                            if abs((middle + new_area_offset) - right) > expansion_limit:
-                                iter_interval.append([middle + new_area_offset, right])  # 增加区间
+                            if (
+                                abs((middle + new_area_offset) - right)
+                                > expansion_limit
+                            ):
+                                iter_interval.append(
+                                    [middle + new_area_offset, right]
+                                )  # 增加区间
                                 expansion_depth -= 1
                             middle = None
                         break
@@ -1028,30 +1053,46 @@ class ExpFunc:
                                 # 增加区间（新区间不包括c，增加了一个偏移kx）
                                 iter_interval.append([left, middle - new_area_offset])
                                 expansion_depth -= 1  # 余额减一
-                            if abs((middle + new_area_offset) - right) > expansion_limit:
-                                iter_interval.append([middle + new_area_offset, right])  # 增加区间
+                            if (
+                                abs((middle + new_area_offset) - right)
+                                > expansion_limit
+                            ):
+                                iter_interval.append(
+                                    [middle + new_area_offset, right]
+                                )  # 增加区间
                                 expansion_depth -= 1
                         break  # 这个区间迭代完成，跳出返回c
                     elif left_zero_c * right_zero_c == 0:  # a或者b之间有一个是零点
                         if left_zero_c == 0:  # a是零点
                             middle = left
-                            if expansion_depth > 0 and abs((left + new_area_offset) - right) > expansion_limit:  # 尝试往b方向扩张
+                            if (
+                                expansion_depth > 0
+                                and abs((left + new_area_offset) - right)
+                                > expansion_limit
+                            ):
                                 iter_interval.append([left + new_area_offset, right])
                                 expansion_depth -= 1
                             break
                         else:
                             middle = right  # 同上
-                            if expansion_depth > 0 and abs(left - (right - new_area_offset)) > expansion_limit:
+                            if (
+                                expansion_depth > 0
+                                and abs(left - (right - new_area_offset))
+                                > expansion_limit
+                            ):
                                 iter_interval.append([left, right - new_area_offset])
                                 expansion_depth -= 1
                             break
                     elif left_zero_c * right_zero_c > 0:  # q和p都有或都没用零点
-                        if left_zero_c > 0 and abs(
-                                left - right) < zero_minimum_distance:  # 如果ab足够小反围，则认为a和b之间不存在零点
+                        if (
+                            left_zero_c > 0
+                            and abs(left - right) < zero_minimum_distance
+                        ):  # 如果ab足够小反围，则认为a和b之间不存在零点
                             if allow_extended_calculations:
                                 # addNews('进入梯度运算')
-                                middle = self.gradient_calculation(y_value, left, right)[
-                                    1]
+                                middle = self.gradient_calculation(
+                                    y_value, left, right
+                                )[1]
                                 if middle is not None:
                                     break
                             middle = None
@@ -1059,7 +1100,10 @@ class ExpFunc:
                         iter_interval.append([right, middle])  # 其中一个方向继续迭代，另一个方向加入候选
                         right = middle
                     elif left_zero_c < 0:  # 往一个方向收缩，同时另一个方向增加新的区间
-                        if expansion_depth > 0 and abs(middle - right) > expansion_limit:
+                        if (
+                            expansion_depth > 0
+                            and abs(middle - right) > expansion_limit
+                        ):
                             iter_interval.append([middle, right])
                             expansion_depth -= 1
                         right = middle
@@ -1071,7 +1115,10 @@ class ExpFunc:
                     if abs(left - right) < accuracy:  # a和b足够小，认为找到零点
                         middle = (left + right) / 2
                         middle_y = self(middle)
-                        if secondary_verification and abs(y_value - middle_y) > secondary_verification_effect:  # _c不是目标输出
+                        if (
+                            secondary_verification
+                            and abs(y_value - middle_y) > secondary_verification_effect
+                        ):
                             middle = None
                         break
                 except BaseException:
@@ -1088,10 +1135,10 @@ class ExpFunc:
         for i in middle_list:
             self.memore_x.append(i)
             self.memore_y.append(y_value)
-            answer.append(f'y={y_value} -> x={i}')
+            answer.append(f"y={y_value} -> x={i}")
         if return_all:
             for i in middle_list_deviation:
-                answer.append(f'(误差)y={y_value} -> x={i}')
+                answer.append(f"(误差)y={y_value} -> x={i}")
         self.__memory_answer += answer
         return answer, middle_list
 
@@ -1204,49 +1251,51 @@ class ExpFunc:
                 increase_interval.append((start_x, last_x))
         return increase_interval, minus_interval, interval
 
-    def property_prediction(self, output_prompt=lambda x: x, return_all=False, accuracy=None):
+    def property_prediction(
+        self, output_prompt=lambda x: x, return_all=False, accuracy=None
+    ):
         try:
             accuracy = float(accuracy)
         except BaseException:
             accuracy = None
         answer = []
-        P = self.__parity()
-        M = self.__monotonic()
-        ZQ = self.periodic(output_prompt, accuracy)
-        DCZ = self.symmetry_axis(output_prompt, accuracy)
-        DCZX = self.symmetry_center(output_prompt, accuracy)
-        if P[0] == 1:
-            answer.append(f'奇函数 区间:[{P[1][0]},{P[1][0]}]')
-        elif P[0] == 0:
-            answer.append(f'偶函数 区间:[{P[1][0]},{P[1][0]}]')
-        for i in M[0]:
-            answer.append(f'增区间:[{i[0]},{i[1]}]')
-        for i in M[1]:
-            answer.append(f'减区间:[{i[0]},{i[1]}]')
-        for i in M[2]:
-            answer.append(f'水平区间:[{i[0]},{i[1]}]')
+        parity = self.__parity()
+        monotonic = self.__monotonic()
+        periodic = self.periodic(output_prompt, accuracy)
+        symmetry_axis = self.symmetry_axis(output_prompt, accuracy)
+        symmetry_center = self.symmetry_center(output_prompt, accuracy)
+        if parity[0] == 1:
+            answer.append(f"奇函数 区间:[{parity[1][0]},{parity[1][0]}]")
+        elif parity[0] == 0:
+            answer.append(f"偶函数 区间:[{parity[1][0]},{parity[1][0]}]")
+        for i in monotonic[0]:
+            answer.append(f"增区间:[{i[0]},{i[1]}]")
+        for i in monotonic[1]:
+            answer.append(f"减区间:[{i[0]},{i[1]}]")
+        for i in monotonic[2]:
+            answer.append(f"水平区间:[{i[0]},{i[1]}]")
         if self.derivatives:
-            answer.append(f'导函数：{self.derivatives}')
-        if ZQ[0] is not None:
-            answer.append(f'最小正周期：{ZQ[0]}')
-        if DCZ[0] is not None:
-            answer.append(f'对称轴：x={DCZ[0]}')
-        if DCZX[0] is not None:
-            answer.append(f'对称中心：{DCZX[0]}')
+            answer.append(f"导函数：{self.derivatives}")
+        if periodic[0] is not None:
+            answer.append(f"最小正周期：{periodic[0]}")
+        if symmetry_axis[0] is not None:
+            answer.append(f"对称轴：x={symmetry_axis[0]}")
+        if symmetry_center[0] is not None:
+            answer.append(f"对称中心：{symmetry_center[0]}")
         if return_all:
             try:
-                for i in ZQ[1][1:]:
-                    answer.append(f'可能的最小正周期：{i}')
+                for i in periodic[1][1:]:
+                    answer.append(f"可能的最小正周期：{i}")
             except BaseException:
                 pass
             try:
-                for i in DCZ[1][1:]:
-                    answer.append(f'可能的对称轴：{i}')
+                for i in symmetry_axis[1][1:]:
+                    answer.append(f"可能的对称轴：{i}")
             except BaseException:
                 pass
             try:
-                for i in DCZX[1][1:]:
-                    answer.append(f'可能的对称中心：{i}')
+                for i in symmetry_center[1][1:]:
+                    answer.append(f"可能的对称中心：{i}")
             except BaseException:
                 pass
 
@@ -1254,24 +1303,28 @@ class ExpFunc:
 
     def hide_or_show(self):  # 记忆数据显示和隐藏
         if self.have_prediction:
-            if tkinter.messagebox.askokcancel('提示', f'是否显示{self}的记忆数据？'):
+            if tkinter.messagebox.askokcancel("提示", f"是否显示{self}的记忆数据？"):
                 # addNews('记忆显示完毕')
                 self.have_prediction = False
         else:
-            if tkinter.messagebox.askokcancel('提示', f'是否隐藏{self}的记忆数据？'):
+            if tkinter.messagebox.askokcancel("提示", f"是否隐藏{self}的记忆数据？"):
                 # addNews('记忆隐藏完毕')
                 self.have_prediction = True
 
     def save_csv(self):
         if not self.have_data_packet:
             self.data_packet()
-        if tkinter.messagebox.askokcancel('提示', f'是否确认导出函数:\n{str(self)}'):
+        if tkinter.messagebox.askokcancel("提示", f"是否确认导出函数:\n{str(self)}"):
             try:
-                Dic = tkinter.filedialog.asksaveasfilename(
-                    title='选择导出位置', filetypes=[("CSV", ".csv")]) + '.csv'
-                if Dic == '.csv':
+                file_dir = (
+                    tkinter.filedialog.asksaveasfilename(
+                        title="选择导出位置", filetypes=[("CSV", ".csv")]
+                    )
+                    + ".csv"
+                )
+                if file_dir == ".csv":
                     raise Exception
-                self.__dataframe.to_csv(Dic)
+                self.__dataframe.to_csv(file_dir)
                 return True
             except BaseException:
                 pass
@@ -1283,9 +1336,9 @@ class ExpFunc:
         # 最值和极值点设计
         a = []
         for i in self.min_x:
-            a.append(f'极值点：{i}>最小值{self.min_y}')
+            a.append(f"极值点：{i}>最小值{self.min_y}")
         for i in self.max_x:
-            a.append(f'极值点：{i}>最大值{self.max_y}')
+            a.append(f"极值点：{i}>最大值{self.max_y}")
         return a + self.__memory_answer + self.__xy_sheet
 
     def best_value(self):
@@ -1304,7 +1357,12 @@ class ExpFunc:
     def get_plot_data(self):
         if not self.have_data_packet:
             self.data_packet()
-        return self.__classification_x, self.__classification_y, self.func_name, self.style
+        return (
+            self.__classification_x,
+            self.__classification_y,
+            self.func_name,
+            self.style,
+        )
 
     def calculation(self, x_in):
         answer = []
@@ -1312,7 +1370,7 @@ class ExpFunc:
             try:
                 i = float(i)
                 y = self(i)
-                answer.append(f'x={i} -> y={y}={float(y)}')
+                answer.append(f"x={i} -> y={y}={float(y)}")
                 if i not in self.memore_x:
                     self.memore_x.append(i)
                     self.memore_y.append(y)
@@ -1320,13 +1378,13 @@ class ExpFunc:
                 continue
         self.__best_value()
         self.__dataframe = pandas.DataFrame(
-            (self.__x + self.memore_x, self.__y + self.memore_y), index=('x', 'y'))
+            (self.__x + self.memore_x, self.__y + self.memore_y), index=("x", "y")
+        )
         self.__memory_answer += answer
         return answer
 
     def periodic(self, output_prompt=lambda x: x, accuracy=None):  # 计算周期
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算周期需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算周期需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
@@ -1337,12 +1395,12 @@ class ExpFunc:
             span = accuracy
         else:
             span = abs(start - end) / 20
-        output_prompt('正在预测可能的周期')
+        output_prompt("正在预测可能的周期")
         while start <= end:
             try:
                 y = self(start)
                 x_list = self.dichotomy(y)[1]
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 # print(x_list)
                 possible_cycle = []
                 for o_x in x_list:
@@ -1359,7 +1417,7 @@ class ExpFunc:
 
         possible_cycle = []  # a的可能列表
         max_count = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_cycle_list)):
             count = possible_cycle_list.count(i)
             if count > max_count:
@@ -1369,15 +1427,14 @@ class ExpFunc:
                 possible_cycle.append(i)
         try:
             possible_cycle.sort()
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
         except BaseException:
-            output_prompt('无周期')
+            output_prompt("无周期")
             return None, []  # 无结果
 
     def symmetry_axis(self, output_prompt=lambda x: x, accuracy=None):  # 计算对称轴
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算对称轴需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算对称轴需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
@@ -1388,12 +1445,12 @@ class ExpFunc:
             span = accuracy
         else:
             span = abs(start - end) / 20
-        output_prompt('正在预测对称轴')
+        output_prompt("正在预测对称轴")
         while start <= end:
             try:
                 y = self(start)
                 x_list = self.dichotomy(y)[1]
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 # print(x_list)
                 possible_symmetry_axis = []
                 for o_x in x_list:
@@ -1407,7 +1464,7 @@ class ExpFunc:
 
         possible_symmetry_axis = []  # a的可能列表
         c = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_symmetry_axis_list)):
             n_c = possible_symmetry_axis_list.count(i)
             if n_c > c:
@@ -1417,22 +1474,21 @@ class ExpFunc:
                 possible_symmetry_axis.append(i)
         try:
             possible_symmetry_axis.sort()  #
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
         except BaseException:
-            output_prompt('无对称轴')
+            output_prompt("无对称轴")
             return None, []  # 无结果
 
     def symmetry_center(self, output_prompt=lambda x: x, accuracy=None):  # 计算对称中心
-        if not tkinter.messagebox.askokcancel(
-                '提示', f'计算对称中心需要一定时间，是否执行？(计算过程程序可能无响应)'):
+        if not tkinter.messagebox.askokcancel("提示", f"计算对称中心需要一定时间，是否执行？(计算过程程序可能无响应)"):
             return None, []  # 无结果
         if not self.have_data_packet:
             self.data_packet()
         coordinate_points = []  # 可能的对称轴
         start = self.start
         end = self.end
-        output_prompt('正在计算坐标点')
+        output_prompt("正在计算坐标点")
         if accuracy is not None:
             span = accuracy
         else:
@@ -1447,7 +1503,7 @@ class ExpFunc:
             start += span
         possible_center_list = []
 
-        output_prompt('正在预测对称中心')
+        output_prompt("正在预测对称中心")
         for i in coordinate_points:
             for o in coordinate_points:
                 x = round((i[0] + o[0]) / 2, self.accuracy)
@@ -1457,7 +1513,7 @@ class ExpFunc:
                 possible_center_list.append((x, y))
         possible_center = []  # a的可能列表
         max_count = 0
-        output_prompt('正在筛选结果')
+        output_prompt("正在筛选结果")
         for i in list(set(possible_center_list)):
             count = possible_center_list.count(i)
             if count > max_count:
@@ -1468,22 +1524,24 @@ class ExpFunc:
         try:
             if max_count < 5:
                 raise Exception
-            output_prompt('计算完毕')
+            output_prompt("计算完毕")
             possible_center.sort()  #
             return possible_center[int(len(possible_center) / 2)], possible_center
         except BaseException:
-            output_prompt('无对称中心')
+            output_prompt("无对称中心")
             return None, []  # 无结果
 
-    def check_monotonic(self, parameters, output_prompt=lambda x: x, accuracy=None):  # 检查单调性
+    def check_monotonic(
+        self, parameters, output_prompt=lambda x: x, accuracy=None
+    ):  # 检查单调性
         result = True  # 预测结果
         try:
-            parameters = parameters.split(',')
+            parameters = parameters.split(",")
             start = float(parameters[0])
             end = float(parameters[1])
             flat = float(parameters[2])  # 当前研究反围:0-增区间,1-减区间,2-不增不减
         except BaseException:
-            return False, ''
+            return False, ""
         if start > end:
             start, end = end, start
         last_y = None
@@ -1493,7 +1551,7 @@ class ExpFunc:
             span = self.span
         while start <= end:
             try:
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
             except BaseException:
                 start += span
@@ -1512,16 +1570,21 @@ class ExpFunc:
             last_y = now_y
             start += span
 
-        monotonic_key = {0: '单调递增', 1: '单调递减', 2: '平行'}
-        result_key = {True: '成立', False: '不成立'}
-        return result, f'{self}在[{parameters[0]},{parameters[1]}]{monotonic_key[flat]}{result_key[result]}'
+        monotonic_key = {0: "单调递增", 1: "单调递减", 2: "平行"}
+        result_key = {True: "成立", False: "不成立"}
+        return (
+            result,
+            f"{self}在[{parameters[0]},{parameters[1]}]{monotonic_key[flat]}{result_key[result]}",
+        )
 
-    def check_periodic(self, parameters, output_prompt=lambda x: x, accuracy=None):  # 检查周期性
+    def check_periodic(
+        self, parameters, output_prompt=lambda x: x, accuracy=None
+    ):  # 检查周期性
         result = True
         try:
             parameters = float(parameters)
         except BaseException:
-            return False, ''
+            return False, ""
         start = self.start
         end = self.end
         if accuracy is not None:
@@ -1530,7 +1593,7 @@ class ExpFunc:
             span = self.span
         while start <= end:
             try:
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
                 last_y = round(self(start + parameters), self.accuracy)
                 if now_y != last_y:
@@ -1538,15 +1601,17 @@ class ExpFunc:
             except BaseException:
                 pass
             start += span
-        result_key = {True: '是', False: '不是'}
-        return result, f'{self}的周期{result_key[result]}{parameters}'
+        result_key = {True: "是", False: "不是"}
+        return result, f"{self}的周期{result_key[result]}{parameters}"
 
-    def check_symmetry_axis(self, parameters, output_prompt=lambda x: x, accuracy=None):  # 检查对称轴
+    def check_symmetry_axis(
+        self, parameters, output_prompt=lambda x: x, accuracy=None
+    ):  # 检查对称轴
         result = True
         try:
             parameters = 2 * float(parameters)
         except BaseException:
-            return False, ''
+            return False, ""
         start = self.start
         end = self.end
         if accuracy is not None:
@@ -1555,7 +1620,7 @@ class ExpFunc:
             span = self.span
         while start <= end:
             try:
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
                 last_y = round(self(parameters - start), self.accuracy)
                 if now_y != last_y:
@@ -1563,17 +1628,19 @@ class ExpFunc:
             except BaseException:
                 pass
             start += span
-        result_key = {True: '是', False: '不是'}
-        return result, f'{self}的对称轴{result_key[result]}{parameters}'
+        result_key = {True: "是", False: "不是"}
+        return result, f"{self}的对称轴{result_key[result]}{parameters}"
 
-    def check_symmetry_center(self, parameters_input, output_prompt=lambda x: x, accuracy=None):  # 检查对称中心
+    def check_symmetry_center(
+        self, parameters_input, output_prompt=lambda x: x, accuracy=None
+    ):  # 检查对称中心
         result = True
         try:
             parameters = []
-            for i in parameters_input.split(','):
+            for i in parameters_input.split(","):
                 parameters.append(float(i))
         except BaseException:
-            return False, ''
+            return False, ""
         start = self.start
         end = self.end
         if accuracy is not None:
@@ -1582,7 +1649,7 @@ class ExpFunc:
             span = self.span
         while start <= end:
             try:
-                output_prompt('迭代运算...')
+                output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
                 last_y = round(self(2 * parameters[0] - start), self.accuracy)
                 if round((now_y + last_y) / 2, self.accuracy) != parameters[1]:
@@ -1590,8 +1657,8 @@ class ExpFunc:
             except BaseException:
                 pass
             start += span
-        result_key = {True: '是', False: '不是'}
-        return result, f'{self}的对称中心{result_key[result]}{parameters}'
+        result_key = {True: "是", False: "不是"}
+        return result, f"{self}的对称中心{result_key[result]}{parameters}"
 
     def sympy_calculation(self, y_value):  # 利用Sympy解方程
         try:
@@ -1601,7 +1668,7 @@ class ExpFunc:
             for x in result_list:
                 self.memore_x.append(x)  # 可能需要修复成float(x)
                 self.memore_y.append(y_value)
-                answer.append(f'y={y_value} -> x={x}')
+                answer.append(f"y={y_value} -> x={x}")
             return answer, result_list
         except BaseException:
             return [], []
@@ -1616,7 +1683,7 @@ class ExpFunc:
             x_value = float(x_value)
             if derivatives is not None and not must:  # 导函数法
                 derivative_num = derivatives.evalf(subs={self.x: x_value})
-                derivative_method = '导函数求值'
+                derivative_method = "导函数求值"
             else:
                 x1 = x_value - delta_x / 2
                 x2 = x_value + delta_x / 2
@@ -1624,39 +1691,42 @@ class ExpFunc:
                 y2 = self(x2)
                 delta_x = y2 - y1
                 derivative_num = delta_x / delta_x
-                derivative_method = '逼近法求值'
+                derivative_method = "逼近法求值"
         except BaseException:
             return None, None
-        answer = f'({derivative_method})x:{x_value} -> {derivative_num}'
+        answer = f"({derivative_method})x:{x_value} -> {derivative_num}"
         return answer, derivative_num
 
 
 class ExpFuncSon:
-    def __init__(self, func, style, start=-10, end=10, span=0.1, accuracy=2, a_default=1):
-        self.x = sympy.Symbol('x')
-        Name = {
-            'a': a_default,
-            'x': self.x,
-            'Pi': sympy.pi,
-            'e': sympy.E,
-            'log': sympy.log,
-            'sin': sympy.sin,
-            'cos': sympy.cos,
-            'tan': sympy.tan,
-            'cot': lambda x: 1 / sympy.tan(x),
-            'csc': lambda x: 1 / sympy.sin(x),
-            'sec': lambda x: 1 / sympy.cos(x),
-            'sinh': sympy.sinh,
-            'cosh': sympy.cosh,
-            'tanh': sympy.tanh,
-            'asin': sympy.asin,
-            'acos': sympy.acos,
-            'atan': sympy.atan,
-            'abs': abs}  # 这个是函数命名域
-        self.func = eval(func.replace(' ', ''), Name)  # 函数解析式
-        self.func_str = func.replace(' ', '')
+    def __init__(
+        self, func, style, start=-10, end=10, span=0.1, accuracy=2, a_default=1
+    ):
+        self.x = sympy.Symbol("x")
+        named_domain = {
+            "a": a_default,
+            "x": self.x,
+            "Pi": sympy.pi,
+            "e": sympy.E,
+            "log": sympy.log,
+            "sin": sympy.sin,
+            "cos": sympy.cos,
+            "tan": sympy.tan,
+            "cot": lambda x: 1 / sympy.tan(x),
+            "csc": lambda x: 1 / sympy.sin(x),
+            "sec": lambda x: 1 / sympy.cos(x),
+            "sinh": sympy.sinh,
+            "cosh": sympy.cosh,
+            "tanh": sympy.tanh,
+            "asin": sympy.asin,
+            "acos": sympy.acos,
+            "atan": sympy.atan,
+            "abs": abs,
+        }  # 这个是函数命名域
+        self.func = eval(func.replace(" ", ""), named_domain)  # 函数解析式
+        self.func_str = func.replace(" ", "")
         # 函数基本信息
-        self.func_name = f'y={func} a={a_default}'  # 这个是函数名字
+        self.func_name = f"y={func} a={a_default}"  # 这个是函数名字
         self.style = style  # 绘制样式
         # 数据辨析
         try:
@@ -1691,7 +1761,7 @@ class ExpFuncSon:
         return self.func.evalf(subs={self.x: x})
 
     def __str__(self):
-        return f'{self.func_name} {self.start, self.end, self.span}'
+        return f"{self.func_name} {self.start, self.end, self.span}"
 
     def data_packet(self, number_type=float):
         if self.have_data_packet:
@@ -1724,7 +1794,10 @@ class ExpFuncSon:
                             middle_y = self(round(accuracy_x - 0.5 * self.span))
                             if middle_y == last_y == now_y:  # 真实平衡
                                 balance = 2
-                            elif abs(middle_y - last_y) >= 10 * self.span or abs(middle_y - now_y) >= 10 * self.span:
+                            elif (
+                                abs(middle_y - last_y) >= 10 * self.span
+                                or abs(middle_y - now_y) >= 10 * self.span
+                            ):
                                 balance = 3
                                 group_score += 5
                         except BaseException:
@@ -1761,7 +1834,7 @@ class ExpFuncSon:
         for i in range(len(self.__classification_x)):  # 去除只有单个的组群
             if len(self.__classification_x[i]) <= 1 and not must_forward:  # 检测到有单个群组
                 front_reason = classification_reason[i]  # 前原因
-                back_reason = classification_reason[i+1]  # 后原因
+                back_reason = classification_reason[i + 1]  # 后原因
                 if front_reason < back_reason:  # 前原因小于后原因，连接到前面
                     try:
                         new_classification_x[-1] += self.__classification_x[i]
@@ -1789,4 +1862,9 @@ class ExpFuncSon:
     def get_plot_data(self):
         if not self.have_data_packet:
             self.data_packet()
-        return self.__classification_x, self.__classification_y, self.func_name, self.style
+        return (
+            self.__classification_x,
+            self.__classification_y,
+            self.func_name,
+            self.style,
+        )

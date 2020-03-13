@@ -1,5 +1,6 @@
 import tkinter as tk
 
+
 class DragWindow(tk.Tk):
     root_x, root_y, abs_x, abs_y = 0, 0, 0, 0
     width, height = None, None
@@ -7,12 +8,9 @@ class DragWindow(tk.Tk):
     def __init__(self, alpha=0.97, width=None, height=None):
         super().__init__()
         self.width, self.height = width, height
-        # self.overrideredirect(True)
-        self.wm_attributes("-alpha", alpha)      # 透明度
-        # self.wm_attributes("-toolwindow", True)  # 置为工具窗口
-        # self.wm_attributes("-topmost", topmost)  # 永远处于顶层
-        self.bind('<B1-Motion>', self._on_move)
-        self.bind('<ButtonPress-1>', self._on_tap)
+        self.wm_attributes("-alpha", alpha)  # 透明度
+        self.bind("<B1-Motion>", self._on_move)
+        self.bind("<ButtonPress-1>", self._on_tap)
 
     def set_display_postion(self, offset_x, offset_y):
         self.geometry("+%s+%s" % (offset_x, offset_y))
@@ -26,8 +24,12 @@ class DragWindow(tk.Tk):
         offset_y = event.y_root - self.root_y
 
         if self.width and self.height:
-            geo_str = "%sx%s+%s+%s" % (self.width, self.height,
-                                       self.abs_x + offset_x, self.abs_y + offset_y)
+            geo_str = "%sx%s+%s+%s" % (
+                self.width,
+                self.height,
+                self.abs_x + offset_x,
+                self.abs_y + offset_y,
+            )
         else:
             geo_str = "+%s+%s" % (self.abs_x + offset_x, self.abs_y + offset_y)
         self.geometry(geo_str)

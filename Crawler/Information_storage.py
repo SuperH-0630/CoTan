@@ -4,8 +4,8 @@ import time
 
 class Database:
     def __init__(self, name):
-        self.dir = rf'{os.getcwd()}/Database_dir/{name}.cotanDB'  # 创建DB文件
-        self.file = open(self.dir, 'r+' if os.path.exists(self.dir) else 'w+')
+        self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
+        self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
         self.id = 0
         self.name = name
         for _ in self.file.readlines():
@@ -23,8 +23,8 @@ class Database:
     def add_new(self, data):
         data_str = str(self.id)
         for i in data:
-            data_str += ',' + str(i)
-        data_str += '\n'
+            data_str += "," + str(i)
+        data_str += "\n"
         self.file.write(data_str)
         self.file.flush()
         self.id += 1
@@ -34,7 +34,7 @@ class Database:
         os.remove(self.dir)
 
     def out_file(self, out_dir):
-        with open(out_dir + fr'/{self.name}.contanDB', 'w') as f:
+        with open(out_dir + fr"/{self.name}.contanDB", "w") as f:
             with open(self.dir) as g:
                 f.write(g.read())
 
@@ -76,18 +76,20 @@ class DatabaseController:  # data base控制器
         return list(self.database.keys())
 
 
-class log:
+class Log:
     def __init__(self, log_dir):
         self.log_dir = log_dir
-        self.log_file = open(log_dir +
-                             '/log.coTanLog', 'r+' if os.path.exists(log_dir +
-                                                                     'log.coTanLog') else 'w+')
+        self.log_file = open(
+            log_dir + "/log.coTanLog",
+            "r+" if os.path.exists(log_dir + "log.coTanLog") else "w+",
+        )
 
     def write(self, data):
         self.log_file.write(
-            f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] " +
-            data +
-            '\n')
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] "
+            + data
+            + "\n"
+        )
         self.log_file.flush()
 
     def close(self):
