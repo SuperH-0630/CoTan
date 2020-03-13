@@ -1,9 +1,10 @@
 from __future__ import division  # 让/恢复为除法
-import pandas
 import tkinter
 import tkinter.messagebox
 from tkinter.filedialog import asksaveasfile
 import tkinter.messagebox
+
+import pandas
 import sympy
 
 

@@ -1,8 +1,10 @@
-import pygame
-from pygame.locals import *
-from CGB.TK import tool_box
 import time
 import os
+
+import pygame
+from pygame.locals import *
+
+from CGB.TK import tool_box
 
 # 定义一些变量
 pen_color = [0, 0, 0]  # 画笔颜色
@@ -23,22 +25,25 @@ ordinate_scale = []  # Y个数
 anchor_x = []
 anchor_y = []
 span = 60  # 坐标系跨度调节
-
 middle_key = 0  # 中键模式
 line = []  # 画线列表
 rect = []  # 画矩阵和圆列表
 poly = []  # 画多边形列表
-
 tips = ''  # 设置备注
-
 save_dir = ''  # 保存路径
 bottom_tip = [0, 0, 0, 0, 0]  # 底部显示信息[x,y,左键，中间，右键]
-
 mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '线条矩形(s)',
         5: '绘制横线(k)', 6: '绘制竖线(l)', 7: '绘制多段线(j)',
         8: '绘制横打点多段线(i)', 9: '绘制竖打点多段线(u)', 10: '坐标测绘(h)',
         11: '绘制虚线(q)', 12: '填充圆形(c)', 13: '线条圆形(v)', 14: '多边形(n-填充,m-线条)',
         15: '填充椭圆形(e)', 16: '线条椭圆形(r)', 0: 'None'}  # 快捷键名字
+SCREEN_X = 900
+SCREEN_Y = 700
+init_done = pygame.init()  # 初始化所有模块
+FONT = pygame.font.Font(r'Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
+SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 创建屏幕
+SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
+SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
 
 
 def func_draw(func_list, pixel_accuracy=1000):
@@ -235,21 +240,13 @@ def top_draw():
     SCREEN.blit(model_tip, (0, SCREEN_Y - 16))
 
 
-def draw_main(dis_x=900, dis_y=700):
-    global previous_x, previous_y, pen_color, pen_weight, background, coordinate_system_drawing_method
+def draw_main():
+    global previous_x, previous_y, pen_color, pen_weight, coordinate_system_drawing_method
     global coordinate_click_point, record_origin_x
     global record_origin_y, span, line
     global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir
-    global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips, FONT
-    SCREEN_X = dis_x
-    SCREEN_Y = dis_y
-    init_done = pygame.init()  # 初始化所有模块
-    if init_done[1] != 0:
-        print('Init!')  # 检查是否错误
-    FONT = pygame.font.Font(r'Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
-    SCREEN = pygame.display.set_mode((dis_x, dis_y), 0)  # 创建屏幕
-    SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
-    SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
+    global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips
+
     flat = True  # 循环条件（不是全局）
     while flat:
         top_draw()
@@ -276,12 +273,12 @@ def draw_main(dis_x=900, dis_y=700):
                     bottom_tip[4] = 1
                     pygame.image.save(SCREEN, '$CoTanCC.png')  # 保存当前环境
                     SCREEN = pygame.display.set_mode(
-                        (dis_x, dis_y), pygame.NOFRAME)  # 隐藏关闭按钮
+                        (SCREEN_X, SCREEN_Y), pygame.NOFRAME)  # 隐藏关闭按钮
                     background_image = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
                     SCREEN.blit(background_image, (0, 0))  # 绘制位图
                     pygame.display.update()  # 更新屏幕
                     tool_set = tool_box()  # 启动工具箱
-                    SCREEN = pygame.display.set_mode((dis_x, dis_y), 0)  # 显示关闭按钮
+                    SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 显示关闭按钮
                     background_image = pygame.image.load('$CoTanCC.png').convert()  # 加载位图
                     SCREEN.blit(background_image, (0, 0))  # 绘制位图
                     pygame.display.update()  # 更新屏幕

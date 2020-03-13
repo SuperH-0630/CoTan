@@ -1,7 +1,10 @@
-from scipy.fftpack import fft, ifft  # 快速傅里叶变换
+import re
+from os.path import split as path_split
+from os.path import exists, basename, splitext
+from os import mkdir, getcwd
+import tarfile
+
 from sklearn.svm import SVC, SVR  # SVC是svm分类，SVR是svm回归
-from pyecharts.components import Table as TableFisrt  # 绘制表格
-from scipy import optimize
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.neural_network import MLPClassifier, MLPRegressor
@@ -17,26 +20,23 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     GradientBoostingRegressor,
 )
+import numpy as np
+import matplotlib.pyplot as plt
+from pandas import DataFrame, read_csv
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, export_graphviz
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import *
 from sklearn.model_selection import train_test_split
-import re
-import numpy as np
-from pandas import DataFrame, read_csv
-import matplotlib.pyplot as plt
+import joblib
+from scipy.fftpack import fft, ifft  # 快速傅里叶变换
+from scipy import optimize
 from scipy.cluster.hierarchy import dendrogram, ward
+from pyecharts.components import Table as TableFisrt  # 绘制表格
 from pyecharts.options.series_options import JsCode
 from pyecharts.charts import Tab as tab_First
 from pyecharts.charts import *
-from random import randint
 from pyecharts import options as opts
 from pyecharts.components import Image
-from os.path import split as path_split
-from os.path import exists, basename, splitext
-from os import mkdir, getcwd
-import tarfile
-import joblib
 from pyecharts.globals import CurrentConfig
 
 CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"

@@ -1,14 +1,16 @@
-from selenium import webdriver
 import threading
 import time
 import hashlib
 from time import sleep
-import bs4
 import re as regular
-from Crawler import Information_storage
+
+import bs4
 import requests
+from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+
+from Crawler import Information_storage
 
 keys_name_dict = {
     "ctrl": Keys.CONTROL,
@@ -36,7 +38,6 @@ keys_name_dict = {
 }  # 键-值映射
 for i in range(1, 13):  # F1 - F12按键
     keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}")
-
 data_base = Information_storage.DatabaseController()
 
 

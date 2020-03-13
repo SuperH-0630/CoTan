@@ -1,13 +1,49 @@
 from __future__ import division  # 让/恢复为除法
+import random
+import tkinter
+import tkinter.messagebox
+
 import sympy
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
-import tkinter
-import tkinter.messagebox
-import random
-from New_TK import DragWindow
 from matplotlib.animation import FuncAnimation
+
 from HSCH.HS import ExpFunc as ExpFunc
+
+func = None
+fig = None
+prompt_num = 0
+line_style = {
+    "实线": "-",
+    "短横线": "--",
+    "点划线": "-,",
+    "虚线": ":",
+    "点标记": ".",
+    "圆标记": "o",
+    "倒三角": "v",
+    "正三角": "^",
+    "左三角": "&lt",
+    "下箭头": "1",
+    "上箭头": "2",
+    "左箭头": "3",
+    "右箭头": "4",
+    "正方形": "s",
+    "五边形": "p",
+    "星形": "*",
+    "六边形": "h",
+    "六边形2": "H",
+    "+号": "+",
+    "X标记": "x",
+}  # 函数样式翻译表
+point_style = ["g", "r", "c", "m", "y", "k"]
+SCREEN = tkinter.Tk()
+bg_color = "#FFFAFA"  # 主颜色
+botton_color = "#FFFAFA"  # 按钮颜色
+word_color = "#000000"  # 文字颜色
+gui_width = 13  # 标准宽度
+gui_height = 2
+row = 0
+column = 1
 
 
 def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
@@ -288,7 +324,7 @@ def dichotomy():  # 二分法
 
 
 def property_prediction():
-    global func, lb, prediction_box, prediction_accuracy
+    global func, prediction_box, prediction_accuracy
     try:
         a, must = sympy_computing(prediction_accuracy.get())
         output_prompt("预测过程程序可能无响应")
@@ -694,968 +730,919 @@ def output_prompt(news):
 
 
 def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
-    global line_style, point_style, func, prompt_num, SCREEN, FONT
-    func = None
-    prompt_num = 0
-    line_style = {
-        "实线": "-",
-        "短横线": "--",
-        "点划线": "-,",
-        "虚线": ":",
-        "点标记": ".",
-        "圆标记": "o",
-        "倒三角": "v",
-        "正三角": "^",
-        "左三角": "&lt",
-        "下箭头": "1",
-        "上箭头": "2",
-        "左箭头": "3",
-        "右箭头": "4",
-        "正方形": "s",
-        "五边形": "p",
-        "星形": "*",
-        "六边形": "h",
-        "六边形2": "H",
-        "+号": "+",
-        "X标记": "x",
-    }  # 函数样式翻译表
-    point_style = ["g", "r", "c", "m", "y", "k"]
+    global SCREEN
+    SCREEN.mainloop()
 
-    # top = tkinter.Tk()  # 设置屏幕
-    SCREEN = DragWindow()
-    bg_color = "#FFFAFA"  # 主颜色
-    botton_color = "#FFFAFA"  # 按钮颜色
-    word_color = "#000000"  # 文字颜色
-    SCREEN["bg"] = bg_color
-    SCREEN.title("CoTan函数工厂")
-    SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry("+10+10")
-    FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
-    rcParams["font.family"] = "simhei"
-    rcParams["axes.unicode_minus"] = False
 
-    gui_width = 13  # 标准宽度
-    gui_height = 2
-    row = 0
-    column = 1
-    global func_exp, start_definition, end_definition, span_definition, accuracy, func_name, func_style
+SCREEN["bg"] = bg_color
+SCREEN.title("CoTan函数工厂")
+SCREEN.resizable(width=False, height=False)
+SCREEN.geometry("+10+10")
+FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
+rcParams["font.family"] = "simhei"
+rcParams["axes.unicode_minus"] = False
+tkinter.Label(
+    SCREEN,
+    text="输入解析式:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+func_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_exp.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="定义域前端点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_definition.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="定义域后端点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+end_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
+end_definition.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="函数绘制跨度:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+span_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
+span_definition.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="函数计算精度:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
+accuracy.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="函数名字:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+func_name = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_name.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="函数视图:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+func_style = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_style.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="常量a默认值:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+default_a = tkinter.Entry(SCREEN, width=gui_width * 2)
+default_a.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="常量a起点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_a = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="常量a终点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+end_a = tkinter.Entry(SCREEN, width=gui_width * 2)
+end_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="常量a跨度:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+span_a = tkinter.Entry(SCREEN, width=gui_width * 2)
+span_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="应用函数",
+    command=set_function,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row, sticky=tkinter.E + tkinter.W
+)  # 添加函数
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="绘制图像",
+    command=function_drawing,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="性质预测",
+    command=property_prediction,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2, row=row, sticky=tkinter.E + tkinter.W
+)  # 添加函数
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="预测精度:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+prediction_accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
+prediction_accuracy.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+# 显示函数的xy
+prediction_box = tkinter.Listbox(SCREEN, width=gui_width * 3)  # 暂时不启用多选
+prediction_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=9,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=0
+)  # 设置说明
+
+# 第二排的开始
+column += 1
+row = 0
+tkinter.Label(
+    SCREEN,
+    text="X轴刻度声明:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+x_scale = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_scale.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="X轴刻度起点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_x_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_x_plot.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="X轴刻度终点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_x_polt = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_x_polt.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="X轴刻度间隔:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+span_x_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
+span_x_plot.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴刻度声明:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+y_scale = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_scale.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴刻度起点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_y_plot.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴刻度终点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+end_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
+end_y_plot.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴刻度间隔:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+span_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
+span_y_plot.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="X轴显示起点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_x_limit.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="X轴显示终点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+end_x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+end_x_limit.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴显示起点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+start_y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+start_y_limit.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="Y轴显示终点:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+end_y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+end_y_limit.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="帧率(帧/ms):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+frame_rate = tkinter.Entry(SCREEN, width=gui_width * 2)
+frame_rate.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+show_point = tkinter.IntVar()
+show_best_value = tkinter.IntVar()
+show_text = tkinter.IntVar()
+
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="显示记忆点",
+    variable=show_point,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="显示最值",
+    variable=show_best_value,
+).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="显示文字",
+    variable=show_text,
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+
+row += 1
+# 显示函数的xy
+plot_type = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 4
+)  # 暂时不启用多选
+plot_type.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=3,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
+plot_type.insert(
+    tkinter.END,
+    *[
+        "笛卡尔坐标系静态图像(默认)",
+        "矩形坐标系静态图像",
+        "笛卡尔坐标系动态图像",
+        "矩形坐标系动态图像",
+        "笛卡尔坐标系静态图像(无线框)",
+        "矩形坐标系静态图像(无线框)",
+        "笛卡尔坐标系动态图像(无线框)",
+        "矩形坐标系动态图像(无线框)",
+        "笛卡尔坐标系动态画图",
+        "矩形坐标系动态画图",
+    ],
+)
+row += 3
+# 显示函数的xy
+prompt_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 2
+)  # 暂时不启用多选
+prompt_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=2,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=0
+)  # 设置说明
+
+column += 1
+row = 0
+tkinter.Label(
+    SCREEN,
+    text="计算(y):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+x_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_value.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="二分法计算(x):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+y_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_value.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+dicon_parameters = []  # 二分法参数输入
+name_list = [
+    "最大迭代数",
+    "计算精度",
+    "最值允许偏移量",
+    "零点最小间隔",
+    "减少计算",
+    "允许梯度计算",
+    "最大扩张深度",
+    "扩张限制",
+    "扩张偏移量",
+    "开启二级验证",
+    "二级验证程度",
+]
+for i in range(11):
+    row += 1
+    dicon_parameters.append(tkinter.StringVar())
     tkinter.Label(
         SCREEN,
-        text="输入解析式:",
         bg=bg_color,
         fg=word_color,
+        text=name_list[i] + ":",
         font=FONT,
         width=gui_width,
         height=gui_height,
     ).grid(
         column=column, row=row
     )  # 设置说明
-    func_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_exp.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+    tkinter.Entry(
+        SCREEN, width=gui_width * 2, textvariable=dicon_parameters[-1]
+    ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="梯度法计算(x):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+y_value_gradient = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_value_gradient.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+gradient_parameters = []  # 梯度法法参数输入
+name_list = ["梯度起点", "梯度终点", "计算深度", "计算精度"]
+for i in range(4):
     row += 1
+    gradient_parameters.append(tkinter.StringVar())
     tkinter.Label(
         SCREEN,
-        text="定义域前端点:",
         bg=bg_color,
         fg=word_color,
+        text=name_list[i] + ":",
         font=FONT,
         width=gui_width,
         height=gui_height,
     ).grid(
         column=column, row=row
     )  # 设置说明
-    start_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_definition.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+    tkinter.Entry(
+        SCREEN, width=gui_width * 2, textvariable=gradient_parameters[-1]
+    ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="定义域后端点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    end_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
-    end_definition.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+row += 1
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, height=1).grid(
+    column=1, row=row
+)  # 底部
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="函数绘制跨度:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    span_definition = tkinter.Entry(SCREEN, width=gui_width * 2)
-    span_definition.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=0
+)  # 设置说明
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="函数计算精度:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
-    accuracy.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+column += 1
+row = 0
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="函数名字:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    func_name = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_name.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+tkinter.Label(
+    SCREEN,
+    text="代数法计算(x):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+y_value_symbol = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_value_symbol.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="函数视图:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    func_style = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_style.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="求(x)导数:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+x_value_derivation = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_value_derivation.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
 
-    global default_a, start_a, end_a, span_a
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="逼近求导精度:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+proximity_accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
+proximity_accuracy.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="常量a默认值:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    default_a = tkinter.Entry(SCREEN, width=gui_width * 2)
-    default_a.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="计算(y)",
+    command=calculate,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="二分法计算(x)",
+    command=dichotomy,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 1, row=row)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="梯度法计算(x)",
+    command=gradient_method_calculation,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="常量a起点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_a = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="代数法计算",
+    command=sympy_calculation_x,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="逼近法导数计算",
+    command=approximation,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 1, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="导数计算",
+    command=function_differentiation,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="常量a终点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    end_a = tkinter.Entry(SCREEN, width=gui_width * 2)
-    end_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+row += 1
+k = 5
+result_box = tkinter.Listbox(SCREEN, height=gui_height * (k - 1))  # 暂时不启用多选
+result_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=k,
+    sticky=tkinter.N + tkinter.E + tkinter.W,
+)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="常量a跨度:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    span_a = tkinter.Entry(SCREEN, width=gui_width * 2)
-    span_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+row += k - 1
+tkinter.Label(
+    SCREEN,
+    text="性质预测值:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row, sticky=tkinter.N + tkinter.S
+)  # 设置说明
+projection_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+projection_value.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
 
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="应用函数",
-        command=set_function,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row, sticky=tkinter.E + tkinter.W
-    )  # 添加函数
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="绘制图像",
-        command=function_drawing,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="性质预测",
-        command=property_prediction,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2, row=row, sticky=tkinter.E + tkinter.W
-    )  # 添加函数
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="周期性",
+    command=check_periodic,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="对称轴",
+    command=check_symmetry_axis,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 1, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="对称中心",
+    command=check_center_of_symmetry,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
 
-    global prediction_box, prediction_accuracy
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="单调性",
+    command=check_monotonic,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
+)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="预测精度:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    prediction_accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
-    prediction_accuracy.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
+row += 1
+# 显示函数的xy
+projection_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 5
+)  # 暂时不启用多选
+projection_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=6,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
 
-    row += 1
-    # 显示函数的xy
-    prediction_box = tkinter.Listbox(SCREEN, width=gui_width * 3)  # 暂时不启用多选
-    prediction_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=9,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=0
+)  # 设置说明
 
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=0
-    )  # 设置说明
+column += 1
+row = 0
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="生成表格",
+    command=to_sheet,
+    font=FONT,
+    width=gui_width * 2,
+    height=gui_height,
+).grid(column=column, row=row, columnspan=2)
+tkinter.Button(
+    SCREEN,
+    bg=botton_color,
+    fg=word_color,
+    text="导出表格",
+    command=save_to_csv,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row)
 
-    # 第二排的开始
-    global x_scale, start_x_plot, start_x_polt, span_x_plot, y_scale, start_y_plot, end_y_plot, span_y_plot
-    global start_x_limit, end_x_limit, start_y_limit, end_y_limit
-    column += 1
-    row = 0
-    tkinter.Label(
-        SCREEN,
-        text="X轴刻度声明:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    x_scale = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_scale.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+row += 1
+# 显示函数的xy
+sheet_box = tkinter.Listbox(SCREEN, width=gui_width * 3)  # 暂时不启用多选
+sheet_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=17,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
 
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="X轴刻度起点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_x_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_x_plot.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="X轴刻度终点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_x_polt = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_x_polt.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="X轴刻度间隔:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    span_x_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-    span_x_plot.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴刻度声明:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    y_scale = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_scale.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴刻度起点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_y_plot.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴刻度终点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    end_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-    end_y_plot.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴刻度间隔:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    span_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-    span_y_plot.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="X轴显示起点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_x_limit.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="X轴显示终点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    end_x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    end_x_limit.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴显示起点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    start_y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    start_y_limit.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="Y轴显示终点:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    end_y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    end_y_limit.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    global frame_rate
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="帧率(帧/ms):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    frame_rate = tkinter.Entry(SCREEN, width=gui_width * 2)
-    frame_rate.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    global show_point, show_best_value, show_text
-    row += 1
-    show_point = tkinter.IntVar()
-    show_best_value = tkinter.IntVar()
-    show_text = tkinter.IntVar()
-
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="显示记忆点",
-        variable=show_point,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="显示最值",
-        variable=show_best_value,
-    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="显示文字",
-        variable=show_text,
-    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
-    global prompt_box, plot_type
-    row += 1
-    # 显示函数的xy
-    plot_type = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 4
-    )  # 暂时不启用多选
-    plot_type.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=3,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-    plot_type.insert(
-        tkinter.END,
-        *[
-            "笛卡尔坐标系静态图像(默认)",
-            "矩形坐标系静态图像",
-            "笛卡尔坐标系动态图像",
-            "矩形坐标系动态图像",
-            "笛卡尔坐标系静态图像(无线框)",
-            "矩形坐标系静态图像(无线框)",
-            "笛卡尔坐标系动态图像(无线框)",
-            "矩形坐标系动态图像(无线框)",
-            "笛卡尔坐标系动态画图",
-            "矩形坐标系动态画图",
-        ],
-    )
-    row += 3
-    # 显示函数的xy
-    prompt_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 2
-    )  # 暂时不启用多选
-    prompt_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=2,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=0
-    )  # 设置说明
-
-    global x_value, y_value, dicon_parameters, y_value_gradient, gradient_parameters, result_box
-    column += 1
-    row = 0
-    tkinter.Label(
-        SCREEN,
-        text="计算(y):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    x_value = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_value.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="二分法计算(x):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    y_value = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_value.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    dicon_parameters = []  # 二分法参数输入
-    name_list = [
-        "最大迭代数",
-        "计算精度",
-        "最值允许偏移量",
-        "零点最小间隔",
-        "减少计算",
-        "允许梯度计算",
-        "最大扩张深度",
-        "扩张限制",
-        "扩张偏移量",
-        "开启二级验证",
-        "二级验证程度",
-    ]
-    for i in range(11):
-        row += 1
-        dicon_parameters.append(tkinter.StringVar())
-        tkinter.Label(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            text=name_list[i] + ":",
-            font=FONT,
-            width=gui_width,
-            height=gui_height,
-        ).grid(
-            column=column, row=row
-        )  # 设置说明
-        tkinter.Entry(
-            SCREEN, width=gui_width * 2, textvariable=dicon_parameters[-1]
-        ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="梯度法计算(x):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    y_value_gradient = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_value_gradient.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    gradient_parameters = []  # 梯度法法参数输入
-    name_list = ["梯度起点", "梯度终点", "计算深度", "计算精度"]
-    for i in range(4):
-        row += 1
-        gradient_parameters.append(tkinter.StringVar())
-        tkinter.Label(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            text=name_list[i] + ":",
-            font=FONT,
-            width=gui_width,
-            height=gui_height,
-        ).grid(
-            column=column, row=row
-        )  # 设置说明
-        tkinter.Entry(
-            SCREEN, width=gui_width * 2, textvariable=gradient_parameters[-1]
-        ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, height=1).grid(
-        column=1, row=row
-    )  # 底部
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=0
-    )  # 设置说明
-
-    global y_value_symbol, x_value_derivation, proximity_accuracy
-
-    column += 1
-    row = 0
-
-    tkinter.Label(
-        SCREEN,
-        text="代数法计算(x):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    y_value_symbol = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_value_symbol.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="求(x)导数:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    x_value_derivation = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_value_derivation.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="逼近求导精度:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    proximity_accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
-    proximity_accuracy.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="计算(y)",
-        command=calculate,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="二分法计算(x)",
-        command=dichotomy,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 1, row=row)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="梯度法计算(x)",
-        command=gradient_method_calculation,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row)
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="代数法计算",
-        command=sympy_calculation_x,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="逼近法导数计算",
-        command=approximation,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 1, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="导数计算",
-        command=function_differentiation,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-
-    row += 1
-    k = 5
-    result_box = tkinter.Listbox(SCREEN, height=gui_height * (k - 1))  # 暂时不启用多选
-    result_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=k,
-        sticky=tkinter.N + tkinter.E + tkinter.W,
-    )
-
-    global projection_value, projection_box
-    row += k - 1
-    tkinter.Label(
-        SCREEN,
-        text="性质预测值:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row, sticky=tkinter.N + tkinter.S
-    )  # 设置说明
-    projection_value = tkinter.Entry(SCREEN, width=gui_width * 2)
-    projection_value.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="周期性",
-        command=check_periodic,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="对称轴",
-        command=check_symmetry_axis,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 1, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="对称中心",
-        command=check_center_of_symmetry,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.N + tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="单调性",
-        command=check_monotonic,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
-    )
-
-    row += 1
-    # 显示函数的xy
-    projection_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 5
-    )  # 暂时不启用多选
-    projection_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=6,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=0
-    )  # 设置说明
-
-    column += 1
-    row = 0
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="生成表格",
-        command=to_sheet,
-        font=FONT,
-        width=gui_width * 2,
-        height=gui_height,
-    ).grid(column=column, row=row, columnspan=2)
-    tkinter.Button(
-        SCREEN,
-        bg=botton_color,
-        fg=word_color,
-        text="导出表格",
-        command=save_to_csv,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row)
-
-    global sheet_box
-    row += 1
-    # 显示函数的xy
-    sheet_box = tkinter.Listbox(SCREEN, width=gui_width * 3)  # 暂时不启用多选
-    sheet_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=17,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-
-    output_prompt("加载完毕")
-    tkinter.mainloop()
+output_prompt("加载完毕")

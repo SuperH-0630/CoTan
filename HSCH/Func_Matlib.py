@@ -1,15 +1,52 @@
+from os import path
+import math
+import random
+import tkinter
+import tkinter.messagebox
+from tkinter.filedialog import asksaveasfile
+import tkinter.messagebox
+
 import numpy
 import pandas
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
-import tkinter
-import tkinter.messagebox
-import math
-import random
-from tkinter.filedialog import asksaveasfile
-import tkinter.messagebox
-from os import path
+
 from HSCH.HS import ExpFunc, SheetFunc
+
+func_list = []
+fig = None
+func_str_list = []
+prompt_num = 0
+FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
+SCREEN = tkinter.Tk()  # 设置屏幕
+
+line_style = {
+    "实线": "-",
+    "短横线": "--",
+    "点划线": "-,",
+    "虚线": ":",
+    "点标记": ".",
+    "圆标记": "o",
+    "倒三角": "v",
+    "正三角": "^",
+    "左三角": "&lt",
+    "下箭头": "1",
+    "上箭头": "2",
+    "左箭头": "3",
+    "右箭头": "4",
+    "正方形": "s",
+    "五边形": "p",
+    "星形": "*",
+    "六边形": "h",
+    "六边形2": "H",
+    "+号": "+",
+    "X标记": "x",
+}  # 函数样式翻译表
+point_style = ["g", "r", "c", "m", "y", "k"]
+csv_list = []
+
+gui_width = 12  # 标准宽度
+gui_height = 1
 
 
 def type_selection(iter_object, si=float, n=True):  # Float筛选系统
@@ -293,7 +330,7 @@ def add_func():  # 添加函数
 
 
 def clean_func_box():  # 添加函数
-    global func_list, func_str_list, func_exp_box, x_I, func_name, line_style, point_style, func_style
+    global func_list, func_str_list, func_exp_box, func_name, line_style, point_style, func_style
     if tkinter.messagebox.askokcancel("提示", "是否清空所有函数？)"):
         func_str_list = []
         func_list = []
@@ -454,7 +491,7 @@ def output_prompt(news):
 
 
 def func_differentiation():
-    global func_list, func_exp_box, property_box, func_str_list, x_I, func_name, line_style, point_style, func_style
+    global func_list, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
     try:
         fucn = func_list[func_exp_box.curselection()[0]]
         diff = fucn.derivatives
@@ -486,357 +523,323 @@ def function_mapping():
     global x_axis, y_axis, x_limit, y_limit
     global func_exp_box, sheet_box, x_value, result_box, func_list, func_str_list, y_value, dicon_parameters
     global y_value_gradient, property_box, prompt_box, prompt_num
-    func_list = []
-    func_str_list = []
-    prompt_num = 0
 
-    # 控制面板使用Tk实现
-    SCREEN = tkinter.Tk()  # 设置屏幕
-    SCREEN.title("CoTan函数测绘")
-    SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry(f"+10+10")
-    FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
-    rcParams["font.family"] = "simhei"
-    rcParams["axes.unicode_minus"] = False
-
-    line_style = {
-        "实线": "-",
-        "短横线": "--",
-        "点划线": "-,",
-        "虚线": ":",
-        "点标记": ".",
-        "圆标记": "o",
-        "倒三角": "v",
-        "正三角": "^",
-        "左三角": "&lt",
-        "下箭头": "1",
-        "上箭头": "2",
-        "左箭头": "3",
-        "右箭头": "4",
-        "正方形": "s",
-        "五边形": "p",
-        "星形": "*",
-        "六边形": "h",
-        "六边形2": "H",
-        "+号": "+",
-        "X标记": "x",
-    }  # 函数样式翻译表
-    point_style = ["g", "r", "c", "m", "y", "k"]
-    csv_list = []
-
-    gui_width = 12  # 标准宽度
-    gui_height = 1
-    # column-水平方向，row-竖直方向
-    # 设置解析式
-    tkinter.Label(
-        SCREEN, text="输入解析式：", font=FONT, width=gui_width, height=gui_height
-    ).grid(
-        column=0, row=0
-    )  # 设置说明
-    func_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_exp.grid(column=1, row=0, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    # 设置定义域
-    tkinter.Label(
-        SCREEN, font=FONT, text="定义域：", width=gui_width, height=gui_height
-    ).grid(
-        column=0, row=1
-    )  # 设置说明
-    definition_domain = tkinter.Entry(SCREEN, width=gui_width * 2)
-    definition_domain.grid(column=1, row=1, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    # 设置函数名字
-    tkinter.Label(
-        SCREEN, font=FONT, text="函数名字：", width=gui_width, height=gui_height
-    ).grid(
-        column=0, row=2
-    )  # 设置说明
-    func_name = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_name.grid(column=1, row=2, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    # 设置函数图示
-    tkinter.Label(
-        SCREEN, font=FONT, text="函数样式：", width=gui_width, height=gui_height
-    ).grid(
-        column=0, row=3
-    )  # 设置说明
-    func_style = tkinter.Entry(SCREEN, width=gui_width * 2)
-    func_style.grid(column=1, row=3, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y = 4  # 按钮统一纵坐标
-    tkinter.Button(
-        SCREEN,
-        text="添加新函数",
-        command=add_func,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=0, row=a_y
-    )  # 添加函数
-    tkinter.Button(
-        SCREEN,
-        text="删除选中函数",
-        command=del_func,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=1, row=a_y
-    )  # 删除函数
-    tkinter.Button(
-        SCREEN,
-        text="清除函数",
-        command=clean_func_box,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=2, row=a_y
-    )  # 绘制函数
-    a_y += 1
-    # 显示函数
-    func_exp_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2)  # 暂时不启用多选
-    rowspan = 10
-    func_exp_box.grid(
-        column=0,
-        row=a_y,
-        columnspan=3,
-        rowspan=rowspan,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-    a_y += rowspan
-    tkinter.Label(SCREEN, font=FONT, text="", width=gui_width, height=1).grid(
-        column=0, row=a_y
-    )
-
-    tkinter.Label(SCREEN, font=FONT, text="", width=1).grid(column=4, row=0)  # 占用第四
-    a_y = 0
-    # 输入x函数求y值
-    tkinter.Label(
-        SCREEN, font=FONT, text="计算(y):", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    x_value = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_value.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    # 输入x函数求y值
-    tkinter.Label(
-        SCREEN, font=FONT, text="二分法计算(y):", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    y_value = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_value.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Label(
-        SCREEN, font=FONT, text="二分法参数:", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    dicon_parameters = tkinter.Entry(SCREEN, width=gui_width * 2)
-    dicon_parameters.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    # 输入x函数求y值
-    tkinter.Label(
-        SCREEN, font=FONT, text="梯度法计算(y):", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    y_value_gradient = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_value_gradient.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Button(
-        SCREEN,
-        text="计算(y)",
-        command=calculate,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    tkinter.Button(
-        SCREEN,
-        text="二分法计算(x)",
-        command=dichotomy,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=6, row=a_y)
-    tkinter.Button(
-        SCREEN,
-        text="梯度法计算(x)",
-        command=gradient_method_calculation,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=7, row=a_y)
-
-    a_y += 1
-    # 绘制函数坐标表格
-    tkinter.Button(
-        SCREEN,
-        text="查看记忆",
-        command=show_memory,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=5, row=a_y)
-    tkinter.Button(
-        SCREEN,
-        text="隐藏记忆",
-        command=hide_memory,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=6, row=a_y)
-    tkinter.Button(
-        SCREEN,
-        text="清空记忆",
-        command=clean_func_memory,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=7, row=a_y)
-
-    a_y += 1
-    # 显示函数
-    result_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2, height=17)  # 暂时不启用多选
-    result_box.grid(
-        column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
-    )
-
-    a_y += 1
-    # 设置坐标系刻度
-    tkinter.Label(
-        SCREEN, font=FONT, text="X轴(函数):", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y, sticky=tkinter.N
-    )  # 设置说明
-    x_axis = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_axis.grid(
-        column=6, row=a_y, columnspan=2, sticky=tkinter.N + tkinter.E + tkinter.W
-    )
-
-    a_y += 1
-    # 设置坐标系刻度
-    tkinter.Label(
-        SCREEN, font=FONT, text="Y轴(函数):", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    y_axis = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_axis.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    # 设置坐标系刻度
-    tkinter.Label(
-        SCREEN, font=FONT, text="X轴极限:", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    x_limit.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    # 设置坐标系刻度
-    tkinter.Label(
-        SCREEN, font=FONT, text="Y轴极限:", width=gui_width, height=gui_height
-    ).grid(
-        column=5, row=a_y
-    )  # 设置说明
-    y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-    y_limit.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    a_y += 1
-    tkinter.Button(
-        SCREEN,
-        text="绘制函数",
-        command=plot_func,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=5, row=a_y
-    )  # 绘制函数
-    tkinter.Button(
-        SCREEN,
-        text="计算性质",
-        command=property_prediction,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=6, row=a_y
-    )  # 绘制函数
-    tkinter.Button(
-        SCREEN,
-        text="创建导函数",
-        command=func_differentiation,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=7, row=a_y
-    )  # 绘制函数
-    a_y += 1
-    property_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3 + 2, height=10
-    )  # 暂时不启用多选
-    property_box.grid(
-        column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
-    )
-    a_y += 1
-    prompt_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2, height=5)  # 暂时不启用多选
-    prompt_box.grid(
-        column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
-    )
-
-    tkinter.Label(SCREEN, font=FONT, text="", width=1).grid(column=8, row=a_y)  # 占用第四
-    a_y = 0
-
-    # 绘制函数坐标表格
-    tkinter.Button(
-        SCREEN,
-        text="导入表格",
-        command=add_from_csv,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=9, row=a_y)
-    tkinter.Button(
-        SCREEN,
-        text="生成表格",
-        command=func_to_sheet,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=10, row=a_y)
-    tkinter.Button(
-        SCREEN,
-        text="导出表格",
-        command=func_to_csv,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=11, row=a_y)
-
-    a_y += 1
-    # 显示函数的xy
-    sheet_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2)  # 暂时不启用多选
-    sheet_box.grid(
-        column=9,
-        row=a_y,
-        columnspan=3,
-        rowspan=rowspan + 4,
-        sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
-    )
-
-    output_prompt("加载完成，欢迎使用!")
     SCREEN.mainloop()
+
+
+SCREEN.title("CoTan函数测绘")
+SCREEN.resizable(width=False, height=False)
+SCREEN.geometry(f"+10+10")
+rcParams["font.family"] = "simhei"
+rcParams["axes.unicode_minus"] = False
+tkinter.Label(
+    SCREEN, text="输入解析式：", font=FONT, width=gui_width, height=gui_height
+).grid(
+    column=0, row=0
+)  # 设置说明
+func_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_exp.grid(column=1, row=0, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+# 设置定义域
+tkinter.Label(
+    SCREEN, font=FONT, text="定义域：", width=gui_width, height=gui_height
+).grid(
+    column=0, row=1
+)  # 设置说明
+definition_domain = tkinter.Entry(SCREEN, width=gui_width * 2)
+definition_domain.grid(column=1, row=1, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+# 设置函数名字
+tkinter.Label(
+    SCREEN, font=FONT, text="函数名字：", width=gui_width, height=gui_height
+).grid(
+    column=0, row=2
+)  # 设置说明
+func_name = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_name.grid(column=1, row=2, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+# 设置函数图示
+tkinter.Label(
+    SCREEN, font=FONT, text="函数样式：", width=gui_width, height=gui_height
+).grid(
+    column=0, row=3
+)  # 设置说明
+func_style = tkinter.Entry(SCREEN, width=gui_width * 2)
+func_style.grid(column=1, row=3, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y = 4  # 按钮统一纵坐标
+tkinter.Button(
+    SCREEN,
+    text="添加新函数",
+    command=add_func,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=0, row=a_y
+)  # 添加函数
+tkinter.Button(
+    SCREEN,
+    text="删除选中函数",
+    command=del_func,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=1, row=a_y
+)  # 删除函数
+tkinter.Button(
+    SCREEN,
+    text="清除函数",
+    command=clean_func_box,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=2, row=a_y
+)  # 绘制函数
+a_y += 1
+# 显示函数
+func_exp_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2)  # 暂时不启用多选
+rowspan = 10
+func_exp_box.grid(
+    column=0,
+    row=a_y,
+    columnspan=3,
+    rowspan=rowspan,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
+a_y += rowspan
+tkinter.Label(SCREEN, font=FONT, text="", width=gui_width, height=1).grid(
+    column=0, row=a_y
+)
+
+tkinter.Label(SCREEN, font=FONT, text="", width=1).grid(column=4, row=0)  # 占用第四
+a_y = 0
+# 输入x函数求y值
+tkinter.Label(
+    SCREEN, font=FONT, text="计算(y):", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+x_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_value.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+# 输入x函数求y值
+tkinter.Label(
+    SCREEN, font=FONT, text="二分法计算(y):", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+y_value = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_value.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+tkinter.Label(
+    SCREEN, font=FONT, text="二分法参数:", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+dicon_parameters = tkinter.Entry(SCREEN, width=gui_width * 2)
+dicon_parameters.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+# 输入x函数求y值
+tkinter.Label(
+    SCREEN, font=FONT, text="梯度法计算(y):", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+y_value_gradient = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_value_gradient.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+tkinter.Button(
+    SCREEN,
+    text="计算(y)",
+    command=calculate,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+tkinter.Button(
+    SCREEN,
+    text="二分法计算(x)",
+    command=dichotomy,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=6, row=a_y)
+tkinter.Button(
+    SCREEN,
+    text="梯度法计算(x)",
+    command=gradient_method_calculation,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=7, row=a_y)
+
+a_y += 1
+# 绘制函数坐标表格
+tkinter.Button(
+    SCREEN,
+    text="查看记忆",
+    command=show_memory,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=5, row=a_y)
+tkinter.Button(
+    SCREEN,
+    text="隐藏记忆",
+    command=hide_memory,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=6, row=a_y)
+tkinter.Button(
+    SCREEN,
+    text="清空记忆",
+    command=clean_func_memory,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=7, row=a_y)
+
+a_y += 1
+# 显示函数
+result_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2, height=17)  # 暂时不启用多选
+result_box.grid(
+    column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
+)
+
+a_y += 1
+# 设置坐标系刻度
+tkinter.Label(
+    SCREEN, font=FONT, text="X轴(函数):", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y, sticky=tkinter.N
+)  # 设置说明
+x_axis = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_axis.grid(
+    column=6, row=a_y, columnspan=2, sticky=tkinter.N + tkinter.E + tkinter.W
+)
+
+a_y += 1
+# 设置坐标系刻度
+tkinter.Label(
+    SCREEN, font=FONT, text="Y轴(函数):", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+y_axis = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_axis.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+# 设置坐标系刻度
+tkinter.Label(
+    SCREEN, font=FONT, text="X轴极限:", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+x_limit.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+# 设置坐标系刻度
+tkinter.Label(
+    SCREEN, font=FONT, text="Y轴极限:", width=gui_width, height=gui_height
+).grid(
+    column=5, row=a_y
+)  # 设置说明
+y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
+y_limit.grid(column=6, row=a_y, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+a_y += 1
+tkinter.Button(
+    SCREEN,
+    text="绘制函数",
+    command=plot_func,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=5, row=a_y
+)  # 绘制函数
+tkinter.Button(
+    SCREEN,
+    text="计算性质",
+    command=property_prediction,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=6, row=a_y
+)  # 绘制函数
+tkinter.Button(
+    SCREEN,
+    text="创建导函数",
+    command=func_differentiation,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=7, row=a_y
+)  # 绘制函数
+a_y += 1
+property_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3 + 2, height=10
+)  # 暂时不启用多选
+property_box.grid(
+    column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
+)
+a_y += 1
+prompt_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2, height=5)  # 暂时不启用多选
+prompt_box.grid(
+    column=5, row=a_y, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
+)
+
+tkinter.Label(SCREEN, font=FONT, text="", width=1).grid(column=8, row=a_y)  # 占用第四
+a_y = 0
+
+# 绘制函数坐标表格
+tkinter.Button(
+    SCREEN,
+    text="导入表格",
+    command=add_from_csv,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=9, row=a_y)
+tkinter.Button(
+    SCREEN,
+    text="生成表格",
+    command=func_to_sheet,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=10, row=a_y)
+tkinter.Button(
+    SCREEN,
+    text="导出表格",
+    command=func_to_csv,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=11, row=a_y)
+
+a_y += 1
+# 显示函数的xy
+sheet_box = tkinter.Listbox(SCREEN, width=gui_width * 3 + 2)  # 暂时不启用多选
+sheet_box.grid(
+    column=9,
+    row=a_y,
+    columnspan=3,
+    rowspan=rowspan + 4,
+    sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
+)
+
+output_prompt("加载完成，欢迎使用!")

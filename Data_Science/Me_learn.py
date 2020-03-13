@@ -1,12 +1,38 @@
+import os
+import webbrowser
 import tkinter
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import tkinter.messagebox
-from Data_Science import Learn
-import webbrowser
-import os
 from tkinter.scrolledtext import ScrolledText
+
 import chardet
 
+from Data_Science import Learn
+
+render_dict = {}  # 保存了画图的List
+learn_dict = {}  # 保存数据处理
+PATH = os.getcwd()
+sheet_list = []
+machine_controller = Learn.MachineLearner()
+SCREEN = tkinter.Tk()
+bg_color = "#FFFAFA"  # 主颜色
+buttom_bg_color = "#FFFAFA"  # 按钮颜色
+word_color = "#000000"  # 文字颜色
+SCREEN["bg"] = bg_color
+FONT = ("黑体", 11)  # 设置字体
+FONT1 = ("黑体", 13)
+SCREEN.title("CoTan数据处理")
+SCREEN.resizable(width=False, height=False)
+SCREEN.geometry("+10+10")  # 设置所在位置
+gui_width = 13  # 标准宽度
+gui_height = 2
+row = 0
+column = 0
+stored_list = []
+clean_list = []
+# 层叠多图
+base_image = None
+top_image = None
 # 数据清洗
 clean_default_script = """#输入你的数据清洗执行代码
 
@@ -21,7 +47,6 @@ def check(data, row, column, get, R, C): #检查方法
 def done(data, row, column, get, R, C): #应用修正方法
     return DEL
 """
-
 clean_help = """
 使用Python代码进行数据清洗
 1)代码结构
@@ -47,7 +72,6 @@ clean_help = """
     默认:pd-pandas，re-re[正则表达式]，Sheet-包含所有表格，用Sheet['name']访问名字为name的表格(注意引号别漏了)
     支持:可以使用import导入语句，支持python语法
 """
-
 drawing_parameters = """
 输入python变量赋值代码:渲染设置
 title #设置标题:str
@@ -64,2126 +88,8 @@ max_Visual_mapping #映射的最大值
 """
 
 
-# top = None
-# ML = None
-# Form_List = None
-# PATH = None
-# bg = None
-# ft1 = None
-# Stored_List = None
-# Clean_List = None
-# R_Dic = None
-# Over_Up = None
-# Over_Down = None
-#
-# Form_BOX = None
-# Index_BOX = None
-# Column_BOX = None
-# to_HTML_Type = None
-# Seq_Input = None
-# Code_Input = None
-# str_must = None
-# Index_must = None
-
-
 def machine_learning():
-    global SCREEN, machine_controller, sheet_list, PATH, bg_color, FONT1, stored_list, clean_list, render_dict
-    global top_image, base_image, learn_dict
-    render_dict = {}  # 保存了画图的List
-    learn_dict = {}  # 保存数据处理
-    PATH = os.getcwd()
-    sheet_list = []
-    machine_controller = Learn.MachineLearner()
-    SCREEN = tkinter.Tk()
-    bg_color = "#FFFAFA"  # 主颜色
-    buttom_bg_color = "#FFFAFA"  # 按钮颜色
-    word_color = "#000000"  # 文字颜色
-    SCREEN["bg"] = bg_color
-    FONT = ("黑体", 11)  # 设置字体
-    FONT1 = ("黑体", 13)
-    SCREEN.title("CoTan数据处理")
-    SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry("+10+10")  # 设置所在位置
-    gui_width = 13  # 标准宽度
-    gui_height = 2
-    row = 0
-    column = 0
-    stored_list = []
-    clean_list = []
-    # 层叠多图
-    base_image = None
-    top_image = None
-
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导入CSV",
-        command=add_csv,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导入Py",
-        command=add_from_python,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导出CSV",
-        command=to_csv,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global sheet_name
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="表格名称:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    sheet_name = tkinter.Entry(SCREEN, width=gui_width)
-    sheet_name.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除表格",
-        command=del_form,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看表格",
-        command=show_sheet_html,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看单一表格",
-        command=show_one_sheet_html,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global sheet_box, index_box, column_box, to_html_type, sep, encoding, str_must, index_must
-    row += 1
-    to_html_type = tkinter.IntVar()  # 正，负，0
-    lable = ["选项卡型", "可移动型", "自适应型"]  # 复选框
-    for i in range(3):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=to_html_type,
-            value=i,
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-
-    str_must = tkinter.IntVar()
-    index_must = tkinter.IntVar()
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="编码方式:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    encoding = tkinter.Entry(SCREEN, width=gui_width)
-    encoding.grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
-    buttom = tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="字符串类型",
-        variable=str_must,
-    )
-    buttom.grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="CSV分隔符:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    sep = tkinter.Entry(SCREEN, width=gui_width)
-    sep.grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="重置列名",
-        variable=index_must,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    row += 1
-    sheet_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 5
-    )  # 显示符号
-    sheet_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=5,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 5
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看行名",
-        command=get_row,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看列名",
-        command=get_column,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="显示表格",
-        command=show_sheet,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global max_row, max_column
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="最大显示行数:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    max_row = tkinter.Entry(SCREEN, width=gui_width * 2)
-    max_row.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="最大显示列数:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    max_column = tkinter.Entry(SCREEN, width=gui_width * 2)
-    max_column.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    # Row与Column Row是横行，tkinter布局中Row变大，表示所在行数变大，向下移动如：
-    # 1，2，3，4，5，6
-    # 7，8，9，a，b，c
-    # 其中数字1-6是第一行，1-c是第二行，第二行在第一行下面，row变大向下移动（Row是横向行而不是横向移动） to 搞不清楚横行竖列的人
-
-    row += 1
-    index_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 10
-    )  # 显示符号
-    index_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=10,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global des_bool
-    row += 10
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看数据分析",
-        command=show_report,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="简单数据统计",
-        command=show_describe,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    des_bool = tkinter.IntVar()  # 是否启用
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="生成统计表格",
-        variable=des_bool,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=row
-    )  # 设置说明
-    column += 1
-    row = 0
-
-    tkinter.Label(
-        SCREEN,
-        text="【数据清洗】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    global slice_new, column_type, row_type, column_clist, row_clist
-    column_clist = []
-    row_clist = []
-    label = ["启始(列号):", "终止(列):", "间隔(列):"]
-    for i in range(3):
-        row += 1
-        tkinter.Label(
-            SCREEN,
-            text=label[i],
-            bg=bg_color,
-            fg=word_color,
-            font=FONT,
-            width=gui_width,
-            height=gui_height,
-        ).grid(
-            column=column, row=row
-        )  # 设置说明
-        column_clist.append(tkinter.Entry(SCREEN, width=gui_width * 2))
-        column_clist[-1].grid(
-            column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-        )
-
-    label = ["启始(行号):", "终止(行):", "间隔(行):"]
-    for i in range(3):
-        row += 1
-        tkinter.Label(
-            SCREEN,
-            text=label[i],
-            bg=bg_color,
-            fg=word_color,
-            font=FONT,
-            width=gui_width,
-            height=gui_height,
-        ).grid(
-            column=column, row=row
-        )  # 设置说明
-        row_clist.append(tkinter.Entry(SCREEN, width=gui_width * 2))
-        row_clist[-1].grid(
-            column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-        )
-
-    row += 1
-    column_type = tkinter.IntVar()
-    lable = ["根据列号", "根据列名", "输入列号"]  # 复选框
-    for i in range(3):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=column_type,
-            value=i,
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-
-    row += 1
-    row_type = tkinter.IntVar()
-    lable = ["根据行号", "根据行名", "输入行号"]  # 复选框
-    for i in range(3):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=row_type,
-            value=i,
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-
-    row += 1
-    slice_new = tkinter.IntVar()
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="切片选定",
-        command=slice_data,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除选定",
-        command=del_data,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="生成新表格",
-        variable=slice_new,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    global bool_exp, drop_column
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="布尔逻辑:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-    bool_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
-    bool_exp.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="操作的列号:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-    drop_column = tkinter.Entry(SCREEN, width=gui_width * 2)
-    drop_column.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成布尔表格",
-        command=to_bool,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看空值",
-        command=is_nan,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="清洗空值(按行)",
-        command=clear_nan_row,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="添加执行方法",
-        command=add_cleaning_script,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除执行方法",
-        command=del_cleaning_script,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="数据特征提取",
-        command=feature_extraction,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global clean_func_box, clean_code
-    row += 1
-    clean_func_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 2)
-    clean_func_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 2
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看词典",
-        command=show_dictionary,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="恢复显示",
-        command=reset,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="执行数据清洗",
-        command=execute_cleaning_script,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    clean_code = tkinter.Text(SCREEN, width=gui_width * 3, height=gui_height * 7)
-    clean_code.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=7,
-        sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
-    )
-    clean_code.insert("0.0", clean_default_script)
-
-    row += 7
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="清空执行方法",
-        command=empty_cleaning_script,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看执行方法",
-        command=view_cleaning_script,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导入执行方法",
-        command=open_python,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=row
-    )  # 设置说明
-    column += 1
-    row = 0
-
-    tkinter.Label(
-        SCREEN,
-        text="【数据可视化】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成柱状图",
-        command=to_bar,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成3D柱状图",
-        command=to_bar3d,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成折线图",
-        command=to_line,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成3D折线图",
-        command=to_line3d,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成象形柱状图",
-        command=to_pictorialbar,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        columnspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成散点图",
-        command=to_scatter,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成3D散点图",
-        command=to_scatter3d,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成箱形图",
-        command=to_boxpolt,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成漏斗图",
-        command=to_funnel,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成热力图",
-        command=to_heat_map,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成饼图",
-        command=to_pie,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成多轴图",
-        command=to_parallel,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成极坐标图",
-        command=to_polar,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成雷达图",
-        command=to_radar,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成词云",
-        command=to_word_cloud,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成关系图",
-        command=to_format_graph,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成XY关系图",
-        command=to_graph,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成水球图",
-        command=to_liquid,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        columnspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成仪表图",
-        command=to_gauge,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成日历图",
-        command=to_calendar,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成河流图",
-        command=to_theme_river,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成旭日图",
-        command=to_sunburst,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成桑基图",
-        command=to_sankey,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成树状图",
-        command=to_tree,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成矩形树图",
-        command=to_treemap,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成Map地图",
-        command=to_map,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成Geo点地图",
-        command=to_scattergeo,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成Geo地图",
-        command=to_geo,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="选择底图",
-        command=add_basemap,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="选择顶图",
-        command=add_top_image,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="生成层叠图",
-        command=make_overlap,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    global render_box, rendering_parameters, overlap_box
-    overlap_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 2)
-    overlap_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="渲染HTML",
-        command=rendering,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="单独渲染HTML",
-        command=rendering_one,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除渲染",
-        command=del_rendering,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    render_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height)
-    render_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 2
-    global draw_as_well
-    draw_as_well = tkinter.IntVar()
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="清空渲染",
-        command=clear_rendering,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导入渲染",
-        command=python_render,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="马上渲染",
-        variable=draw_as_well,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-    row += 1
-    rendering_parameters = tkinter.Text(
-        SCREEN, width=gui_width * 3, height=gui_height * 7
-    )
-    rendering_parameters.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=7,
-        sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
-    )
-
-    row += 7
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看词典",
-        command=show_dictionary,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="恢复显示",
-        command=show_tips,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        columnspan=2,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=row
-    )  # 设置说明
-    column += 1
-    row = 0
-
-    tkinter.Label(
-        SCREEN,
-        text="【行名与列名】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    global replace_dict, replace_index, replace_iloc, date_input, replace_type
-    row += 1
-    replace_index = tkinter.IntVar()
-    lable = ["(列数据)调整行名", "(行数据)调整列名"]  # 复选框
-    for i in range(2):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=replace_index,
-            value=i,
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="植入行(列)号",
-        command=num_with_name,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    replace_type = []
-    lable = ["保留原值", "保留新值"]  # 复选框
-    for i in range(2):
-        replace_type.append(tkinter.IntVar())
-        tkinter.Checkbutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=replace_type[-1],
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="统一行(列)号",
-        command=num_to_name,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="替换字典:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    replace_dict = tkinter.Entry(SCREEN, width=gui_width * 2)
-    replace_dict.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="替换列(行):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    replace_iloc = tkinter.Entry(SCREEN, width=gui_width * 2)
-    replace_iloc.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="执行替换已有列(行)操作",
-        command=change_index,
-        font=FONT,
-        width=gui_width * 2,
-        height=gui_height,
-    ).grid(column=column, columnspan=2, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="执行替换操作",
-        command=replace_index,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
-    label = ["起点", "终点", "间隔"]
-    date_input = []
-    for i in range(3):
-        row += 1
-        tkinter.Label(
-            SCREEN,
-            text="时间序列" + label[i],
-            bg=bg_color,
-            fg=word_color,
-            font=FONT,
-            width=gui_width,
-            height=gui_height,
-        ).grid(
-            column=column, row=row
-        )  # 设置说明
-        date_input.append(tkinter.Entry(SCREEN, width=gui_width * 2))
-        date_input[-1].grid(
-            column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-        )
-
-    global date_type
-    row += 1
-    date_type = tkinter.IntVar()
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="刷入Date序列",
-        command=date_index,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="刷入Time序列",
-        command=time_index,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="使用间隔",
-        variable=date_type,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    global dtype_column, dtype_input, dtype_wrong, dtype_func
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="【数据类型管理】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="修改(列号):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    dtype_column = tkinter.Entry(SCREEN, width=gui_width * 2)
-    dtype_column.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="数据类型:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    dtype_input = tkinter.Entry(SCREEN, width=gui_width * 2)
-    dtype_input.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="错误值:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    dtype_wrong = tkinter.Entry(SCREEN, width=gui_width * 2)
-    dtype_wrong.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="执行转换",
-        command=set_dtype,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    dtype_func = tkinter.IntVar()  # 正，负，0
-    lable = ["硬转换", "软转换"]  # 复选框
-    for i in range(2):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=dtype_func,
-            value=i,
-        ).grid(column=column + 1 + i, row=row, sticky=tkinter.W)
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="【排序操作】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column, columnspan=3, row=row
-    )  # 设置说明
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text=".T",
-        command=transpose,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="按行名排序",
-        command=sort_by_tow,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="按列名排序",
-        command=sort_by_column,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global sort_by, ascending_type, ascending_new, stored_box
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="基准列(列号):",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column, row=row
-    )  # 设置说明
-    sort_by = tkinter.Entry(SCREEN, width=gui_width + 2)
-    sort_by.grid(column=column + 1, row=row, sticky=tkinter.W)
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="按数据排序",
-        command=stored_value,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    ascending_type = tkinter.IntVar()
-    ascending_new = tkinter.IntVar()
-    lable = ["正序排列", "倒序排列"]  # 复选框
-    for i in range(2):
-        tkinter.Radiobutton(
-            SCREEN,
-            bg=bg_color,
-            fg=word_color,
-            activebackground=bg_color,
-            activeforeground=word_color,
-            selectcolor=bg_color,
-            text=lable[i],
-            variable=ascending_type,
-            value=i,
-        ).grid(column=column + i, row=row, sticky=tkinter.W)
-    tkinter.Checkbutton(
-        SCREEN,
-        bg=bg_color,
-        fg=word_color,
-        activebackground=bg_color,
-        activeforeground=word_color,
-        selectcolor=bg_color,
-        text="生成新表格",
-        variable=ascending_new,
-    ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
-    row += 1
-    stored_box = tkinter.Listbox(
-        SCREEN, width=gui_width * 3, height=gui_height * 4
-    )  # 显示符号
-    stored_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=5,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 5
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="添加基准",
-        command=add_baseline,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除基准",
-        command=del_baseline,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="打乱表格",
-        command=sample_data,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    column += 3
-    tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
-        column=column, row=row
-    )  # 设置说明
-    column += 1
-    row = 0
-
-    tkinter.Label(
-        SCREEN,
-        text="【机器学习】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    global learner_box, chose_learner
-    row += 1
-    chose_learner = tkinter.StringVar()
-    put = tkinter.Entry(SCREEN, width=gui_width * 2, textvariable=chose_learner)
-    put.grid(column=column, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-    put["state"] = "readonly"
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="选用学习器",
-        command=set_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
-    global data_split
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="测试数据分割:",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(column=column, row=row)
-    data_split = tkinter.Entry(SCREEN, width=gui_width * 2)
-    data_split.grid(
-        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-    )
-
-    row += 1
-    learner_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
-    learner_box.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=5,
-        sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 5
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="导入学习器",
-        command=rendering,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="查看数据",
-        command=visual_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="删除学习器",
-        command=del_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="训练机器",
-        command=fit_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="测试机器",
-        command=test_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="数据预测",
-        command=predict_learner,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Label(
-        SCREEN,
-        text="【学习器选择和配置】",
-        bg=bg_color,
-        fg=word_color,
-        font=FONT,
-        width=gui_width * 3,
-        height=gui_height,
-    ).grid(
-        column=column,
-        columnspan=3,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )  # 设置说明
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="线性回归",
-        command=add_generalized_linear,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="岭回归",
-        command=add_ridge,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="Lasso",
-        command=add_lasso,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="逻辑回归",
-        command=add_logistic_regression,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="决策树",
-        command=show_sorry,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="SVM",
-        command=show_sorry,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    row += 1
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="朴素贝叶斯",
-        command=show_sorry,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="K邻近分类",
-        command=add_knn_regression,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 1,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-    tkinter.Button(
-        SCREEN,
-        bg=buttom_bg_color,
-        fg=word_color,
-        text="K邻近预测",
-        command=add_knn_class,
-        font=FONT,
-        width=gui_width,
-        height=gui_height,
-    ).grid(
-        column=column + 2,
-        row=row,
-        sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
-    )
-
-    global learner_parameters
-    row += 1
-    learner_parameters = tkinter.Text(
-        SCREEN, width=gui_width * 3, height=gui_height * 11
-    )
-    learner_parameters.grid(
-        column=column,
-        row=row,
-        columnspan=3,
-        rowspan=11,
-        sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
-    )
-
+    global SCREEN
     SCREEN.mainloop()
 
 
@@ -2338,7 +244,7 @@ def feature_extraction():
     update_sheet_box()
 
 
-def replace_index():
+def replace_index_func():
     global replace_dict, replace_index, machine_controller
     name = get_sheet_name()
     the_replace_dict = eval(replace_dict.get())
@@ -3109,4 +1015,2056 @@ def update_sheet_box():
     sheet_box.insert(tkinter.END, *sheet_list)
 
 
-machine_learning()
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导入CSV",
+    command=add_csv,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导入Py",
+    command=add_from_python,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导出CSV",
+    command=to_csv,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="表格名称:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+sheet_name = tkinter.Entry(SCREEN, width=gui_width)
+sheet_name.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除表格",
+    command=del_form,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看表格",
+    command=show_sheet_html,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看单一表格",
+    command=show_one_sheet_html,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+to_html_type = tkinter.IntVar()  # 正，负，0
+lable = ["选项卡型", "可移动型", "自适应型"]  # 复选框
+for i in range(3):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=to_html_type,
+        value=i,
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+
+str_must = tkinter.IntVar()
+index_must = tkinter.IntVar()
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="编码方式:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+encoding = tkinter.Entry(SCREEN, width=gui_width)
+encoding.grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+buttom = tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="字符串类型",
+    variable=str_must,
+)
+buttom.grid(column=column + 2, row=row, sticky=tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="CSV分隔符:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+sep = tkinter.Entry(SCREEN, width=gui_width)
+sep.grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="重置列名",
+    variable=index_must,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+
+row += 1
+sheet_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 5
+)  # 显示符号
+sheet_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=5,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 5
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看行名",
+    command=get_row,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看列名",
+    command=get_column,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="显示表格",
+    command=show_sheet,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="最大显示行数:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+max_row = tkinter.Entry(SCREEN, width=gui_width * 2)
+max_row.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="最大显示列数:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+max_column = tkinter.Entry(SCREEN, width=gui_width * 2)
+max_column.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+# Row与Column Row是横行，tkinter布局中Row变大，表示所在行数变大，向下移动如：
+# 1，2，3，4，5，6
+# 7，8，9，a，b，c
+# 其中数字1-6是第一行，1-c是第二行，第二行在第一行下面，row变大向下移动（Row是横向行而不是横向移动） to 搞不清楚横行竖列的人
+
+row += 1
+index_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 10
+)  # 显示符号
+index_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=10,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 10
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看数据分析",
+    command=show_report,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="简单数据统计",
+    command=show_describe,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+des_bool = tkinter.IntVar()  # 是否启用
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="生成统计表格",
+    variable=des_bool,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=row
+)  # 设置说明
+column += 1
+row = 0
+
+tkinter.Label(
+    SCREEN,
+    text="【数据清洗】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+column_clist = []
+row_clist = []
+label = ["启始(列号):", "终止(列):", "间隔(列):"]
+for i in range(3):
+    row += 1
+    tkinter.Label(
+        SCREEN,
+        text=label[i],
+        bg=bg_color,
+        fg=word_color,
+        font=FONT,
+        width=gui_width,
+        height=gui_height,
+    ).grid(
+        column=column, row=row
+    )  # 设置说明
+    column_clist.append(tkinter.Entry(SCREEN, width=gui_width * 2))
+    column_clist[-1].grid(
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
+    )
+
+label = ["启始(行号):", "终止(行):", "间隔(行):"]
+for i in range(3):
+    row += 1
+    tkinter.Label(
+        SCREEN,
+        text=label[i],
+        bg=bg_color,
+        fg=word_color,
+        font=FONT,
+        width=gui_width,
+        height=gui_height,
+    ).grid(
+        column=column, row=row
+    )  # 设置说明
+    row_clist.append(tkinter.Entry(SCREEN, width=gui_width * 2))
+    row_clist[-1].grid(
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
+    )
+
+row += 1
+column_type = tkinter.IntVar()
+lable = ["根据列号", "根据列名", "输入列号"]  # 复选框
+for i in range(3):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=column_type,
+        value=i,
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+
+row += 1
+row_type = tkinter.IntVar()
+lable = ["根据行号", "根据行名", "输入行号"]  # 复选框
+for i in range(3):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=row_type,
+        value=i,
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+
+row += 1
+slice_new = tkinter.IntVar()
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="切片选定",
+    command=slice_data,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除选定",
+    command=del_data,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="生成新表格",
+    variable=slice_new,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="布尔逻辑:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+bool_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
+bool_exp.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="操作的列号:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+drop_column = tkinter.Entry(SCREEN, width=gui_width * 2)
+drop_column.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成布尔表格",
+    command=to_bool,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看空值",
+    command=is_nan,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="清洗空值(按行)",
+    command=clear_nan_row,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="添加执行方法",
+    command=add_cleaning_script,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除执行方法",
+    command=del_cleaning_script,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="数据特征提取",
+    command=feature_extraction,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+clean_func_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 2)
+clean_func_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 2
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看词典",
+    command=show_dictionary,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="恢复显示",
+    command=reset,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="执行数据清洗",
+    command=execute_cleaning_script,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+clean_code = tkinter.Text(SCREEN, width=gui_width * 3, height=gui_height * 7)
+clean_code.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=7,
+    sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
+)
+clean_code.insert("0.0", clean_default_script)
+
+row += 7
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="清空执行方法",
+    command=empty_cleaning_script,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看执行方法",
+    command=view_cleaning_script,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导入执行方法",
+    command=open_python,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=row
+)  # 设置说明
+column += 1
+row = 0
+
+tkinter.Label(
+    SCREEN,
+    text="【数据可视化】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成柱状图",
+    command=to_bar,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成3D柱状图",
+    command=to_bar3d,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成折线图",
+    command=to_line,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成3D折线图",
+    command=to_line3d,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成象形柱状图",
+    command=to_pictorialbar,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    columnspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成散点图",
+    command=to_scatter,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成3D散点图",
+    command=to_scatter3d,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成箱形图",
+    command=to_boxpolt,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成漏斗图",
+    command=to_funnel,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成热力图",
+    command=to_heat_map,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成饼图",
+    command=to_pie,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成多轴图",
+    command=to_parallel,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成极坐标图",
+    command=to_polar,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成雷达图",
+    command=to_radar,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成词云",
+    command=to_word_cloud,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成关系图",
+    command=to_format_graph,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成XY关系图",
+    command=to_graph,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成水球图",
+    command=to_liquid,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    columnspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成仪表图",
+    command=to_gauge,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成日历图",
+    command=to_calendar,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成河流图",
+    command=to_theme_river,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成旭日图",
+    command=to_sunburst,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成桑基图",
+    command=to_sankey,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成树状图",
+    command=to_tree,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成矩形树图",
+    command=to_treemap,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成Map地图",
+    command=to_map,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成Geo点地图",
+    command=to_scattergeo,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成Geo地图",
+    command=to_geo,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="选择底图",
+    command=add_basemap,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="选择顶图",
+    command=add_top_image,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="生成层叠图",
+    command=make_overlap,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+overlap_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 2)
+overlap_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="渲染HTML",
+    command=rendering,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="单独渲染HTML",
+    command=rendering_one,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除渲染",
+    command=del_rendering,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+render_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height)
+render_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 2
+draw_as_well = tkinter.IntVar()
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="清空渲染",
+    command=clear_rendering,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导入渲染",
+    command=python_render,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="马上渲染",
+    variable=draw_as_well,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+row += 1
+rendering_parameters = tkinter.Text(
+    SCREEN, width=gui_width * 3, height=gui_height * 7
+)
+rendering_parameters.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=7,
+    sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
+)
+
+row += 7
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看词典",
+    command=show_dictionary,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="恢复显示",
+    command=show_tips,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    columnspan=2,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=row
+)  # 设置说明
+column += 1
+row = 0
+
+tkinter.Label(
+    SCREEN,
+    text="【行名与列名】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+row += 1
+replace_index = tkinter.IntVar()
+lable = ["(列数据)调整行名", "(行数据)调整列名"]  # 复选框
+for i in range(2):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=replace_index,
+        value=i,
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="植入行(列)号",
+    command=num_with_name,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+
+row += 1
+replace_type = []
+lable = ["保留原值", "保留新值"]  # 复选框
+for i in range(2):
+    replace_type.append(tkinter.IntVar())
+    tkinter.Checkbutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=replace_type[-1],
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="统一行(列)号",
+    command=num_to_name,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="替换字典:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+replace_dict = tkinter.Entry(SCREEN, width=gui_width * 2)
+replace_dict.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="替换列(行):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+replace_iloc = tkinter.Entry(SCREEN, width=gui_width * 2)
+replace_iloc.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="执行替换已有列(行)操作",
+    command=change_index,
+    font=FONT,
+    width=gui_width * 2,
+    height=gui_height,
+).grid(column=column, columnspan=2, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="执行替换操作",
+    command=replace_index_func,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+
+label = ["起点", "终点", "间隔"]
+date_input = []
+for i in range(3):
+    row += 1
+    tkinter.Label(
+        SCREEN,
+        text="时间序列" + label[i],
+        bg=bg_color,
+        fg=word_color,
+        font=FONT,
+        width=gui_width,
+        height=gui_height,
+    ).grid(
+        column=column, row=row
+    )  # 设置说明
+    date_input.append(tkinter.Entry(SCREEN, width=gui_width * 2))
+    date_input[-1].grid(
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
+
+row += 1
+date_type = tkinter.IntVar()
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="刷入Date序列",
+    command=date_index,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="刷入Time序列",
+    command=time_index,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 1, row=row, sticky=tkinter.E + tkinter.W)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="使用间隔",
+    variable=date_type,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="【数据类型管理】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="修改(列号):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+dtype_column = tkinter.Entry(SCREEN, width=gui_width * 2)
+dtype_column.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="数据类型:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+dtype_input = tkinter.Entry(SCREEN, width=gui_width * 2)
+dtype_input.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="错误值:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+dtype_wrong = tkinter.Entry(SCREEN, width=gui_width * 2)
+dtype_wrong.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="执行转换",
+    command=set_dtype,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+dtype_func = tkinter.IntVar()  # 正，负，0
+lable = ["硬转换", "软转换"]  # 复选框
+for i in range(2):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=dtype_func,
+        value=i,
+    ).grid(column=column + 1 + i, row=row, sticky=tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="【排序操作】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column, columnspan=3, row=row
+)  # 设置说明
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text=".T",
+    command=transpose,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="按行名排序",
+    command=sort_by_tow,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="按列名排序",
+    command=sort_by_column,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="基准列(列号):",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column, row=row
+)  # 设置说明
+sort_by = tkinter.Entry(SCREEN, width=gui_width + 2)
+sort_by.grid(column=column + 1, row=row, sticky=tkinter.W)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="按数据排序",
+    command=stored_value,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+ascending_type = tkinter.IntVar()
+ascending_new = tkinter.IntVar()
+lable = ["正序排列", "倒序排列"]  # 复选框
+for i in range(2):
+    tkinter.Radiobutton(
+        SCREEN,
+        bg=bg_color,
+        fg=word_color,
+        activebackground=bg_color,
+        activeforeground=word_color,
+        selectcolor=bg_color,
+        text=lable[i],
+        variable=ascending_type,
+        value=i,
+    ).grid(column=column + i, row=row, sticky=tkinter.W)
+tkinter.Checkbutton(
+    SCREEN,
+    bg=bg_color,
+    fg=word_color,
+    activebackground=bg_color,
+    activeforeground=word_color,
+    selectcolor=bg_color,
+    text="生成新表格",
+    variable=ascending_new,
+).grid(column=column + 2, row=row, sticky=tkinter.W)
+
+row += 1
+stored_box = tkinter.Listbox(
+    SCREEN, width=gui_width * 3, height=gui_height * 4
+)  # 显示符号
+stored_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=5,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 5
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="添加基准",
+    command=add_baseline,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除基准",
+    command=del_baseline,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="打乱表格",
+    command=sample_data,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+column += 3
+tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
+    column=column, row=row
+)  # 设置说明
+column += 1
+row = 0
+
+tkinter.Label(
+    SCREEN,
+    text="【机器学习】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+row += 1
+chose_learner = tkinter.StringVar()
+put = tkinter.Entry(SCREEN, width=gui_width * 2, textvariable=chose_learner)
+put.grid(column=column, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+put["state"] = "readonly"
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="选用学习器",
+    command=set_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="测试数据分割:",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(column=column, row=row)
+data_split = tkinter.Entry(SCREEN, width=gui_width * 2)
+data_split.grid(
+    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+)
+
+row += 1
+learner_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
+learner_box.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=5,
+    sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 5
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="导入学习器",
+    command=rendering,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="查看数据",
+    command=visual_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="删除学习器",
+    command=del_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="训练机器",
+    command=fit_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="测试机器",
+    command=test_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="数据预测",
+    command=predict_learner,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Label(
+    SCREEN,
+    text="【学习器选择和配置】",
+    bg=bg_color,
+    fg=word_color,
+    font=FONT,
+    width=gui_width * 3,
+    height=gui_height,
+).grid(
+    column=column,
+    columnspan=3,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)  # 设置说明
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="线性回归",
+    command=add_generalized_linear,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="岭回归",
+    command=add_ridge,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="Lasso",
+    command=add_lasso,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="逻辑回归",
+    command=add_logistic_regression,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="决策树",
+    command=show_sorry,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="SVM",
+    command=show_sorry,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="朴素贝叶斯",
+    command=show_sorry,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="K邻近分类",
+    command=add_knn_regression,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 1,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+tkinter.Button(
+    SCREEN,
+    bg=buttom_bg_color,
+    fg=word_color,
+    text="K邻近预测",
+    command=add_knn_class,
+    font=FONT,
+    width=gui_width,
+    height=gui_height,
+).grid(
+    column=column + 2,
+    row=row,
+    sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
+)
+
+row += 1
+learner_parameters = tkinter.Text(
+    SCREEN, width=gui_width * 3, height=gui_height * 11
+)
+learner_parameters.grid(
+    column=column,
+    row=row,
+    columnspan=3,
+    rowspan=11,
+    sticky=tkinter.E + tkinter.W + tkinter.N + tkinter.S,
+)

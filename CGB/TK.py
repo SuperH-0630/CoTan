@@ -1,8 +1,22 @@
 from tkinter.colorchooser import askcolor
 from tkinter.filedialog import asksaveasfile
 import tkinter.messagebox
+
 from CGB import TK_HS
 
+background_image = None
+func_list = {}
+coordinate_system_drawing_method = None
+background_color = None
+pen_weight = None
+pen_color = None
+increasing_color = None
+subtraction_color = None
+save_dir = None
+gui_width = 20
+gui_height = 3
+span = None
+SCREEN = tkinter.Tk()  # 设置屏幕
 help_doc = """
 *快捷键：
     d-不用点击左键画线（再次点击关闭）
@@ -203,88 +217,7 @@ def close():  # 关闭屏幕事件
 
 
 def tool_box():
-    global pen_color
-    global increasing_color, subtraction_color
     global SCREEN  # 初始化屏幕
-    global pen_weight
-    global background_color
-    global coordinate_system_drawing_method
-    global func_list  # 绘制函数列表
-    global save_dir  # 保存路径
-    global span
-    global pen_weight_input, span_Input  # 定义Enter组件
-    global background_image
-
-    background_image = None
-    func_list = {}
-    coordinate_system_drawing_method = None
-    background_color = None
-    pen_weight = None
-    pen_color = None
-    increasing_color = None
-    subtraction_color = None
-    save_dir = None
-    w_b = 20
-    h_b = 3
-    span = None
-
-    SCREEN = tkinter.Tk()  # 设置屏幕
-    SCREEN.title("")
-    SCREEN.resizable(width=False, height=False)
-    SCREEN.geometry(f"+10+10")
-
-    tkinter.Button(
-        SCREEN, text="选择颜色", command=select_color, width=w_b, height=h_b
-    ).pack()  # 选择颜色组件
-    tkinter.Button(
-        SCREEN, text="选择增函数颜色", command=increasing_func_color, width=w_b, height=1
-    ).pack()  # 选择颜色组件
-    tkinter.Button(
-        SCREEN, text="选择减函数颜色", command=subtraction_func_color, width=w_b, height=1
-    ).pack()  # 选择颜色组件
-    tkinter.Button(
-        SCREEN, text="使用中笔(默认笔)", command=switch_stroke, width=w_b, height=h_b
-    ).pack()  # 切换笔
-    tkinter.Button(
-        SCREEN, text="使用大笔", command=switch_big, width=w_b, height=1
-    ).pack()  # 切换到大笔
-    tkinter.Button(
-        SCREEN, text="使用小笔", command=switch_small, width=w_b, height=1
-    ).pack()  # 切换笔
-    tkinter.Button(
-        SCREEN, text="使用刷子", command=switch_brush, width=w_b, height=1
-    ).pack()  # 切换笔
-    pen_weight_input = tkinter.Entry(SCREEN, width=w_b - 2)
-    pen_weight_input.pack(fill=tkinter.BOTH)
-    tkinter.Button(
-        SCREEN, text="使用自定义大小", command=set_pen, width=w_b, height=1
-    ).pack()  # 切换笔
-    tkinter.Button(
-        SCREEN, text="清空草稿", command=empty, width=w_b, height=h_b
-    ).pack()  # 填充背景
-    tkinter.Button(
-        SCREEN, text="绘制坐标系", command=plot_coordinate, width=w_b, height=h_b
-    ).pack()  # 绘制坐标系
-    tkinter.Button(
-        SCREEN, text="绘制坐标系(小跨度)", command=plot_coordinate_small, width=w_b, height=1
-    ).pack()  # 绘制坐标系
-    tkinter.Button(
-        SCREEN, text="绘制坐标系(大跨度)", command=plot_coordinate_big_span, width=w_b, height=1
-    ).pack()  # 绘制坐标系
-    span_Input = tkinter.Entry(SCREEN, width=w_b - 2)
-    span_Input.pack(fill=tkinter.BOTH)
-    tkinter.Button(
-        SCREEN, text="使用自定义跨度", command=set_span, width=w_b, height=1
-    ).pack()  # 切换笔
-    tkinter.Button(
-        SCREEN, text="绘制函数", command=open_func_box, width=w_b, height=h_b
-    ).pack()
-    tkinter.Button(SCREEN, text="保存", command=choose_save, width=w_b, height=1).pack()
-    tkinter.Button(SCREEN, text="载入", command=choose_open, width=w_b, height=1).pack()
-    tkinter.Button(
-        SCREEN, text="帮助", command=_help, width=w_b, height=1
-    ).pack()  # help是系统保留关键词，用_help代替
-    SCREEN.protocol("WM_DELETE_WINDOW", close)
     SCREEN.mainloop()
     return [
         pen_color,
@@ -298,9 +231,36 @@ def tool_box():
         span,
         background_image,
     ]
-    # [0]-笔的颜色
-    # [1]-笔的大小
-    # [2]-背景填充
-    # [3]-坐标系绘制
-    # [4]-函数绘制
-    # [5]-保存
+
+
+SCREEN.title("")
+SCREEN.resizable(width=False, height=False)
+SCREEN.geometry(f"+10+10")
+tkinter.Button(SCREEN, text="选择颜色", command=select_color, width=gui_width, height=gui_height).pack()
+tkinter.Button(SCREEN, text="选择增函数颜色", command=increasing_func_color, width=gui_width, height=1).pack()
+tkinter.Button(SCREEN, text="选择减函数颜色", command=subtraction_func_color, width=gui_width, height=1).pack()
+tkinter.Button(SCREEN, text="使用中笔(默认笔)", command=switch_stroke, width=gui_width, height=gui_height).pack()
+tkinter.Button(SCREEN, text="使用大笔", command=switch_big, width=gui_width, height=1).pack()  # 切换到大笔
+tkinter.Button(SCREEN, text="使用小笔", command=switch_small, width=gui_width, height=1).pack()  # 切换笔
+tkinter.Button(SCREEN, text="使用刷子", command=switch_brush, width=gui_width, height=1).pack()  # 切换笔
+pen_weight_input = tkinter.Entry(SCREEN, width=gui_width - 2)
+pen_weight_input.pack(fill=tkinter.BOTH)
+tkinter.Button(SCREEN, text="使用自定义大小", command=set_pen, width=gui_width, height=1).pack()  # 切换笔
+tkinter.Button(SCREEN, text="清空草稿", command=empty, width=gui_width, height=gui_height).pack()  # 填充背景
+tkinter.Button(SCREEN, text="绘制坐标系", command=plot_coordinate, width=gui_width, height=gui_height).pack()
+tkinter.Button(SCREEN, text="绘制坐标系(小跨度)", command=plot_coordinate_small, width=gui_width, height=1).pack()
+tkinter.Button(
+    SCREEN,
+    text="绘制坐标系(大跨度)",
+    command=plot_coordinate_big_span,
+    width=gui_width,
+    height=1,
+).pack()  # 绘制坐标系
+span_Input = tkinter.Entry(SCREEN, width=gui_width - 2)
+span_Input.pack(fill=tkinter.BOTH)
+tkinter.Button(SCREEN, text="使用自定义跨度", command=set_span, width=gui_width, height=1).pack()  # 切换笔
+tkinter.Button(SCREEN, text="绘制函数", command=open_func_box, width=gui_width, height=gui_height).pack()
+tkinter.Button(SCREEN, text="保存", command=choose_save, width=gui_width, height=1).pack()
+tkinter.Button(SCREEN, text="载入", command=choose_open, width=gui_width, height=1).pack()
+tkinter.Button(SCREEN, text="帮助", command=_help, width=gui_width, height=1).pack()  # help是系统保留关键词，用_help代替
+SCREEN.protocol("WM_DELETE_WINDOW", close)

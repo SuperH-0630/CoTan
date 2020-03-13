@@ -1,19 +1,21 @@
-from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
+from random import randint
+import re
+from os import getcwd
+
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import *
 from sklearn.model_selection import train_test_split
-from random import randint
 from pyecharts.components import Table
 from pyecharts.globals import SymbolType
 from pyecharts.charts import *
 from pyecharts import options as opts
-import pandas_profiling as pp
 import pandas as pd
-import re
-from os import getcwd
+import pandas_profiling as pp
+
 from pyecharts.globals import CurrentConfig
+from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
 
 CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 
