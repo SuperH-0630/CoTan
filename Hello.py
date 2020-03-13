@@ -1,154 +1,161 @@
 from multiprocessing import Process
+import tkinter
+import tkinter.font as tkfont
+from PIL import ImageTk, Image
+from drag import DragWindow
+
+SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
+FONT1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
+FONT2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
+FONT3 = tkfont.Font(family='Comic Sans MS', size=10)
+FONT4 = tkfont.Font(family='Comic Sans MS', size=50, weight=tkfont.BOLD)
+draftboard_start = None
+datascience_start = None
+functionmapping_start = None
+functionfactory_start = None
+algebraicfactory_start = None
+machinelearner_start = None
+git_start = None
+crawlef_start = None
 
 
-def painting_board():
+def draftboard_main():
     from draftboard import draw_main
     draw_main()
 
 
-def Draw():
-    global top, HTB
-    HTB = Process(target=painting_board)
-    HTB.start()
+def draftboard_run():
+    global SCREEN, draftboard_start
+    draftboard_start = Process(target=draftboard_main)
+    draftboard_start.start()
 
 
-def Data_Science():
+def datascience_main():
     from datascience import machine_learning
     machine_learning()
 
 
-def SJKX():
-    global top, SJ
-    SJ = Process(target=Data_Science)
-    SJ.start()
+def datascience_run():
+    global SCREEN, datascience_start
+    datascience_start = Process(target=datascience_main)
+    datascience_start.start()
 
 
-def Function_mapping():
+def functionmapping_main():
     from funcsystem import function_mapping
     function_mapping()
 
 
-def Hsch():
-    global top, CH
-    CH = Process(target=Function_mapping)
-    CH.start()
+def functionmapping_run():
+    global SCREEN, functionmapping_start
+    functionmapping_start = Process(target=functionmapping_main)
+    functionmapping_start.start()
 
 
-def Function_factory():
+def functionfactory_main():
     from funcsystem import function_factory_main
     function_factory_main()
 
 
-def HSGC():
-    global top, HsGC
-    HsGC = Process(target=Function_factory)
-    HsGC.start()
+def functionfactory_run():
+    global SCREEN, functionfactory_start
+    functionfactory_start = Process(target=functionfactory_main)
+    functionfactory_start.start()
 
 
-def Algebraic_factory():
+def algebraicfactory_main():
     from algebraicfactory import algebraic_factory_main
     algebraic_factory_main()
 
 
-def Dsgc():
-    global top, DsGC
-    DsGC = Process(target=Algebraic_factory)
-    DsGC.start()
+def algebraicfactory_run():
+    global SCREEN, algebraicfactory_start
+    algebraicfactory_start = Process(target=algebraicfactory_main)
+    algebraicfactory_start.start()
 
 
-def Machine_Learning():
+def machinelearner_main():
     from machinelearning import machine_learning
     machine_learning()
 
 
-def MLA():
-    global top, Mla
-    Mla = Process(target=Machine_Learning)
-    Mla.start()
+def machinelearner_run():
+    global SCREEN, machinelearner_start
+    machinelearner_start = Process(target=machinelearner_main)
+    machinelearner_start.start()
 
 
-def Git_Ctrl():
+def git_main():
     from gitrepo import git_main
     git_main()
 
 
-def GIT_Ctrl():
-    global top, Git_Ctrl
-    Git = Process(target=Git_Ctrl)
-    Git.start()
+def git_run():
+    global SCREEN, git_start
+    git_start = Process(target=git_main)
+    git_start.start()
 
 
-def Crawler_Main():
-    from Crawler import crawler_main
+def crawler_main():
+    from crawler import crawler_main
     crawler_main()
 
 
-def Crawlef_Run():
-    global top, crawlef
-    crawlef = Process(target=Crawler_Main)
-    crawlef.start()
+def crawlef_run():
+    global SCREEN, crawlef_start
+    crawlef_start = Process(target=crawler_main)
+    crawlef_start.start()
 
 
-def Main():
-    global top
-    import tkinter
-    import tkinter.font as tkFont
-    from PIL import ImageTk, Image
-    from drag import DragWindow
-    print('加载完毕')
-    top = DragWindow(alpha=0.97, width=1200, height=800)
-    ft = tkFont.Font(family='Comic Sans MS', size=20, weight=tkFont.BOLD)
-    ft1 = tkFont.Font(family='Comic Sans MS', size=16, weight=tkFont.BOLD)
-    ft2 = tkFont.Font(family='Comic Sans MS', size=10)
-    ft3 = tkFont.Font(family='Comic Sans MS', size=50, weight=tkFont.BOLD)
-    top.title('')
-    top.resizable(width=False, height=False)
-    top.geometry(f'1200x800+30+30')
-
+def cotan_main():
+    global SCREEN, FONT1, FONT2, FONT3, FONT4
+    SCREEN.title('')
+    SCREEN.resizable(width=False, height=False)
+    SCREEN.geometry(f'1200x800+30+30')
     # 渲染白色
-    F1 = tkinter.Frame(top, width=1200, height=800, bg='#FFFFFF')
-    F1.pack()
+    frame = tkinter.Frame(SCREEN, width=1200, height=800, bg='#FFFFFF')
+    frame.pack()
 
     # 图片
     canvas = tkinter.Canvas(
-        F1,
+        frame,
         bd=0,
         width=1000,
         height=800,
         highlightthickness=0)
-    photo = ImageTk.PhotoImage(Image.open('Pic/Night2.jpg'))
-    canvas.create_image(500, 400, image=photo)
+    bg_image = ImageTk.PhotoImage(Image.open('Pic/Night2.jpg'))
+    canvas.create_image(500, 400, image=bg_image)
     canvas.grid(column=1, row=0, sticky=tkinter.S + tkinter.N, rowspan=20)
-    abg = '#F0FFFF'
-    bg = '#FFFFFF'
-    bc = 'tcross'
+    title_color = '#F0FFFF'
+    button_color = '#FFFFFF'
+    button_cursor = 'tcross'
     # 标题
     tkinter.Label(
-        F1,
+        frame,
         text='CoTan~科学计算',
         width=20,
         bg='#FFFFFF',
-        font=ft).grid(
+        font=FONT1).grid(
         column=0,
         row=0,
         sticky=tkinter.N)  # 设置说明
     tkinter.Label(
-        F1,
+        frame,
         text='寄忆学术',
-        bg=abg,
-        font=ft1).grid(
+        bg=title_color,
+        font=FONT2).grid(
         column=0,
         row=1,
         sticky=tkinter.W +
         tkinter.E)
     tkinter.Button(
-        F1,
+        frame,
         text='我的寄忆',
-        cursor=bc,
+        cursor=button_cursor,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -157,14 +164,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='寄忆草稿版',
-        cursor=bc,
-        command=Draw,
+        cursor=button_cursor,
+        command=draftboard_run,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -173,14 +180,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='自动化网页',
-        cursor=bc,
-        command=Crawlef_Run,
+        cursor=button_cursor,
+        command=crawlef_run,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -189,14 +196,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='Git仓库控制器',
-        cursor=bc,
-        command=GIT_Ctrl,
+        cursor=button_cursor,
+        command=git_run,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -205,25 +212,25 @@ def Main():
         tkinter.E +
         tkinter.W)
 
-    abg = '#FFFAFA'
+    title_color = '#FFFAFA'
     tkinter.Label(
-        F1,
+        frame,
         text='数学系统',
-        bg=abg,
-        font=ft1).grid(
+        bg=title_color,
+        font=FONT2).grid(
         column=0,
         row=6,
         sticky=tkinter.W +
         tkinter.E)
     tkinter.Button(
-        F1,
+        frame,
         text='函数测绘',
-        cursor=bc,
-        command=Hsch,
+        cursor=button_cursor,
+        command=functionmapping_run,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -232,14 +239,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='函数工厂',
-        cursor=bc,
-        command=HSGC,
+        cursor=button_cursor,
+        command=functionfactory_run,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -248,14 +255,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='代数工厂',
-        cursor=bc,
-        command=Dsgc,
+        cursor=button_cursor,
+        command=algebraicfactory_run,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -264,14 +271,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='数据科学',
-        cursor=bc,
-        command=SJKX,
+        cursor=button_cursor,
+        command=datascience_run,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -280,14 +287,14 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='机器学习',
-        cursor=bc,
-        command=MLA,
+        cursor=button_cursor,
+        command=machinelearner_run,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -296,24 +303,24 @@ def Main():
         tkinter.E +
         tkinter.W)
 
-    abg = '#F5FFFA'
+    title_color = '#F5FFFA'
     tkinter.Label(
-        F1,
+        frame,
         text='物化系统',
-        bg=abg,
-        font=ft1).grid(
+        bg=title_color,
+        font=FONT2).grid(
         column=0,
         row=12,
         sticky=tkinter.W +
         tkinter.E)
     tkinter.Button(
-        F1,
+        frame,
         text='几何车间',
-        cursor=bc,
+        cursor=button_cursor,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -322,13 +329,13 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='物理车间',
-        cursor=bc,
+        cursor=button_cursor,
         height=2,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -337,13 +344,13 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='化学车间',
-        cursor=bc,
+        cursor=button_cursor,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -352,13 +359,13 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='实验室管理',
-        cursor=bc,
+        cursor=button_cursor,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -366,24 +373,24 @@ def Main():
         sticky=tkinter.N +
         tkinter.E +
         tkinter.W)
-    abg = '#F8F8FF'
+    title_color = '#F8F8FF'
     tkinter.Label(
-        F1,
+        frame,
         text='其他工具',
-        bg=abg,
-        font=ft1).grid(
+        bg=title_color,
+        font=FONT2).grid(
         column=0,
         row=17,
         sticky=tkinter.W +
         tkinter.E)
     tkinter.Button(
-        F1,
+        frame,
         text='系统扩展',
-        cursor=bc,
+        cursor=button_cursor,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -392,13 +399,13 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Button(
-        F1,
+        frame,
         text='Tensorflew深度学习',
-        cursor=bc,
+        cursor=button_cursor,
         height=1,
-        font=ft2,
-        bg=bg,
-        activebackground=abg,
+        font=FONT3,
+        bg=button_color,
+        activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
         column=0,
@@ -407,18 +414,18 @@ def Main():
         tkinter.E +
         tkinter.W)
     tkinter.Label(
-        F1,
+        frame,
         text='',
         bg='#FFFFFF',
-        font=ft1,
+        font=FONT2,
         height=5).grid(
         column=0,
         row=20,
         sticky=tkinter.W +
         tkinter.E)
-    canvas.create_text(500, 750, text='CoTan~别来无恙', font=ft3, fill='#FFFFE0')
-    top.mainloop()
+    canvas.create_text(500, 750, text='CoTan~别来无恙', font=FONT4, fill='#FFFFE0')
+    SCREEN.mainloop()
 
 
 if __name__ == "__main__":
-    Main()
+    cotan_main()
