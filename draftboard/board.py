@@ -4,7 +4,7 @@ import os
 import pygame
 from pygame.locals import *
 
-from CGB.TK import tool_box
+from draftboard.toolbox import tool_box
 
 # 定义一些变量
 pen_color = [0, 0, 0]  # 画笔颜色

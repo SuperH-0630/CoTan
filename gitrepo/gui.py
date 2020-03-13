@@ -8,7 +8,7 @@ from tkinter import ttk
 from tkinter.filedialog import asksaveasfilename, askdirectory, askopenfilenames
 from tkinter.scrolledtext import ScrolledText
 
-from Git_controller import GitController
+from gitrepo import controller
 
 
 def git_main():
@@ -309,7 +309,7 @@ def cli(
 ):
     command_thread = func(*args)
     format_flat = True
-    stop_key = GitController.stop_key
+    stop_key = controller.stop_key
 
     def save_to_txt():
         nonlocal data
@@ -764,7 +764,7 @@ def progress_bar(*args, name="CoTan_Git >>> 运行中...", **kwargs):
 
 file_list = []
 PATH = os.getcwd()
-git = GitController.GitCtrol()
+git = controller.GitCtrol()
 repo_list = []
 SCREEN = tkinter.Tk()
 last_name = None

@@ -6,14 +6,14 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename, askdirectory
 import chardet
 import webbrowser
 
-from Machine_learning_analysis import Learn_Numpy
+from machinelearning import controller
 
 calculation_list = []
 calculation_method = []
 PATH = os.getcwd()
 sheet_list = []
 merge_list = []
-learner_controller = Learn_Numpy.MachineLearner()
+learner_controller = controller.MachineLearner()
 SCREEN = tkinter.Tk()
 gui_width = 13  # 标准宽度
 gui_height = 2
@@ -130,7 +130,7 @@ def del_leaner():
 def global_seeting():
     global global_settings
     args = [bool(i.get()) for i in global_settings]
-    Learn_Numpy.set_global(*args)
+    controller.set_global(*args)
 
 
 def reshape():

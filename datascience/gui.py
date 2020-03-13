@@ -7,13 +7,13 @@ from tkinter.scrolledtext import ScrolledText
 
 import chardet
 
-from Data_Science import Learn
+from datascience import controller
 
 render_dict = {}  # 保存了画图的List
 learn_dict = {}  # 保存数据处理
 PATH = os.getcwd()
 sheet_list = []
-machine_controller = Learn.MachineLearner()
+machine_controller = controller.MachineLearner()
 SCREEN = tkinter.Tk()
 bg_color = "#FFFAFA"  # 主颜色
 buttom_bg_color = "#FFFAFA"  # 按钮颜色

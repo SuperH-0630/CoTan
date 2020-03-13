@@ -11,9 +11,9 @@ import pandas
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
-from HSCH.HS import ExpFunc, SheetFunc
+from funcsystem.controller import ExpFunc, SheetFunc
 
-func_list = []
+func_logger = []
 fig = None
 func_str_list = []
 prompt_num = 0
@@ -62,7 +62,7 @@ def type_selection(iter_object, si=float, n=True):  # Float筛选系统
 
 
 def plot_func():
-    global func_list, definition_domain, fig, x_limit, y_limit, y_axis, x_axis
+    global func_logger, definition_domain, fig, x_limit, y_limit, y_axis, x_axis
     # 画板创造
     output_prompt("生成绘制取...")
     fig = plt.figure(num="CoTan函数")  # 定义一个图像窗口
@@ -250,7 +250,7 @@ def plot_func():
 
 
 def add_from_csv():  # 添加函数
-    global func_list, func_str_list, func_exp_box, definition_domain, func_name, line_style, point_style, func_style
+    global func_logger, func_str_list, func_exp_box, definition_domain, func_name, line_style, point_style, func_style
     file = tkinter.filedialog.askopenfilename(title="载入表格", filetypes=[("CSV", ".csv")])
     style_str = func_style.get().split("#")
     try:
@@ -280,7 +280,7 @@ def add_from_csv():  # 添加函数
 
 
 def add_func():  # 添加函数
-    global func_list, func_str_list, func_exp_box, func_name, line_style, point_style, func_style, definition_domain
+    global func_logger, func_str_list, func_exp_box, func_name, line_style, point_style, func_style, definition_domain
     get = func_exp.get().replace(" ", "")
     definition = definition_domain.get().split(",")
     name = func_name.get().replace(" ", "")
@@ -330,7 +330,7 @@ def add_func():  # 添加函数
 
 
 def clean_func_box():  # 添加函数
-    global func_list, func_str_list, func_exp_box, func_name, line_style, point_style, func_style
+    global func_logger, func_str_list, func_exp_box, func_name, line_style, point_style, func_style
     if tkinter.messagebox.askokcancel("提示", "是否清空所有函数？)"):
         func_str_list = []
         func_list = []
@@ -339,7 +339,7 @@ def clean_func_box():  # 添加函数
 
 
 def func_to_sheet():  # 显示xy
-    global func_list, func_exp_box, sheet_box
+    global func_logger, func_exp_box, sheet_box
     try:
         func = func_list[func_exp_box.curselection()[0]]
         sheet_box.delete(0, tkinter.END)
@@ -351,7 +351,7 @@ def func_to_sheet():  # 显示xy
 
 
 def clean_func_memory():
-    global x_value, func_exp_box, func_list
+    global x_value, func_exp_box, func_logger
     try:
         if tkinter.messagebox.askokcancel(
             "提示", f"确定删除{func_list[func_exp_box.curselection()[0]]}的记忆吗？"
@@ -367,7 +367,7 @@ def clean_func_memory():
 
 
 def hide_memory():  # 显示xy
-    global func_list, result_box
+    global func_logger, result_box
     try:
         func = func_list[func_exp_box.curselection()[0]]
         result_box.delete(0, tkinter.END)
@@ -378,7 +378,7 @@ def hide_memory():  # 显示xy
 
 
 def show_memory():  # 显示xy
-    global func_list, result_box
+    global func_logger, result_box
     try:
         fucn = func_list[func_exp_box.curselection()[0]]
         result_box.delete(0, tkinter.END)
@@ -393,7 +393,7 @@ def show_memory():  # 显示xy
 
 
 def property_prediction():
-    global func_list, func_exp_box, property_box
+    global func_logger, func_exp_box, property_box
     try:
         output_prompt("预测过程程序可能无响应")
         fucn = func_list[func_exp_box.curselection()[0]]
@@ -406,7 +406,7 @@ def property_prediction():
 
 
 def calculate():
-    global func_list, result_box, x_value, func_exp_box
+    global func_logger, result_box, x_value, func_exp_box
     try:
         output_prompt("计算过程程序可能无响应")
         fucn = func_list[func_exp_box.curselection()[0]]
@@ -424,7 +424,7 @@ def func_to_csv():  # 导出CSV
     if not func_exp_box.curselection():
         return False
     try:
-        fucn = func_list[func_exp_box.curselection()[0]]
+        fucn = func_logger[func_exp_box.curselection()[0]]
         fucn.save_csv()
         output_prompt("CSV导出成功")
     except BaseException:
@@ -432,7 +432,7 @@ def func_to_csv():  # 导出CSV
 
 
 def del_func():  # 删除函数
-    global func_list, func_str_list, func_exp_box
+    global func_logger, func_str_list, func_exp_box
     del_fucn = func_exp_box.curselection()
     for i in del_fucn:  # 只存在一项
         func_exp_box.delete(i)
@@ -442,7 +442,7 @@ def del_func():  # 删除函数
 
 
 def dichotomy():
-    global func_list, result_box, y_value, dicon_parameters
+    global func_logger, result_box, y_value, dicon_parameters
     try:
         output_prompt("计算过程程序可能无响应")
         fucn = func_list[func_exp_box.curselection()[0]]  # 获取目标函数
@@ -464,7 +464,7 @@ def dichotomy():
 
 
 def gradient_method_calculation():
-    global func_list, result_box, y_value_gradient
+    global func_logger, result_box, y_value_gradient
     try:
         output_prompt("计算过程程序可能无响应")
         fucn = func_list[func_exp_box.curselection()[0]]  # 获取目标函数
@@ -491,7 +491,7 @@ def output_prompt(news):
 
 
 def func_differentiation():
-    global func_list, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
+    global func_logger, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
     try:
         fucn = func_list[func_exp_box.curselection()[0]]
         diff = fucn.derivatives
@@ -521,7 +521,7 @@ def func_differentiation():
 def function_mapping():
     global SCREEN, FONT, line_style, point_style, csv_list, func_exp, definition_domain, func_name, func_style
     global x_axis, y_axis, x_limit, y_limit
-    global func_exp_box, sheet_box, x_value, result_box, func_list, func_str_list, y_value, dicon_parameters
+    global func_exp_box, sheet_box, x_value, result_box, func_logger, func_str_list, y_value, dicon_parameters
     global y_value_gradient, property_box, prompt_box, prompt_num
 
     SCREEN.mainloop()

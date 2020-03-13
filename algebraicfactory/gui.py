@@ -2,7 +2,7 @@ import tkinter
 import tkinter.messagebox
 import tkinter.font as tkfont
 
-from DSGC.Algebra import AlgebraPolynomial
+from algebraicfactory.controller import AlgebraPolynomial
 
 algebra_list = []
 value_list = []

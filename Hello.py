@@ -2,7 +2,7 @@ from multiprocessing import Process
 
 
 def painting_board():
-    from CGB import draw_main
+    from draftboard import draw_main
     draw_main()
 
 
@@ -13,7 +13,7 @@ def Draw():
 
 
 def Data_Science():
-    from Data_Science import machine_learning
+    from datascience import machine_learning
     machine_learning()
 
 
@@ -24,7 +24,7 @@ def SJKX():
 
 
 def Function_mapping():
-    from HSCH import function_mapping
+    from funcsystem import function_mapping
     function_mapping()
 
 
@@ -35,7 +35,7 @@ def Hsch():
 
 
 def Function_factory():
-    from HSCH import function_factory_main
+    from funcsystem import function_factory_main
     function_factory_main()
 
 
@@ -46,7 +46,7 @@ def HSGC():
 
 
 def Algebraic_factory():
-    from DSGC import algebraic_factory_main
+    from algebraicfactory import algebraic_factory_main
     algebraic_factory_main()
 
 
@@ -57,7 +57,7 @@ def Dsgc():
 
 
 def Machine_Learning():
-    from Machine_learning_analysis import machine_learning
+    from machinelearning import machine_learning
     machine_learning()
 
 
@@ -68,7 +68,7 @@ def MLA():
 
 
 def Git_Ctrl():
-    from Git_controller import git_main
+    from gitrepo import git_main
     git_main()
 
 
@@ -94,7 +94,7 @@ def Main():
     import tkinter
     import tkinter.font as tkFont
     from PIL import ImageTk, Image
-    from New_TK import DragWindow
+    from drag import DragWindow
     print('加载完毕')
     top = DragWindow(alpha=0.97, width=1200, height=800)
     ft = tkFont.Font(family='Comic Sans MS', size=20, weight=tkFont.BOLD)

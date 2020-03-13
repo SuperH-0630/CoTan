@@ -2,15 +2,21 @@ import math
 
 import tkinter.messagebox
 
-from CGB import TK_DoneHS
+from draftboard import customfunctions
 
 custom_function_index = 18  # 字定义函数的序号
 func_dict = {}
+custom_func_dict = {}
 width = 20
-SCREEN = tkinter.Tk()  # 设置屏幕
-SCREEN.title("")
-SCREEN.resizable(width=False, height=False)
-SCREEN.geometry(f"+180+10")
+SCREEN = None  # 设置屏幕
+
+
+class Logger:
+    def __call__(self, *args, **kwargs):
+        global custom_func_dict, func_dict
+        for i in custom_func_dict:
+            func_dict[i] = custom_func_dict[i]()
+        return func_dict
 
 
 def linear_func():
@@ -174,47 +180,36 @@ def arccsc_func():
 
 
 def custom_func():
-    global func_dict, custom_function_index
-    get = TK_DoneHS.make_func()
-    if get is not None:
-        func_dict[custom_function_index] = get
-        custom_function_index += 1
-
-
-def close():
-    global SCREEN
-    try:
-        TK_DoneHS.SCREEN.destroy()
-    except BaseException:
-        pass
-    SCREEN.destroy()
+    global func_dict, custom_function_index, custom_func_dict
+    custom_func_dict[custom_function_index] = customfunctions.make_func()
 
 
 def func_box():
     global SCREEN
-    SCREEN.mainloop()
-    return func_dict
-
-
-tkinter.Button(SCREEN, text="1次函数", command=linear_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="2次函数", command=quadratic_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="-1次函数", command=inverse_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="3次函数", command=cubic_function, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="根号函数", command=radical_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="对数函数", command=log_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="指数函数", command=exp_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="对数底函数", command=log2_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="sin函数", command=sin_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="cos函数", command=cos_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="tan函数", command=tan_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="cot函数", command=tan_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="csc函数", command=csc_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="sec函数", command=sec_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arcsin函数", command=arcsin_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arccos函数", command=arccos_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arctan函数", command=arctan_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arccot函数", command=arccot_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arccsc函数", command=arccsc_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="arcsec函数", command=arcsec_func, width=width, height=1).pack()
-tkinter.Button(SCREEN, text="自定义函数", command=custom_func, width=width, height=3).pack()
-SCREEN.protocol("WM_DELETE_WINDOW", close)
+    loger = Logger()
+    SCREEN = tkinter.Toplevel()  # 设置屏幕
+    SCREEN.title("")
+    SCREEN.resizable(width=False, height=False)
+    SCREEN.geometry(f"+180+10")
+    tkinter.Button(SCREEN, text="1次函数", command=linear_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="2次函数", command=quadratic_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="-1次函数", command=inverse_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="3次函数", command=cubic_function, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="根号函数", command=radical_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="对数函数", command=log_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="指数函数", command=exp_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="对数底函数", command=log2_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="sin函数", command=sin_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="cos函数", command=cos_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="tan函数", command=tan_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="cot函数", command=tan_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="csc函数", command=csc_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="sec函数", command=sec_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arcsin函数", command=arcsin_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arccos函数", command=arccos_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arctan函数", command=arctan_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arccot函数", command=arccot_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arccsc函数", command=arccsc_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="arcsec函数", command=arcsec_func, width=width, height=1).pack()
+    tkinter.Button(SCREEN, text="自定义函数", command=custom_func, width=width, height=3).pack()
+    return loger

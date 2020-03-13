@@ -1,4 +1,4 @@
-from Crawler import Crawler_controller
+from Crawler import controller
 import os
 import tkinter
 from tkinter.filedialog import askdirectory
@@ -2268,7 +2268,7 @@ tkinter.Button(
 
 SCREEN.update()  # 要预先update一下，否则会卡住
 save_dir = askdirectory(title="选择项目位置")  # 项目位置
-url = Crawler_controller.Url(save_dir, save_dir)  # url管理器
-loader = Crawler_controller.PageDownloader(url, save_dir)  # 页面下载器
-page_parser = Crawler_controller.PageParser(loader)  # 页面解析器
-database = Crawler_controller.data_base  # 数据库
+url = controller.Url(save_dir, save_dir)  # url管理器
+loader = controller.PageDownloader(url, save_dir)  # 页面下载器
+page_parser = controller.PageParser(loader)  # 页面解析器
+database = controller.data_base  # 数据库

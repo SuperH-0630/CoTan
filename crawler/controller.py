@@ -10,7 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from Crawler import Information_storage
+from Crawler import db
 
 keys_name_dict = {
     "ctrl": Keys.CONTROL,
@@ -38,7 +38,7 @@ keys_name_dict = {
 }  # 键-值映射
 for i in range(1, 13):  # F1 - F12按键
     keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}")
-data_base = Information_storage.DatabaseController()
+data_base = db.DatabaseController()
 
 
 class Page:
@@ -245,7 +245,7 @@ class PageDownloader:
     def __init__(self, url: Url, dic=""):
         self.url = url
         self.dir = dic
-        self.log = Information_storage.Log(dic)
+        self.log = db.Log(dic)
         PageDownloader.downloader_count += 1
         self.page_source_dict = {}  # 页面保存信息
         self.cookie_Thread = None  # 子进程

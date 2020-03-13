@@ -3,8 +3,11 @@ import math
 import tkinter
 import tkinter.messagebox
 
-func = None
-SCREEN = tkinter.Tk()  # 设置屏幕
+SCREEN = None  # 设置屏幕
+func_input = None
+help = None
+button = None
+logger = None
 help_doc = """
 请在第一个输入框输入你的函数方程，不需要输入f(x)=和y=,唯一变量是x(x为自变量)
 圆周率-Pi，自然无理数-e
@@ -18,10 +21,21 @@ help_doc = """
 """
 
 
+class CustomFuncLogger:
+    def __init__(self):
+        self.func = None
+
+    def set(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        return self.func
+
+
 class FunctionExpression:
     def __init__(self, func):
-        self.FUNC = func
-        self.NAME = {
+        self.func = func
+        self.named_domain = {
             "x": 0,
             "Pi": math.pi,
             "e": math.e,
@@ -41,23 +55,23 @@ class FunctionExpression:
         }
 
     def __call__(self, x):
-        self.NAME["x"] = x
-        return eval(self.FUNC, self.NAME)
+        self.named_domain["x"] = x
+        return eval(self.func, self.named_domain)
 
 
 def custom():
-    global func_input, func, help_doc
+    global func_input, help_doc, logger
     func_str = func_input.get().replace(" ", "")
     if func_str:
         if tkinter.messagebox.askokcancel(
             "提示", f"是否确认生成自定义函数:\n{func_input.get()}\n(点击取消可撤销未执行的制造函数)"
         ):
-            func = FunctionExpression(func_input.get())
+            logger.set(FunctionExpression(func_input.get()))
         else:
-            func = None
+            logger.set(None)
     else:
         if tkinter.messagebox.askokcancel("提示", f"点击确定撤销为执行的制造函数"):
-            func = None
+            logger.set(None)
 
 
 def get_help():
@@ -65,17 +79,16 @@ def get_help():
 
 
 def make_func():
-    global SCREEN
-    SCREEN.mainloop()
-    return func
-
-
-SCREEN.title("")
-SCREEN.resizable(width=False, height=False)
-SCREEN.geometry(f"+350+10")
-button = tkinter.Button(SCREEN, text="制造函数", command=custom, width=28, height=1)  # 收到消息执行这个函数
-help = tkinter.Button(SCREEN, text="帮助", command=get_help, width=28, height=1)  # 帮助菜单
-func_input = tkinter.Entry(SCREEN)
-func_input.pack(fill=tkinter.BOTH)
-button.pack()
-help.pack()
+    global SCREEN, func_input, help, button, logger
+    SCREEN = tkinter.Toplevel()
+    SCREEN.title("")
+    SCREEN.resizable(width=False, height=False)
+    SCREEN.geometry(f"+350+10")
+    button = tkinter.Button(SCREEN, text="制造函数", command=custom, width=28, height=1)  # 收到消息执行这个函数
+    help = tkinter.Button(SCREEN, text="帮助", command=get_help, width=28, height=1)  # 帮助菜单
+    func_input = tkinter.Entry(SCREEN)
+    func_input.pack(fill=tkinter.BOTH)
+    button.pack()
+    help.pack()
+    logger = CustomFuncLogger()
+    return logger

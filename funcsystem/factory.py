@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib import rcParams
 from matplotlib.animation import FuncAnimation
 
-from HSCH.HS import ExpFunc as ExpFunc
+from funcsystem.controller import ExpFunc as ExpFunc
 
 func = None
 fig = None
