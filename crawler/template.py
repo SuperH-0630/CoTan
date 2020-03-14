@@ -88,7 +88,7 @@ class DatabaseControllerCustom(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def out(self, name, dir):
+    def out(self, name, save_dir):
         pass
 
     @abstractmethod

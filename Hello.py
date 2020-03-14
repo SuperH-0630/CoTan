@@ -1,14 +1,13 @@
 from multiprocessing import Process
 import tkinter
+from tkinter import ttk
 import tkinter.font as tkfont
 from PIL import ImageTk, Image
+import time
+
 from drag import DragWindow
 
-SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
-FONT1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
-FONT2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
-FONT3 = tkfont.Font(family='Comic Sans MS', size=10)
-FONT4 = tkfont.Font(family='Comic Sans MS', size=50, weight=tkfont.BOLD)
+SCREEN = None
 draftboard_start = None
 datascience_start = None
 functionmapping_start = None
@@ -19,11 +18,37 @@ git_start = None
 crawlef_start = None
 
 
+def progress_bar(func):
+    def progress_bar(*agrs, **kwargs):
+        func(*agrs, **kwargs)
+        progress_screen = tkinter.Toplevel()
+        progress_screen.title('系统持续加载中...')
+        progress_screen.geometry("+10+10")  # 设置所在位置
+        mpb = ttk.Progressbar(
+            progress_screen, orient="horizontal", length=300, mode="determinate"
+        )
+        mpb.pack()
+        progress_screen.resizable(width=False, height=False)
+        mpb["maximum"] = 50
+        mpb["value"] = 0
+        for i in range(50):
+            try:
+                mpb["value"] = i + 1
+                progress_screen.update()
+            except BaseException:
+                pass
+            SCREEN.update()
+            time.sleep(0.015)
+        progress_screen.destroy()
+    return progress_bar
+
+
 def draftboard_main():
     from draftboard import draw_main
     draw_main()
 
 
+@progress_bar
 def draftboard_run():
     global SCREEN, draftboard_start
     draftboard_start = Process(target=draftboard_main)
@@ -35,6 +60,7 @@ def datascience_main():
     machine_learning()
 
 
+@progress_bar
 def datascience_run():
     global SCREEN, datascience_start
     datascience_start = Process(target=datascience_main)
@@ -42,10 +68,11 @@ def datascience_run():
 
 
 def functionmapping_main():
-    from funcsystem import function_mapping
+    from funcsystem.map import function_mapping
     function_mapping()
 
 
+@progress_bar
 def functionmapping_run():
     global SCREEN, functionmapping_start
     functionmapping_start = Process(target=functionmapping_main)
@@ -53,10 +80,11 @@ def functionmapping_run():
 
 
 def functionfactory_main():
-    from funcsystem import function_factory_main
+    from funcsystem.factory import function_factory_main
     function_factory_main()
 
 
+@progress_bar
 def functionfactory_run():
     global SCREEN, functionfactory_start
     functionfactory_start = Process(target=functionfactory_main)
@@ -68,6 +96,7 @@ def algebraicfactory_main():
     algebraic_factory_main()
 
 
+@progress_bar
 def algebraicfactory_run():
     global SCREEN, algebraicfactory_start
     algebraicfactory_start = Process(target=algebraicfactory_main)
@@ -79,6 +108,7 @@ def machinelearner_main():
     machine_learning()
 
 
+@progress_bar
 def machinelearner_run():
     global SCREEN, machinelearner_start
     machinelearner_start = Process(target=machinelearner_main)
@@ -90,6 +120,7 @@ def git_main():
     git_main()
 
 
+@progress_bar
 def git_run():
     global SCREEN, git_start
     git_start = Process(target=git_main)
@@ -101,14 +132,19 @@ def crawler_main():
     crawler_main()
 
 
+@progress_bar
 def crawlef_run():
-    global SCREEN, crawlef_start
     crawlef_start = Process(target=crawler_main)
     crawlef_start.start()
 
 
 def cotan_main():
-    global SCREEN, FONT1, FONT2, FONT3, FONT4
+    global SCREEN
+    SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
+    font1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
+    font2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
+    font3 = tkfont.Font(family='Comic Sans MS', size=10)
+    font4 = tkfont.Font(family='Comic Sans MS', size=50, weight=tkfont.BOLD)
     SCREEN.title('')
     SCREEN.resizable(width=False, height=False)
     SCREEN.geometry(f'1200x800+30+30')
@@ -135,7 +171,7 @@ def cotan_main():
         text='CoTan~科学计算',
         width=20,
         bg='#FFFFFF',
-        font=FONT1).grid(
+        font=font1).grid(
         column=0,
         row=0,
         sticky=tkinter.N)  # 设置说明
@@ -143,7 +179,7 @@ def cotan_main():
         frame,
         text='寄忆学术',
         bg=title_color,
-        font=FONT2).grid(
+        font=font2).grid(
         column=0,
         row=1,
         sticky=tkinter.W +
@@ -153,7 +189,7 @@ def cotan_main():
         text='我的寄忆',
         cursor=button_cursor,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -169,7 +205,7 @@ def cotan_main():
         cursor=button_cursor,
         command=draftboard_run,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -185,7 +221,7 @@ def cotan_main():
         cursor=button_cursor,
         command=crawlef_run,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -201,7 +237,7 @@ def cotan_main():
         cursor=button_cursor,
         command=git_run,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -217,7 +253,7 @@ def cotan_main():
         frame,
         text='数学系统',
         bg=title_color,
-        font=FONT2).grid(
+        font=font2).grid(
         column=0,
         row=6,
         sticky=tkinter.W +
@@ -228,7 +264,7 @@ def cotan_main():
         cursor=button_cursor,
         command=functionmapping_run,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -244,7 +280,7 @@ def cotan_main():
         cursor=button_cursor,
         command=functionfactory_run,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -260,7 +296,7 @@ def cotan_main():
         cursor=button_cursor,
         command=algebraicfactory_run,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -276,7 +312,7 @@ def cotan_main():
         cursor=button_cursor,
         command=datascience_run,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -292,7 +328,7 @@ def cotan_main():
         cursor=button_cursor,
         command=machinelearner_run,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -308,7 +344,7 @@ def cotan_main():
         frame,
         text='物化系统',
         bg=title_color,
-        font=FONT2).grid(
+        font=font2).grid(
         column=0,
         row=12,
         sticky=tkinter.W +
@@ -318,7 +354,7 @@ def cotan_main():
         text='几何车间',
         cursor=button_cursor,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -333,7 +369,7 @@ def cotan_main():
         text='物理车间',
         cursor=button_cursor,
         height=2,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -348,7 +384,7 @@ def cotan_main():
         text='化学车间',
         cursor=button_cursor,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -363,7 +399,7 @@ def cotan_main():
         text='实验室管理',
         cursor=button_cursor,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -378,7 +414,7 @@ def cotan_main():
         frame,
         text='其他工具',
         bg=title_color,
-        font=FONT2).grid(
+        font=font2).grid(
         column=0,
         row=17,
         sticky=tkinter.W +
@@ -388,7 +424,7 @@ def cotan_main():
         text='系统扩展',
         cursor=button_cursor,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -403,7 +439,7 @@ def cotan_main():
         text='Tensorflew深度学习',
         cursor=button_cursor,
         height=1,
-        font=FONT3,
+        font=font3,
         bg=button_color,
         activebackground=title_color,
         bd=0,
@@ -417,15 +453,16 @@ def cotan_main():
         frame,
         text='',
         bg='#FFFFFF',
-        font=FONT2,
+        font=font2,
         height=5).grid(
         column=0,
         row=20,
         sticky=tkinter.W +
         tkinter.E)
-    canvas.create_text(500, 750, text='CoTan~别来无恙', font=FONT4, fill='#FFFFE0')
+    canvas.create_text(500, 750, text='CoTan~别来无恙', font=font4, fill='#FFFFE0')
     SCREEN.mainloop()
 
 
 if __name__ == "__main__":
     cotan_main()
+

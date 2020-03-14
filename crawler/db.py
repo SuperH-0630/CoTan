@@ -66,8 +66,8 @@ class DatabaseController(AddDatabase, DatabaseControllerCustom):  # data base控
         self.database[name].remove()
         del self.database[name]
 
-    def out(self, name, dir):  # 输出数据表
-        self.database[name].out_file(dir)
+    def out(self, name, save_dir):  # 输出数据表
+        self.database[name].out_file(save_dir)
 
     def return_database(self):
         return list(self.database.keys())

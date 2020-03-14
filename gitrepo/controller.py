@@ -54,7 +54,7 @@ class GitRepo:  # git的基类
             file_ = []
             for i in file_list:
                 if i[: len(self.repo_dir)] == self.repo_dir:
-                    file_.append(i[len(self.repo_dir) + 1 :])  # +1是为了去除/
+                    file_.append(i[len(self.repo_dir) + 1:])  # +1是为了去除/
             if not is_file:
                 return file_
             file = pat.join(file_)

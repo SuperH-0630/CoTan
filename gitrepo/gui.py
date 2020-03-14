@@ -762,6 +762,7 @@ def progress_bar(*args, name="CoTan_Git >>> 运行中...", **kwargs):
         time.sleep(0.001)
     progress_screen.destroy()
 
+
 file_list = []
 PATH = os.getcwd()
 git = controller.GitCtrol()
