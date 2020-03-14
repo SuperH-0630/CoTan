@@ -6,14 +6,16 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename, askdirectory
 import chardet
 import webbrowser
 
-from machinelearning import controller
+import machinelearning.controller
+import machinelearning.template
+from machinelearning import template
 
 calculation_list = []
 calculation_method = []
 PATH = os.getcwd()
 sheet_list = []
 merge_list = []
-learner_controller = controller.MachineLearner()
+learner_controller = machinelearning.controller.MachineLearner()
 SCREEN = tkinter.Tk()
 gui_width = 13  # 标准宽度
 gui_height = 2
@@ -130,7 +132,7 @@ def del_leaner():
 def global_seeting():
     global global_settings
     args = [bool(i.get()) for i in global_settings]
-    controller.set_global(*args)
+    machinelearning.template.set_global(*args)
 
 
 def reshape():
@@ -580,19 +582,19 @@ def add_csv():
     csv_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
     if csv_dir == "":
         return False
-    sep = sep.get()
-    encoding = encoding.get()
+    the_sep = sep.get()
+    the_encoding = encoding.get()
     must_str = bool(dtype_str.get())
     name = sheet_name.get().replace(" ", "")
     if name == "":
         name = os.path.splitext(os.path.split(csv_dir)[1])[0]
-    if encoding == "":
+    if the_encoding == "":
         with open(csv_dir, "rb") as f:
-            encoding = chardet.detect(f.read())["encoding"]
-    if sep == "":
-        sep = ","
+            the_encoding = chardet.detect(f.read())["encoding"]
+    if the_sep == "":
+        the_sep = ","
     learner_controller.read_csv(
-        csv_dir, name, encoding, must_str, sep,
+        csv_dir, name, the_encoding, must_str, the_sep,
     )
     update_sheet_box()
 
