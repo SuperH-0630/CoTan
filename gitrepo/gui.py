@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.filedialog import asksaveasfilename, askdirectory, askopenfilenames
 from tkinter.scrolledtext import ScrolledText
 
+import gitrepo.template
 from gitrepo import controller
 
 
@@ -309,7 +310,7 @@ def cli(
 ):
     command_thread = func(*args)
     format_flat = True
-    stop_key = controller.stop_key
+    stop_key = gitrepo.template.stop_key
 
     def save_to_txt():
         nonlocal data
