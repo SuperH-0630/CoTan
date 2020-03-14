@@ -1,8 +1,10 @@
 import os
 import time
 
+from crawler.template import Database, AddDatabase, DatabaseControllerCustom, LogBase
 
-class Database:
+
+class CoTanDB(Database):
     def __init__(self, name):
         self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
         self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
@@ -39,12 +41,7 @@ class Database:
                 f.write(g.read())
 
 
-class DatabaseController:  # data base控制器
-    def __init__(self):
-        self.database = {}
-
-    def add_database(self, name):  # 添加数据表
-        self.database[name] = Database(name)
+class DatabaseController(AddDatabase, DatabaseControllerCustom):  # data base控制器
 
     def add_new(self, name, data):  # 添加新内容
         database = self.database.get(name)
@@ -76,7 +73,7 @@ class DatabaseController:  # data base控制器
         return list(self.database.keys())
 
 
-class Log:
+class Log(LogBase):
     def __init__(self, log_dir):
         self.log_dir = log_dir
         self.log_file = open(

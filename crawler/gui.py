@@ -1,14 +1,16 @@
-from Crawler import controller
+import crawler.controller
+import crawler.template
+from crawler import controller
 import os
 import tkinter
 from tkinter.filedialog import askdirectory
 import re
 import threading
 
+SCREEN = tkinter.Tk()
 database_list = []
 attributes_dict = {}
 PATH = os.getcwd()
-SCREEN = tkinter.Tk()
 cookies_list = []
 bg_color = "#FFFAFA"  # 主颜色
 buttom_bg_color = "#FFFAFA"  # 按钮颜色
@@ -16,6 +18,57 @@ word_color = "#000000"  # 文字颜色
 SCREEN["bg"] = bg_color
 FONT = ("黑体", 11)  # 设置字体
 start_loader_stop = False
+url_input = None
+url_parameter = None
+user_agent_input = None
+requests_data = None
+mode_input = None
+time_out = None
+applied_cookies = None
+url_box = None
+filter_func_box = None
+cookies_fixed = None
+cookies_BOX = None
+new_cookies = None
+search_all = None
+search_key = None
+parser_func_box = None
+operation_object = None
+object_index = None
+send_text = None
+password = None
+select_object = None
+wait_time = None
+js_code = None
+now_running = None
+status_output = None
+variable_box = None
+cookies_name_input = None
+element_name = None
+attributes_name = None
+attribute_regex = None
+attributes_value = None
+attributes_box = None
+find_text = None
+is_recursive = None
+text_regex = None
+limit = None
+find_path = None
+data_format = None
+database_name = None
+database_box = None
+url_tag = None
+chains = None
+drag_element = None
+drag_element_index = None
+type_value = None
+run_time = None
+is_special_keys = None
+save_dir = None
+url = None
+loader = None
+page_parser = None
+database = None
 
 
 def crawler_main():
@@ -344,7 +397,7 @@ def clean_parser_func():
 def update_parser_func_box():
     global parser_func_box, page_parser
     parser_func_box.delete(0, tkinter.END)
-    parser_func_box.insert(tkinter.END, *page_parser.return_filter_func(False)[::-1])
+    parser_func_box.insert(tkinter.END, *page_parser.return_func(False)[::-1])
 
 
 def update_cookies():
@@ -411,10 +464,10 @@ def crawler_stop():
 
 
 def crawler_run():
-    global start_loader_stop
 
     def start_loader():
         global loader, page_parser, url, start_loader_stop
+        start_loader_stop = True
         loader.stop()  # 把之前的停止
         while start_loader_stop:
             if url.is_finish():
@@ -424,7 +477,6 @@ def crawler_run():
             page_parser.element_interaction(update_run_status)
         loader.stop()
 
-    start_loader_stop = True
     new = threading.Thread(target=start_loader)
     new.start()
     update_url_box()
@@ -433,6 +485,8 @@ def crawler_run():
 def crawler_run_one():
     def start_loader():
         global loader, page_parser
+        if url.is_finish():
+            return
         loader.start_to_run(func_cookie=update_cookies_box)
         update_url_box()
         page_parser.element_interaction(update_run_status)
@@ -532,12 +586,10 @@ def update_url_box():
 SCREEN.title("CoTan自动化网页")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
-
 gui_width = 13  # 标准宽度
 gui_height = 2
 row = 0
 column = 0
-
 tkinter.Button(
     SCREEN,
     bg=buttom_bg_color,
@@ -581,7 +633,6 @@ url_input = tkinter.Entry(SCREEN, width=gui_width * 2)
 url_input.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 url_parameter = []
 lable = ["不加载js", "不加载java", "不加载插件"]  # 复选框
@@ -597,7 +648,6 @@ for i in range(3):
         text=lable[i],
         variable=url_parameter[-1],
     ).grid(column=column + i, row=row, sticky=tkinter.W)
-
 row += 1
 lable = ["第一次启动", "隐藏网页", "不加载图片"]  # 复选框
 for i in range(3):
@@ -612,7 +662,6 @@ for i in range(3):
         text=lable[i],
         variable=url_parameter[-1],
     ).grid(column=column + i, row=row, sticky=tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -627,7 +676,6 @@ user_agent_input = tkinter.Entry(SCREEN, width=gui_width * 2)
 user_agent_input.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -642,7 +690,6 @@ requests_data = tkinter.Entry(SCREEN, width=gui_width * 2)
 requests_data.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -657,7 +704,6 @@ mode_input = tkinter.Entry(SCREEN, width=gui_width * 2)
 mode_input.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -672,7 +718,6 @@ time_out = tkinter.Entry(SCREEN, width=gui_width * 2)
 time_out.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -696,7 +741,6 @@ tkinter.Checkbutton(
     text="新启动网页",
     variable=url_parameter[-1],
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
 row += 1
 url_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)
 url_box.grid(
@@ -706,7 +750,6 @@ url_box.grid(
     rowspan=4,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 4
 tkinter.Button(
     SCREEN,
@@ -738,7 +781,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -759,7 +801,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 filter_func_box = tkinter.Listbox(
     SCREEN, width=gui_width * 3, height=gui_height * 3
@@ -771,7 +812,6 @@ filter_func_box.grid(
     rowspan=3,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 3
 tkinter.Button(
     SCREEN,
@@ -803,7 +843,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 cookies_fixed = tkinter.Variable()
 tkinter.Label(
@@ -830,7 +869,6 @@ tkinter.Checkbutton(
     variable=cookies_fixed,
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
 cookies_fixed.set("0")
-
 row += 1
 cookies_BOX = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 3)
 cookies_BOX.grid(
@@ -840,7 +878,6 @@ cookies_BOX.grid(
     rowspan=3,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 3
 tkinter.Button(
     SCREEN,
@@ -872,7 +909,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 new_cookies = tkinter.Entry(SCREEN, width=gui_width * 3)
 new_cookies.grid(column=column, row=row, columnspan=3, sticky=tkinter.E + tkinter.W)
@@ -886,14 +922,12 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 column += 3
 tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
     column=column, row=row
 )  # 设置说明
 column += 1
 row = 0
-
 tkinter.Button(
     SCREEN,
     bg=buttom_bg_color,
@@ -924,7 +958,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -956,7 +989,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 search_all = tkinter.Variable()
 tkinter.Button(
@@ -990,7 +1022,6 @@ tkinter.Checkbutton(
     variable=search_all,
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
 search_all.set("0")
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1005,7 +1036,6 @@ search_key = tkinter.Entry(SCREEN, width=gui_width * 2)
 search_key.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1027,7 +1057,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 parser_func_box = tkinter.Listbox(
     SCREEN, width=gui_width * 3, height=gui_height * 5
@@ -1039,7 +1068,6 @@ parser_func_box.grid(
     rowspan=5,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 5
 tkinter.Label(
     SCREEN,
@@ -1054,7 +1082,6 @@ operation_object = tkinter.Entry(SCREEN, width=gui_width * 2)
 operation_object.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1069,7 +1096,6 @@ object_index = tkinter.Entry(SCREEN, width=gui_width * 2)
 object_index.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1084,7 +1110,6 @@ send_text = tkinter.Entry(SCREEN, width=gui_width * 2)
 send_text.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1099,7 +1124,6 @@ username_input = tkinter.Entry(SCREEN, width=gui_width * 2)
 username_input.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1114,7 +1138,6 @@ password = tkinter.Entry(SCREEN, width=gui_width * 2)
 password.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1129,7 +1152,6 @@ select_object = tkinter.Entry(SCREEN, width=gui_width * 2)
 select_object.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1144,7 +1166,6 @@ wait_time = tkinter.Entry(SCREEN, width=gui_width * 2)
 wait_time.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1157,7 +1178,6 @@ tkinter.Label(
 ).grid(column=column, row=row)
 js_code = tkinter.Entry(SCREEN, width=gui_width * 2)
 js_code.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1189,7 +1209,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1221,7 +1240,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1253,7 +1271,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1285,7 +1302,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1317,7 +1333,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1349,7 +1364,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1381,14 +1395,12 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 column += 3
 tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
     column=column, row=row
 )  # 设置说明
 column += 1
 row = 0
-
 now_running = tkinter.StringVar()
 status_output = tkinter.StringVar()
 tkinter.Label(
@@ -1403,7 +1415,6 @@ tkinter.Label(
 tkinter.Entry(
     SCREEN, width=gui_width * 2, state=tkinter.DISABLED, textvariable=now_running
 ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1417,7 +1428,6 @@ tkinter.Label(
 tkinter.Entry(
     SCREEN, width=gui_width * 2, state=tkinter.DISABLED, textvariable=status_output
 ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 variable_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
 variable_box.grid(
@@ -1427,7 +1437,6 @@ variable_box.grid(
     rowspan=5,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 5
 tkinter.Label(
     SCREEN,
@@ -1442,7 +1451,6 @@ cookies_name_input = tkinter.Entry(SCREEN, width=gui_width * 2)
 cookies_name_input.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1457,7 +1465,6 @@ new_cookies = tkinter.Entry(SCREEN, width=gui_width * 2)
 new_cookies.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1472,7 +1479,6 @@ element_name = tkinter.Entry(SCREEN, width=gui_width * 2)
 element_name.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1487,7 +1493,6 @@ attributes_name = tkinter.Entry(SCREEN, width=gui_width * 2)
 attributes_name.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 attribute_regex = tkinter.IntVar()
 row += 1
 tkinter.Label(
@@ -1503,7 +1508,6 @@ attributes_value = tkinter.Entry(SCREEN, width=gui_width)
 attributes_value.grid(
     column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1535,7 +1539,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 attributes_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 3)
 attributes_box.grid(
@@ -1545,7 +1548,6 @@ attributes_box.grid(
     rowspan=3,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 3
 tkinter.Label(
     SCREEN,
@@ -1560,7 +1562,6 @@ find_text = tkinter.Entry(SCREEN, width=gui_width)
 find_text.grid(
     column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W
 )
-
 is_recursive = tkinter.IntVar()
 text_regex = tkinter.IntVar()
 row += 1
@@ -1597,7 +1598,6 @@ tkinter.Checkbutton(
 attribute_regex.set(1)
 text_regex.set("1")
 is_recursive.set("1")
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1610,7 +1610,6 @@ tkinter.Label(
 ).grid(column=column, row=row)
 limit = tkinter.Entry(SCREEN, width=gui_width * 2)
 limit.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1625,7 +1624,6 @@ find_path = tkinter.Entry(SCREEN, width=gui_width * 2)
 find_path.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1657,7 +1655,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1689,7 +1686,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1721,7 +1717,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1753,7 +1748,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1785,18 +1779,15 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 column += 3
 tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
     column=column, row=row
 )  # 设置说明
 column += 1
 row = 0
-
 tkinter.Label(SCREEN, text="【数据库操作】", bg=bg_color, fg=word_color, font=FONT).grid(
     column=column, row=row, columnspan=3
 )  # 设置说明
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1828,7 +1819,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1860,7 +1850,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1875,7 +1864,6 @@ data_format = tkinter.Entry(SCREEN, width=gui_width * 2)
 data_format.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1890,7 +1878,6 @@ database_name = tkinter.Entry(SCREEN, width=gui_width * 2)
 database_name.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 database_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
 database_box.grid(
@@ -1900,7 +1887,6 @@ database_box.grid(
     rowspan=5,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
 row += 5
 tkinter.Label(
     SCREEN,
@@ -1913,7 +1899,6 @@ tkinter.Label(
 ).grid(column=column, row=row)
 url_tag = tkinter.Entry(SCREEN, width=gui_width * 2)
 url_tag.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -1945,7 +1930,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1958,7 +1942,6 @@ tkinter.Label(
 ).grid(column=column, row=row)
 chains = tkinter.Entry(SCREEN, width=gui_width * 2)
 chains.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1973,7 +1956,6 @@ drag_element = tkinter.Entry(SCREEN, width=gui_width * 2)
 drag_element.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -1988,7 +1970,6 @@ drag_element_index = tkinter.Entry(SCREEN, width=gui_width * 2)
 drag_element_index.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -2003,7 +1984,6 @@ type_value = tkinter.Entry(SCREEN, width=gui_width * 2)
 type_value.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Label(
     SCREEN,
@@ -2018,7 +1998,6 @@ run_time = tkinter.Entry(SCREEN, width=gui_width * 2)
 run_time.grid(
     column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
 )
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2050,7 +2029,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2082,7 +2060,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2114,7 +2091,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 is_special_keys = tkinter.IntVar()
 row += 1
 tkinter.Button(
@@ -2147,7 +2123,6 @@ tkinter.Checkbutton(
     text="转换为特殊按钮",
     variable=is_special_keys,
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2169,7 +2144,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 1, columnspan=2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2201,7 +2175,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2233,7 +2206,6 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 row += 1
 tkinter.Button(
     SCREEN,
@@ -2265,10 +2237,9 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-
 SCREEN.update()  # 要预先update一下，否则会卡住
 save_dir = askdirectory(title="选择项目位置")  # 项目位置
-url = controller.Url(save_dir, save_dir)  # url管理器
-loader = controller.PageDownloader(url, save_dir)  # 页面下载器
-page_parser = controller.PageParser(loader)  # 页面解析器
-database = controller.data_base  # 数据库
+url = crawler.controller.Url(save_dir, save_dir)  # url管理器
+loader = crawler.controller.PageDownloader(url, save_dir)  # 页面下载器
+page_parser = crawler.controller.PageParser(loader)  # 页面解析器
+database = crawler.template.data_base  # 数据库
