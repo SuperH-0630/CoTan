@@ -38,6 +38,7 @@ gui_width = 13  # 标准宽度
 gui_height = 2
 row = 0
 column = 0
+new_text = None
 
 
 def draw_algebra_core():
@@ -51,9 +52,9 @@ def draw_algebra_core():
     except BaseException:
         w = 1000
         h = 300
-    bracket = bool(bracket.get())
-    log_bracket = bool(log_bracket.get())
-    draw_algebra(get, w, h, bracket, log_bracket)
+    the_bracket = bool(bracket.get())
+    the_log_bracket = bool(log_bracket.get())
+    draw_algebra(get, w, h, the_bracket, the_log_bracket)
 
 
 def draw_algebra(n, w, h, bracket=True, log_bracket=True):
@@ -725,7 +726,8 @@ def value_algebraic_simultaneous():
 
 
 def update_value_algebraic_box():
-    global algebra_controller, value_list, variable_box, value_algebra_dict, right_algebra, left_value, value_algebra_box
+    global algebra_controller, value_list, variable_box, value_algebra_dict, right_algebra, left_value
+    global value_algebra_box
     box = []
     if left_value is not None or right_algebra is not None:
         box.append(f"选定:{left_value} = {right_algebra}")
@@ -1271,17 +1273,18 @@ def get_algebraic_name():
 
 
 def add__algebraic():
-    global algebra_name, algebra_expression, algebra_box, init_ignore_assumptions, init_rationalization, ratio, standardization
+    global algebra_name, algebra_expression, algebra_box, init_ignore_assumptions, init_rationalization, ratdio
+    global standardization
     try:
         in_alg = algebra_expression.get()
         name = algebra_name.get().replace(" ", "")
         if bool(standardization.get()):
-            radio_list = ratio.get().split("#")
-            radio = float(radio_list[0])
+            ratdio_list = ratdio.get().split("#")
+            the_ratdio = float(ratdio_list[0])
             rat = bool(init_rationalization.get())
             inverse = bool(init_ignore_assumptions.get())
-            new_alg = algebra_controller.Simplify(
-                in_alg, radio=radio, rat=rat, inv=inverse
+            new_alg = algebra_controller.simplify(
+                in_alg, ratdio=the_ratdio, rat=rat, inv=inverse
             )
             if new_alg is not None and tkinter.messagebox.askokcancel(
                 "提示", f"约简函数为:{new_alg}，是否应用?"
@@ -1465,6 +1468,7 @@ def __add_symbot_core(
                 raise Exception
         except BaseException:
             output_prompt(f"新增“{name}”失败")
+            raise
     output_prompt(f"新增“{describe}”完成")
     update_symbol_algebraic_box()
 
@@ -1478,11 +1482,7 @@ def output_prompt(news):
 
 
 def algebraic_factory_main():
-    global algebra_controller, SCREEN, value_list, algebra_list, option_list, value_algebra_dict, left_value, right_algebra, algebra_value_dict
-    global right_value, left_algebra, value_sub_dict
-    global left_equation, right_equation, equation_set, equation_solution_set, left_inequality, right_inequality, p2d_value, p3d_value, prompt_num
-    global bg_color, buttom_color, word_color, FONT2, FONT, FONT3
-
+    global SCREEN
     SCREEN.mainloop()
 
 
@@ -1849,8 +1849,8 @@ tkinter.Label(
 ).grid(
     column=column, row=row
 )  # 设置说明
-ratio = tkinter.Entry(SCREEN, width=gui_width * 2)
-ratio.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+ratdio = tkinter.Entry(SCREEN, width=gui_width * 2)
+ratdio.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 init_rationalization = tkinter.IntVar()
