@@ -11,7 +11,7 @@ import pandas
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
-from funcsystem.controller import ExpFunc, SheetFunc
+from funcsystem.controller import SheetFunc, ExpFunc
 
 func_logger = []
 fig = None
@@ -169,9 +169,9 @@ def plot_func():
     plt.ylim(_y_limit)
     # 函数绘图系统
     output_prompt("图像绘制中...")
-    if not func_list:
+    if not func_logger:
         return False
-    for Fucn in func_list:
+    for Fucn in func_logger:
         get = Fucn.get_plot_data()
         plot_x = get[0]
         plot_y = get[1]
@@ -271,9 +271,9 @@ def add_from_csv():  # 添加函数
         name += "(In CSV)"
         _func = numpy.array(read).tolist()
         func_str_list.append(name)
-        func_list.append(SheetFunc(_func, name, style))
+        func_logger.append(SheetFunc(_func, name, style))
         func_exp_box.delete(0, tkinter.END)
-        func_exp_box.insert(tkinter.END, *func_list)
+        func_exp_box.insert(tkinter.END, *func_logger)
         output_prompt("读取完毕")
     except BaseException:
         output_prompt("读取失败")
@@ -321,9 +321,9 @@ def add_func():  # 添加函数
         pass
     if get and get not in func_str_list:
         func_str_list.append(get)
-        func_list.append(ExpFunc(get, name, style, *definition))
+        func_logger.append(ExpFunc(get, name, style, *definition))
         func_exp_box.delete(0, tkinter.END)
-        func_exp_box.insert(tkinter.END, *func_list)
+        func_exp_box.insert(tkinter.END, *func_logger)
         output_prompt("函数生成完毕")
     else:
         output_prompt("函数生成失败")
@@ -333,7 +333,7 @@ def clean_func_box():  # 添加函数
     global func_logger, func_str_list, func_exp_box, func_name, line_style, point_style, func_style
     if tkinter.messagebox.askokcancel("提示", "是否清空所有函数？)"):
         func_str_list = []
-        func_list = []
+        func_logger = []
         func_exp_box.delete(0, tkinter.END)
         output_prompt("函数清空完毕")
 
@@ -341,7 +341,7 @@ def clean_func_box():  # 添加函数
 def func_to_sheet():  # 显示xy
     global func_logger, func_exp_box, sheet_box
     try:
-        func = func_list[func_exp_box.curselection()[0]]
+        func = func_logger[func_exp_box.curselection()[0]]
         sheet_box.delete(0, tkinter.END)
         sheet_box.insert(tkinter.END, *func.return_list())
         output_prompt("表格创建成功")
@@ -354,10 +354,10 @@ def clean_func_memory():
     global x_value, func_exp_box, func_logger
     try:
         if tkinter.messagebox.askokcancel(
-            "提示", f"确定删除{func_list[func_exp_box.curselection()[0]]}的记忆吗？"
+            "提示", f"确定删除{func_logger[func_exp_box.curselection()[0]]}的记忆吗？"
         ):
             result_box.delete(0, tkinter.END)
-            fucn = func_list[func_exp_box.curselection()[0]]
+            fucn = func_logger[func_exp_box.curselection()[0]]
             fucn.clean_memory()
             output_prompt("删除完毕")
         else:
@@ -369,7 +369,7 @@ def clean_func_memory():
 def hide_memory():  # 显示xy
     global func_logger, result_box
     try:
-        func = func_list[func_exp_box.curselection()[0]]
+        func = func_logger[func_exp_box.curselection()[0]]
         result_box.delete(0, tkinter.END)
         func.hide_or_show()
         output_prompt("已清空卡槽")
@@ -380,7 +380,7 @@ def hide_memory():  # 显示xy
 def show_memory():  # 显示xy
     global func_logger, result_box
     try:
-        fucn = func_list[func_exp_box.curselection()[0]]
+        fucn = func_logger[func_exp_box.curselection()[0]]
         result_box.delete(0, tkinter.END)
         m_x, m_y = fucn.get_memory()
         answer = []
@@ -396,7 +396,7 @@ def property_prediction():
     global func_logger, func_exp_box, property_box
     try:
         output_prompt("预测过程程序可能无响应")
-        fucn = func_list[func_exp_box.curselection()[0]]
+        fucn = func_logger[func_exp_box.curselection()[0]]
         property_box.delete(0, tkinter.END)
         answer = fucn.property_prediction(output_prompt)
         property_box.insert(tkinter.END, *answer)
@@ -409,10 +409,10 @@ def calculate():
     global func_logger, result_box, x_value, func_exp_box
     try:
         output_prompt("计算过程程序可能无响应")
-        fucn = func_list[func_exp_box.curselection()[0]]
+        fucn = func_logger[func_exp_box.curselection()[0]]
         result_box.delete(0, tkinter.END)
         x = x_value.get().split(",")
-        answer = fucn.calculate(x)
+        answer = fucn.calculation(x)
         result_box.insert(tkinter.END, *answer)
         output_prompt("系统计算完毕")
     except IndexError:
@@ -436,7 +436,7 @@ def del_func():  # 删除函数
     del_fucn = func_exp_box.curselection()
     for i in del_fucn:  # 只存在一项
         func_exp_box.delete(i)
-        del func_list[i]
+        del func_logger[i]
         del func_str_list[i]
         output_prompt("函数删除完毕")
 
@@ -445,7 +445,7 @@ def dichotomy():
     global func_logger, result_box, y_value, dicon_parameters
     try:
         output_prompt("计算过程程序可能无响应")
-        fucn = func_list[func_exp_box.curselection()[0]]  # 获取目标函数
+        fucn = func_logger[func_exp_box.curselection()[0]]  # 获取目标函数
         result_box.delete(0, tkinter.END)  # 清空
         y = y_value.get().split(",")  # 拆解输入
         parameters = dicon_parameters.get().split("#")  # 拆解输入
@@ -467,7 +467,7 @@ def gradient_method_calculation():
     global func_logger, result_box, y_value_gradient
     try:
         output_prompt("计算过程程序可能无响应")
-        fucn = func_list[func_exp_box.curselection()[0]]  # 获取目标函数
+        fucn = func_logger[func_exp_box.curselection()[0]]  # 获取目标函数
         result_box.delete(0, tkinter.END)  # 清空
         parameters = y_value_gradient.get().split("#")  # 拆解输入
         output_prompt("系统运算中")
@@ -493,12 +493,12 @@ def output_prompt(news):
 def func_differentiation():
     global func_logger, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
     try:
-        fucn = func_list[func_exp_box.curselection()[0]]
+        fucn = func_logger[func_exp_box.curselection()[0]]
         diff = fucn.derivatives
         if diff is not None and str(diff):
             get = str(diff)
             func_str_list.append(get)
-            func_list.append(
+            func_logger.append(
                 ExpFunc(
                     get,
                     "(导)" + fucn.Func_Name + " Of ",
@@ -510,7 +510,7 @@ def func_differentiation():
                 )
             )
             func_exp_box.delete(0, tkinter.END)
-            func_exp_box.insert(tkinter.END, *func_list)
+            func_exp_box.insert(tkinter.END, *func_logger)
             output_prompt("函数生成完毕")
         else:
             raise Exception

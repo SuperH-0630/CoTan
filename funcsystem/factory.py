@@ -201,11 +201,11 @@ def gradient_method_calculation():
     try:
         output_prompt("计算过程程序可能无响应")
         result_box.delete(0, tkinter.END)  # 清空
-        E = []
+        parameters = []
         for i in gradient_parameters:
-            E.append(i.get())
+            parameters.append(i.get())
         output_prompt("系统运算中")
-        answer = func.gradient_calculation(y_value_gradient.get(), *E)
+        answer = func.gradient_calculation(y_value_gradient.get(), *parameters)
         if answer[1] is not None:
             result_box.insert(tkinter.END, answer[0])
             output_prompt("系统运算完成")
@@ -221,7 +221,7 @@ def calculate():
         output_prompt("计算过程程序可能无响应")
         result_box.delete(0, tkinter.END)
         x = x_value.get().split(",")
-        answer = func.calculate(x)
+        answer = func.calculation(x)
         if answer != []:
             result_box.insert(tkinter.END, *answer)
             output_prompt("系统运算完毕")
@@ -718,7 +718,8 @@ def set_function():
         output_prompt("应用成功")
         SCREEN.title(f"CoTan函数工厂  {func}")
     except BaseException:
-        output_prompt("应用失败")
+        output_prompt("应用失败2")
+        raise
 
 
 def output_prompt(news):
