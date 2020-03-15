@@ -138,6 +138,16 @@ def crawlef_run():
     crawlef_start.start()
 
 
+def system_main():
+    from system.gui import system_main
+    system_main()
+
+
+def system_run():  # 不需要进度条
+    system_start = Process(target=system_main)
+    system_start.start()
+
+
 def cotan_main():
     global SCREEN
     SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
@@ -423,6 +433,7 @@ def cotan_main():
         frame,
         text='系统扩展',
         cursor=button_cursor,
+        command=system_run,
         height=1,
         font=font3,
         bg=button_color,
@@ -465,4 +476,3 @@ def cotan_main():
 
 if __name__ == "__main__":
     cotan_main()
-

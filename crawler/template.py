@@ -1,5 +1,6 @@
 import bs4
 import hashlib
+import os
 import re as regular
 import threading
 import time
@@ -11,9 +12,6 @@ from time import sleep
 
 import requests
 
-from crawler import db
-from crawler.controller import Url, PageDownloader
-from crawler.db import CoTanDB
 from system import plugin_class_loading, get_path
 
 keys_name_dict = {
@@ -40,7 +38,6 @@ keys_name_dict = {
     "right": Keys.RIGHT,
     "left": Keys.LEFT,
 }  # 键-值映射
-data_base = db.DatabaseController()
 
 
 class Database(metaclass=ABCMeta):
@@ -107,6 +104,38 @@ class LogBase(metaclass=ABCMeta):
         pass
 
 
+class DatabaseController(AddDatabase, DatabaseControllerCustom):  # data base控制器
+
+    def add_new(self, name, data):  # 添加新内容
+        database = self.database.get(name)
+        if database is None:
+            self.add_database(name)
+            database = self.database.get(name)
+        database.add_new(data)
+
+    def close(self, name):  # 关闭数据表
+        try:
+            self.database[name].close()
+            del self.database[name]
+        except BaseException:
+            pass
+
+    def close_all(self):  # 关闭所有数据表
+        for i in self.database:
+            self.database[i].close()
+        self.database = {}
+
+    def rm_database(self, name):  # 删除数据表
+        self.database[name].remove()
+        del self.database[name]
+
+    def out(self, name, save_dir):  # 输出数据表
+        self.database[name].out_file(save_dir)
+
+    def return_database(self):
+        return list(self.database.keys())
+
+
 class PageBase:
     def __init__(self, time_out):
         self.url = ""
@@ -146,10 +175,10 @@ class Urlbase:
     url_count = 0  # url处理器个数
 
     def __init__(self, dic=f"", dic_run=f""):
-        Url.url_count += 1
+        Urlbase.url_count += 1
         self.save_dir = dic
-        dic += f"/url[{Url.url_count}].cot_url"
-        dic_run += f"/url_run[{Url.url_count}].cot_url"
+        dic += f"/url[{Urlbase.url_count}].cot_url"
+        dic_run += f"/url_run[{Urlbase.url_count}].cot_url"
         self.dir = dic
         self.dir_run = dic_run
         self.file = open(dic, "a")  # 写入url_history的文件
@@ -330,11 +359,11 @@ class RequestsBase(metaclass=ABCMeta):
 class PagedownloaderBase(SeleniumBase, RequestsBase, metaclass=ABCMeta):
     downloader_count = 0
 
-    def __init__(self, url: Url, dic=""):
+    def __init__(self, url, dic=""):
         self.url = url
         self.dir = dic
-        self.log = db.Log(dic)
-        PageDownloader.downloader_count += 1
+        self.log = Log(dic)
+        PagedownloaderBase.downloader_count += 1
         self.page_source_dict = {}  # 页面保存信息
         self.cookie_Thread = None  # 子进程
         self.browser = None
@@ -504,7 +533,7 @@ class PageDownloaderSelenium(PageDownloaderCookies):
 
 
 class PageParserBase:
-    def __init__(self, downloader: PageDownloader):
+    def __init__(self, downloader):
         self.downloader = downloader
         self.downloader.set_page_parser(self)
         self.func_list = []
@@ -1205,7 +1234,7 @@ class PageParserDataSource(PageParserFunc):
                         new_url = str(bs.string).replace("\n", "")
                     else:
                         new_url = bs.attrs.get(url_name, "")
-                    Url.add_url(new_url, **url_args)
+                    self.downloader.url.add_url(new_url, **url_args)
                 except BaseException:
                     pass
             update_func()  # 更新tkinter
@@ -1475,3 +1504,63 @@ class PageParserChains(PageParserChainsWindow, PageParserClick, PageParserChains
 
 for i in range(1, 13):  # F1 - F12按键
     keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}")
+
+
+class CoTanDB(Database):
+    def __init__(self, name):
+        self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
+        self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
+        self.id = 0
+        self.name = name
+        for _ in self.file.readlines():
+            self.id += 1
+
+    def __str__(self):
+        return self.name
+
+    def close(self):
+        try:
+            self.file.close()
+        except BaseException:
+            pass
+
+    def add_new(self, data):
+        data_str = str(self.id)
+        for i in data:
+            data_str += "," + str(i)
+        data_str += "\n"
+        self.file.write(data_str)
+        self.file.flush()
+        self.id += 1
+
+    def remove(self):
+        self.file.close()
+        os.remove(self.dir)
+
+    def out_file(self, out_dir):
+        with open(out_dir + fr"/{self.name}.contanDB", "w") as f:
+            with open(self.dir) as g:
+                f.write(g.read())
+
+
+class Log(LogBase):
+    def __init__(self, log_dir):
+        self.log_dir = log_dir
+        self.log_file = open(
+            log_dir + "/log.coTanLog",
+            "r+" if os.path.exists(log_dir + "log.coTanLog") else "w+",
+        )
+
+    def write(self, data):
+        self.log_file.write(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] "
+            + data
+            + "\n"
+        )
+        self.log_file.flush()
+
+    def close(self):
+        self.log_file.close()
+
+
+data_base = DatabaseController()

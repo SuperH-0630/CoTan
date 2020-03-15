@@ -8,7 +8,6 @@ import webbrowser
 
 import machinelearning.controller
 import machinelearning.template
-from machinelearning import template
 
 calculation_list = []
 calculation_method = []
