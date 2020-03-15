@@ -7,7 +7,10 @@ import tkinter.messagebox
 import pandas
 import sympy
 
+from system import plugin_class_loading, get_path, plugin_func_loading
 
+
+@plugin_func_loading(get_path(r'template/funcsystem'))
 def to_bool(str_object, hope=False):
     false_list = ["0", "n", "no", "NO", "NOT", "No", "Not", "不"]
     true_list = ["y", "yes", "Yes", "YES", "不"]
@@ -27,6 +30,7 @@ def to_bool(str_object, hope=False):
         return bool(str_object)
 
 
+@plugin_func_loading(get_path(r'template/funcsystem'))
 def find_x_by_y(x_list, y_list, y):  # 输入x和y照除In_Y的所有对应x值
     m = []
     while True:
@@ -231,6 +235,7 @@ class SheetFuncInit:
         return f"{self.func_name}"
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
     @abstractmethod
     def best_value_core(self):
@@ -318,6 +323,7 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
         return self.x, self.y, self.func_name, self.style
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class SheetBestValue(SheetDataPacket):
     def best_value_core(self):  # 计算最值和极值点
         if not self.have_data_packet:
@@ -340,6 +346,7 @@ class SheetBestValue(SheetDataPacket):
         return self.max_x, self.max_y, self.min_x, self.min_y
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class SheetComputing(SheetBestValue):
     def gradient_calculation(self, y_in, *args, **kwargs):  # 保持和下一个对象相同参数
         result = self.dichotomy(y_in)
@@ -401,6 +408,7 @@ class SheetComputing(SheetBestValue):
         return answer
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class SheetProperty(SheetComputing):
     def parity(self, *args, **kwargs):  # 奇偶性
         if not self.have_data_packet:
@@ -522,7 +530,6 @@ class SheetProperty(SheetComputing):
         if center_of_symmetry is not None:
             answer.append(f"对称中心：{center_of_symmetry}")
         return answer
-
 
     def periodic(self, output_prompt=lambda x: x, **kwargs):  # 计算周期
         if not tkinter.messagebox.askokcancel("提示", f"计算周期需要一定时间，是否执行？(计算过程程序可能无响应)"):
@@ -658,6 +665,7 @@ class SheetProperty(SheetComputing):
             return None, []  # 无结果
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class SheetMemory(SheetFuncInit):
     def hide_or_show(self):
         if self.have_prediction:
@@ -801,6 +809,7 @@ class ExpFuncInit:
         return f"{self.func_name} {self.start, self.end, self.span}"
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
     @abstractmethod
     def best_value_core(self):
@@ -907,6 +916,7 @@ class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
         return self.x, self.y, self.func_name, self.style
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpBestValue(ExpDataPacket):
     def best_value_core(self):  # 计算最值和极值点
         # 使用ya解决了因计算器误差而没计算到的最值，但是同时本不是最值的与最值相近的数字也被当为了最值，所以使用群组击破
@@ -993,6 +1003,7 @@ class ExpBestValue(ExpDataPacket):
         return self.max_x, self.max_y, self.min_x, self.min_y
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpComputing(ExpBestValue):
 
     def sympy_calculation(self, y_value):  # 利用Sympy解方程
@@ -1316,6 +1327,7 @@ class ExpComputing(ExpBestValue):
         return answer, derivative_num
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpProperty(ExpComputing):
     def parity(self, precision=False):  # 启动round处理
         if not self.have_data_packet:
@@ -1625,6 +1637,7 @@ class ExpProperty(ExpComputing):
             return None, []  # 无结果
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpCheck(ExpFuncInit):
     def check_monotonic(
         self, parameters, output_prompt=lambda x: x, accuracy=None
@@ -1756,6 +1769,7 @@ class ExpCheck(ExpFuncInit):
         return result, f"{self}的对称中心{result_key[result]}{parameters}"
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpMemory(ExpFuncInit):
     def hide_or_show(self):  # 记忆数据显示和隐藏
         if self.have_prediction:
@@ -1778,6 +1792,7 @@ class ExpMemory(ExpFuncInit):
         return self.memore_x, self.memore_y
 
 
+@plugin_class_loading(get_path(r'template/funcsystem'))
 class ExpFuncSon:
     def __init__(
         self, func, style, start=-10, end=10, span=0.1, accuracy=2, a_default=1

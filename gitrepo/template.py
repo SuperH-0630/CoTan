@@ -6,6 +6,8 @@ from git import Repo
 from os.path import exists, split
 from time import time
 
+from system import plugin_class_loading, get_path
+
 sys_seeting = dict(
     shell=True,
     stdin=subprocess.PIPE,
@@ -51,6 +53,7 @@ class GitBase(metaclass=ABCMeta):
         return file
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class ViewClasses(GitBase):
 
     def status(self):  # 执行status
@@ -138,6 +141,7 @@ class ViewClasses(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class NewClasses(GitBase):
     def add(self, file_list):
         file = self.get_flie_list(file_list)
@@ -205,6 +209,7 @@ class NewClasses(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class RemoveClass(GitBase):
     def del_cached_file(self, file_list):
         file = self.get_flie_list(file_list)
@@ -266,6 +271,7 @@ class RemoveClass(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class BackClasses(GitBase):
     def reset(self, head="HEAD~1", reset_type=0):
         if reset_type == 0:
@@ -317,6 +323,7 @@ class BackClasses(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class ParallelClasses(GitBase):
     def switch_branch(self, branch_name):  # 切换分支
         return subprocess.Popen(
@@ -351,6 +358,7 @@ class ParallelClasses(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class RemoteClasses(GitBase):
     def push_tag(self, tag, remote_name):
         return subprocess.Popen(
@@ -458,6 +466,7 @@ class RemoteClasses(GitBase):
         )
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses, RemoteClasses):  # git的基类
 
     def init(self, repo_dir):
@@ -494,6 +503,7 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
         return self.repo_dir + inside + dir
 
 
+@plugin_class_loading(get_path(r'template/gitrepo'))
 class CloneGit(GitRepo):  # Clone一个git
     def init(self, repo_dir, *args, **kwargs):
         self.Repo_Dic = repo_dir  # 仓库地址

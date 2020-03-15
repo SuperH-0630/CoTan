@@ -4,7 +4,13 @@ import tarfile
 from abc import ABCMeta, abstractmethod
 from os import getcwd, mkdir
 from os.path import split as path_split, splitext, basename, exists
-from sklearn.feature_selection import chi2, f_classif, mutual_info_classif, f_regression, mutual_info_regression
+from sklearn.feature_selection import (
+    chi2,
+    f_classif,
+    mutual_info_classif,
+    f_regression,
+    mutual_info_regression,
+)
 
 from sklearn.svm import SVC, SVR  # SVC是svm分类，SVR是svm回归
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
@@ -40,6 +46,7 @@ from pyecharts import options as opts
 from pyecharts.components import Image
 from pyecharts.globals import CurrentConfig
 
+from system import plugin_class_loading, get_path, plugin_func_loading
 
 CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 
@@ -108,6 +115,7 @@ class LearnBase:
         return self.numpy_dict[name].copy()
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerIO(LearnBase):
     def add_form(self, data: np.array, name):
         name = f"{name}[{len(self.numpy_dict)}]"
@@ -222,6 +230,7 @@ class LearnerIO(LearnBase):
         return html_dir
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerMerge(LearnerIO):
     def merge(self, name, axis=0):  # aiis:0-横向合并(hstack),1-纵向合并(vstack)，2-深度合并
         sheet_list = []
@@ -231,6 +240,7 @@ class LearnerMerge(LearnerIO):
         self.add_form(np.array(get), f"{name[0]}合成")
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerSplit(LearnerIO):
     def split(self, name, split=2, axis=0):  # aiis:0-横向分割(hsplit),1-纵向分割(vsplit)
         sheet = self.get_sheet(name)
@@ -253,6 +263,7 @@ class LearnerSplit(LearnerIO):
             self.add_form(sheet[:, :split], f"{name[0]}分割")
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerDimensions(LearnerIO):
     def deep(self, sheet: np.ndarray):
         return sheet.ravel()
@@ -283,6 +294,7 @@ class LearnerDimensions(LearnerIO):
         self.add_form(np.squeeze(sheet), f"{name}降维")
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerShape(LearnerIO):
     def transpose(self, name, func: list):
         sheet = self.get_sheet(name)
@@ -296,8 +308,8 @@ class LearnerShape(LearnerIO):
         self.add_form(sheet.reshape(shape).copy(), f"{name}.r")
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class Learner(LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape):
-
     def calculation_matrix(self, data, data_type, func):
         if 1 not in data_type:
             raise Exception
@@ -387,8 +399,8 @@ class Machinebase(metaclass=ABCMeta):
         pass
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class StudyMachinebase(Machinebase):
-
     def fit_model(self, x_data, y_data, split=0.3, increment=True, **kwargs):
         y_data = y_data.ravel()
         try:
@@ -666,6 +678,7 @@ class UnsupervisedModel(PrepBase):  # 无监督
         return "None", "None"
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class ToPyebase(StudyMachinebase):
     def __init__(self, model, *args, **kwargs):
         super(ToPyebase, self).__init__(*args, **kwargs)
@@ -829,7 +842,7 @@ class ViewData(ToPyebase):  # 绘制预测型热力图
         return y_traindata, "y训练数据"
 
     def data_visualization(self, save_dir, *args, **kwargs):
-        return (save_dir,)
+        return save_dir,
 
 
 class MatrixScatter(ToPyebase):  # 矩阵散点图
@@ -1117,6 +1130,7 @@ class PredictiveHeatmapMore(PredictiveHeatmapBase):  # 绘制预测型热力图_
         )
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class NearFeatureScatterClassMore(ToPyebase):
     def data_visualization(self, save_dir, *args, **kwargs):
         tab = Tab()
@@ -1141,6 +1155,7 @@ class NearFeatureScatterClassMore(ToPyebase):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class NearFeatureScatterMore(ToPyebase):
     def data_visualization(self, save_dir, *args, **kwargs):
         tab = Tab()
@@ -1220,6 +1235,7 @@ class FeatureScatterYX(ToPyebase):  # y-x图
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LineModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
@@ -1230,7 +1246,9 @@ class LineModel(StudyMachinebase):
             self.model = all_model()
             self.k = {}
         else:
-            self.model = all_model(alpha=args_use["alpha"], max_iter=args_use["max_iter"])
+            self.model = all_model(
+                alpha=args_use["alpha"], max_iter=args_use["max_iter"]
+            )
             self.k = {"alpha": args_use["alpha"], "max_iter": args_use["max_iter"]}
         # 记录这两个是为了克隆
         self.Alpha = args_use["alpha"]
@@ -1282,6 +1300,7 @@ class LineModel(StudyMachinebase):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LogisticregressionModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
@@ -1395,12 +1414,15 @@ class CategoricalData:  # 数据统计助手
         return self.x_means, self.x_range, self.data_type
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class KnnModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(KnnModel, self).__init__(*args, **kwargs)
-        all_model = {"Knn_class": KNeighborsClassifier, "Knn": KNeighborsRegressor}[model]
+        all_model = {"Knn_class": KNeighborsClassifier, "Knn": KNeighborsRegressor}[
+            model
+        ]
         self.model = all_model(p=args_use["p"], n_neighbors=args_use["n_neighbors"])
         # 记录这两个是为了克隆
         self.n_neighbors = args_use["n_neighbors"]
@@ -1463,14 +1485,16 @@ class KnnModel(StudyMachinebase):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class TreeModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(TreeModel, self).__init__(*args, **kwargs)
-        all_model = {"Tree_class": DecisionTreeClassifier, "Tree": DecisionTreeRegressor}[
-            model
-        ]
+        all_model = {
+            "Tree_class": DecisionTreeClassifier,
+            "Tree": DecisionTreeRegressor,
+        }[model]
         self.model = all_model(
             criterion=args_use["criterion"],
             splitter=args_use["splitter"],
@@ -1570,6 +1594,7 @@ class TreeModel(StudyMachinebase):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class ForestModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
@@ -1748,6 +1773,7 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class SvcModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
@@ -1822,6 +1848,7 @@ class SvcModel(StudyMachinebase):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class SvrModel(StudyMachinebase):
     def __init__(
         self, args_use, model, *args, **kwargs
@@ -2630,6 +2657,7 @@ class MissedModel(Unsupervised):  # 缺失数据补充
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class PcaModel(Unsupervised):
     def __init__(self, args_use, *args, **kwargs):
         super(PcaModel, self).__init__(*args, **kwargs)
@@ -2702,6 +2730,7 @@ class PcaModel(Unsupervised):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class RpcaModel(Unsupervised):
     def __init__(self, args_use, *args, **kwargs):
         super(RpcaModel, self).__init__(*args, **kwargs)
@@ -2772,6 +2801,7 @@ class RpcaModel(Unsupervised):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class KpcaModel(Unsupervised):
     def __init__(self, args_use, *args, **kwargs):
         super(KpcaModel, self).__init__(*args, **kwargs)
@@ -2840,6 +2870,7 @@ class LdaModel(PrepBase):  # 有监督学习
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class NmfModel(Unsupervised):
     def __init__(self, args_use, *args, **kwargs):
         super(NmfModel, self).__init__(*args, **kwargs)
@@ -2916,6 +2947,7 @@ class NmfModel(Unsupervised):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class TsneModel(Unsupervised):
     def __init__(self, args_use, *args, **kwargs):
         super(TsneModel, self).__init__(*args, **kwargs)
@@ -3039,6 +3071,7 @@ class MlpModel(StudyMachinebase):  # 神经网络(多层感知机)，有监督�
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class KmeansModel(UnsupervisedModel):
     def __init__(self, args_use, *args, **kwargs):
         super(KmeansModel, self).__init__(*args, **kwargs)
@@ -3098,6 +3131,7 @@ class KmeansModel(UnsupervisedModel):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class AgglomerativeModel(UnsupervisedModel):
     def __init__(self, args_use, *args, **kwargs):
         super(AgglomerativeModel, self).__init__(*args, **kwargs)
@@ -3170,6 +3204,7 @@ class AgglomerativeModel(UnsupervisedModel):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class DbscanModel(UnsupervisedModel):
     def __init__(self, args_use, *args, **kwargs):
         super(DbscanModel, self).__init__(*args, **kwargs)
@@ -3406,6 +3441,7 @@ class CurveFitting(StudyMachinebase):  # 曲线拟合
 
         named_domain = {"np": np, "Func": model, "ndimDown": ndim_down}
         protection_func = f"""
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def FUNC({",".join(model.__code__.co_varnames)}):
     answer = Func({",".join(model.__code__.co_varnames)})
     return ndimDown(answer)
@@ -3478,6 +3514,7 @@ def FUNC({",".join(model.__code__.co_varnames)}):
         return save,
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class Tab(tab_First):
     def __init__(self, *args, **kwargs):
         super(Tab, self).__init__(*args, **kwargs)
@@ -3501,6 +3538,7 @@ class Tab(tab_First):
         return super(Tab, self).render(path, template_name, *args, **kwargs)
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class Table(TableFisrt):
     def __init__(self, *args, **kwargs):
         super(Table, self).__init__(*args, **kwargs)
@@ -3532,6 +3570,7 @@ class Table(TableFisrt):
         return super().render(path, *args, **kwargs)
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def make_list(first, end, num=35):
     n = num / (end - first)
     if n == 0:
@@ -3546,6 +3585,7 @@ def make_list(first, end, num=35):
     return re
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def list_filter(original_list, num=70):
     if len(original_list) <= num:
         return original_list
@@ -3554,6 +3594,7 @@ def list_filter(original_list, num=70):
     return re
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def prediction_boundary(x_range, x_means, predict_func, data_type):  # 绘制回归型x-x热力图
     # r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
     # a-特征x，b-特征x-1，c-其他特征
@@ -3608,6 +3649,7 @@ def prediction_boundary(x_range, x_means, predict_func, data_type):  # 绘制回
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def prediction_boundary_more(x_range, x_means, predict_func, data_type):
     # r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
     # a-特征x，b-特征x-1，c-其他特征
@@ -3837,6 +3879,7 @@ def decision_boundary_more(
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def see_tree(tree_file_dir):
     node_regex = re.compile(r'^([0-9]+) \[label="(.+)"\] ;$')  # 匹配节点正则表达式
     link_regex = re.compile("^([0-9]+) -> ([0-9]+) (.*);$")  # 匹配节点正则表达式
@@ -3890,10 +3933,12 @@ def see_tree(tree_file_dir):
     return c
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def make_tab(heard, row):
     return Table().add(headers=heard, rows=row)
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def coefficient_scatter_plot(w_heard, w):
     c = (
         Scatter()
@@ -3904,6 +3949,7 @@ def coefficient_scatter_plot(w_heard, w):
     return c
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def coefficient_bar_plot(w_heard, w):
     c = (
         Bar()
@@ -3914,6 +3960,7 @@ def coefficient_bar_plot(w_heard, w):
     return c
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def is_continuous(data: np.array, f: float = 0.1):
     data = data.tolist()
     l: list = np.unique(data).tolist()
@@ -3924,6 +3971,7 @@ def is_continuous(data: np.array, f: float = 0.1):
         return False
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def quick_stats(x_data):
     statistics_assistant = CategoricalData()
     print(x_data)
@@ -3933,6 +3981,7 @@ def quick_stats(x_data):
     return statistics_assistant
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def training_visualization_more_no_center(x_data, class_list, y_data):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -3984,6 +4033,7 @@ def training_visualization_more_no_center(x_data, class_list, y_data):
     return render_list, means, x_range, data_type
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def training_visualization_more(x_data, class_list, y_data, center):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4064,6 +4114,7 @@ def training_visualization_more(x_data, class_list, y_data, center):
     return render_list, means, x_range, data_type
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def training_visualization_center(x_data, class_data, y_data, center):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4140,6 +4191,7 @@ def training_visualization_center(x_data, class_data, y_data, center):
     return render_list, means, x_range, data_type
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def training_visualization(x_data, class_, y_data):  # 根据不同类别绘制x-x分类散点图
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4188,6 +4240,7 @@ def training_visualization(x_data, class_, y_data):  # 根据不同类别绘制x
     return render_list, means, x_range, data_type
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def training_visualization_no_class(x_data):  # 根据绘制x-x分类散点图(无类别)
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4297,6 +4350,7 @@ def training_w(
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def regress_w(x_data, w_data: np.array, intercept_b, x_means: list):  # 针对回归问题(y-x图)
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4338,6 +4392,7 @@ def regress_w(x_data, w_data: np.array, intercept_b, x_means: list):  # 针对�
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def regress_visualization(x_data, y_data):  # y-x数据图
     x_data = x_data.transpose()
     y_is_continuous = is_continuous(y_data)
@@ -4383,6 +4438,7 @@ def regress_visualization(x_data, y_data):  # y-x数据图
     return render_list, means, x_range, data_type
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def feature_visualization(x_data, data_name=""):  # x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4423,6 +4479,7 @@ def feature_visualization(x_data, data_name=""):  # x-x数据图
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def feature_visualization_format(x_data, data_name=""):  # x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4469,6 +4526,7 @@ def feature_visualization_format(x_data, data_name=""):  # x-x数据图
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def discrete_feature_visualization(x_data, data_name=""):  # 必定离散x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4500,6 +4558,7 @@ def discrete_feature_visualization(x_data, data_name=""):  # 必定离散x-x数�
     return render_list
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def conversion_control(y_data, x_data, tab):  # 合并两x-x图
     if isinstance(x_data, np.ndarray) and isinstance(y_data, np.ndarray):
         get_x = feature_visualization(x_data, "原数据")  # 原来
@@ -4509,6 +4568,7 @@ def conversion_control(y_data, x_data, tab):  # 合并两x-x图
     return tab
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def conversion_separate(y_data, x_data, tab):  # 并列显示两x-x图
     if isinstance(x_data, np.ndarray) and isinstance(y_data, np.ndarray):
         get_x = feature_visualization(x_data, "原数据")  # 原来
@@ -4525,6 +4585,7 @@ def conversion_separate(y_data, x_data, tab):  # 并列显示两x-x图
     return tab
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def conversion_separate_format(y_data, tab):  # 并列显示两x-x图
     if isinstance(y_data, np.ndarray):
         get_y = feature_visualization_format(y_data, "转换数据")  # 转换
@@ -4533,6 +4594,7 @@ def conversion_separate_format(y_data, tab):  # 并列显示两x-x图
     return tab
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def conversion_separate_wh(w_array, h_array, tab):  # 并列显示两x-x图
     if isinstance(w_array, np.ndarray) and isinstance(w_array, np.ndarray):
         get_x = feature_visualization_format(w_array, "W矩阵数据")  # 原来
@@ -4551,6 +4613,7 @@ def conversion_separate_wh(w_array, h_array, tab):  # 并列显示两x-x图
     return tab
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def make_bar(name, value, tab):  # 绘制柱状图
     c = (
         Bar()
@@ -4561,6 +4624,7 @@ def make_bar(name, value, tab):  # 绘制柱状图
     tab.add(c, name)
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def judging_digits(num: (int, float)):  # 查看小数位数
     a = str(abs(num)).split(".")[0]
     if a == "":
@@ -4568,6 +4632,7 @@ def judging_digits(num: (int, float)):  # 查看小数位数
     return len(a)
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def num_str(num, accuracy):
     num = str(round(float(num), accuracy))
     if len(num.replace(".", "")) == accuracy:
@@ -4579,6 +4644,7 @@ def num_str(num, accuracy):
         return num + "0" * (accuracy - len(num) + 1)  # len(num)多算了一位小数点
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def des_to_csv(save_dir, name, data, columns=None, row=None):
     save_dir = save_dir + "/" + name + ".csv"
     print(columns)
@@ -4592,6 +4658,7 @@ def des_to_csv(save_dir, name, data, columns=None, row=None):
     return data
 
 
+@plugin_func_loading(get_path(r'template/machinelearning'))
 def pack(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=basename(source_dir))
@@ -4792,6 +4859,7 @@ class MachineLearnerInit(Learner):
         return self.data_type[name]
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class MachineLearnerAdd(MachineLearnerInit):
     def add_learner(self, learner_str, parameters=""):
         get = self.learn_dict[learner_str]
@@ -4846,6 +4914,7 @@ class MachineLearnerAdd(MachineLearnerInit):
         self.data_type[name] = "View_data"
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class MachineLearnerScore(MachineLearnerInit):
     def score(self, name_x, name_y, learner):  # Score_Only表示仅评分 Fit_Simp 是普遍类操作
         model = self.get_learner(learner)
@@ -4895,6 +4964,7 @@ class MachineLearnerScore(MachineLearnerInit):
         return save, new_dic
 
 
+@plugin_class_loading(get_path(r"template/machinelearning"))
 class LearnerActions(MachineLearnerInit):
     def fit_model(self, x_name, y_name, learner, split=0.3, *args, **kwargs):
         x_data = self.get_sheet(x_name)

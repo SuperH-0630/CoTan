@@ -14,6 +14,7 @@ import requests
 from crawler import db
 from crawler.controller import Url, PageDownloader
 from crawler.db import CoTanDB
+from system import plugin_class_loading, get_path
 
 keys_name_dict = {
     "ctrl": Keys.CONTROL,
@@ -158,6 +159,7 @@ class Urlbase:
         self.filter = {}  # 过滤函数
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlFile(Urlbase):
     def close(self):
         self.file.close()
@@ -172,6 +174,7 @@ class UrlFile(Urlbase):
         self.file_run.flush()
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlPost(__RequestsBase):  # 通过requests的post请求
     def __init__(self, url, data, time_out, user_agent="", cookies=None, **kwargs):
         super(UrlPost, self).__init__(time_out)
@@ -184,6 +187,7 @@ class UrlPost(__RequestsBase):  # 通过requests的post请求
         return super(UrlPost, self).__str__() + f";data>{self.data}"
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlGet(__RequestsBase):  # 通过requests的post请求
     def __init__(self, url, time_out, user_agent="", cookies=None, **kwargs):
         super(UrlGet, self).__init__(time_out)
@@ -192,6 +196,7 @@ class UrlGet(__RequestsBase):  # 通过requests的post请求
         self.init(user_agent, url, cookies)
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlPage(PageBase):
     def __init__(
         self,
@@ -250,6 +255,7 @@ class UrlPage(PageBase):
         return f"{self.mode}-{self.url}:UA>{self.user_agent}"
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlAdd(UrlFile):
     def filter_func(self, url, **kwargs):  # url过滤系统
         for i in self.filter:
@@ -293,6 +299,7 @@ class UrlAdd(UrlFile):
         return False  # 写入失败
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class UrlReturn(UrlFile):
     def del_url(self, index):  # 删除url
         self.out_url_run(f"DELETE {self.url_list[index]}")
@@ -339,6 +346,7 @@ class PagedownloaderBase(SeleniumBase, RequestsBase, metaclass=ABCMeta):
         self.parser = parser
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageDownloaderRun(PagedownloaderBase):
     def close(self):
         self.log.close()
@@ -370,6 +378,7 @@ class PageDownloaderRun(PagedownloaderBase):
         return self.browser
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageDownloaderCookies(PageDownloaderRun):
     def monitoring_del_cookies(self, name):  # 删除指定cookies
         self.browser.delete_cookie(name)
@@ -391,6 +400,7 @@ class PageDownloaderCookies(PageDownloaderRun):
         raise Exception
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageDownloaderRequests(PageDownloaderCookies):
     def requests_start_cookies(self, func_cookie, url):
         self.cookie_dict[url] = requests.utils.dict_from_cookiejar(
@@ -428,6 +438,7 @@ class PageDownloaderRequests(PageDownloaderCookies):
         self.requests_start_cookies(func_cookie, url)
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageDownloaderSelenium(PageDownloaderCookies):
 
     def selenium_quit(self):
@@ -516,6 +527,7 @@ class PageParserBase:
         return wrap
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserFunc(PageParserBase):
     def tra_func(self):
         self.func_list = []
@@ -543,6 +555,7 @@ class PageParserFunc(PageParserBase):
             ]
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserFind(PageParserFunc):
     def find_id(self, id, not_all=False, **kwargs):
         @self.add_base
@@ -708,6 +721,7 @@ class PageParserFind(PageParserFunc):
         self.add_func(f"find_frame：{func_name}", find)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserActionListBox(PageParserFunc):
     def deselect_by_index(
         self, element_value, deselect, index=0, **kwargs
@@ -776,6 +790,7 @@ class PageParserActionListBox(PageParserFunc):
         )  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserAction(PageParserActionListBox):
     def send_keys(self, text, element_value, index=0, **kwargs):  # 输入文字
         @self.add_base
@@ -850,6 +865,7 @@ class PageParserAction(PageParserActionListBox):
         self.add_func(f"run_js:{js}", action)
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserBrowserCookies(PageParserFunc):
     def del_all_cookies(self, **kwargs):  # 删除所有曲奇
         @self.add_base
@@ -905,6 +921,7 @@ class PageParserBrowserCookies(PageParserFunc):
         self.add_func(f"get_all_cookies", action)
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserBrowser(PageParserBrowserCookies):
     def back(self, **kwargs):  # 返回
         @self.add_base
@@ -947,6 +964,7 @@ class PageParserBrowser(PageParserBrowserCookies):
         self.add_func(f"Loading_wait:{time}s", action)
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserNeighbor(PageParserFunc):
     def __get_other_base(
         self, element_value, index: (slice, int), who="children", **kwargs
@@ -987,6 +1005,7 @@ class PageParserNeighbor(PageParserFunc):
         return self.__get_other_base(element_value, index, "brothers")
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserDataFindall(PageParserFunc):
     def findall(
         self,
@@ -1072,6 +1091,7 @@ class PageParserDataFindall(PageParserFunc):
         self.add_func(f"findAll_by_text:{element_value}[{index}]", action)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserDatabase(PageParserFunc):
     def to_database(
         self, element_value, index, data: (str, list), database_name: str, **kwargs
@@ -1117,6 +1137,7 @@ class PageParserDatabase(PageParserFunc):
         )  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserDataSource(PageParserFunc):
     def to_text(self, **kwargs):  # 获取网页源码
         @self.add_base
@@ -1202,6 +1223,7 @@ class PageParserDataSource(PageParserFunc):
         self.add_func(f"to_json", action)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserData(PageParserNeighbor, PageParserDataFindall, PageParserDatabase,
                      PageParserDataSource):
 
@@ -1246,6 +1268,7 @@ class PageParserData(PageParserNeighbor, PageParserDataFindall, PageParserDataba
         self.add_func(f"Webpage_snapshot", action)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserChainsWindow(PageParserFunc):
     def get_all_windows(self, *args, **kwargs):  # 获取所有句柄
         @self.add_base
@@ -1275,6 +1298,7 @@ class PageParserChainsWindow(PageParserFunc):
         self.add_func(f"switch_to_window>{element_value}[{index}]", action)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserClick(PageParserFunc):
     def action_click(self, chains, element_value, index, **kwargs):  # 单击左
         @self.add_base
@@ -1321,6 +1345,7 @@ class PageParserClick(PageParserFunc):
         )  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserChainsMouse(PageParserFunc):
     def action_release(self, chains, element_value, index, **kwargs):  # 松开左键
         @self.add_base
@@ -1360,6 +1385,7 @@ class PageParserChainsMouse(PageParserFunc):
         )  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserChainsKeys(PageParserFunc):
     def special_keys(self, key: str, is_special_keys):
         if is_special_keys:
@@ -1426,6 +1452,7 @@ class PageParserChainsKeys(PageParserFunc):
         self.add_func(f"[{chains}].sent>{key}", action)  # 添加func
 
 
+@plugin_class_loading(get_path(r'template/crawler'))
 class PageParserChains(PageParserChainsWindow, PageParserClick, PageParserChainsMouse,
                        PageParserChainsKeys):
     def make_action_chains(self, **kwargs):  # 创建动作链

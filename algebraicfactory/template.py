@@ -4,8 +4,28 @@ from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor
     Symbol, solve, true, false, plot
 from sympy.plotting import plot3d
 
+from system import plugin_class_loading, get_path, plugin_func_loading
 
-class AlgebraFormat:
+
+class __AlgebraInit:
+    def __init__(self, new=lambda x: x):
+        self.symbol_dict = {"self": self}  # 命名空间
+        self.symbol_dict.update(globals())
+        self.symbol_dict.update(locals())
+        self.algebra_dict = {}
+        self.algebra_dict_view = {}  # 门面(str)
+        self.symbol_describe = {}  # 描述文件
+        self.out_status = new
+
+    def get_expression(self, name, exp_str=False):
+        if exp_str:
+            return self.algebra_dict_view[name]
+        else:
+            return self.algebra_dict[name]
+
+
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
+class AlgebraFormat(__AlgebraInit):
     def formula_export(self, f):
         result_str = []
         try:
@@ -92,23 +112,7 @@ class AlgebraFormat:
             result_str.append(["B", a, b])
 
 
-class __AlgebraInit:
-    def __init__(self, new=lambda x: x):
-        self.symbol_dict = {"self": self}  # 命名空间
-        self.symbol_dict.update(globals())
-        self.symbol_dict.update(locals())
-        self.algebra_dict = {}
-        self.algebra_dict_view = {}  # 门面(str)
-        self.symbol_describe = {}  # 描述文件
-        self.out_status = new
-
-    def get_expression(self, name, exp_str=False):
-        if exp_str:
-            return self.algebra_dict_view[name]
-        else:
-            return self.algebra_dict[name]
-
-
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraPrint(__AlgebraInit):
     def print_expression_core(self, e, level=0, first=True, q=1):  # 递归
         str_print = " " * level
@@ -137,6 +141,7 @@ class AlgebraPrint(__AlgebraInit):
         return self.print_expression_core(e, level, first)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraSplit(__AlgebraInit):
     def split_func_core(self, exp, deep, name_list, first=True):  # 递归
         try:
@@ -163,6 +168,7 @@ class AlgebraSplit(__AlgebraInit):
             return [exp]
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraMerge(__AlgebraInit):
     def merge_func_core(self, name_list, func):
         if len(name_list) < 2:
@@ -173,6 +179,7 @@ class AlgebraMerge(__AlgebraInit):
         return st
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraBase(AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
 
     def simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
@@ -199,6 +206,7 @@ class AlgebraBase(AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
             return Integer(1)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraSymbol(__AlgebraInit):
     def del_symbol(self, x):
         del self.symbol_describe[x]
@@ -277,6 +285,7 @@ class AlgebraSymbol(__AlgebraInit):
         return establish_forecast + no_prediction
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraExp(AlgebraPrint):
     def add_expression(self, name, alg):  # 添加表达式
         try:
@@ -304,6 +313,7 @@ class AlgebraExp(AlgebraPrint):
         return self.print_expression_core(self.get_expression(name), level, first)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraPolynomialSplit(AlgebraSplit):
     def split_mul(self, name, return_num=False, return_one=False):
         exp = self.get_expression(name)
@@ -364,6 +374,7 @@ class AlgebraPolynomialSplit(AlgebraSplit):
         return get, alg
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraPolynomialMerge(AlgebraMerge):
     def merge_add(self, name_list):
         exp = []
@@ -394,6 +405,7 @@ class AlgebraPolynomialMerge(AlgebraMerge):
         return self.merge_func_core(name, func)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Fractional(AlgebraBase):
     def fractional_merge(self, name):  # 最小公分母合并
         alg = self.get_expression(name)
@@ -419,6 +431,7 @@ class Fractional(AlgebraBase):
         return radsimp(alg, rationalized_unknown, maximum_irrational_term)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Trig(AlgebraBase):
     def trig_simp(self, name):  # 三角化简
         alg = self.get_expression(name)
@@ -429,6 +442,7 @@ class Trig(AlgebraBase):
         return expand_trig(alg, deep)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraMul(AlgebraBase):
     def mul_expansion(self, name):
         alg = self.get_expression(name)
@@ -482,6 +496,7 @@ class AlgebraMul(AlgebraBase):
         return expand_log(alg, deep, keep_assumptions)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class General(AlgebraBase):
     def expansion(self, name, is_expand_complex):
         alg = self.get_expression(name)
@@ -504,18 +519,21 @@ class General(AlgebraBase):
             return ceiling(alg)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraComplex(AlgebraBase):
     def expand_complex(self, name):
         alg = self.get_expression(name)
         return expand_complex(alg)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraSpecialFunc(AlgebraBase):
     def expand_special(self, name):
         alg = self.get_expression(name)
         return expand_func(alg)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Simultaneous(AlgebraBase):
     def value_algebraic_simultaneous(self, name, simultaneous_dict):
         alg = self.get_expression(name)
@@ -553,6 +571,7 @@ class Simultaneous(AlgebraBase):
         return alg.subs(sympy_dict)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Sloving(AlgebraBase):
     def solving_equations(self, equation_set):
         alg = []
@@ -585,18 +604,21 @@ class Sloving(AlgebraBase):
         return get
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Digitization(AlgebraBase):
     def algebraic_digitization(self, name, n):
         alg = self.get_expression(name)
         return alg.evalf(n)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraSimplify(AlgebraBase):
     def simplify(self, name, ratdio=1.7, func=None, rat=True, inv=False):
         alg = self.get_expression(name)
         self.simplify(alg, ratdio, func, rat, inv)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class Rewrite(AlgebraBase):
     def rewrite_exp(self, name, rewrite_func, rewrite_object, deep=False):
         alg = self.get_expression(name)
@@ -610,6 +632,7 @@ class Rewrite(AlgebraBase):
             return alg.rewrite(initial_object, deep=deep)
 
 
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraPlot(AlgebraBase):
     def plot(self, name, list_2d, list_3d=None):
         list_2d = list_2d.copy()
@@ -639,6 +662,7 @@ class AlgebraPlot(AlgebraBase):
             )
 
 
+@plugin_func_loading(get_path(r"template/algebraicfactory"))
 def interpreter(word: str):
     book = {
         "algebraic": "代数",

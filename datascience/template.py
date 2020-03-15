@@ -17,6 +17,7 @@ import pandas_profiling as pp
 
 from pyecharts.globals import CurrentConfig
 from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
+from system import plugin_class_loading, get_path
 
 CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 
@@ -48,6 +49,7 @@ class FormBase(RowColumnBase):
         self.all_render = {}  # 存放所有的图
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SheetIO(FormBase):
 
     def add_sheet(self, data, name=""):
@@ -128,6 +130,7 @@ class SheetIO(FormBase):
         get.to_csv(save_dir, sep=sep, na_rep="")
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SheetRender(SheetIO):
     def render_html_one(self, name, render_dir=""):
         if render_dir == "":
@@ -206,6 +209,7 @@ class SheetRender(SheetIO):
         return tab_render_dir
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SheetReport(SheetIO):
     def describe(self, name, new=False):  # 生成描述
         get = self.get_sheet(name)
@@ -234,6 +238,7 @@ class SheetReport(SheetIO):
         return save_dir
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class Rename(SheetIO):
     def number_naming(self, name, is_column, save):
         get = self.get_sheet(name).copy()
@@ -302,6 +307,7 @@ class Rename(SheetIO):
         return get
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class Sorted(SheetIO):
     def sorted_index(self, name, row: bool, new=False, a=True):
         get = self.get_sheet(name)
@@ -330,6 +336,7 @@ class Sorted(SheetIO):
         return sorted_sheet
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class RowColumn(Rename, Sorted):
     def get_column(self, name, only=False):  # 列名
         get = self.get_sheet(name)
@@ -403,6 +410,7 @@ class RowColumn(Rename, Sorted):
         return get
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SheetSlice(SheetIO):
     def get_slice(
         self, name, column, row, is_iloc=True, new=False
@@ -435,6 +443,7 @@ class SheetSlice(SheetIO):
         return new_sheet
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class DatacleaningFunc(SheetIO):
     def add_clean_func(self, code):
         name = self.Name.copy()
@@ -527,6 +536,7 @@ class DatacleaningFunc(SheetIO):
         return get
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SheetDtype(SheetIO):
     def set_dtype(self, name, column, dtype, wrong):
         get = self.get_sheet(name).copy()
@@ -580,6 +590,7 @@ class SheetDtype(SheetIO):
         return get
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class DataNan(SheetIO):
     def is_nan(self, name):
         get = self.get_sheet(name)
@@ -594,6 +605,7 @@ class DataNan(SheetIO):
         return clean_sheet
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class BoolSheet(SheetIO):
     def to_bool(self, name, exp, new=False):
         get = self.get_sheet(name)
@@ -606,6 +618,7 @@ class BoolSheet(SheetIO):
             return None
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class DataSample(SheetIO):
     def sample(self, name, new):
         get = self.get_sheet(name)
@@ -615,6 +628,7 @@ class DataSample(SheetIO):
         return sample
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class DataTranspose(SheetIO):
     def transpose(self, name, new=True):
         get = self.get_sheet(name)
@@ -624,6 +638,7 @@ class DataTranspose(SheetIO):
         return t
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class DataFormBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc, SheetDtype, DataNan, BoolSheet,
                    DataSample, DataTranspose):
 
@@ -639,6 +654,7 @@ class DataFormBase(SheetRender, SheetReport, RowColumn, SheetSlice, Datacleaning
         del self.sheet_dict[name]
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class PlotBase(DataFormBase):
     def parsing_parameters(self, text):  # 解析文本参数
         args = {}  # 解析到的参数
@@ -909,6 +925,7 @@ class PlotBase(DataFormBase):
         return k
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class Render(PlotBase):
     def render_all(self, text, render_dir) -> Page:
         args = self.parsing_parameters(text)
@@ -945,6 +962,7 @@ class Render(PlotBase):
         return color
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class AxisPlot(Render):
     def to_bar(self, name, text) -> Bar:  # Bar:数据堆叠
         get = self.get_sheet(name)
@@ -1146,6 +1164,7 @@ class AxisPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class GeneralPlot(Render):
     def to_format_graph(self, name, text) -> Graph:
         get = self.get_sheet(name)
@@ -1493,6 +1512,7 @@ class GeneralPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class RelationshipPlot(Render):
     def to_sunburst(self, name, text) -> Sunburst:
         get = self.get_sheet(name)
@@ -1681,6 +1701,7 @@ class RelationshipPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class GeographyPlot(Render):
     def to_map(self, name, text) -> Map:
         get = self.get_sheet(name)
@@ -1816,6 +1837,7 @@ class GeographyPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class WordPlot(Render):
     def to_word_cloud(self, name, text) -> WordCloud:
         get = self.get_sheet(name)
@@ -1875,6 +1897,7 @@ class WordPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class SolidPlot(Render):
     def to_bar3d(self, name, text) -> Bar3D:
         get = self.get_sheet(name)
@@ -1988,6 +2011,7 @@ class SolidPlot(Render):
         return c
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class Plot(AxisPlot, GeneralPlot, RelationshipPlot, GeographyPlot, WordPlot, SolidPlot):
     def custom_graph(self, text):
         named_domain = {}
@@ -2042,6 +2066,7 @@ class MachineLearnerBase(Plot):
         return self.learner_type[name]
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class VisualLearner(MachineLearnerBase):
     def visual_learner(self, learner, new=False):  # 显示参数
         learner = self.get_learner(learner)
@@ -2104,6 +2129,7 @@ class VisualLearner(MachineLearnerBase):
         return doc, data
 
 
+@plugin_class_loading(get_path(r'template/datascience'))
 class Learner(MachineLearnerBase):
     def decision_tree_classifier(self, name):  # 特征提取
         get = self.get_sheet(name)
@@ -2189,5 +2215,3 @@ class Learner(MachineLearnerBase):
             return self.predict_simp(
                 name, learner, down_ndim=args_use["nDim_2"], **kwargs
             )
-
-
