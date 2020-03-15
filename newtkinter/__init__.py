@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import filedialog
 
 
 class DragWindow(tk.Tk):
@@ -37,3 +38,40 @@ class DragWindow(tk.Tk):
     def _on_tap(self, event):
         self.root_x, self.root_y = event.x_root, event.y_root
         self.abs_x, self.abs_y = self.winfo_x(), self.winfo_y()
+
+# 重建文件读取类 askdirectory,askopenfilename,askopenfilenames,asksaveasfilename
+
+
+askopenfilenames = filedialog.askopenfilenames
+
+
+def askopenfilename(title, must=False, **parameters):
+    while True:
+        name = filedialog.askopenfilename(title=title, **parameters)
+        if name == '':
+            if not must:
+                raise NameError
+            continue
+        break
+    return name
+
+
+def asksaveasfilename(title, **parameters):
+    name: str = filedialog.asksaveasfilename(title=title, **parameters)
+    if name == '':
+        raise NameError
+    end = parameters.get('filetypes', [('', '')])[0][0]
+    if name.endswith(end):
+        return name
+    return name + end
+
+
+def askdirectory(title, must=False, **parameters):
+    while True:
+        name: str = filedialog.askdirectory(title=title, **parameters)
+        if name == '':
+            if not must:
+                raise NameError
+            continue
+        break
+    return name

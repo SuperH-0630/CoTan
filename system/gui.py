@@ -1,5 +1,5 @@
 import tkinter
-from tkinter.filedialog import askopenfilename
+from newtkinter import askopenfilename
 from tkinter.messagebox import showwarning, askokcancel
 from tkinter.scrolledtext import ScrolledText
 

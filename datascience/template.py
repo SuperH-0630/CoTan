@@ -45,7 +45,7 @@ class FormBase(RowColumnBase):
         self.clean_func = {}
         self.clean_func_code = {}
         self.DEL = Del()
-        self.Name = {"pd": pd, "DEL": self.DEL, "re": re, "Sheet": self.sheet_dict}
+        self.named_domain = {"pd": pd, "DEL": self.DEL, "re": re, "Sheet": self.sheet_dict}
         self.all_render = {}  # 存放所有的图
 
 
@@ -446,7 +446,7 @@ class SheetSlice(SheetIO):
 @plugin_class_loading(get_path(r'template/datascience'))
 class DatacleaningFunc(SheetIO):
     def add_clean_func(self, code):
-        name = self.Name.copy()
+        name = self.named_domain.copy()
         try:
             exec(code, name)
         except BaseException:

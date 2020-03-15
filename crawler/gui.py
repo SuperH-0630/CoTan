@@ -1,9 +1,8 @@
 import crawler.controller
 import crawler.template
-from crawler import controller
 import os
 import tkinter
-from tkinter.filedialog import askdirectory
+from newtkinter import askdirectory
 import re
 import threading
 
@@ -18,8 +17,6 @@ word_color = "#000000"  # 文字颜色
 SCREEN["bg"] = bg_color
 FONT = ("黑体", 11)  # 设置字体
 start_loader_stop = False
-url_input = None
-url_parameter = None
 user_agent_input = None
 requests_data = None
 mode_input = None
@@ -2238,7 +2235,7 @@ tkinter.Button(
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
 SCREEN.update()  # 要预先update一下，否则会卡住
-save_dir = askdirectory(title="选择项目位置")  # 项目位置
+save_dir = askdirectory(title="选择项目位置", must=True)  # 项目位置
 url = crawler.controller.Url(save_dir, save_dir)  # url管理器
 loader = crawler.controller.PageDownloader(url, save_dir)  # 页面下载器
 page_parser = crawler.controller.PageParser(loader)  # 页面解析器

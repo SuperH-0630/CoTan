@@ -1503,7 +1503,7 @@ class PageParserChains(PageParserChainsWindow, PageParserClick, PageParserChains
 
 
 for i in range(1, 13):  # F1 - F12按键
-    keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}")
+    keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}", {'Keys': Keys})
 
 
 class CoTanDB(Database):

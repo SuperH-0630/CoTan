@@ -1,7 +1,7 @@
 import os
 import webbrowser
 import tkinter
-from tkinter.filedialog import askopenfilename, asksaveasfilename
+from newtkinter import askopenfilename, asksaveasfilename
 import tkinter.messagebox
 from tkinter.scrolledtext import ScrolledText
 

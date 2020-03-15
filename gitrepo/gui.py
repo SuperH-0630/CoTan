@@ -5,7 +5,7 @@ import os
 
 import tkinter.messagebox
 from tkinter import ttk
-from tkinter.filedialog import asksaveasfilename, askdirectory, askopenfilenames
+from newtkinter import asksaveasfilename, askdirectory, askopenfilenames
 from tkinter.scrolledtext import ScrolledText
 
 import gitrepo.template

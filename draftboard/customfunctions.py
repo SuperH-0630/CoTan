@@ -8,6 +8,9 @@ func_input = None
 help = None
 button = None
 logger = None
+bg_color = "#FFFAFA"  # 主颜色
+botton_color = "#FFFAFA"  # 按钮颜色
+word_color = "#000000"  # 文字颜色
 help_doc = """
 请在第一个输入框输入你的函数方程，不需要输入f(x)=和y=,唯一变量是x(x为自变量)
 圆周率-Pi，自然无理数-e
@@ -80,12 +83,28 @@ def get_help():
 
 def make_func():
     global SCREEN, func_input, help, button, logger
-    SCREEN = tkinter.Toplevel()
+    SCREEN = tkinter.Toplevel(bg=bg_color)
     SCREEN.title("")
     SCREEN.resizable(width=False, height=False)
     SCREEN.geometry(f"+350+10")
-    button = tkinter.Button(SCREEN, text="制造函数", command=custom, width=28, height=1)  # 收到消息执行这个函数
-    help = tkinter.Button(SCREEN, text="帮助", command=get_help, width=28, height=1)  # 帮助菜单
+    button = tkinter.Button(
+        SCREEN,
+        text="制造函数",
+        command=custom,
+        width=28,
+        height=1,
+        bg=bg_color,
+        fg=word_color,
+    )
+    help = tkinter.Button(
+        SCREEN,
+        text="帮助",
+        command=get_help,
+        width=28,
+        height=1,
+        bg=bg_color,
+        fg=word_color,
+    )
     func_input = tkinter.Entry(SCREEN)
     func_input.pack(fill=tkinter.BOTH)
     button.pack()

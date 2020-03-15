@@ -5,7 +5,7 @@ import tkinter.font as tkfont
 from PIL import ImageTk, Image
 import time
 
-from drag import DragWindow
+from newtkinter import DragWindow
 
 SCREEN = None
 draftboard_start = None

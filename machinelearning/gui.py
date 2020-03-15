@@ -2,7 +2,7 @@ import os
 import tkinter
 from tkinter.scrolledtext import ScrolledText
 import tkinter.messagebox
-from tkinter.filedialog import askopenfilename, asksaveasfilename, askdirectory
+from newtkinter import askopenfilename, asksaveasfilename, askdirectory
 import chardet
 import webbrowser
 
