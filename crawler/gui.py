@@ -225,7 +225,7 @@ class UIAPI:
     @staticmethod
     def update_cookies_box_gui(cookies):
         global cookies_BOX, cookies_list
-        if UIAPI.get_cookies_fix_gui():
+        if API.get_cookies_fix_gui():
             cookies_list = cookies
             cookies_BOX.delete(0, tkinter.END)
             cookies_BOX.insert(0, *cookies)
@@ -280,8 +280,8 @@ class UIAPI:
             element_value=operation_object.get(),
             index=index,
             url_name=url_tag.get(),
-            update_func=UIAPI.update_url_box_gui,
-            url_args=UIAPI.get_url_parameter_gui(),
+            update_func=API.update_url_box_gui,
+            url_args=API.get_url_parameter_gui(),
         )
 
     @staticmethod
@@ -292,14 +292,14 @@ class UIAPI:
 
     @staticmethod
     def to_database_gui():
-        index = UIAPI.get_db_index_gui(object_index)
+        index = API.get_db_index_gui(object_index)
         return dict(element_value=operation_object.get(),
                     index=index,
                     data=data_format.get(),
-                    dataBase_name=UIAPI.get_datadase_name_gui(),)
+                    dataBase_name=API.get_datadase_name_gui(),)
 
 
-class API:
+class API(UIAPI):
     @staticmethod
     def to_database(is_tag=True):
         global object_index, operation_object, data_format, page_parser
@@ -307,56 +307,56 @@ class API:
             func = page_parser.to_database
         else:
             func = page_parser.to_database_by_re
-        func(**UIAPI.to_database_gui())
-        UIAPI.update_parser_func_box_gui()
+        func(**API.to_database_gui())
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def close():
-        name = UIAPI.get_datadase_name_gui()
+        name = API.get_datadase_name_gui()
         database.close(name)
-        UIAPI.update_database_box_gui()
+        API.update_database_box_gui()
 
     @staticmethod
     def out():
-        name = UIAPI.get_datadase_name_gui()
+        name = API.get_datadase_name_gui()
         database.out(name, save_dir)
-        UIAPI.update_database_box_gui()
+        API.update_database_box_gui()
 
     @staticmethod
     def remove_database():
-        name = UIAPI.get_datadase_name_gui()
+        name = API.get_datadase_name_gui()
         database.rm_database(name)
-        UIAPI.update_database_box_gui()
+        API.update_database_box_gui()
 
     @staticmethod
     def add_database():
         name = database_name.get()
         database.add_database(name)
-        UIAPI.update_database_box_gui()
+        API.update_database_box_gui()
 
     @staticmethod
     def clean_attributes():
         global attributes_dict
         attributes_dict = {}
-        UIAPI.update_attributes_box_gui()
+        API.update_attributes_box_gui()
 
     @staticmethod
     def del_attributes():
-        del attributes_dict[list(attributes_dict.keys())[UIAPI.get_attributes_box_index_gui()]]
-        UIAPI.update_attributes_box_gui()
+        del attributes_dict[list(attributes_dict.keys())[API.get_attributes_box_index_gui()]]
+        API.update_attributes_box_gui()
 
     @staticmethod
     def add_attributes():
         try:
-            name, value = UIAPI.add_attributes_gui()
+            name, value = API.add_attributes_gui()
         except BaseException:
             return False
         attributes_dict[name] = value
-        UIAPI.update_attributes_box_gui()
+        API.update_attributes_box_gui()
 
     @staticmethod
     def third_add_action_func(func):
-        args = UIAPI.third_func_args_gui()
+        args = API.third_func_args_gui()
         func = {
             "make_ActionChains": page_parser.make_action_chains,
             "click": page_parser.action_click,
@@ -373,11 +373,11 @@ class API:
             "ActionChains_run": page_parser.action_run,
         }.get(func, page_parser.make_action_chains)
         func(**args)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def second_add_action_func(func):
-        args = UIAPI.second_func_args_gui()
+        args = API.second_func_args_gui()
         func = {
             "del_all_cookies": page_parser.del_all_cookies,
             "del_cookies": page_parser.del_cookies,
@@ -398,11 +398,11 @@ class API:
             "to_json": page_parser.to_json,
         }.get(func, page_parser.make_bs)
         func(**args)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def first_add_action_func(func):
-        args = UIAPI.first_func_args_gui()
+        args = API.first_func_args_gui()
         func = {
             "send_keys": page_parser.send_keys,
             "clear": page_parser.clear,
@@ -430,19 +430,19 @@ class API:
             "switch_to_windwos": page_parser.switch_to_windwos,
         }.get(func, page_parser.send_keys)
         func(**args)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def add_frame_func_father(is_main=True):
         search = None if is_main else ""
         page_parser.find_switch_to_frame(search, True)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def add_frame_func_id():
         search = API.get_search_key()
         page_parser.find_switch_to_frame(search, True)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def add_find_func(func):
@@ -462,7 +462,7 @@ class API:
             "frame": page_parser.find_switch_to_frame,
         }.get(func, page_parser.find_id)
         func(search, not_all=not_all)
-        UIAPI.update_parser_func_box_gui()
+        API.update_parser_func_box_gui()
 
     @staticmethod
     def get_search_key():
@@ -472,9 +472,9 @@ class API:
     @staticmethod
     def del_parser_func():
         try:
-            index = UIAPI.get_parser_func_box_index_gui()
+            index = API.get_parser_func_box_index_gui()
             page_parser.del_func(index, True)
-            UIAPI.update_parser_func_box_gui()
+            API.update_parser_func_box_gui()
         except BaseException:
             pass
 
@@ -482,17 +482,17 @@ class API:
     def clean_parser_func():
         try:
             page_parser.tra_func()
-            UIAPI.update_parser_func_box_gui()
+            API.update_parser_func_box_gui()
         except BaseException:
             pass
 
     @staticmethod
     def update_cookies():
-        cookies = UIAPI.get_new_cookies_gui()
-        if UIAPI.get_cookies_fix_gui():
+        cookies = API.get_new_cookies_gui()
+        if API.get_cookies_fix_gui():
             return False
         try:
-            name = cookies_list[UIAPI.get_cookies_box_index_gui()].get("name")
+            name = cookies_list[API.get_cookies_box_index_gui()].get("name")
             loader.monitoring_update_cookies(name, cookies)
             API.set_cookies_fix()
         except BaseException:
@@ -500,8 +500,8 @@ class API:
 
     @staticmethod
     def add_cookies():
-        cookies = UIAPI.get_new_cookies_gui()
-        if UIAPI.get_cookies_fix_gui():
+        cookies = API.get_new_cookies_gui()
+        if API.get_cookies_fix_gui():
             return False
         try:
             loader.monitoring_add_cookies(cookies)
@@ -511,7 +511,7 @@ class API:
 
     @staticmethod
     def clean_cookies():
-        if UIAPI.get_cookies_fix_gui():
+        if API.get_cookies_fix_gui():
             return False
         try:
             loader.monitoring_clear_cookier()
@@ -525,10 +525,10 @@ class API:
 
     @staticmethod
     def del_cookies():
-        if UIAPI.get_cookies_fix_gui():
+        if API.get_cookies_fix_gui():
             return False
         try:
-            name = cookies_list[UIAPI.get_cookies_box_index_gui()].get("name")
+            name = cookies_list[API.get_cookies_box_index_gui()].get("name")
             loader.monitoring_del_cookies(name)
             API.set_cookies_fix()
         except BaseException:
@@ -549,14 +549,14 @@ class API:
             while start_loader_stop:
                 if url.is_finish():
                     break
-                loader.start_to_run(func_cookie=UIAPI.update_cookies_box_gui)
-                UIAPI.update_url_box_gui()
-                page_parser.element_interaction(UIAPI.update_run_status_gui)
+                loader.start_to_run(func_cookie=API.update_cookies_box_gui)
+                API.update_url_box_gui()
+                page_parser.element_interaction(API.update_run_status_gui)
             loader.stop()
 
         new = threading.Thread(target=start_loader)
         new.start()
-        UIAPI.update_url_box_gui()
+        API.update_url_box_gui()
 
     @staticmethod
     def crawler_run_one():
@@ -564,9 +564,9 @@ class API:
             global loader, page_parser
             if url.is_finish():
                 return
-            loader.start_to_run(func_cookie=UIAPI.update_cookies_box_gui)
-            UIAPI.update_url_box_gui()
-            page_parser.element_interaction(UIAPI.update_run_status_gui)
+            loader.start_to_run(func_cookie=API.update_cookies_box_gui)
+            API.update_url_box_gui()
+            page_parser.element_interaction(API.update_run_status_gui)
             loader.stop()
 
         new = threading.Thread(target=start_loader)
@@ -575,38 +575,38 @@ class API:
     @staticmethod
     def add_filter_func_https():
         url.add_filter_func(lambda url: re.match(re.compile("^https://"), url), "HTTPS过滤")
-        UIAPI.update_filter_func_box_gui()
+        API.update_filter_func_box_gui()
 
     @staticmethod
     def add_filter_func_www():
         url.add_filter_func(lambda url: re.match(re.compile(r".*www\."), url), "www过滤")
-        UIAPI.update_filter_func_box_gui()
+        API.update_filter_func_box_gui()
 
     @staticmethod
     def del_filter_func():
-        index = UIAPI.get_filter_func_box_index_gui()
+        index = API.get_filter_func_box_index_gui()
         url.del_filter_func(index)
-        UIAPI.update_filter_func_box_gui()
+        API.update_filter_func_box_gui()
 
     @staticmethod
     def del_url():
-        index = UIAPI.get_url_box_index_gui()
+        index = API.get_url_box_index_gui()
         url.del_url(index)
-        UIAPI.update_url_box_gui()
+        API.update_url_box_gui()
 
     @staticmethod
     def add_url():
-        args = UIAPI.get_url_parameter_gui()
-        new_url = UIAPI.get_new_url_name_gui()
+        args = API.get_url_parameter_gui()
+        new_url = API.get_new_url_name_gui()
         if new_url == "":
             return
         url.add_url(new_url, **args)
-        UIAPI.update_url_box_gui()
+        API.update_url_box_gui()
 
     @staticmethod
     def add_url_from_tag():
-        page_parser.add_url(**UIAPI.add_url_from_tag_gui())
-        UIAPI.update_parser_func_box_gui()
+        page_parser.add_url(**API.add_url_from_tag_gui())
+        API.update_parser_func_box_gui()
 
 
 def crawler_main():

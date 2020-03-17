@@ -4,7 +4,6 @@ import random
 import tkinter
 import tkinter.messagebox
 
-import numpy
 import pandas
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
@@ -50,119 +49,120 @@ csv_list = []
 gui_width = 13  # 标准宽度
 gui_height = 2
 
+class UIAPI:
+    @staticmethod
+    def get_save_dir_gui():
+        return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
 
-def get_save_dir_gui():
-    return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
+    @staticmethod
+    def output_prompt_gui(news):
+        global prompt_box, prompt_num
+        prompt_num += 1
+        news = str(news)
+        prompt_box.insert(0, news + f"({prompt_num})")
+        SCREEN.update()
+
+    @staticmethod
+    def get_y_value_gradient_gui():
+        parameters = y_value_gradient.get().split("#")  # 拆解输入
+        return parameters
+
+    @staticmethod
+    def dichotomy_gui():
+        y = y_value.get().split(",")  # 拆解输入
+        parameters = dicon_parameters.get().split("#")  # 拆解输入
+        return parameters, y
+
+    @staticmethod
+    def get_func_exp_box_index_gui():
+        return func_exp_box.curselection()[0]
+
+    @staticmethod
+    def get_x_value_gui():
+        return x_value.get().split(",")
+
+    @staticmethod
+    def update_property_box_gui(answer):
+        property_box.delete(0, tkinter.END)
+        property_box.insert(tkinter.END, *answer)
+
+    @staticmethod
+    def update_result_box_gui(answer):
+        result_box.delete(0, tkinter.END)
+        result_box.insert(tkinter.END, *answer)
+
+    @staticmethod
+    def get_func_logger_gui():
+        return func_logger[func_exp_box.curselection()[0]]
+
+    @staticmethod
+    def add_func_gui():
+        get = func_exp.get().replace(" ", "")
+        definition = definition_domain.get().split(",")
+        name = func_name.get().replace(" ", "")
+        style_str = func_style.get().split("#")
+        if not name:
+            name = get
+        try:
+            if style_str[0] not in point_style:
+                style_str[0] = "b"
+            line_style_str = line_style.get(style_str[1], "-")
+        except BaseException:
+            style_str = ["", ""]
+            style_str[0] = random.choice(point_style)
+            line_style_str = "-"
+        style = style_str[0] + line_style_str
+        try:
+            span_str = definition[2]
+            if span_str.startswith("H"):
+                named_domain = {
+                    "Pi": math.pi,
+                    "e": math.e,
+                    "log": math.log,
+                    "sin": math.sin,
+                    "cos": math.cos,
+                    "tan": math.tan,
+                    "cot": lambda x: 1 / math.tan(x),
+                    "csc": lambda x: 1 / math.sin(x),
+                    "sec": lambda x: 1 / math.cos(x),
+                    "sinh": math.sinh,
+                    "cosh": math.cosh,
+                    "tanh": math.tanh,
+                    "asin": math.asin,
+                    "acos": math.acos,
+                    "atan": math.atan,
+                }
+                definition[2] = eval(span_str[1:], named_domain)
+        except BaseException:
+            pass
+        return get, [name, style] + definition
+
+    @staticmethod
+    def update_func_exp_box_gui():
+        func_exp_box.delete(0, tkinter.END)
+        func_exp_box.insert(tkinter.END, *func_logger)
+
+    @staticmethod
+    def read_csv_gui():
+        file = askopenfilename(title="载入表格", filetypes=[("CSV", ".csv")])
+        style_str = func_style.get().split("#")
+        try:
+            if style_str[0] not in point_style:
+                style_str[0] = "b"
+            line_style_str = line_style.get(style_str[1], "-")
+        except BaseException:
+            style_str = ["", ""]
+            style_str[0] = random.choice(point_style)
+            line_style_str = "-"
+        style = style_str[0] + line_style_str
+        name = path.basename(file)[0:-4].replace(" ", "")
+        if not name:
+            name = random.randint(1, 1000)
+        name += "(In CSV)"
+        return pandas.read_csv(file).tolist(), name, style
 
 
-def output_prompt_gui(news):
-    global prompt_box, prompt_num
-    prompt_num += 1
-    news = str(news)
-    prompt_box.insert(0, news + f"({prompt_num})")
-    SCREEN.update()
-
-
-def get_y_value_gradient_gui():
-    parameters = y_value_gradient.get().split("#")  # 拆解输入
-    return parameters
-
-
-def dichotomy_gui():
-    y = y_value.get().split(",")  # 拆解输入
-    parameters = dicon_parameters.get().split("#")  # 拆解输入
-    return parameters, y
-
-
-def get_func_exp_box_index_gui():
-    return func_exp_box.curselection()[0]
-
-
-def get_x_value_gui():
-    return x_value.get().split(",")
-
-
-def update_property_box_gui(answer):
-    property_box.delete(0, tkinter.END)
-    property_box.insert(tkinter.END, *answer)
-
-
-def update_result_box_gui(answer):
-    result_box.delete(0, tkinter.END)
-    result_box.insert(tkinter.END, *answer)
-
-
-def get_func_logger_gui():
-    return func_logger[func_exp_box.curselection()[0]]
-
-
-def add_func_gui():
-    get = func_exp.get().replace(" ", "")
-    definition = definition_domain.get().split(",")
-    name = func_name.get().replace(" ", "")
-    style_str = func_style.get().split("#")
-    if not name:
-        name = get
-    try:
-        if style_str[0] not in point_style:
-            style_str[0] = "b"
-        line_style_str = line_style.get(style_str[1], "-")
-    except BaseException:
-        style_str = ["", ""]
-        style_str[0] = random.choice(point_style)
-        line_style_str = "-"
-    style = style_str[0] + line_style_str
-    try:
-        span_str = definition[2]
-        if span_str.startswith("H"):
-            named_domain = {
-                "Pi": math.pi,
-                "e": math.e,
-                "log": math.log,
-                "sin": math.sin,
-                "cos": math.cos,
-                "tan": math.tan,
-                "cot": lambda x: 1 / math.tan(x),
-                "csc": lambda x: 1 / math.sin(x),
-                "sec": lambda x: 1 / math.cos(x),
-                "sinh": math.sinh,
-                "cosh": math.cosh,
-                "tanh": math.tanh,
-                "asin": math.asin,
-                "acos": math.acos,
-                "atan": math.atan,
-            }
-            definition[2] = eval(span_str[1:], named_domain)
-    except BaseException:
-        pass
-    return get, [name, style] + definition
-
-
-def update_func_exp_box_gui():
-    func_exp_box.delete(0, tkinter.END)
-    func_exp_box.insert(tkinter.END, *func_logger)
-
-
-def read_csv_gui():
-    file = askopenfilename(title="载入表格", filetypes=[("CSV", ".csv")])
-    style_str = func_style.get().split("#")
-    try:
-        if style_str[0] not in point_style:
-            style_str[0] = "b"
-        line_style_str = line_style.get(style_str[1], "-")
-    except BaseException:
-        style_str = ["", ""]
-        style_str[0] = random.choice(point_style)
-        line_style_str = "-"
-    style = style_str[0] + line_style_str
-    name = path.basename(file)[0:-4].replace(" ", "")
-    if not name:
-        name = random.randint(1, 1000)
-    name += "(In CSV)"
-    return pandas.read_csv(file).tolist(), name, style
-
-
-class API:
+class API(UIAPI):
     @staticmethod
     def type_selection(iter_object, si=float, no_zero=True):  # Float筛选系统
         x = []
@@ -179,7 +179,7 @@ class API:
     def plot_func():
         global func_logger, definition_domain, fig, x_limit, y_limit, y_axis, x_axis
         # 画板创造
-        output_prompt_gui("生成绘制取...")
+        API.output_prompt_gui("生成绘制取...")
         fig = plt.figure(num="CoTan函数")  # 定义一个图像窗口
         plt.grid(True, ls="--")  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
         axis = plt.gca()
@@ -283,7 +283,7 @@ class API:
         plt.xlim(_x_limit)
         plt.ylim(_y_limit)
         # 函数绘图系统
-        output_prompt_gui("图像绘制中...")
+        API.output_prompt_gui("图像绘制中...")
         if not func_logger:
             return False
         for Fucn in func_logger:
@@ -358,33 +358,33 @@ class API:
                     last_x = now_x
             plt.plot(plot_min, [min_y] * len(plot_min), exp_style[0] + "o")  # 画出一些点
             plt.plot(plot_max, [max_y] * len(plot_max), exp_style[0] + "o")  # 画出一些点
-        output_prompt_gui("绘制完毕")
+        API.output_prompt_gui("绘制完毕")
         plt.legend()  # 显示图示
         plt.show()  # 显示图像
         return True
 
     @staticmethod
     def add_from_csv():  # 添加函数
-        file, name, style = read_csv_gui()
+        file, name, style = API.read_csv_gui()
         try:
-            output_prompt_gui("读取CSV")
+            API.output_prompt_gui("读取CSV")
             func_str_list.append(name)
             func_logger.append(SheetFunc(file, name, style))
-            update_func_exp_box_gui()
-            output_prompt_gui("读取完毕")
+            API.update_func_exp_box_gui()
+            API.output_prompt_gui("读取完毕")
         except BaseException:
-            output_prompt_gui("读取失败")
+            API.output_prompt_gui("读取失败")
 
     @staticmethod
     def add_func():  # 添加函数
-        get, definition = add_func_gui()
+        get, definition = API.add_func_gui()
         if get and get not in func_str_list:
             func_str_list.append(get)
             func_logger.append(ExpFunc(get, *definition))
-            update_func_exp_box_gui()
-            output_prompt_gui("函数生成完毕")
+            API.update_func_exp_box_gui()
+            API.output_prompt_gui("函数生成完毕")
         else:
-            output_prompt_gui("函数生成失败")
+            API.output_prompt_gui("函数生成失败")
 
     @staticmethod
     def clean_func_box():  # 添加函数
@@ -392,18 +392,18 @@ class API:
         if API.show_askokcancel("是否清空所有函数？)"):
             func_str_list = []
             func_logger = []
-            update_func_exp_box_gui()
-            output_prompt_gui("函数清空完毕")
+            API.update_func_exp_box_gui()
+            API.output_prompt_gui("函数清空完毕")
 
     @staticmethod
     def func_to_sheet_gui():  # 显示xy
         try:
-            func = get_func_logger_gui()
+            func = API.get_func_logger_gui()
             sheet_box.delete(0, tkinter.END)
             sheet_box.insert(tkinter.END, *func.return_list())
-            output_prompt_gui("表格创建成功")
+            API.output_prompt_gui("表格创建成功")
         except BaseException:
-            output_prompt_gui("无法创建表格")
+            API.output_prompt_gui("无法创建表格")
             pass
 
     @staticmethod
@@ -415,111 +415,111 @@ class API:
         global x_value, func_exp_box, func_logger
         try:
             if API.show_askokcancel(f"确定删除{func_logger[func_exp_box.curselection()[0]]}的记忆吗？"):
-                get_func_logger_gui().clean_memory()
-                update_result_box_gui([])
-                output_prompt_gui("删除完毕")
+                API.get_func_logger_gui().clean_memory()
+                API.update_result_box_gui([])
+                API.output_prompt_gui("删除完毕")
             else:
-                output_prompt_gui("删除取消")
+                API.output_prompt_gui("删除取消")
         except BaseException:
-            output_prompt_gui("删除失败")
+            API.output_prompt_gui("删除失败")
 
     @staticmethod
     def hide_memory():  # 显示xy
         global func_logger, result_box
         try:
-            get_func_logger_gui().hide_or_show()
-            update_result_box_gui([])
-            output_prompt_gui("已清空卡槽")
+            API.get_func_logger_gui().hide_or_show()
+            API.update_result_box_gui([])
+            API.output_prompt_gui("已清空卡槽")
         except BaseException:
-            output_prompt_gui("隐藏（显示）失败")
+            API.output_prompt_gui("隐藏（显示）失败")
 
     @staticmethod
     def show_memory():  # 显示xy
         global func_logger, result_box
         try:
             answer = []
-            for i in zip(get_func_logger_gui().get_memory()):
+            for i in zip(API.get_func_logger_gui().get_memory()):
                 answer.append(f"x={i[0]} -> y={i[1]}")
-            update_result_box_gui(answer)
-            output_prompt_gui("输出完成")
+            API.update_result_box_gui(answer)
+            API.output_prompt_gui("输出完成")
         except BaseException:
-            output_prompt_gui("操作失败")
+            API.output_prompt_gui("操作失败")
 
     @staticmethod
     def property_prediction():
         try:
-            output_prompt_gui("预测过程程序可能无响应")
-            answer = get_func_logger_gui().property_prediction(output_prompt_gui)
-            update_property_box_gui(answer)
-            output_prompt_gui("性质预测完成")
+            API.output_prompt_gui("预测过程程序可能无响应")
+            answer = API.get_func_logger_gui().property_prediction(API.output_prompt_gui)
+            API.update_property_box_gui(answer)
+            API.output_prompt_gui("性质预测完成")
         except IndexError:
-            output_prompt_gui("性质预测失败")
+            API.output_prompt_gui("性质预测失败")
 
     @staticmethod
     def calculate():
         global func_logger, result_box, x_value
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            answer = get_func_logger_gui().calculation(get_x_value_gui())
-            update_result_box_gui(answer)
-            output_prompt_gui("系统计算完毕")
+            API.output_prompt_gui("计算过程程序可能无响应")
+            answer = API.get_func_logger_gui().calculation(API.get_x_value_gui())
+            API.update_result_box_gui(answer)
+            API.output_prompt_gui("系统计算完毕")
         except IndexError:
-            output_prompt_gui("计算失败")
+            API.output_prompt_gui("计算失败")
 
     @staticmethod
     def func_to_csv():  # 导出CSV
         global csv_list
         try:
-            get_func_logger_gui().save_csv(get_save_dir_gui())
-            output_prompt_gui("CSV导出成功")
+            API.get_func_logger_gui().save_csv(API.get_save_dir_gui())
+            API.output_prompt_gui("CSV导出成功")
         except BaseException:
-            output_prompt_gui("CSV导出失败")
+            API.output_prompt_gui("CSV导出失败")
 
     @staticmethod
     def del_func():  # 删除函数
         global func_logger, func_str_list, func_exp_box
-        del_index = get_func_exp_box_index_gui()
+        del_index = API.get_func_exp_box_index_gui()
         del func_logger[del_index]
         del func_str_list[del_index]
-        update_func_exp_box_gui()
-        output_prompt_gui("函数删除完毕")
+        API.update_func_exp_box_gui()
+        API.output_prompt_gui("函数删除完毕")
 
     @staticmethod
     def dichotomy():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            parameters, y = dichotomy_gui()
+            API.output_prompt_gui("计算过程程序可能无响应")
+            parameters, y = API.dichotomy_gui()
             answer = []
-            output_prompt_gui("系统运算中")
+            API.output_prompt_gui("系统运算中")
             for i in y:
-                answer += get_func_logger_gui().dichotomy(float(i), *parameters)[0]
+                answer += API.get_func_logger_gui().dichotomy(float(i), *parameters)[0]
             if answer:
-                output_prompt_gui("系统运算完成")
+                API.output_prompt_gui("系统运算完成")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except BaseException:
-            output_prompt_gui("系统运算失败")
+            API.output_prompt_gui("系统运算失败")
 
     @staticmethod
     def gradient_method_calculation():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            output_prompt_gui("系统运算中")
-            answer = get_func_logger_gui().gradient_calculation(*get_y_value_gradient_gui())
+            API.output_prompt_gui("计算过程程序可能无响应")
+            API.output_prompt_gui("系统运算中")
+            answer = API.get_func_logger_gui().gradient_calculation(*API.get_y_value_gradient_gui())
             if answer[1]:
-                output_prompt_gui("系统运算完成")
+                API.output_prompt_gui("系统运算完成")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except BaseException:
-            output_prompt_gui("系统运算失败，请注意参数设置")
+            API.output_prompt_gui("系统运算失败，请注意参数设置")
 
     @staticmethod
     def func_differentiation():
         global func_logger, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
         try:
-            fucn = get_func_logger_gui()
+            fucn = API.get_func_logger_gui()
             diff = fucn.derivatives
             if diff is not None and str(diff):
                 get = str(diff)
@@ -535,12 +535,12 @@ class API:
                         fucn.accuracy,
                     )
                 )
-                update_func_exp_box_gui()
-                output_prompt_gui("函数生成完毕")
+                API.update_func_exp_box_gui()
+                API.output_prompt_gui("函数生成完毕")
             else:
                 raise Exception
         except BaseException:
-            output_prompt_gui("导函数创建失败")
+            API.output_prompt_gui("导函数创建失败")
 
 
 def function_mapping():
@@ -965,4 +965,4 @@ sheet_box.grid(
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
 
-output_prompt_gui("加载完成，欢迎使用!")
+API.output_prompt_gui("加载完成，欢迎使用!")

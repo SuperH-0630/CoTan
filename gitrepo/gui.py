@@ -81,7 +81,7 @@ class UIAPI:
         data = ""
         out_data = ""  # 包含out的data
         if show_screen:
-            text, cli_screen, button_list = UIAPI.show_cli_gui(
+            text, cli_screen, button_list = API.show_cli_gui(
                 save_to_txt, stop, keep, format, pipe, name=name
             )  # [close,keep]
             update_button()
@@ -91,7 +91,7 @@ class UIAPI:
                 data += f"{tip_text}\n"
             cli_screen.update()
         else:
-            u = threading.Thread(target=UIAPI.progress_bar_gui)
+            u = threading.Thread(target=API.progress_bar_gui)
             u.start()
         SCREEN.update()
 
@@ -140,7 +140,7 @@ class UIAPI:
                     try:  # 如果界面被关掉了，会报错
                         cli_screen.title(f"{name} : 运行中")
                     except BaseException:
-                        text, cli_screen, button_list = UIAPI.show_cli_gui(
+                        text, cli_screen, button_list = API.show_cli_gui(
                             save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
                         )
                         update_button()
@@ -163,7 +163,7 @@ class UIAPI:
                     if show_screen:
                         cli_screen.title(f"{name} : 运行中")
                 except BaseException:
-                    text, cli_screen, button_list = UIAPI.show_cli_gui(
+                    text, cli_screen, button_list = API.show_cli_gui(
                         save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
                     )
                     update_button()
@@ -368,12 +368,12 @@ class UIAPI:
         global last_name
         if last_name is None:
             return False
-        UIAPI.update_git_file_gui(last_name)
+        API.update_git_file_gui(last_name)
 
     @staticmethod
     def update_git_file_select_gui():
-        name = UIAPI.get_repo_name_gui()
-        UIAPI.update_git_file_gui(name)
+        name = API.get_repo_name_gui()
+        API.update_git_file_gui(name)
 
     @staticmethod
     def update_git_file_gui(name):
@@ -392,7 +392,7 @@ class UIAPI:
         new_file = set(askopenfilenames(title=f"选择文件"))
         have_file = set(file_list)
         file_list += list(new_file - (new_file & have_file))  # 筛选出重复
-        UIAPI.update_file_box_gui()
+        API.update_file_box_gui()
 
     @staticmethod
     def add_file_input_dir_gui():
@@ -400,18 +400,18 @@ class UIAPI:
         new_dir = file_dir.get()
         if new_dir.replace(" ", "") != "" and new_dir not in file_list:
             file_list.append(new_dir)
-        UIAPI.update_file_box_gui()
+        API.update_file_box_gui()
 
     @staticmethod
     def add_file_by_git_gui():
         global file_dir
         new_dir = file_dir.get()
         if new_dir.replace(" ", "") != "":
-            name = UIAPI.get_repo_name_gui()
+            name = API.get_repo_name_gui()
             new_dir = git.make_dir(name, new_dir)
             if new_dir not in file_list:
                 file_list.append(new_dir)
-        UIAPI.update_file_box_gui()
+        API.update_file_box_gui()
 
     @staticmethod
     def diff_gui():
@@ -452,7 +452,7 @@ class UIAPI:
 
     @staticmethod
     def add_new_branch_gui():
-        name = UIAPI.get_branch_name_gui()
+        name = API.get_branch_name_gui()
         origin = origin_branch.get()
         return name, origin
 
@@ -465,7 +465,7 @@ class UIAPI:
                 "警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！" "(如果你不想添加描述，请使用快速合并，但我并不建议！)"
             )
             raise Exception
-        name = UIAPI.get_branch_name_gui()
+        name = API.get_branch_name_gui()
         return message, name, parameters_no_ff
 
     @staticmethod
@@ -568,26 +568,26 @@ class UIAPI:
     @staticmethod
     def branch_new_gui():
         new_name = branch_new_name.get()
-        old_name = UIAPI.get_branch_name_gui()
+        old_name = API.get_branch_name_gui()
         return new_name, old_name
 
 
-class API:
+class API(UIAPI):
     @staticmethod
     def branch_new():  # 克隆仓库
-        new_name, old_name = UIAPI.branch_new_gui()
-        UIAPI.cli_gui(git.rename_branch, (UIAPI.get_repo_name_gui(), old_name, new_name), show_screen=False)
-        UIAPI.update_repo_box_gui()
+        new_name, old_name = API.branch_new_gui()
+        API.cli_gui(git.rename_branch, (API.get_repo_name_gui(), old_name, new_name), show_screen=False)
+        API.update_repo_box_gui()
 
     @staticmethod
     def clone_git():  # 克隆仓库
-        name = UIAPI.clone_git_gui()
+        name = API.clone_git_gui()
         API.clone_core(name, clone_repo.get())
-        UIAPI.update_repo_box_gui()
+        API.update_repo_box_gui()
 
     @staticmethod
     def clone_core(name, url):
-        UIAPI.cli_gui(
+        API.cli_gui(
             git.clone,
             (name, url),
             break_time=0,
@@ -596,235 +596,235 @@ class API:
             is_asynchronous_display=True,
         )
         git.after_clone(name)
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def customize():
-        command, is_asynchronous_display, is_threaded_refresh = UIAPI.get_customize_gui()
-        UIAPI.cli_gui(
+        command, is_asynchronous_display, is_threaded_refresh = API.get_customize_gui()
+        API.cli_gui(
             git.customize_command,
-            (UIAPI.get_repo_name_gui(), command),
+            (API.get_repo_name_gui(), command),
             break_time=0,
             tip_text=f"{command}:操作进行中",
             is_threaded_refresh=is_threaded_refresh,
             is_asynchronous_display=is_asynchronous_display,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def fetch_remote():
-        branch, local, remote = UIAPI.featch_remote_gui()
-        UIAPI.cli_gui(
+        branch, local, remote = API.featch_remote_gui()
+        API.cli_gui(
             git.fetch,
-            (UIAPI.get_repo_name_gui(), local, remote, branch),
+            (API.get_repo_name_gui(), local, remote, branch),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def del_tag():
-        tag = UIAPI.del_tag_gui()
-        UIAPI.cli_gui(git.del_tag, (UIAPI.get_repo_name_gui(), tag))
-        UIAPI.update_git_file_last_gui()
+        tag = API.del_tag_gui()
+        API.cli_gui(git.del_tag, (API.get_repo_name_gui(), tag))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def del_remote_branch():
-        branch, remote = UIAPI.del_remote_branch_gui()
-        UIAPI.cli_gui(
+        branch, remote = API.del_remote_branch_gui()
+        API.cli_gui(
             git.del_branch_remote,
-            (UIAPI.get_repo_name_gui(), remote, branch),
+            (API.get_repo_name_gui(), remote, branch),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def del_remote_tag():
-        remoto, tag = UIAPI.del_remote_tag_gui()
-        UIAPI.cli_gui(
+        remoto, tag = API.del_remote_tag_gui()
+        API.cli_gui(
             git.del_tag_remote,
-            (UIAPI.get_repo_name_gui(), remoto, tag),
+            (API.get_repo_name_gui(), remoto, tag),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def push_all_tag():
-        remoto = UIAPI.get_remote_name_gui()
-        UIAPI.cli_gui(
+        remoto = API.get_remote_name_gui()
+        API.cli_gui(
             git.push_all_tag,
-            (UIAPI.get_repo_name_gui(), remoto),
+            (API.get_repo_name_gui(), remoto),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def push_tag():
-        remoto, the_tag_name = UIAPI.push_tag_gui()
-        UIAPI.cli_gui(
+        remoto, the_tag_name = API.push_tag_gui()
+        API.cli_gui(
             git.push_tag,
-            (UIAPI.get_repo_name_gui(), the_tag_name, remoto),
+            (API.get_repo_name_gui(), the_tag_name, remoto),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def add_tag():
-        the_tag_name, the_commit, the_tag_message = UIAPI.add_tag_gui()
-        UIAPI.cli_gui(
-            git.add_tag, (UIAPI.get_repo_name_gui(), the_tag_name, the_commit, the_tag_message), show_screen=False
+        the_tag_name, the_commit, the_tag_message = API.add_tag_gui()
+        API.cli_gui(
+            git.add_tag, (API.get_repo_name_gui(), the_tag_name, the_commit, the_tag_message), show_screen=False
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def show_tag(type_):
         global git
-        key = UIAPI.get_search_key_gui()
-        UIAPI.cli_gui(
+        key = API.get_search_key_gui()
+        API.cli_gui(
             {1: git.get_tag_list, 0: git.search_commit}.get(type_, git.search_commit),
-            (UIAPI.get_repo_name_gui(), key),
+            (API.get_repo_name_gui(), key),
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def pull_push_remote(type_):
-        allow, branch, local, parameters_f, parameters_u, remote = UIAPI.pull_push_gui()
-        UIAPI.cli_gui(
+        allow, branch, local, parameters_f, parameters_u, remote = API.pull_push_gui()
+        API.cli_gui(
             {0: git.pull_from_remote, 1: git.push_to_remote}.get(
                 type_, git.pull_from_remote
             ),
-            (UIAPI.get_repo_name_gui(), local, remote, branch, allow, parameters_u, parameters_f),
+            (API.get_repo_name_gui(), local, remote, branch, allow, parameters_u, parameters_f),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def bind_remote_branch():
-        local, remote = UIAPI.bind_remote_branch_gui()
-        UIAPI.cli_gui(git.bind_branch, (UIAPI.get_repo_name_gui(), local, remote))
-        UIAPI.update_git_file_last_gui()
+        local, remote = API.bind_remote_branch_gui()
+        API.cli_gui(git.bind_branch, (API.get_repo_name_gui(), local, remote))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def del_remote():
-        name = UIAPI.del_remote_gui()
-        UIAPI.cli_gui(git.del_remote, (UIAPI.get_repo_name_gui(), name))
-        UIAPI.update_git_file_last_gui()
+        name = API.del_remote_gui()
+        API.cli_gui(git.del_remote, (API.get_repo_name_gui(), name))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def add_remote():
-        name, ssh = UIAPI.add_remote_gui()
-        UIAPI.cli_gui(git.remote_add, (UIAPI.get_repo_name_gui(), ssh, name))
-        UIAPI.update_git_file_last_gui()
+        name, ssh = API.add_remote_gui()
+        API.cli_gui(git.remote_add, (API.get_repo_name_gui(), ssh, name))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def cherry_pick():
-        the_commit = UIAPI.get_commit_id_gui()
-        UIAPI.cli_gui(git.cherry_pick, (UIAPI.get_repo_name_gui(), the_commit))
-        UIAPI.update_git_file_last_gui()
+        the_commit = API.get_commit_id_gui()
+        API.cli_gui(git.cherry_pick, (API.get_repo_name_gui(), the_commit))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def open_stash(type_):
-        stash_num = UIAPI.get_stash_gui()
+        stash_num = API.get_stash_gui()
         if stash_num == "":
             stash_num = "0"
-        UIAPI.cli_gui([git.drop_stash, git.apply_stash][type_], (UIAPI.get_repo_name_gui(), stash_num))
-        UIAPI.update_git_file_last_gui()
+        API.cli_gui([git.drop_stash, git.apply_stash][type_], (API.get_repo_name_gui(), stash_num))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def branch_merge():
-        message, name, parameters_no_ff = UIAPI.branch_merge_gui()
-        UIAPI.cli_gui(git.merge_branch, (UIAPI.get_repo_name_gui(), name, parameters_no_ff, message))
-        UIAPI.update_git_file_last_gui()
+        message, name, parameters_no_ff = API.branch_merge_gui()
+        API.cli_gui(git.merge_branch, (API.get_repo_name_gui(), name, parameters_no_ff, message))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def del_branch(type_):
-        name = UIAPI.get_branch_name_gui()
-        UIAPI.cli_gui(git.del_branch, (UIAPI.get_repo_name_gui(), name, type_))
-        UIAPI.update_git_file_last_gui()
+        name = API.get_branch_name_gui()
+        API.cli_gui(git.del_branch, (API.get_repo_name_gui(), name, type_))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def switch_branch():
-        name = UIAPI.get_branch_name_gui()
-        UIAPI.cli_gui(git.switch_branch, (UIAPI.get_repo_name_gui(), name), break_time=1, show_screen=False)
-        UIAPI.update_git_file_last_gui()
+        name = API.get_branch_name_gui()
+        API.cli_gui(git.switch_branch, (API.get_repo_name_gui(), name), break_time=1, show_screen=False)
+        API.update_git_file_last_gui()
 
     @staticmethod
     def add_new_branch():
-        name, origin = UIAPI.add_new_branch_gui()
-        UIAPI.cli_gui(
-            git.new_branch, (UIAPI.get_repo_name_gui(), name, origin), break_time=1, show_screen=False
+        name, origin = API.add_new_branch_gui()
+        API.cli_gui(
+            git.new_branch, (API.get_repo_name_gui(), name, origin), break_time=1, show_screen=False
         )
-        UIAPI.update_git_file_last_gui()
+        API.update_git_file_last_gui()
 
     @staticmethod
     def remove_file():
         if file_list == []:
             return False
-        UIAPI.cli_gui(git.rm, (UIAPI.get_repo_name_gui(), file_list))
-        UIAPI.update_git_file_last_gui()
+        API.cli_gui(git.rm, (API.get_repo_name_gui(), file_list))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def checkout_file():  # 从暂存区、仓库返回文件
         if file_list == []:
             return False
-        UIAPI.cli_gui(git.checkout_version, (UIAPI.get_repo_name_gui(), file_list))
-        UIAPI.update_git_file_last_gui()
+        API.cli_gui(git.checkout_version, (API.get_repo_name_gui(), file_list))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def reset_file():  # 使用reset回退文件
-        repo_head = UIAPI.reset_file_gui()
-        UIAPI.cli_gui(git.back_version_file, (UIAPI.get_repo_name_gui(), repo_head, file_list))
-        UIAPI.update_git_file_last_gui()
+        repo_head = API.reset_file_gui()
+        API.cli_gui(git.back_version_file, (API.get_repo_name_gui(), repo_head, file_list))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def reset_head():
-        repo_head, the_reset_type = UIAPI.reset_head_gui()
-        UIAPI.cli_gui(git.back_version, (UIAPI.get_repo_name_gui(), repo_head, the_reset_type))
-        UIAPI.update_git_file_last_gui()
+        repo_head, the_reset_type = API.reset_head_gui()
+        API.cli_gui(git.back_version, (API.get_repo_name_gui(), repo_head, the_reset_type))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def log():
         global git, log_type
-        name = UIAPI.get_repo_name_gui()
-        abbrev, graph, pretty = UIAPI.log_gui(log_type)
-        UIAPI.cli_gui(git.log, (name, graph, pretty, abbrev))
-        UIAPI.update_git_file_last_gui()
+        name = API.get_repo_name_gui()
+        abbrev, graph, pretty = API.log_gui(log_type)
+        API.cli_gui(git.log, (name, graph, pretty, abbrev))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def not_parameters_call(func):
         global git
-        name = UIAPI.get_repo_name_gui()
-        UIAPI.cli_gui(func, (name,))
-        UIAPI.update_git_file_last_gui()
+        name = API.get_repo_name_gui()
+        API.cli_gui(func, (name,))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def commit_file():
-        name = UIAPI.get_repo_name_gui()
-        UIAPI.cli_gui(git.commit_file, (name, UIAPI.commit_file_gui()))
-        UIAPI.update_git_file_last_gui()
+        name = API.get_repo_name_gui()
+        API.cli_gui(git.commit_file, (name, API.commit_file_gui()))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def diff():
-        branch = UIAPI.diff_gui()
-        UIAPI.cli_gui(git.diff_file, (UIAPI.get_repo_name_gui(), branch))
-        UIAPI.update_git_file_last_gui()
+        branch = API.diff_gui()
+        API.cli_gui(git.diff_file, (API.get_repo_name_gui(), branch))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def remove_the_staging():
@@ -832,16 +832,16 @@ class API:
         dic = file_list
         if dic == []:
             dic = "."
-        UIAPI.cli_gui(git.reset_file, (UIAPI.get_repo_name_gui(), dic))
-        UIAPI.update_git_file_last_gui()
+        API.cli_gui(git.reset_file, (API.get_repo_name_gui(), dic))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def add():
         dic = file_list
         if dic == []:
             dic = "."  # 查一下取消的dic
-        UIAPI.cli_gui(git.add_file, (UIAPI.get_repo_name_gui(), dic))
-        UIAPI.update_git_file_last_gui()
+        API.cli_gui(git.add_file, (API.get_repo_name_gui(), dic))
+        API.update_git_file_last_gui()
 
     @staticmethod
     def get_file_box_index():
@@ -851,7 +851,7 @@ class API:
     def del_file():
         try:
             del file_list[API.get_file_box_index()]
-            UIAPI.update_file_box_gui()
+            API.update_file_box_gui()
         except BaseException:
             pass
 
@@ -859,14 +859,14 @@ class API:
     def clean_file():
         global file_list
         file_list = []
-        UIAPI.update_file_box_gui()
+        API.update_file_box_gui()
 
     @staticmethod
     def repo_init():  # 创建仓库
         global git
-        new_dir = UIAPI.repo_init_gui()
+        new_dir = API.repo_init_gui()
         git.open_repo(new_dir)
-        UIAPI.update_repo_box_gui()
+        API.update_repo_box_gui()
 
 
 def git_main():
@@ -919,7 +919,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="查看文件",
-    command=UIAPI.update_git_file_select_gui,
+    command=API.update_git_file_select_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1005,7 +1005,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="填充路径并添加",
-    command=UIAPI.add_file_by_git_gui,
+    command=API.add_file_by_git_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1015,7 +1015,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="直接添加",
-    command=UIAPI.add_file_input_dir_gui,
+    command=API.add_file_input_dir_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1025,7 +1025,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="选择文件",
-    command=UIAPI.add_file_list_gui,
+    command=API.add_file_list_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,

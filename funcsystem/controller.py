@@ -35,7 +35,6 @@ class SheetFunc(SheetMemory, SheetComputing, SheetDataPacket, SheetProperty, She
 
 
 class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpDataPacket, ExpProperty, ExpBestValue):
-
     def return_son(self):
         return self.son_list
 

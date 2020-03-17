@@ -112,7 +112,7 @@ class UIAPI:
     def to_csv_gui():
         save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
         csv_sep = sep.get()
-        name = UIAPI.get_data_name_gui()
+        name = API.get_data_name_gui()
         return save_dir, name, csv_sep
 
     @staticmethod
@@ -125,17 +125,17 @@ class UIAPI:
     @staticmethod
     def set_x_data_gui():
         global x_data
-        x_data.set(UIAPI.get_data_name_gui())
+        x_data.set(API.get_data_name_gui())
 
     @staticmethod
     def set_y_data_gui():
         global y_data
-        y_data.set(UIAPI.get_data_name_gui())
+        y_data.set(API.get_data_name_gui())
 
     @staticmethod
     def set_learner_gui():
         global learner_output
-        learner_output.set(UIAPI.get_learner_gui(True))
+        learner_output.set(API.get_learner_gui(True))
 
     @staticmethod
     def get_learner_gui(return_box=False):
@@ -147,7 +147,7 @@ class UIAPI:
                 try:
                     return list(learn_dict.keys)[0]
                 except BaseException:
-                    return UIAPI.get_learner_gui(False)
+                    return API.get_learner_gui(False)
         else:
             try:
                 return learner_output.get()
@@ -208,7 +208,7 @@ class UIAPI:
         return calculation_type.get()
 
 
-class API:
+class API(UIAPI):
     @staticmethod
     def add_reverse_fast_fourier2():  # 添加Lenear的核心
         API.add_leaner("[2]Reverse_Fast_Fourier")
@@ -226,7 +226,7 @@ class API:
         file_dir = askopenfilename(title="导入参数")
         with open(file_dir, "r") as f:
             learner_controller.add_curve_fitting(f.read())
-            UIAPI.update_leaner_gui()
+            API.update_leaner_gui()
 
     @staticmethod
     def show_clustering_score():
@@ -242,28 +242,28 @@ class API:
 
     @staticmethod
     def show_score(func):
-        learner = UIAPI.get_learner_gui(True)
+        learner = API.get_learner_gui(True)
         save_dir = askdirectory(title="选择保存位置")
         data = learner_controller.model_evaluation(
             learner,
             save_dir,
-            UIAPI.get_data_name_gui(False, True),
-            UIAPI.get_data_name_gui(False, False),
+            API.get_data_name_gui(False, True),
+            API.get_data_name_gui(False, False),
             func,
         )
         webbrowser.open(data[0])
         webbrowser.open(data[1])  # 还可以打开文件管理器
-        UIAPI.update_sheet_box_gui()
+        API.update_sheet_box_gui()
 
     @staticmethod
     def calculation():
         global calculation_list, calculation_method
-        func = UIAPI.get_calculation_type_gui()
+        func = API.get_calculation_type_gui()
         if len(calculation_list) == 2 and 1 in calculation_method:
             learner_controller.calculation_matrix(
                 calculation_list, calculation_method, func
             )
-        UIAPI.update_sheet_box_gui()
+        API.update_sheet_box_gui()
 
     @staticmethod
     def add_calculation_core(num, type_):
@@ -275,115 +275,115 @@ class API:
 
     @staticmethod
     def add_calculation_number():
-        API.add_calculation_core(UIAPI.get_calculation_num_gui(), 0)
-        UIAPI.update_calculation_box_gui()
+        API.add_calculation_core(API.get_calculation_num_gui(), 0)
+        API.update_calculation_box_gui()
 
     @staticmethod
     def add_calculation_object():
-        name = UIAPI.get_data_name_gui()
+        name = API.get_data_name_gui()
         API.add_calculation_core(name, 1)
-        UIAPI.update_calculation_box_gui()
+        API.update_calculation_box_gui()
 
     @staticmethod
     def del_leaner():
-        learn = UIAPI.get_learner_gui(True)
-        set_learne = UIAPI.get_learner_gui(False)  # 获取学习器Learner
+        learn = API.get_learner_gui(True)
+        set_learne = API.get_learner_gui(False)  # 获取学习器Learner
         if set_learne != learn:
             learner_controller.del_leaner(learn)
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def global_seeting():
-        args = UIAPI.global_settings_gui()
+        args = API.global_settings_gui()
         machinelearning.template.set_global(*args)
 
     @staticmethod
     def reshape():
-        numpy_shape = UIAPI.get_shape_gui()
-        learner_controller.reshape(UIAPI.get_data_name_gui(), numpy_shape)
-        UIAPI.update_sheet_box_gui()
+        numpy_shape = API.get_shape_gui()
+        learner_controller.reshape(API.get_data_name_gui(), numpy_shape)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def transpose():
         try:
-            func = UIAPI.get_shape_gui()
+            func = API.get_shape_gui()
         except BaseException:
             func = None
-        learner_controller.transpose(UIAPI.get_data_name_gui(), func)
-        UIAPI.update_sheet_box_gui()
+        learner_controller.transpose(API.get_data_name_gui(), func)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def del_ndim():
-        learner_controller.del_ndim(UIAPI.get_data_name_gui())
-        UIAPI.update_sheet_box_gui()
+        learner_controller.del_ndim(API.get_data_name_gui())
+        API.update_sheet_box_gui()
 
     @staticmethod
     def reval():
         global learner_controller
-        reval_type = UIAPI.get_reval_type_gui()
-        learner_controller.reval(UIAPI.get_data_name_gui(), reval_type)
-        UIAPI.update_sheet_box_gui()
+        reval_type = API.get_reval_type_gui()
+        learner_controller.reval(API.get_data_name_gui(), reval_type)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def two_split():
-        split_type = UIAPI.get_merge_split_type_gui()
-        learner_controller.two_split(UIAPI.get_data_name_gui(), shape.get(), split_type)
-        UIAPI.update_sheet_box_gui()
+        split_type = API.get_merge_split_type_gui()
+        learner_controller.two_split(API.get_data_name_gui(), shape.get(), split_type)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def split():
         global learner_controller, shape
-        split_type = UIAPI.get_merge_split_type_gui()
-        split_shape_list = UIAPI.get_split_shape_list_gui()
-        learner_controller.split(UIAPI.get_data_name_gui(), split_shape_list, split_type)
-        UIAPI.update_sheet_box_gui()
+        split_type = API.get_merge_split_type_gui()
+        split_shape_list = API.get_split_shape_list_gui()
+        learner_controller.split(API.get_data_name_gui(), split_shape_list, split_type)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def merge():
         if len(merge_list) < 1:
             return False
-        merge_type = UIAPI.get_merge_split_type_gui()
+        merge_type = API.get_merge_split_type_gui()
         learner_controller.merge(merge_list, merge_type)
-        UIAPI.update_sheet_box_gui()
+        API.update_sheet_box_gui()
 
     @staticmethod
     def merge_del():
-        del merge_list[UIAPI.get_merge_box_index_gui()]
-        UIAPI.update_merge_box_gui()
+        del merge_list[API.get_merge_box_index_gui()]
+        API.update_merge_box_gui()
 
     @staticmethod
     def merge_add():
-        merge_list.append(UIAPI.get_data_name_gui())
-        UIAPI.update_merge_box_gui()
+        merge_list.append(API.get_data_name_gui())
+        API.update_merge_box_gui()
 
     @staticmethod
     def visualization_results():
-        learner = UIAPI.get_learner_gui(True)
+        learner = API.get_learner_gui(True)
         save_dir = askdirectory(title="选择保存位置")
         data = learner_controller.model_visualization(learner, save_dir)
         webbrowser.open(data[0])
         webbrowser.open(data[1])  # 还可以打开文件管理器
-        UIAPI.update_sheet_box_gui()
+        API.update_sheet_box_gui()
 
     @staticmethod
     def score_learner():
-        learner = UIAPI.get_learner_gui()
+        learner = API.get_learner_gui()
         score = learner_controller.score(
-            UIAPI.get_data_name_gui(False, True), UIAPI.get_data_name_gui(False, False), learner
+            API.get_data_name_gui(False, True), API.get_data_name_gui(False, False), learner
         )
-        UIAPI.show_score_gui(f"针对测试数据评分结果为:{score}")
+        API.show_score_gui(f"针对测试数据评分结果为:{score}")
 
     @staticmethod
     def predict_learner():
-        learner = UIAPI.get_learner_gui()
-        data = learner_controller.predict(UIAPI.get_data_name_gui(False, True), learner)
+        learner = API.get_learner_gui()
+        data = learner_controller.predict(API.get_data_name_gui(False, True), learner)
         title = f"CoTan数据处理 学习器:{learner}"
-        UIAPI.creat_text_sheet_gui(data, title)
-        UIAPI.update_sheet_box_gui()
+        API.creat_text_sheet_gui(data, title)
+        API.update_sheet_box_gui()
 
     @staticmethod
     def fit_learner():
-        learner = UIAPI.get_learner_gui()
+        learner = API.get_learner_gui()
         try:
             split = float(data_split.get())
             if split < 0 or 1 < split:
@@ -391,13 +391,13 @@ class API:
         except BaseException:
             split = 0.3
         socore = learner_controller.fit_model(
-            UIAPI.get_data_name_gui(False, True),
-            UIAPI.get_data_name_gui(False, False),
+            API.get_data_name_gui(False, True),
+            API.get_data_name_gui(False, False),
             learner,
-            Text=UIAPI.get_learner_parameters_gui(),
+            Text=API.get_learner_parameters_gui(),
             split=split,
         )
-        UIAPI.show_score_gui(
+        API.show_score_gui(
             f"针对训练数据({(1 - split) * 100}%)评分结果为:{socore[0]}\n"
             f"针对测试数据评分({split * 100}%)结果为:{socore[1]}",
         )
@@ -417,9 +417,9 @@ class API:
     @staticmethod
     def add_view_data():
         learner_controller.add_view_data(
-            UIAPI.get_learner_gui(), parameters=UIAPI.get_learner_parameters_gui()
+            API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
         )
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def add_cluster_tree():
@@ -436,16 +436,16 @@ class API:
     @staticmethod
     def add_predictive_heatmap_more():  # 添加Lenear的核心
         learner_controller.add_predictive_heat_map_more(
-            UIAPI.get_learner_gui(), parameters=UIAPI.get_learner_parameters_gui()
+            API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
         )
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def add_predictive_heatmap():  # 添加Lenear的核心
         learner_controller.add_predictive_heat_map(
-            UIAPI.get_learner_gui(), parameters=UIAPI.get_learner_parameters_gui()
+            API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
         )
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def add_feature_scatter_class_all():
@@ -634,22 +634,22 @@ class API:
     @staticmethod
     def add_select_from_model():  # 添加Lenear的核心
         learner_controller.add_select_from_model(
-            UIAPI.get_learner_gui(), parameters=UIAPI.get_learner_parameters_gui()
+            API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
         )
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def add_leaner(learner_type):  # 添加Lenear的核心
         learner_controller.add_learner(
-            learner_type, parameters=UIAPI.get_learner_parameters_gui()
+            learner_type, parameters=API.get_learner_parameters_gui()
         )
-        UIAPI.update_leaner_gui()
+        API.update_leaner_gui()
 
     @staticmethod
     def to_html_one():
         html_dir = f"{PATH}/$Show_Sheet.html"
         try:
-            name = UIAPI.get_data_name_gui()
+            name = API.get_data_name_gui()
             if name is None:
                 raise Exception
             learner_controller.to_html_one(name, html_dir)
@@ -661,7 +661,7 @@ class API:
     def to_html():
         html_dir = f"{PATH}/$Show_Sheet.html"
         try:
-            name = UIAPI.get_data_name_gui()
+            name = API.get_data_name_gui()
             if name is None:
                 raise Exception
             learner_controller.to_html(name, html_dir, to_html_type.get())
@@ -671,19 +671,19 @@ class API:
 
     @staticmethod
     def to_csv():
-        learner_controller.to_csv(*UIAPI.to_csv_gui())
-        UIAPI.update_sheet_box_gui()
+        learner_controller.to_csv(*API.to_csv_gui())
+        API.update_sheet_box_gui()
 
     @staticmethod
     def add_csv():
-        learner_controller.read_csv(*UIAPI.add_csv_gui())
-        UIAPI.update_sheet_box_gui()
+        learner_controller.read_csv(*API.add_csv_gui())
+        API.update_sheet_box_gui()
 
     @staticmethod
     def add_python():
-        code, name = UIAPI.add_python_gui()
+        code, name = API.add_python_gui()
         learner_controller.add_python(code, name)
-        UIAPI.update_sheet_box_gui()
+        API.update_sheet_box_gui()
 
 
 def machine_learning():
@@ -1067,7 +1067,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="选用X集",
-    command=UIAPI.set_x_data_gui,
+    command=API.set_x_data_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1083,7 +1083,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="选用Y集",
-    command=UIAPI.set_y_data_gui,
+    command=API.set_y_data_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1099,7 +1099,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="选用学习器",
-    command=UIAPI.set_learner_gui,
+    command=API.set_learner_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,

@@ -46,152 +46,153 @@ gui_height = 2
 row = 0
 column = 1
 
+class UIAPI:
+    @staticmethod
+    def dichotomy_gui():
+        parameters = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
+        for i in range(11):
+            try:
+                if i in (4, 5, 9):
+                    a = dicon_parameters[i].get()
+                else:
+                    a = float(dicon_parameters[i].get())
+                parameters[i] = a
+            except BaseException:
+                pass
+        return parameters
 
-def dichotomy_gui():
-    parameters = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
-    for i in range(11):
-        try:
-            if i in (4, 5, 9):
-                a = dicon_parameters[i].get()
-            else:
-                a = float(dicon_parameters[i].get())
-            parameters[i] = a
-        except BaseException:
-            pass
-    return parameters
+    @staticmethod
+    def output_prompt_gui(news):
+        global prompt_box, prompt_num, SCREEN
+        prompt_num += 1
+        news = str(news)
+        prompt_box.insert(0, news + f"({prompt_num})")
+        SCREEN.update()
 
-
-def output_prompt_gui(news):
-    global prompt_box, prompt_num, SCREEN
-    prompt_num += 1
-    news = str(news)
-    prompt_box.insert(0, news + f"({prompt_num})")
-    SCREEN.update()
-
-
-def set_func_gui():
-    new_func = func_exp.get().replace(" ", "")
-    if new_func == "":
-        output_prompt_gui("应用失败")
-        raise Exception
-    default_value = [-10, 10, 0.1, 2, 1, -10, 10, 1]
-    get = [
-        start_definition,
-        end_definition,
-        span_definition,
-        accuracy,
-        default_a,
-        start_a,
-        end_a,
-        span_a,
-    ]
-    # 参数的处理
-    try:
-        span_str = span_definition.get().replace(" ", "")
-        if span_str[0] == "H":
-            domain = {
-                "Pi": sympy.pi,
-                "e": sympy.E,
-                "log": sympy.log,
-                "sin": sympy.sin,
-                "cos": sympy.cos,
-                "tan": sympy.tan,
-                "cot": lambda x: 1 / sympy.tan(x),
-                "csc": lambda x: 1 / sympy.sin(x),
-                "sec": lambda x: 1 / sympy.cos(x),
-                "sinh": sympy.sinh,
-                "cosh": sympy.cosh,
-                "tanh": sympy.tanh,
-                "asin": sympy.asin,
-                "acos": sympy.acos,
-                "atan": sympy.atan,
-            }
-            span = eval(span_str[1:], domain)
-        else:
+    @staticmethod
+    def set_func_gui():
+        new_func = func_exp.get().replace(" ", "")
+        if new_func == "":
+            API.output_prompt_gui("应用失败")
             raise Exception
-    except BaseException:
-        span = None
-    for i in range(8):
+        default_value = [-10, 10, 0.1, 2, 1, -10, 10, 1]
+        get = [
+            start_definition,
+            end_definition,
+            span_definition,
+            accuracy,
+            default_a,
+            start_a,
+            end_a,
+            span_a,
+        ]
+        # 参数的处理
         try:
-            default_value[i] = float(get[i].get())
+            span_str = span_definition.get().replace(" ", "")
+            if span_str[0] == "H":
+                domain = {
+                    "Pi": sympy.pi,
+                    "e": sympy.E,
+                    "log": sympy.log,
+                    "sin": sympy.sin,
+                    "cos": sympy.cos,
+                    "tan": sympy.tan,
+                    "cot": lambda x: 1 / sympy.tan(x),
+                    "csc": lambda x: 1 / sympy.sin(x),
+                    "sec": lambda x: 1 / sympy.cos(x),
+                    "sinh": sympy.sinh,
+                    "cosh": sympy.cosh,
+                    "tanh": sympy.tanh,
+                    "asin": sympy.asin,
+                    "acos": sympy.acos,
+                    "atan": sympy.atan,
+                }
+                span = eval(span_str[1:], domain)
+            else:
+                raise Exception
         except BaseException:
-            pass
-    if span is not None:
-        default_value[2] = span
-    # View的处理
-    style_str = func_style.get().split("#")
-    try:
-        if style_str[0] not in point_style:
-            style_str[0] = "b"
-        line_style_str = line_style.get(style_str[1], "-")
-    except BaseException:
-        style_str = ["", ""]
-        style_str[0] = random.choice(point_style)
-        line_style_str = "-"
-    style = style_str[0] + line_style_str
-    # Name的处理
-    name = func_name.get().replace(" ", "")
-    if name == "":
-        name = new_func
-    return [new_func, name, style]+default_value
+            span = None
+        for i in range(8):
+            try:
+                default_value[i] = float(get[i].get())
+            except BaseException:
+                pass
+        if span is not None:
+            default_value[2] = span
+        # View的处理
+        style_str = func_style.get().split("#")
+        try:
+            if style_str[0] not in point_style:
+                style_str[0] = "b"
+            line_style_str = line_style.get(style_str[1], "-")
+        except BaseException:
+            style_str = ["", ""]
+            style_str[0] = random.choice(point_style)
+            line_style_str = "-"
+        style = style_str[0] + line_style_str
+        # Name的处理
+        name = func_name.get().replace(" ", "")
+        if name == "":
+            name = new_func
+        return [new_func, name, style]+default_value
+
+    @staticmethod
+    def get_y_value_gui():
+        return y_value.get().split(",")
+
+    @staticmethod
+    def update_prediction_box_gui(answer):
+        prediction_box.delete(0, tkinter.END)
+        prediction_box.insert(tkinter.END, *answer)
+
+    @staticmethod
+    def get_projection_value_gui():
+        return projection_value.get
+
+    @staticmethod
+    def get_proximity_accuracy_gui():
+        return proximity_accuracy.get()
+
+    @staticmethod
+    def get_x_value_derivation_gui():
+        return x_value_derivation.get().split(",")
+
+    @staticmethod
+    def get_y_value_symbol_gui():
+        return y_value_symbol.get().split(",")
+
+    @staticmethod
+    def get_x_value_gui():
+        return x_value.get().split(",")
+
+    @staticmethod
+    def update_result_box_gui(answer):
+        result_box.delete(0, tkinter.END)  # 清空
+        result_box.insert(tkinter.END, *answer)
+
+    @staticmethod
+    def get_y_value_gradient_gui():
+        return y_value_gradient.get()
+
+    @staticmethod
+    def askokcancel_gui(message):
+        return tkinter.messagebox.askokcancel("提示", message)
+
+    @staticmethod
+    def add_projection_box_gui(result):
+        projection_box.insert(tkinter.END, result)
+
+    @staticmethod
+    def update_sheet_box_gui(sheet):
+        sheet_box.delete(0, tkinter.END)
+        sheet_box.insert(tkinter.END, *sheet)
+
+    @staticmethod
+    def get_save_dir_gui():
+        return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
 
 
-def get_y_value_gui():
-    return y_value.get().split(",")
-
-
-def update_prediction_box_gui(answer):
-    prediction_box.delete(0, tkinter.END)
-    prediction_box.insert(tkinter.END, *answer)
-
-
-def get_projection_value_gui():
-    return projection_value.get
-
-
-def get_proximity_accuracy_gui():
-    return proximity_accuracy.get()
-
-
-def get_x_value_derivation_gui():
-    return x_value_derivation.get().split(",")
-
-
-def get_y_value_symbol_gui():
-    return y_value_symbol.get().split(",")
-
-
-def get_x_value_gui():
-    return x_value.get().split(",")
-
-
-def update_result_box_gui(answer):
-    result_box.delete(0, tkinter.END)  # 清空
-    result_box.insert(tkinter.END, *answer)
-
-
-def get_y_value_gradient_gui():
-    return y_value_gradient.get()
-
-
-def askokcancel_gui(message):
-    return tkinter.messagebox.askokcancel("提示", message)
-
-
-def add_projection_box_gui(result):
-    projection_box.insert(tkinter.END, result)
-
-
-def update_sheet_box_gui(sheet):
-    sheet_box.delete(0, tkinter.END)
-    sheet_box.insert(tkinter.END, *sheet)
-
-
-def get_save_dir_gui():
-    return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
-
-
-class API:
+class API(UIAPI):
     @staticmethod
     def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
         x = []
@@ -207,19 +208,19 @@ class API:
     @staticmethod
     def save_to_csv():  # 导出CSV
         try:
-            if not func.save_csv(get_save_dir_gui()):
+            if not func.save_csv(API.get_save_dir_gui()):
                 raise Exception
-            output_prompt_gui("CSV导出成功")
+            API.output_prompt_gui("CSV导出成功")
         except BaseException:
-            output_prompt_gui("CSV导出失败")
+            API.output_prompt_gui("CSV导出失败")
 
     @staticmethod
     def save_to_sheet():  # 生成表格
         try:
-            update_sheet_box_gui(func.return_list())
-            output_prompt_gui("表格创建成功")
+            API.update_sheet_box_gui(func.return_list())
+            API.output_prompt_gui("表格创建成功")
         except BaseException:
-            output_prompt_gui("无法创建表格")
+            API.output_prompt_gui("无法创建表格")
 
     @staticmethod
     def sympy_computing(exp_str) -> tuple:
@@ -263,196 +264,196 @@ class API:
         accuracy = API.computing_gui()
         try:
             result = func.check_symmetry_center(
-                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
             )
             if result[0]:
-                add_projection_box_gui(result[1])
-                output_prompt_gui("预测完成")
+                API.add_projection_box_gui(result[1])
+                API.output_prompt_gui("预测完成")
             else:
                 raise Exception
         except BaseException:
-            output_prompt_gui("预测失败")
+            API.output_prompt_gui("预测失败")
 
     @staticmethod
     def check_symmetry_axis():
         accuracy = API.computing_gui()
         try:
             result = func.check_symmetry_axis(
-                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
             )
             if result[0]:
-                add_projection_box_gui(result[1])
-                output_prompt_gui("预测完成")
+                API.add_projection_box_gui(result[1])
+                API.output_prompt_gui("预测完成")
             else:
                 raise Exception
         except BaseException:
-            output_prompt_gui("预测失败")
+            API.output_prompt_gui("预测失败")
 
     @staticmethod
     def check_periodic():
         accuracy = API.computing_gui()
         try:
             result = func.check_periodic(
-                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
             )
             if result[0]:
-                add_projection_box_gui(result[1])
-                output_prompt_gui("预测完成")
+                API.add_projection_box_gui(result[1])
+                API.output_prompt_gui("预测完成")
             else:
                 raise Exception
         except BaseException:
-            output_prompt_gui("预测失败")
+            API.output_prompt_gui("预测失败")
 
     @staticmethod
     def check_monotonic():
         accuracy = API.computing_gui()
         try:
             result = func.check_monotonic(
-                get_projection_value_gui(), output_prompt_gui, accuracy
+                API.get_projection_value_gui(), API.output_prompt_gui, accuracy
             )
             if result[1]:
-                add_projection_box_gui(result[1])
-                output_prompt_gui("预测完成")
+                API.add_projection_box_gui(result[1])
+                API.output_prompt_gui("预测完成")
             else:
                 raise Exception
         except BaseException:
-            output_prompt_gui("预测失败")
+            API.output_prompt_gui("预测失败")
 
     @staticmethod
     def clear_memory():
         try:
-            if askokcancel_gui(f"确定删除{func}的记忆吗？"):
-                update_result_box_gui([])
+            if API.askokcancel_gui(f"确定删除{func}的记忆吗？"):
+                API.update_result_box_gui([])
                 func.clean_memory()
-                output_prompt_gui("删除完毕")
+                API.output_prompt_gui("删除完毕")
             else:
-                output_prompt_gui("删除取消")
+                API.output_prompt_gui("删除取消")
         except BaseException:
-            output_prompt_gui("删除失败")
+            API.output_prompt_gui("删除失败")
 
     @staticmethod
     def show_hidden_memory():  # 显示xy
         try:
-            update_result_box_gui([])
+            API.update_result_box_gui([])
             func.hide_or_show()
-            output_prompt_gui("已清空卡槽")
+            API.output_prompt_gui("已清空卡槽")
         except BaseException:
-            output_prompt_gui("隐藏（显示）失败")
+            API.output_prompt_gui("隐藏（显示）失败")
 
     @staticmethod
     def gradient_method_calculation():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
+            API.output_prompt_gui("计算过程程序可能无响应")
             parameters = []
             for i in gradient_parameters:
                 parameters.append(i.get())
-            output_prompt_gui("系统运算中")
-            answer = func.gradient_calculation(get_y_value_gradient_gui(), *parameters)
+            API.output_prompt_gui("系统运算中")
+            answer = func.gradient_calculation(API.get_y_value_gradient_gui(), *parameters)
             if answer[1] is not None:
-                update_result_box_gui(answer[0])
-                output_prompt_gui("系统运算完成")
+                API.update_result_box_gui(answer[0])
+                API.output_prompt_gui("系统运算完成")
             else:
-                output_prompt_gui("系统运算无结果")
+                API.output_prompt_gui("系统运算无结果")
         except BaseException:
-            output_prompt_gui("系统运算失败，请注意参数设置")
+            API.output_prompt_gui("系统运算失败，请注意参数设置")
 
     @staticmethod
     def calculate():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            answer = func.calculation(get_x_value_gui())
+            API.output_prompt_gui("计算过程程序可能无响应")
+            answer = func.calculation(API.get_x_value_gui())
             if answer != []:
-                output_prompt_gui("系统运算完毕")
+                API.output_prompt_gui("系统运算完毕")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except BaseException:
-            output_prompt_gui("计算失败")
+            API.output_prompt_gui("计算失败")
             # raise
 
     @staticmethod
     def sympy_calculation_x():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
+            API.output_prompt_gui("计算过程程序可能无响应")
             answer = []
-            for i in get_y_value_symbol_gui():
+            for i in API.get_y_value_symbol_gui():
                 answer += func.sympy_calculation(i)[0]
             if answer:
-                output_prompt_gui("系统运算完毕")
+                API.output_prompt_gui("系统运算完毕")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except BaseException:
-            output_prompt_gui("计算失败")
+            API.output_prompt_gui("计算失败")
 
     @staticmethod
     def function_differentiation():
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            accuracy = get_proximity_accuracy_gui()
+            API.output_prompt_gui("计算过程程序可能无响应")
+            accuracy = API.get_proximity_accuracy_gui()
             answer = []
-            for i in get_x_value_derivation_gui():
+            for i in API.get_x_value_derivation_gui():
                 get = func.derivative(i, accuracy)[0]
                 if get is not None:
                     answer.append(get)
             if answer != []:
-                output_prompt_gui("系统运算完毕")
+                API.output_prompt_gui("系统运算完毕")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except IndexError:
-            output_prompt_gui("计算失败")
+            API.output_prompt_gui("计算失败")
 
     @staticmethod
     def approximation():  # 逼近法
         try:
-            output_prompt_gui("计算过程程序可能无响应")
-            accuracy = get_proximity_accuracy_gui()
+            API.output_prompt_gui("计算过程程序可能无响应")
+            accuracy = API.get_proximity_accuracy_gui()
             answer = []
-            for i in get_x_value_derivation_gui():
+            for i in API.get_x_value_derivation_gui():
                 get = func.derivative(i, accuracy, True)[0]
                 if get is not None:
                     answer.append(get)
             if answer:
-                output_prompt_gui("系统运算完毕")
+                API.output_prompt_gui("系统运算完毕")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except IndexError:
-            output_prompt_gui("计算失败")
+            API.output_prompt_gui("计算失败")
 
     @staticmethod
     def dichotomy():  # 二分法
         global dicon_parameters, func, result_box
         try:
-            output_prompt_gui("计算过程程序可能无响应")
+            API.output_prompt_gui("计算过程程序可能无响应")
             answer = []
-            output_prompt_gui("系统运算中")
-            for i in get_y_value_gui():
+            API.output_prompt_gui("系统运算中")
+            for i in API.get_y_value_gui():
                 print(i)
                 try:
-                    answer += func.dichotomy(float(i), *dichotomy_gui())[0]
+                    answer += func.dichotomy(float(i), *API.dichotomy_gui())[0]
                 except BaseException:
                     pass
             if answer:
-                output_prompt_gui("系统运算完成")
+                API.output_prompt_gui("系统运算完成")
             else:
-                output_prompt_gui("系统运算无结果")
-            update_result_box_gui(answer)
+                API.output_prompt_gui("系统运算无结果")
+            API.update_result_box_gui(answer)
         except BaseException:
             # raise
-            output_prompt_gui("系统运算失败")
+            API.output_prompt_gui("系统运算失败")
 
     @staticmethod
     def property_prediction():
         try:
             accuracy = API.computing_gui()
-            output_prompt_gui("预测过程程序可能无响应")
-            answer = func.property_prediction(output_prompt_gui, True, accuracy)
-            update_prediction_box_gui(*answer)
-            output_prompt_gui("性质预测完成")
+            API.output_prompt_gui("预测过程程序可能无响应")
+            answer = func.property_prediction(API.output_prompt_gui, True, accuracy)
+            API.update_prediction_box_gui(*answer)
+            API.output_prompt_gui("性质预测完成")
         except IndexError:
-            output_prompt_gui("性质预测失败")
+            API.output_prompt_gui("性质预测失败")
 
     @staticmethod
     def function_drawing():
@@ -464,7 +465,7 @@ class API:
         except BaseException:
             draw_type = 0
         # 画板创造
-        output_prompt_gui("生成绘制取...")
+        API.output_prompt_gui("生成绘制取...")
         fig = plt.figure(num="CoTan函数")  # 定义一个图像窗口
         if draw_type in (0, 1, 2, 3, 8, 9):
             plt.grid(True, ls="--")  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
@@ -594,7 +595,7 @@ class API:
 
         init()
         # 函数绘图系统
-        output_prompt_gui("图像绘制中...")
+        API.output_prompt_gui("图像绘制中...")
         if func is None:
             return False
         if draw_type in (0, 1, 4, 5):
@@ -723,7 +724,7 @@ class API:
             plot_x_len = len(all_func)
             m = []  # 每个群组中fx分类的个数
             for i in all_func:  # 预先生成函数
-                output_prompt_gui(f"迭代计算中...(共{plot_x_len}次)")
+                API.output_prompt_gui(f"迭代计算中...(共{plot_x_len}次)")
                 get = i.get_plot_data()
                 m.append(len(get[0]))
                 func_cul_list.append(get)
@@ -759,20 +760,20 @@ class API:
             FuncAnimation(
                 fig, update, frames=plot_x_len, init_func=_init, interval=frame, blit=False
             )  # 动态绘图
-        output_prompt_gui("绘制完毕")
+        API.output_prompt_gui("绘制完毕")
         plt.show()  # 显示图像
         return True
 
     @staticmethod
     def set_function():
         global func
-        default_value = set_func_gui()
+        default_value = API.set_func_gui()
         try:
             func = ExpFunc(*default_value, have_son=True)
-            output_prompt_gui("应用成功")
+            API.output_prompt_gui("应用成功")
             SCREEN.title(f"CoTan函数工厂  {func}")
         except BaseException:
-            output_prompt_gui("应用失败2")
+            API.output_prompt_gui("应用失败2")
             raise
 
 
@@ -1668,4 +1669,4 @@ sheet_box.grid(
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
 
-output_prompt_gui("加载完毕")
+API.output_prompt_gui("加载完毕")
