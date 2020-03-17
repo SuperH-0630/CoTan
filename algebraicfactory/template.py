@@ -12,6 +12,7 @@ class __AlgebraInit:
         self.symbol_dict = {"self": self}  # 命名空间
         self.symbol_dict.update(globals())
         self.symbol_dict.update(locals())
+        exec('from sympy import *', self.symbol_dict)
         self.algebra_dict = {}
         self.algebra_dict_view = {}  # 门面(str)
         self.symbol_describe = {}  # 描述文件
@@ -268,7 +269,7 @@ class AlgebraSymbol(__AlgebraInit):
             pass
         new_name = self.symbol_dict.copy()
         new_name.update({"k": k})
-        exec(f"self.symbol_dict['{name}'] = Symbol('{name}')", new_name)  # 创建一个Symbols
+        exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
         self.symbol_describe[name] = describe
         return True
 

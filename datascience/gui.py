@@ -88,103 +88,323 @@ max_Visual_mapping #映射的最大值
 """
 
 
-def machine_learning():
-    global SCREEN
-    SCREEN.mainloop()
+def add_from_python_gui():
+    file_dir = askopenfilename(
+        title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
+    )
+    name = sheet_name.get().replace(" ", "")
+    if name == "":
+        name = os.path.splitext(os.path.split(file_dir)[1])[0]
+    with open(file_dir, "r") as f:
+        code = f.read()
+    return code, name
 
 
-def show_tips():
-    tkinter.messagebox.showinfo("使用提示", drawing_parameters)
+def get_sheet_name_gui():  # 获得名字统一接口
+    global sheet_list
+    try:
+        return sheet_list[sheet_box.curselection()[0]]
+    except BaseException:
+        try:
+            return sheet_list[0]
+        except BaseException:
+            return None
 
 
-def show_sorry():
-    tkinter.messagebox.showinfo("非常抱歉", "高级别的机器学习请到机器学习板块深入研究...")
+def update_sheet_box_gui():
+    global SCREEN, sheet_box, sheet_list
+    sheet_list = machine_controller.get_sheet_list()
+    sheet_box.delete(0, tkinter.END)
+    sheet_box.insert(tkinter.END, *sheet_list)
 
 
-def clear_rendering():
-    machine_controller.clean_render()
-    update_render_box()
+def update_combo_box_gui():
+    overlap_box.delete(0, tkinter.END)
+    if base_image is not None:
+        overlap_box.insert(tkinter.END, f"底图: {base_image}")
+    if top_image is not None:
+        overlap_box.insert(tkinter.END, f"顶图: {top_image}")
 
 
-def del_form():
-    name = get_sheet_name()
-    machine_controller.del_sheet(name)
-    update_sheet_box()
+def add_csv_gui():
+    file_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
+    csv_sep = sep.get()
+    csv_encoding = encoding.get()
+    str_ = bool(str_must.get())
+    index = bool(index_must.get())
+    name = sheet_name.get().replace(" ", "")
+    if name == "":
+        name = os.path.splitext(os.path.split(file_dir)[1])[0]
+    if csv_encoding == "":
+        with open(file_dir, "rb") as f:
+            csv_encoding = chardet.detect(f.read())["encoding"]
+    if csv_sep == "":
+        csv_sep = ","
+    return csv_encoding, csv_sep, file_dir, index, name, str_
 
 
-def del_learner():
-    learner = get_learner_name(True)
-    set_learne = get_learner_name(False)  # 获取学习器Learner
-    if set_learne != learner:
-        machine_controller.del_leaner(learner)
-    update_leaner_box()
+def to_csv_gui():
+    save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
+    csv_sep = sep.get()
+    return csv_sep, save_dir
 
 
-def visual_learner():
-    learner = get_learner_name(True)
-    new = tkinter.messagebox.askokcancel("提示", f"是否将数据生成表格。\n(可绘制成散点图对比数据)")
-    data = machine_controller.visual_learner(learner, new)
-    title = f"CoTan数据处理 查看数据:{learner}"
-    vitables(f"对象:{learner}\n\n{data[0]}\n\n\n{data[1]}", title)
-    update_sheet_box()
+def update_index_box_gui(index):
+    global SCREEN, index_box
+    index_box.delete(0, tkinter.END)
+    index_box.insert(tkinter.END, *index)
 
 
-def get_learner_config():
-    global learner_parameters
-    return learner_parameters.get("0.0", tkinter.END)
+def vitables_gui(data, name):
+    global bg_color, FONT1
+    new_top = tkinter.Toplevel(bg=bg_color)
+    new_top.title(name)
+    new_top.geometry("+10+10")  # 设置所在位置
+    text = ScrolledText(new_top, font=FONT1, height=50)
+    text.pack(fill=tkinter.BOTH)
+    text.insert("0.0", data)
+    text.config(state=tkinter.DISABLED)
+    new_top.resizable(width=False, height=False)
 
 
-def test_learner():
-    global machine_controller
-    print("F")
-    name = get_sheet_name()  # 表格数据
-    learner = get_learner_name()
+def get_des_bool_gui():
+    return bool(des_bool.get())
+
+
+def sort_by_column_gui():
+    ascending = not bool(ascending_type.get())
+    new = bool(ascending_new.get())
+    return new, ascending
+
+
+def add_baseline_gui(ascending_type, sort_by):
+    ascending = not bool(ascending_type.get())
+    value = int(sort_by.get())
+    return ascending, value
+
+
+def update_sort_box_gui():
+    global stored_list, stored_box
+    re = []
+    d = {True: "正序", False: "倒叙"}
+    for i in stored_list:
+        re.append(f"列号:{i[0]}, 排序方式{d[i[1]]}")
+    stored_box.delete(0, tkinter.END)
+    stored_box.insert(tkinter.END, *re)
+
+
+def get_stored_box_index_gui():
+    return stored_box.curselection()[0]
+
+
+def get_ascending_new_gui():
+    new = bool(ascending_new.get())
+    return new
+
+
+def slice_data_gui():
+    def split_slice_core(slice_list, func_type):
+        a = []
+        for i in slice_list:
+            b = i.get().replace(" ", "")
+            if b == "":
+                a.append(None)
+            else:
+                try:
+                    a.append(func_type(b))
+                except BaseException:
+                    a.append(None)
+        if a[0] is not None and a[1] is None:
+            a[1] = a[0] + 1
+            a[2] = None
+        return a
+    the_column_type = column_type.get()
+    is_iloc = True
+    if the_column_type == 0:  # 输入的列号
+        column = slice(*split_slice_core(column_clist, int))
+    elif the_column_type == 1:
+        is_iloc = False
+        column = slice(*split_slice_core(column_clist, str))
+    else:
+        get = column_clist[0].get().replace(" ", "").split(",")
+        column = []
+        for i in get:
+            try:
+                column.append(int(i))
+            except BaseException:
+                pass
+    the_row_type = row_type.get()
+    if the_row_type == 0:  # 输入的列号
+        row = slice(*split_slice_core(row_clist, int))
+    elif the_row_type == 1:
+        row = slice(*split_slice_core(row_clist, str))
+    else:
+        get = row_clist[0].get().replace(" ", "").split(",")
+        row = []
+        for i in get:
+            try:
+                row.append(int(i))
+            except BaseException:
+                pass
+    new = bool(slice_new.get())
+    return column, is_iloc, new, row
+
+
+def del_data_gui():
+    column = column_clist[0].get().replace(" ", "").split(",")
+    row = row_clist[0].get().replace(" ", "").split(",")
+    new = bool(slice_new.get())
+    return column, new, row
+
+
+def get_clean_code_gui():
+    exp = clean_code.get("0.0", tkinter.END)
+    return exp
+
+
+def view_cleaning_script_gui():
+    name = clean_list[get_clean_func_box_index_gui()]
+    API.update_clean_code(machine_controller.get_clean_code(name))
+
+
+def get_clean_func_box_index_gui():
+    return clean_func_box.curselection()[0]
+
+
+def show_dictionary_gui():
+    tkinter.messagebox.showinfo("帮助字典", clean_help)
+
+
+def open_python_for_clean_gui():
+    global clean_code
+    file_dir = askopenfilename(
+        title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
+    )
+    with open(file_dir) as f:
+        get = f.read()
+        clean_code.delete("0.0", tkinter.END)
+        clean_code.insert("0.0", get)
+
+
+def reset_clean_code_gui():
+    global clean_code, clean_default_script
+    API.update_clean_code(clean_default_script)
+
+
+def update_render_box_gui():
+    global render_dict, render_box, machine_controller
+    render_dict = machine_controller.get_all_render()
+    render_box.delete(0, tkinter.END)
+    render_box.insert(tkinter.END, *render_dict.keys())
+
+
+def get_draw_as_well_gui():
+    return bool(draw_as_well.get())
+
+
+def render_box_index_gui():
+    return render_box.curselection()[0]
+
+
+def rendering_one_gui():
+    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
+    try:
+        if render_dir[-5:] != ".html":
+            raise Exception
+    except BaseException:
+        render_dir += ".html"
+    return render_dir
+
+
+def rendering_gui():
+    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
+    try:
+        if render_dir[-5:] != ".html":
+            raise Exception
+    except BaseException:
+        render_dir += ".html"
+    return render_dir
+
+
+def set_dtype_gui():
+    type_ = bool(dtype_func.get())
+    name = get_sheet_name_gui()
+    column_list = dtype_column.get().split(",")
+    if column_list == [""]:
+        column_list = []
+    dtype = dtype_input.get()
+    wrong = dtype_wrong.get()
+    return column_list, dtype, name, type_, wrong
+
+
+def datetime_index_gui():
+    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+    save = bool(replace_type[0].get())
+    k = ["start", "end", "freq"]
+    init = {}
+    for i in range(len(date_input)):
+        data = date_input[i].get()
+        if data == "":
+            continue
+        init[k[i]] = data
+    if len(init) == 3:
+        if bool(date_type.get()):  # 使用间隔
+            del init["end"]
+        else:
+            del init["freq"]
+    return init, is_column, save
+
+
+def num_with_name_gui():
+    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+    save = bool(replace_type[0].get())
+    return is_column, save
+
+
+def num_to_name_gui():
+    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+    save = bool(replace_type[0].get())
+    return is_column, save
+
+
+def change_index_gui():
+    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+    iloc = int(replace_iloc.get())  # 替换的列号(行号)
+    save = bool(replace_type[0].get())
+    drop = not bool(replace_type[1].get())
+    return drop, iloc, is_column, save
+
+
+def replace_index_func_gui():
+    the_replace_dict = eval(replace_dict.get())
+    is_column = bool(replace_index.get())  # 操作行-False，操作列-True
+    save = bool(replace_type[0].get())
+    return is_column, save, the_replace_dict
+
+
+def update_leaner_box_gui():
+    global learn_dict, learner_box
+    learn_dict = machine_controller.return_learner()
+    learner_box.delete(0, tkinter.END)
+    learner_box.insert(tkinter.END, *learn_dict.keys())
+
+
+def get_data_split_gui():
     try:
         split = float(data_split.get())
         if split < 0 or 1 < split:
             raise Exception
     except BaseException:
         split = 0.3
-    socore = machine_controller.training_machine(
-        name, learner, Score_Only=True, split=split
-    )[1]
-    tkinter.messagebox.showinfo("测试完成", f"针对测试数据评分结果为:{socore}")
+    return split
 
 
-def predict_learner():
-    name = get_sheet_name()  # 表格数据
-    learner = get_learner_name()
-    data = machine_controller.predict(name, learner)
-    title = f"CoTan数据处理 表格:{name} 学习器:{learner}"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def fit_learner():
-    name = get_sheet_name()  # 表格数据
-    learner = get_learner_name()
-    try:
-        split = float(data_split.get())
-        if split < 0 or 1 < split:
-            raise Exception
-    except BaseException:
-        split = 0.3
-    socore = machine_controller.training_machine(
-        name, learner, parameters=get_learner_config(), split=split
-    )
-    tkinter.messagebox.showinfo(
-        "训练完成",
-        f"针对训练数据({(1 - split) * 100}%)评分结果为:{socore[0]}\n"
-        f"针对测试数据评分({split * 100}%)结果为:{socore[1]}",
-    )
-
-
-def set_learner():
+def set_learner_gui():
     global chose_learner
-    chose_learner.set(get_learner_name(True))
+    chose_learner.set(get_learner_name_gui(True))
 
 
-def get_learner_name(learner_type=False):
+def get_learner_name_gui(learner_type=False):
     global learn_dict, learner_box, chose_learner
     if learner_type:
         try:
@@ -202,817 +422,639 @@ def get_learner_name(learner_type=False):
             return None
 
 
-def add_knn_class():
-    add_learner_core("Knn_class")
+def askokcancel_gui(messgae):
+    return tkinter.messagebox.askokcancel("提示", messgae)
 
 
-def add_logistic_regression():
-    add_learner_core("LogisticRegression")
+def show_tips_gui():
+    tkinter.messagebox.showinfo("使用提示", drawing_parameters)
 
 
-def add_lasso():
-    add_learner_core("Lasso")
+def show_sorry_gui():
+    tkinter.messagebox.showinfo("非常抱歉", "高级别的机器学习请到机器学习板块深入研究...")
 
 
-def add_knn_regression():
-    add_learner_core("Knn")
+def machine_learning():
+    global SCREEN
+    SCREEN.mainloop()
 
 
-def add_ridge():
-    add_learner_core("Ridge")
+class API:
+    @staticmethod
+    def clear_rendering():
+        machine_controller.clean_render()
+        update_render_box_gui()
 
+    @staticmethod
+    def del_form():
+        name = get_sheet_name_gui()
+        machine_controller.del_sheet(name)
+        update_sheet_box_gui()
 
-def add_generalized_linear():
-    add_learner_core("Line")
+    @staticmethod
+    def del_learner():
+        learner = get_learner_name_gui(True)
+        set_learne = get_learner_name_gui(False)  # 获取学习器Learner
+        if set_learne != learner:
+            machine_controller.del_leaner(learner)
+        update_leaner_box_gui()
 
+    @staticmethod
+    def visual_learner():
+        learner = get_learner_name_gui(True)
+        data = machine_controller.visual_learner(
+            learner, askokcancel_gui(f"是否将数据生成表格。\n(可绘制成散点图对比数据)")
+        )
+        vitables_gui(
+            f"对象:{learner}\n\n{data[0]}\n\n\n{data[1]}", f"CoTan数据处理 查看数据:{learner}"
+        )
+        update_sheet_box_gui()
 
-def add_learner_core(learner_type):  # 添加Lenear的核心
-    machine_controller.add_learner(learner_type, parameters=get_learner_config())
-    update_leaner_box()
+    @staticmethod
+    def get_learner_config():
+        return learner_parameters.get("0.0", tkinter.END)
 
-
-def update_leaner_box():
-    global learn_dict, learner_box
-    learn_dict = machine_controller.return_learner()
-    learner_box.delete(0, tkinter.END)
-    learner_box.insert(tkinter.END, *learn_dict.keys())
-
-
-def feature_extraction():
-    name = get_sheet_name()
-    machine_controller.decision_tree_classifier(name)
-    update_sheet_box()
-
-
-def replace_index_func():
-    global replace_dict, replace_index, machine_controller
-    name = get_sheet_name()
-    the_replace_dict = eval(replace_dict.get())
-    is_column = bool(replace_index.get())  # 操作行-False，操作列-True
-    save = bool(replace_type[0].get())
-    machine_controller.replace_index(name, is_column, the_replace_dict, save)
-    update_sheet_box()
-
-
-def change_index():
-    global replace_index, replace_iloc, replace_type, machine_controller
-    name = get_sheet_name()  # 名字
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    iloc = int(replace_iloc.get())  # 替换的列号(行号)
-    save = bool(replace_type[0].get())
-    drop = not bool(replace_type[1].get())
-
-    machine_controller.change_index(name, is_column, iloc, save, drop)
-    update_sheet_box()
-
-
-def num_to_name():
-    global replace_index, replace_iloc, replace_type, machine_controller
-    name = get_sheet_name()  # 名字
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-
-    machine_controller.number_naming(name, is_column, save)
-    update_sheet_box()
-
-
-def num_with_name():
-    global replace_index, replace_type, machine_controller
-    name = get_sheet_name()  # 名字
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-
-    machine_controller.name_with_number(name, is_column, save)
-    update_sheet_box()
-
-
-def datetime_index(is_date=True):
-    global replace_index, replace_type, machine_controller, date_input, date_type
-    name = get_sheet_name()  # 名字
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-
-    k = ["start", "end", "freq"]
-    init = {}
-    for i in range(len(date_input)):
-        data = date_input[i].get()
-        if data == "":
-            continue
-        init[k[i]] = data
-    if len(init) == 3:
-        if bool(date_type.get()):  # 使用间隔
-            del init["end"]
-        else:
-            del init["freq"]
-    if is_date:
-        machine_controller.date_index(name, is_column, save, **init)
-    else:
-        machine_controller.time_naming(name, is_column, save, **init)
-    update_sheet_box()
-
-
-def date_index():
-    datetime_index(True)
-
-
-def time_index():
-    datetime_index(False)
-
-
-def set_dtype():
-    global dtype_column, dtype_input, dtype_wrong, dtype_func, machine_controller
-    type_ = bool(dtype_func.get())
-    name = get_sheet_name()
-    column_list = dtype_column.get().split(",")
-    if column_list == [""]:
-        column_list = []
-    dtype = dtype_input.get()
-    wrong = dtype_wrong.get()
-    if type_:  # 软转换
-        if wrong != "ignore":
-            wrong = "coerce"
-        machine_controller.set_dtype(name, column_list, dtype, wrong)
-    else:
-        machine_controller.as_dtype(name, column_list, dtype, "ignore")
-    update_sheet_box()
-
-
-def python_render():  # 导入绘制方法
-    global clean_code
-    file_dir = askopenfilename(
-        title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
-    )
-    with open(file_dir) as f:
-        get = f.read()
-        new_render(machine_controller.custom_graph(get), "自定义图")
-
-
-def get_rendering_parameters():  # 获取画图的args
-    global rendering_parameters
-    return rendering_parameters.get("0.0", tkinter.END)
-
-
-def rendering():
-    global render_dict, render_box
-    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
-    if render_dir == "":
-        return False
-    try:
-        if render_dir[-5:] != ".html":
-            raise Exception
-    except BaseException:
-        render_dir += ".html"
-    webbrowser.open(
-        machine_controller.render_all(get_rendering_parameters(), render_dir)
-    )
-    update_render_box()
-
-
-def rendering_one():
-    global render_dict, render_box
-    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
-    if render_dir == "":
-        return False
-    try:
-        if render_dir[-5:] != ".html":
-            raise Exception
-    except BaseException:
-        render_dir += ".html"
-    list(render_dict.values())[render_box.curselection()[0]].render(render_dir)
-    webbrowser.open(render_dir)
-    update_render_box()
-
-
-def make_overlap():
-    global machine_controller, top_image, base_image
-    if base_image is not None and top_image is not None:
+    @staticmethod
+    def test_learner():
+        name = get_sheet_name_gui()  # 表格数据
+        learner = get_learner_name_gui()
         try:
-            new_render(machine_controller.overlap(base_image, top_image), f"合成图")
+            split = float(data_split.get())
+            if split < 0 or 1 < split:
+                raise Exception
         except BaseException:
-            raise
-        base_image = None
-        top_image = None
-    update_combo_box()
-
-
-def update_combo_box():
-    global overlap_box, base_image, top_image
-    overlap_box.delete(0, tkinter.END)
-    if base_image is not None:
-        overlap_box.insert(tkinter.END, f"底图: {base_image}")
-    if top_image is not None:
-        overlap_box.insert(tkinter.END, f"顶图: {top_image}")
-
-
-def add_basemap():
-    global base_image
-    base_image = list(render_dict.keys())[render_box.curselection()[0]]
-    update_combo_box()
-
-
-def add_top_image():
-    global top_image
-    top_image = list(render_dict.keys())[render_box.curselection()[0]]
-    update_combo_box()
-
-
-def del_rendering():
-    global render_dict, render_box, machine_controller
-    key = list(render_dict.keys())[render_box.curselection()[0]]
-    machine_controller.del_render(key)
-    update_render_box()
-
-
-def update_render_box():
-    global render_dict, render_box, machine_controller
-    render_dict = machine_controller.get_all_render()
-    render_box.delete(0, tkinter.END)
-    render_box.insert(tkinter.END, *render_dict.keys())
-
-
-def new_render(c, name):
-    global render_dict, draw_as_well
-    if bool(draw_as_well.get()):
-        c.render(f"{PATH}\\{name}.html")
-    update_render_box()
-
-
-def to_geo():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_geo(name, get_rendering_parameters()), "Geo地图")
-
-
-def to_map():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_map(name, get_rendering_parameters()), "Map地图")
-
-
-def to_scattergeo():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_scattergeo(name, get_rendering_parameters()), "Geo点地图"
-    )
-
-
-def to_treemap():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_tree_map(name, get_rendering_parameters()), "矩形树图")
-
-
-def to_tree():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_tree(name, get_rendering_parameters()), "树状图")
-
-
-def to_sankey():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_sankey(name, get_rendering_parameters()), "桑基图")
-
-
-def to_sunburst():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_sunburst(name, get_rendering_parameters()), "旭日图")
-
-
-def to_theme_river():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_theme_river(name, get_rendering_parameters()), "河流图"
-    )
-
-
-def to_calendar():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_calendar(name, get_rendering_parameters()), "日历图")
-
-
-def to_gauge():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_gauge(name, get_rendering_parameters()), "仪表图")
-
-
-def to_liquid():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_liquid(name, get_rendering_parameters()), "水球图")
-
-
-def to_line3d():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_line3d(name, get_rendering_parameters()), "3D折线图")
-
-
-def to_scatter3d():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_scatter3d(name, get_rendering_parameters()), "3D散点图"
-    )
-
-
-def to_bar3d():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_bar3d(name, get_rendering_parameters()), "3D柱状图")
-
-
-def to_word_cloud():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_word_cloud(name, get_rendering_parameters()), "词云图"
-    )
-
-
-def to_radar():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_radar(name, get_rendering_parameters()), "雷达图")
-
-
-def to_polar():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_polar(name, get_rendering_parameters()), "极坐标图")
-
-
-def to_pie():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_pie(name, get_rendering_parameters()), "饼图")
-
-
-def to_parallel():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_parallel(name, get_rendering_parameters()), "多轴图")
-
-
-def to_graph():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_graph(name, get_rendering_parameters()), "关系图")
-
-
-def to_format_graph():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_format_graph(name, get_rendering_parameters()), "关系图"
-    )
-
-
-def to_funnel():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_funnel(name, get_rendering_parameters()), "漏斗图")
-
-
-def to_heat_map():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_heatmap(name, get_rendering_parameters()), "热力图")
-
-
-def to_boxpolt():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_boxpolt(name, get_rendering_parameters()), "箱形图")
-
-
-def to_pictorialbar():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(
-        machine_controller.to_pictorialbar(name, get_rendering_parameters()), "象形柱状图"
-    )
-
-
-def to_scatter():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_scatter(name, get_rendering_parameters()), "散点图")
-
-
-def to_line():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_line(name, get_rendering_parameters()), "折线图")
-
-
-def to_bar():
-    global machine_controller
-    name = get_sheet_name()
-    new_render(machine_controller.to_bar(name, get_rendering_parameters()), "柱状图")
-
-
-def show_dictionary():
-    tkinter.messagebox.showinfo("帮助字典", clean_help)
-
-
-def open_python():
-    global clean_code
-    file_dir = askopenfilename(
-        title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
-    )
-    with open(file_dir) as f:
-        get = f.read()
+            split = 0.3
+        socore = machine_controller.training_machine(
+            name, learner, Score_Only=True, split=split
+        )[1]
+        tkinter.messagebox.showinfo("测试完成", f"针对测试数据评分结果为:{socore}")
+
+    @staticmethod
+    def predict_learner():
+        name = get_sheet_name_gui()  # 表格数据
+        learner = get_learner_name_gui()
+        data = machine_controller.predict(name, learner)
+        title = f"CoTan数据处理 表格:{name} 学习器:{learner}"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def fit_learner():
+        name = get_sheet_name_gui()  # 表格数据
+        learner = get_learner_name_gui()
+        split = get_data_split_gui()
+        socore = machine_controller.training_machine(
+            name, learner, parameters=API.get_learner_config(), split=split
+        )
+        tkinter.messagebox.showinfo(
+            "训练完成",
+            f"针对训练数据({(1 - split) * 100}%)评分结果为:{socore[0]}\n"
+            f"针对测试数据评分({split * 100}%)结果为:{socore[1]}",
+        )
+
+    @staticmethod
+    def add_knn_class():
+        API.add_learner_core("Knn_class")
+
+    @staticmethod
+    def add_logistic_regression():
+        API.add_learner_core("LogisticRegression")
+
+    @staticmethod
+    def add_lasso():
+        API.add_learner_core("Lasso")
+
+    @staticmethod
+    def add_knn_regression():
+        API.add_learner_core("Knn")
+
+    @staticmethod
+    def add_ridge():
+        API.add_learner_core("Ridge")
+
+    @staticmethod
+    def add_generalized_linear():
+        API.add_learner_core("Line")
+
+    @staticmethod
+    def add_learner_core(learner_type):  # 添加Lenear的核心
+        machine_controller.add_learner(learner_type, parameters=API.get_learner_config())
+        update_leaner_box_gui()
+
+    @staticmethod
+    def feature_extraction():
+        name = get_sheet_name_gui()
+        machine_controller.decision_tree_classifier(name)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def replace_index_func():
+        name = get_sheet_name_gui()
+        is_column, save, the_replace_dict = replace_index_func_gui()
+        machine_controller.replace_index(name, is_column, the_replace_dict, save)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def change_index():
+        name = get_sheet_name_gui()  # 名字
+        drop, iloc, is_column, save = change_index_gui()
+
+        machine_controller.change_index(name, is_column, iloc, save, drop)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def num_to_name():
+        name = get_sheet_name_gui()  # 名字
+        is_column, save = num_to_name_gui()
+
+        machine_controller.number_naming(name, is_column, save)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def num_with_name():
+        name = get_sheet_name_gui()  # 名字
+        is_column, save = num_with_name_gui()
+
+        machine_controller.name_with_number(name, is_column, save)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def datetime_index(is_date=True):
+        name = get_sheet_name_gui()  # 名字
+        init, is_column, save = datetime_index_gui()
+        if is_date:
+            machine_controller.date_index(name, is_column, save, **init)
+        else:
+            machine_controller.time_naming(name, is_column, save, **init)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def date_index():
+        API.datetime_index(True)
+
+    @staticmethod
+    def time_index():
+        API.datetime_index(False)
+
+    @staticmethod
+    def set_dtype():
+        column_list, dtype, name, type_, wrong = set_dtype_gui()
+        if type_:  # 软转换
+            if wrong != "ignore":
+                wrong = "coerce"
+            machine_controller.set_dtype(name, column_list, dtype, wrong)
+        else:
+            machine_controller.as_dtype(name, column_list, dtype, "ignore")
+        update_sheet_box_gui()
+
+    @staticmethod
+    def python_render():  # 导入绘制方法
+        file_dir = askopenfilename(
+            title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
+        )
+        with open(file_dir) as f:
+            code = f.read()
+        API.new_render(machine_controller.custom_graph(code), "自定义图")
+
+    @staticmethod
+    def get_rendering_parameters():  # 获取画图的args
+        return rendering_parameters.get("0.0", tkinter.END)
+
+    @staticmethod
+    def rendering():
+        render_dir = rendering_gui()
+        webbrowser.open(
+            machine_controller.render_all(API.get_rendering_parameters(), render_dir)
+        )
+        update_render_box_gui()
+
+    @staticmethod
+    def rendering_one():
+        render_dir = rendering_one_gui()
+        list(render_dict.values())[render_box_index_gui()].render(render_dir)
+        webbrowser.open(render_dir)
+        update_render_box_gui()
+
+    @staticmethod
+    def make_overlap():
+        global top_image, base_image
+        if base_image is not None and top_image is not None:
+            try:
+                API.new_render(machine_controller.overlap(base_image, top_image), f"合成图")
+            except BaseException:
+                raise
+            base_image = None
+            top_image = None
+        update_combo_box_gui()
+
+    @staticmethod
+    def add_basemap():
+        global base_image
+        base_image = list(render_dict.keys())[render_box_index_gui()]
+        update_combo_box_gui()
+
+    @staticmethod
+    def add_top_image():
+        global top_image
+        top_image = list(render_dict.keys())[render_box_index_gui()]
+        update_combo_box_gui()
+
+    @staticmethod
+    def del_rendering():
+        key = list(render_dict.keys())[render_box_index_gui()]
+        machine_controller.del_render(key)
+        update_render_box_gui()
+
+    @staticmethod
+    def new_render(c, name):
+        if get_draw_as_well_gui():
+            c.render(f"{PATH}\\{name}.html")
+        update_render_box_gui()
+
+    @staticmethod
+    def to_geo():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_geo(name, API.get_rendering_parameters()), "Geo地图")
+
+    @staticmethod
+    def to_map():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_map(name, API.get_rendering_parameters()), "Map地图")
+
+    @staticmethod
+    def to_scattergeo():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_scattergeo(name, API.get_rendering_parameters()), "Geo点地图"
+        )
+
+    @staticmethod
+    def to_treemap():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_tree_map(name, API.get_rendering_parameters()), "矩形树图")
+
+    @staticmethod
+    def to_tree():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_tree(name, API.get_rendering_parameters()), "树状图")
+
+    @staticmethod
+    def to_sankey():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_sankey(name, API.get_rendering_parameters()), "桑基图")
+
+    @staticmethod
+    def to_sunburst():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_sunburst(name, API.get_rendering_parameters()), "旭日图")
+
+    @staticmethod
+    def to_theme_river():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_theme_river(name, API.get_rendering_parameters()), "河流图"
+        )
+
+    @staticmethod
+    def to_calendar():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_calendar(name, API.get_rendering_parameters()), "日历图")
+
+    @staticmethod
+    def to_gauge():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_gauge(name, API.get_rendering_parameters()), "仪表图")
+
+    @staticmethod
+    def to_liquid():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_liquid(name, API.get_rendering_parameters()), "水球图")
+
+    @staticmethod
+    def to_line3d():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_line3d(name, API.get_rendering_parameters()), "3D折线图")
+
+    @staticmethod
+    def to_scatter3d():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_scatter3d(name, API.get_rendering_parameters()), "3D散点图"
+        )
+
+    @staticmethod
+    def to_bar3d():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_bar3d(name, API.get_rendering_parameters()), "3D柱状图")
+
+    @staticmethod
+    def to_word_cloud():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_word_cloud(name, API.get_rendering_parameters()), "词云图"
+        )
+
+    @staticmethod
+    def to_radar():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_radar(name, API.get_rendering_parameters()), "雷达图")
+
+    @staticmethod
+    def to_polar():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_polar(name, API.get_rendering_parameters()), "极坐标图")
+
+    @staticmethod
+    def to_pie():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_pie(name, API.get_rendering_parameters()), "饼图")
+
+    @staticmethod
+    def to_parallel():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_parallel(name, API.get_rendering_parameters()), "多轴图")
+
+    @staticmethod
+    def to_graph():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_graph(name, API.get_rendering_parameters()), "关系图")
+
+    @staticmethod
+    def to_format_graph():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_format_graph(name, API.get_rendering_parameters()), "关系图"
+        )
+
+    @staticmethod
+    def to_funnel():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_funnel(name, API.get_rendering_parameters()), "漏斗图")
+
+    @staticmethod
+    def to_heat_map():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_heatmap(name, API.get_rendering_parameters()), "热力图")
+
+    @staticmethod
+    def to_boxpolt():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_boxpolt(name, API.get_rendering_parameters()), "箱形图")
+
+    @staticmethod
+    def to_pictorialbar():
+        name = get_sheet_name_gui()
+        API.new_render(
+            machine_controller.to_pictorialbar(name, API.get_rendering_parameters()), "象形柱状图"
+        )
+
+    @staticmethod
+    def to_scatter():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_scatter(name, API.get_rendering_parameters()), "散点图")
+
+    @staticmethod
+    def to_line():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_line(name, API.get_rendering_parameters()), "折线图")
+
+    @staticmethod
+    def to_bar():
+        name = get_sheet_name_gui()
+        API.new_render(machine_controller.to_bar(name, API.get_rendering_parameters()), "柱状图")
+
+    @staticmethod
+    def update_clean_code(clean_default_script):
         clean_code.delete("0.0", tkinter.END)
-        clean_code.insert("0.0", get)
-
-
-def reset():
-    global clean_code, clean_default_script
-    clean_code.delete("0.0", tkinter.END)
-    clean_code.insert("0.0", clean_default_script)
-
-
-def view_cleaning_script():
-    global machine_controller, clean_list, clean_func_box, clean_code
-    name = clean_list[clean_func_box.curselection()[0]]
-    get = machine_controller.get_clean_code(name)
-    clean_code.delete("0.0", tkinter.END)
-    clean_code.insert("0.0", get)
-
-
-def empty_cleaning_script():
-    global machine_controller
-    machine_controller.del_all_clean_func()
-    update_sheet_box()
-
-
-def execute_cleaning_script():
-    global machine_controller
-    name = get_sheet_name()
-    data = machine_controller.data_clean(name)
-    title = f"CoTan数据处理 表格:{name}.数据清洗"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def del_cleaning_script():
-    global machine_controller, clean_list, clean_func_box
-    name = clean_list[clean_func_box.curselection()[0]]
-    machine_controller.del_clean_func(name)
-    update_cleaning_script_box()
-
-
-def update_cleaning_script_box():
-    global machine_controller, clean_func_box, clean_list
-    clean_list = machine_controller.get_clean_func()
-    clean_func_box.delete(0, tkinter.END)
-    clean_func_box.insert(tkinter.END, *clean_list)
-
-
-def add_cleaning_script():
-    global machine_controller, clean_func_box, clean_code
-    exp = clean_code.get("0.0", tkinter.END)
-    machine_controller.add_clean_func(exp)
-    update_cleaning_script_box()
-
-
-def clear_nan_row():
-    global drop_column
-    name = get_sheet_name()
-    data = machine_controller.del_nan(name, True)
-    title = f"CoTan数据处理 表格:{name}.NaN"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def is_nan():
-    global bool_exp
-    name = get_sheet_name()
-    data = machine_controller.is_nan(name)
-    title = f"CoTan数据处理 表格:{name}.NaN"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def to_bool():
-    global bool_exp
-    bool_exp = bool_exp.get()
-    name = get_sheet_name()
-    data = machine_controller.to_bool(name, bool_exp, True)
-    print(data)
-    title = f"CoTan数据处理 表格:{name} 布尔化"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def del_data():
-    global slice_new, column_clist, row_clist
-    column = column_clist[0].get().replace(" ", "").split(",")
-    row = row_clist[0].get().replace(" ", "").split(",")
-    new = bool(slice_new.get())
-    name = get_sheet_name()
-    try:
-        data = machine_controller.del_slice(name, column, row, new)
-    except BaseException:
-        data = "None 你的操作不被允许"
-    title = f"CoTan数据处理 表格:{name}"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def __split_slice(n, t):
-    a = []
-    for i in n:
-        b = i.get().replace(" ", "")
-        if b == "":
-            a.append(None)
-        else:
-            try:
-                a.append(t(b))
-            except BaseException:
-                a.append(None)
-    if a[0] is not None and a[1] is None:
-        a[1] = a[0] + 1
-        a[2] = None
-    return a
-
-
-def slice_data():
-    global slice_new, column_type, row_type, column_clist, row_clist
-    the_column_type = column_type.get()
-    is_iloc = True
-    if the_column_type == 0:  # 输入的列号
-        column = slice(*__split_slice(column_clist, int))
-    elif the_column_type == 1:
-        is_iloc = False
-        column = slice(*__split_slice(column_clist, str))
-    else:
-        get = column_clist[0].get().replace(" ", "").split(",")
-        column = []
-        for i in get:
-            try:
-                column.append(int(i))
-            except BaseException:
-                pass
-
-    the_row_type = row_type.get()
-    if the_row_type == 0:  # 输入的列号
-        row = slice(*__split_slice(row_clist, int))
-    elif the_row_type == 1:
-        row = slice(*__split_slice(row_clist, str))
-    else:
-        get = row_clist[0].get().replace(" ", "").split(",")
-        row = []
-        for i in get:
-            try:
-                row.append(int(i))
-            except BaseException:
-                pass
-    new = bool(slice_new.get())
-    name = get_sheet_name()
-    try:
-        data = machine_controller.get_slice(name, column, row, is_iloc, new)
-    except BaseException:
-        data = "None 你的操作不被允许"
-    title = f"CoTan数据处理 表格:{name}"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def sample_data():
-    global machine_controller, ascending_new
-    name = get_sheet_name()
-    new = bool(ascending_new.get())
-    data = machine_controller.sample(name, new)
-    title = f"CoTan数据处理 打乱表格:{name}"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def stored_value():
-    global machine_controller, stored_list, ascending_new
-    name = get_sheet_name()
-    new = bool(ascending_new.get())
-    data = machine_controller.stored_value(name, stored_list, new)
-    title = f"CoTan数据处理 表格:{name}.Stored"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def del_baseline():
-    global stored_list, stored_box, ascending_type
-    del stored_list[stored_box.curselection()[0]]
-    update_sort_box()
-
-
-def add_baseline():  # 按基准列排行
-    global machine_controller, stored_list, sort_by, ascending_type
-    try:
-        a = not bool(ascending_type.get())
-        value = int(sort_by.get())
-        stored_list.append((value, a))
-    except BaseException:
-        pass
-    update_sort_box()
-
-
-def update_sort_box():
-    global stored_list, stored_box
-    re = []
-    d = {True: "正序", False: "倒叙"}
-    for i in stored_list:
-        re.append(f"列号:{i[0]}, 排序方式{d[i[1]]}")
-    stored_box.delete(0, tkinter.END)
-    stored_box.insert(tkinter.END, *re)
-
-
-def sort_by_column():  # 行
-    global machine_controller
-    name = get_sheet_name()
-    a = not bool(ascending_type.get())
-    new = bool(ascending_new.get())
-    data = machine_controller.sorted_index(name, False, new, a)
-    title = f"CoTan数据处理 表格:{name}.Stored by Column"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def sort_by_tow():  # 行
-    global machine_controller
-    name = get_sheet_name()
-    new = bool(ascending_new.get())
-    a = not bool(ascending_type.get())
-    data = machine_controller.sorted_index(name, True, new, a)
-    title = f"CoTan数据处理 表格:{name}.Stored by Row"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def transpose():
-    global machine_controller
-    name = get_sheet_name()
-    new = bool(ascending_new.get())
-    data = machine_controller.transpose(name, new)
-    title = f"CoTan数据处理 表格:{name}.T"
-    vitables(data, title)
-    update_sheet_box()
-
-
-def show_report():
-    global PATH, SCREEN
-    if not tkinter.messagebox.askokcancel("提示", f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
-        return False
-    report_dir = f"{PATH}/$Show_Des_Sheet.html"
-    try:
-        name = get_sheet_name()
-        if name is None:
-            raise Exception
-        machine_controller.to_report(name, report_dir)
-        webbrowser.open(report_dir)
-    except BaseException:
-        pass
-
-
-def show_describe():
-    global machine_controller, des_bool
-    describe = bool(des_bool.get())
-    name = get_sheet_name()
-    title = f"CoTan数据处理 表格:{name}_describe"
-    data = str(machine_controller.describe(name, describe))
-    vitables(data, title)
-    update_sheet_box()
-
-
-def show_sheet():
-    global machine_controller, SCREEN
-    name = get_sheet_name()
-    title = f"CoTan数据处理 表格:{name}"
-    data = str(machine_controller.get_sheet(name))
-    vitables(data, title)
-
-
-def vitables(data, name):
-    global bg_color, FONT1
-    new_top = tkinter.Toplevel(bg=bg_color)
-    new_top.title(name)
-    new_top.geometry("+10+10")  # 设置所在位置
-    text = ScrolledText(new_top, font=FONT1, height=50)
-    text.pack(fill=tkinter.BOTH)
-    text.insert("0.0", data)
-    text.config(state=tkinter.DISABLED)
-    new_top.resizable(width=False, height=False)
-
-
-def get_column():  # 列名(横行竖列，列名是上面的)
-    global machine_controller
-    name = get_sheet_name()
-    update_index_box(machine_controller.get_column(name))
-
-
-def get_row():  # 行名(横行竖列，行名左)
-    global machine_controller
-    name = get_sheet_name()
-    update_index_box(machine_controller.get_index(name))
-
-
-def update_index_box(index):
-    global SCREEN, index_box
-    index_box.delete(0, tkinter.END)
-    index_box.insert(tkinter.END, *index)
-
-
-def show_one_sheet_html():
-    global PATH, to_html_type
-    html_dir = f"{PATH}/$Show_Sheet.html"
-    try:
-        name = get_sheet_name()
-        if name is None:
-            raise Exception
-        machine_controller.render_html_one(name, html_dir)
-        webbrowser.open(html_dir)
-    except BaseException:
-        # pass
-        raise
-
-
-def show_sheet_html():
-    global PATH, to_html_type
-    html_dir = f"{PATH}/$Show_Sheet.html"
-    try:
-        name = get_sheet_name()
-        if name is None:
-            raise Exception
-        machine_controller.render_html_all(name, html_dir, to_html_type.get())
-        webbrowser.open(html_dir)
-    except BaseException:
-        pass
-
-
-def to_csv():
-    global SCREEN, sep, encoding, str_must, index_must
-    save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
-    csv_sep = sep.get()
-    name = get_sheet_name()
-    machine_controller.to_csv(name, save_dir, csv_sep)
-    update_sheet_box()
-
-
-def add_csv():
-    global SCREEN, sep, encoding, str_must, index_must, sheet_name
-    file_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
-    if file_dir == "":
-        return False
-    csv_sep = sep.get()
-    csv_encoding = encoding.get()
-    str_ = bool(str_must.get())
-    index = bool(index_must.get())
-    name = sheet_name.get().replace(" ", "")
-    if name == "":
-        name = os.path.splitext(os.path.split(file_dir)[1])[0]
-    if csv_encoding == "":
-        with open(file_dir, "rb") as f:
-            csv_encoding = chardet.detect(f.read())["encoding"]
-    if csv_sep == "":
-        csv_sep = ","
-    machine_controller.add_csv(file_dir, name, csv_sep, csv_encoding, str_, index)
-    update_sheet_box()
-
-
-def add_from_python():
-    global SCREEN, sep, encoding, str_must, index_must
-    file_dir = askopenfilename(
-        title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
-    )
-    name = sheet_name.get().replace(" ", "")
-    if name == "":
-        name = os.path.splitext(os.path.split(file_dir)[1])[0]
-    with open(file_dir, "r") as f:
-        machine_controller.add_python(f.read(), name)
-    update_sheet_box()
-
-
-def get_sheet_name():  # 获得名字统一接口
-    global sheet_list
-    try:
-        return sheet_list[sheet_box.curselection()[0]]
-    except BaseException:
+        clean_code.insert("0.0", clean_default_script)
+
+    @staticmethod
+    def empty_cleaning_script():
+        machine_controller.del_all_clean_func()
+        update_sheet_box_gui()
+
+    @staticmethod
+    def execute_cleaning_script():
+        name = get_sheet_name_gui()
+        data = machine_controller.data_clean(name)
+        title = f"CoTan数据处理 表格:{name}.数据清洗"
+        vitables_gui(data,title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def del_cleaning_script():
+        name = clean_list[get_clean_func_box_index_gui()]
+        machine_controller.del_clean_func(name)
+        API.update_cleaning_script_box()
+
+    @staticmethod
+    def update_cleaning_script_box():
+        clean_list = machine_controller.get_clean_func()
+        clean_func_box.delete(0, tkinter.END)
+        clean_func_box.insert(tkinter.END, *clean_list)
+
+    @staticmethod
+    def add_cleaning_script():
+        exp = get_clean_code_gui()
+        machine_controller.add_clean_func(exp)
+        API.update_cleaning_script_box()
+
+    @staticmethod
+    def clean_nan_row():
+        name = get_sheet_name_gui()
+        data = machine_controller.del_nan(name, True)
+        title = f"CoTan数据处理 表格:{name}.NaN"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def is_nan():
+        name = get_sheet_name_gui()
+        data = machine_controller.is_nan(name)
+        title = f"CoTan数据处理 表格:{name}.NaN"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def to_bool():
+        the_bool_exp = bool_exp.get()
+        name = get_sheet_name_gui()
+        data = machine_controller.to_bool(name, the_bool_exp, True)
+        title = f"CoTan数据处理 表格:{name} 布尔化"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def del_data():
+        name = get_sheet_name_gui()
+        column, new, row = del_data_gui()
         try:
-            return sheet_list[0]
+            data = machine_controller.del_slice(name, column, row, new)
         except BaseException:
-            return None
+            data = "None 你的操作不被允许"
+        title = f"CoTan数据处理 表格:{name}"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
 
+    @staticmethod
+    def slice_data():
+        column, is_iloc, new, row = slice_data_gui()
+        name = get_sheet_name_gui()
+        try:
+            data = machine_controller.get_slice(name, column, row, is_iloc, new)
+        except BaseException:
+            data = "None 你的操作不被允许"
+        title = f"CoTan数据处理 表格:{name}"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
 
-def update_sheet_box():
-    global SCREEN, sheet_box, sheet_list
-    sheet_list = machine_controller.get_sheet_list()
-    sheet_box.delete(0, tkinter.END)
-    sheet_box.insert(tkinter.END, *sheet_list)
+    @staticmethod
+    def sample_data():
+        name = get_sheet_name_gui()
+        new = get_ascending_new_gui()
+        data = machine_controller.sample(name, new)
+        title = f"CoTan数据处理 打乱表格:{name}"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def stored_value():
+        name = get_sheet_name_gui()
+        new = get_ascending_new_gui()
+        data = machine_controller.stored_value(name, stored_list, new)
+        title = f"CoTan数据处理 表格:{name}.Stored"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def del_baseline():
+        global stored_list, stored_box
+        del stored_list[get_stored_box_index_gui()]
+        update_sort_box_gui()
+
+    @staticmethod
+    def add_baseline():  # 按基准列排行
+        try:
+            ascending, value = add_baseline_gui(ascending_type, sort_by)
+            stored_list.append((value, ascending))
+        except BaseException:
+            pass
+        update_sort_box_gui()
+
+    @staticmethod
+    def sort_by_column():  # 行
+        name = get_sheet_name_gui()
+        new, ascending = sort_by_column_gui()
+        data = machine_controller.sorted_index(name, False, new, ascending)
+        title = f"CoTan数据处理 表格:{name}.Stored by Column"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def sort_by_tow():  # 行
+        name = get_sheet_name_gui()
+        new, ascending = sort_by_column_gui()
+        data = machine_controller.sorted_index(name, True, new, ascending)
+        title = f"CoTan数据处理 表格:{name}.Stored by Row"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def transpose():
+        name = get_sheet_name_gui()
+        new = get_ascending_new_gui()
+        data = machine_controller.transpose(name, new)
+        title = f"CoTan数据处理 表格:{name}.T"
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def show_report():
+        if not askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
+            raise Exception
+        report_dir = f"{PATH}/$Show_Des_Sheet.html"
+        try:
+            name = get_sheet_name_gui()
+            if name is None:
+                raise Exception
+            machine_controller.to_report(name, report_dir)
+            webbrowser.open(report_dir)
+        except BaseException:
+            pass
+
+    @staticmethod
+    def show_describe():
+        describe = get_des_bool_gui()
+        name = get_sheet_name_gui()
+        title = f"CoTan数据处理 表格:{name}_describe"
+        data = str(machine_controller.describe(name, describe))
+        vitables_gui(data, title)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def show_sheet():
+        name = get_sheet_name_gui()
+        title = f"CoTan数据处理 表格:{name}"
+        data = str(machine_controller.get_sheet(name))
+        vitables_gui(data, title)
+
+    @staticmethod
+    def get_column():  # 列名(横行竖列，列名是上面的)
+        name = get_sheet_name_gui()
+        update_index_box_gui(machine_controller.get_column(name))
+
+    @staticmethod
+    def get_row():  # 行名(横行竖列，行名左)
+        name = get_sheet_name_gui()
+        update_index_box_gui(machine_controller.get_index(name))
+
+    @staticmethod
+    def show_one_sheet_html():
+        global PATH, to_html_type
+        html_dir = f"{PATH}/$Show_Sheet.html"
+        try:
+            name = get_sheet_name_gui()
+            if name is None:
+                raise Exception
+            machine_controller.render_html_one(name, html_dir)
+            webbrowser.open(html_dir)
+        except BaseException:
+            pass
+
+    @staticmethod
+    def show_sheet_html():
+        global PATH, to_html_type
+        html_dir = f"{PATH}/$Show_Sheet.html"
+        try:
+            name = get_sheet_name_gui()
+            if name is None:
+                raise Exception
+            machine_controller.render_html_all(name, html_dir, to_html_type.get())
+            webbrowser.open(html_dir)
+        except BaseException:
+            pass
+
+    @staticmethod
+    def to_csv():
+        global SCREEN, sep, encoding, str_must, index_must
+        csv_sep, save_dir = to_csv_gui()
+        name = get_sheet_name_gui()
+        machine_controller.to_csv(name, save_dir, csv_sep)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def add_csv():
+        global SCREEN, sep, encoding, str_must, index_must, sheet_name
+        csv_encoding, csv_sep, file_dir, index, name, str_ = add_csv_gui()
+        machine_controller.add_csv(file_dir, name, csv_sep, csv_encoding, str_, index)
+        update_sheet_box_gui()
+
+    @staticmethod
+    def add_from_python():
+        global SCREEN, sep, encoding, str_must, index_must
+        code, name = add_from_python_gui()
+        machine_controller.add_python(code, name)
+        update_sheet_box_gui()
 
 
 tkinter.Button(
@@ -1020,7 +1062,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入CSV",
-    command=add_csv,
+    command=API.add_csv,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1034,7 +1076,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入Py",
-    command=add_from_python,
+    command=API.add_from_python,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1048,7 +1090,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导出CSV",
-    command=to_csv,
+    command=API.to_csv,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1071,9 +1113,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 sheet_name = tkinter.Entry(SCREEN, width=gui_width)
-sheet_name.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+sheet_name.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Button(
@@ -1081,7 +1121,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除表格",
-    command=del_form,
+    command=API.del_form,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1095,7 +1135,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看表格",
-    command=show_sheet_html,
+    command=API.show_sheet_html,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1109,7 +1149,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看单一表格",
-    command=show_one_sheet_html,
+    command=API.show_one_sheet_html,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1189,9 +1229,7 @@ tkinter.Checkbutton(
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
 
 row += 1
-sheet_box = tkinter.Listbox(
-    SCREEN, width=gui_width * 3, height=gui_height * 5
-)  # 显示符号
+sheet_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)  # 显示符号
 sheet_box.grid(
     column=column,
     row=row,
@@ -1206,7 +1244,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看行名",
-    command=get_row,
+    command=API.get_row,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1220,7 +1258,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看列名",
-    command=get_column,
+    command=API.get_column,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1234,7 +1272,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="显示表格",
-    command=show_sheet,
+    command=API.show_sheet,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1272,9 +1310,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 max_column = tkinter.Entry(SCREEN, width=gui_width * 2)
-max_column.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+max_column.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 # Row与Column Row是横行，tkinter布局中Row变大，表示所在行数变大，向下移动如：
 # 1，2，3，4，5，6
@@ -1282,9 +1318,7 @@ max_column.grid(
 # 其中数字1-6是第一行，1-c是第二行，第二行在第一行下面，row变大向下移动（Row是横向行而不是横向移动） to 搞不清楚横行竖列的人
 
 row += 1
-index_box = tkinter.Listbox(
-    SCREEN, width=gui_width * 3, height=gui_height * 10
-)  # 显示符号
+index_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 10)  # 显示符号
 index_box.grid(
     column=column,
     row=row,
@@ -1299,7 +1333,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看数据分析",
-    command=show_report,
+    command=API.show_report,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1313,7 +1347,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="简单数据统计",
-    command=show_describe,
+    command=API.show_describe,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1435,7 +1469,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="切片选定",
-    command=slice_data,
+    command=API.slice_data,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1449,7 +1483,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除选定",
-    command=del_data,
+    command=API.del_data,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1484,9 +1518,7 @@ tkinter.Label(
     sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
 )  # 设置说明
 bool_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
-bool_exp.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-)
+bool_exp.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E)
 
 row += 1
 tkinter.Label(
@@ -1503,9 +1535,7 @@ tkinter.Label(
     sticky=tkinter.E + tkinter.W + tkinter.W + tkinter.S + tkinter.N,
 )  # 设置说明
 drop_column = tkinter.Entry(SCREEN, width=gui_width * 2)
-drop_column.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E
-)
+drop_column.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.W + tkinter.E)
 
 row += 1
 tkinter.Button(
@@ -1513,7 +1543,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成布尔表格",
-    command=to_bool,
+    command=API.to_bool,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1527,7 +1557,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看空值",
-    command=is_nan,
+    command=API.is_nan,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1541,7 +1571,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="清洗空值(按行)",
-    command=clear_nan_row,
+    command=API.clean_nan_row,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1557,7 +1587,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="添加执行方法",
-    command=add_cleaning_script,
+    command=API.add_cleaning_script,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1571,7 +1601,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除执行方法",
-    command=del_cleaning_script,
+    command=API.del_cleaning_script,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1585,7 +1615,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="数据特征提取",
-    command=feature_extraction,
+    command=API.feature_extraction,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1611,7 +1641,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看词典",
-    command=show_dictionary,
+    command=show_dictionary_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1625,7 +1655,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="恢复显示",
-    command=reset,
+    command=reset_clean_code_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1639,7 +1669,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="执行数据清洗",
-    command=execute_cleaning_script,
+    command=API.execute_cleaning_script,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1666,7 +1696,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="清空执行方法",
-    command=empty_cleaning_script,
+    command=API.empty_cleaning_script,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1676,7 +1706,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看执行方法",
-    command=view_cleaning_script,
+    command=view_cleaning_script_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1690,7 +1720,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入执行方法",
-    command=open_python,
+    command=open_python_for_clean_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1728,7 +1758,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成柱状图",
-    command=to_bar,
+    command=API.to_bar,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1738,7 +1768,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成3D柱状图",
-    command=to_bar3d,
+    command=API.to_bar3d,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1752,7 +1782,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成折线图",
-    command=to_line,
+    command=API.to_line,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1768,7 +1798,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成3D折线图",
-    command=to_line3d,
+    command=API.to_line3d,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1778,7 +1808,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成象形柱状图",
-    command=to_pictorialbar,
+    command=API.to_pictorialbar,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1795,7 +1825,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成散点图",
-    command=to_scatter,
+    command=API.to_scatter,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1809,7 +1839,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成3D散点图",
-    command=to_scatter3d,
+    command=API.to_scatter3d,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1823,7 +1853,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成箱形图",
-    command=to_boxpolt,
+    command=API.to_boxpolt,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1839,7 +1869,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成漏斗图",
-    command=to_funnel,
+    command=API.to_funnel,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1849,7 +1879,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成热力图",
-    command=to_heat_map,
+    command=API.to_heat_map,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1863,13 +1893,11 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成饼图",
-    command=to_pie,
+    command=API.to_pie,
     font=FONT,
     width=gui_width,
     height=gui_height,
-).grid(
-    column=column + 2, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N
-)
+).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N)
 
 row += 1
 tkinter.Button(
@@ -1877,7 +1905,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成多轴图",
-    command=to_parallel,
+    command=API.to_parallel,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1891,7 +1919,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成极坐标图",
-    command=to_polar,
+    command=API.to_polar,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1905,7 +1933,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成雷达图",
-    command=to_radar,
+    command=API.to_radar,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1921,7 +1949,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成词云",
-    command=to_word_cloud,
+    command=API.to_word_cloud,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1931,7 +1959,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成关系图",
-    command=to_format_graph,
+    command=API.to_format_graph,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1945,7 +1973,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成XY关系图",
-    command=to_graph,
+    command=API.to_graph,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1961,7 +1989,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成水球图",
-    command=to_liquid,
+    command=API.to_liquid,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1976,7 +2004,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成仪表图",
-    command=to_gauge,
+    command=API.to_gauge,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1992,7 +2020,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成日历图",
-    command=to_calendar,
+    command=API.to_calendar,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2006,7 +2034,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成河流图",
-    command=to_theme_river,
+    command=API.to_theme_river,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2020,7 +2048,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成旭日图",
-    command=to_sunburst,
+    command=API.to_sunburst,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2036,7 +2064,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成桑基图",
-    command=to_sankey,
+    command=API.to_sankey,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2050,7 +2078,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成树状图",
-    command=to_tree,
+    command=API.to_tree,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2064,7 +2092,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成矩形树图",
-    command=to_treemap,
+    command=API.to_treemap,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2080,7 +2108,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成Map地图",
-    command=to_map,
+    command=API.to_map,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2094,7 +2122,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成Geo点地图",
-    command=to_scattergeo,
+    command=API.to_scattergeo,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2108,7 +2136,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成Geo地图",
-    command=to_geo,
+    command=API.to_geo,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2124,7 +2152,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="选择底图",
-    command=add_basemap,
+    command=API.add_basemap,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2138,7 +2166,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="选择顶图",
-    command=add_top_image,
+    command=API.add_top_image,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2152,7 +2180,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="生成层叠图",
-    command=make_overlap,
+    command=API.make_overlap,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2178,7 +2206,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="渲染HTML",
-    command=rendering,
+    command=API.rendering,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2192,7 +2220,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="单独渲染HTML",
-    command=rendering_one,
+    command=API.rendering_one,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2206,7 +2234,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除渲染",
-    command=del_rendering,
+    command=API.del_rendering,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2233,7 +2261,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="清空渲染",
-    command=clear_rendering,
+    command=API.clear_rendering,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2247,7 +2275,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入渲染",
-    command=python_render,
+    command=API.python_render,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2267,9 +2295,7 @@ tkinter.Checkbutton(
     variable=draw_as_well,
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
 row += 1
-rendering_parameters = tkinter.Text(
-    SCREEN, width=gui_width * 3, height=gui_height * 7
-)
+rendering_parameters = tkinter.Text(SCREEN, width=gui_width * 3, height=gui_height * 7)
 rendering_parameters.grid(
     column=column,
     row=row,
@@ -2284,7 +2310,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看词典",
-    command=show_dictionary,
+    command=show_dictionary_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2298,7 +2324,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="恢复显示",
-    command=show_tips,
+    command=show_tips_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2351,7 +2377,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="植入行(列)号",
-    command=num_with_name,
+    command=API.num_with_name,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2377,7 +2403,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="统一行(列)号",
-    command=num_to_name,
+    command=API.num_to_name,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2423,7 +2449,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="执行替换已有列(行)操作",
-    command=change_index,
+    command=API.change_index,
     font=FONT,
     width=gui_width * 2,
     height=gui_height,
@@ -2433,7 +2459,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="执行替换操作",
-    command=replace_index_func,
+    command=API.replace_index_func,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2466,7 +2492,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="刷入Date序列",
-    command=date_index,
+    command=API.date_index,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2476,7 +2502,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="刷入Time序列",
-    command=time_index,
+    command=API.time_index,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2538,9 +2564,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 dtype_input = tkinter.Entry(SCREEN, width=gui_width * 2)
-dtype_input.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+dtype_input.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -2555,9 +2579,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 dtype_wrong = tkinter.Entry(SCREEN, width=gui_width * 2)
-dtype_wrong.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+dtype_wrong.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Button(
@@ -2565,7 +2587,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="执行转换",
-    command=set_dtype,
+    command=API.set_dtype,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2608,7 +2630,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text=".T",
-    command=transpose,
+    command=API.transpose,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2622,7 +2644,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="按行名排序",
-    command=sort_by_tow,
+    command=API.sort_by_tow,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2636,7 +2658,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="按列名排序",
-    command=sort_by_column,
+    command=API.sort_by_column,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2665,7 +2687,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="按数据排序",
-    command=stored_value,
+    command=API.stored_value,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2703,9 +2725,7 @@ tkinter.Checkbutton(
 ).grid(column=column + 2, row=row, sticky=tkinter.W)
 
 row += 1
-stored_box = tkinter.Listbox(
-    SCREEN, width=gui_width * 3, height=gui_height * 4
-)  # 显示符号
+stored_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 4)  # 显示符号
 stored_box.grid(
     column=column,
     row=row,
@@ -2720,7 +2740,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="添加基准",
-    command=add_baseline,
+    command=API.add_baseline,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2734,7 +2754,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除基准",
-    command=del_baseline,
+    command=API.del_baseline,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2748,7 +2768,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="打乱表格",
-    command=sample_data,
+    command=API.sample_data,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2790,7 +2810,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="选用学习器",
-    command=set_learner,
+    command=set_learner_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2807,9 +2827,7 @@ tkinter.Label(
     height=gui_height,
 ).grid(column=column, row=row)
 data_split = tkinter.Entry(SCREEN, width=gui_width * 2)
-data_split.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+data_split.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 learner_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height * 5)
@@ -2827,7 +2845,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入学习器",
-    command=rendering,
+    command=API.rendering,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2841,7 +2859,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看数据",
-    command=visual_learner,
+    command=API.visual_learner,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2855,7 +2873,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="删除学习器",
-    command=del_learner,
+    command=API.del_learner,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2871,7 +2889,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="训练机器",
-    command=fit_learner,
+    command=API.fit_learner,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2885,7 +2903,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="测试机器",
-    command=test_learner,
+    command=API.test_learner,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2899,7 +2917,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="数据预测",
-    command=predict_learner,
+    command=API.predict_learner,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2931,7 +2949,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="线性回归",
-    command=add_generalized_linear,
+    command=API.add_generalized_linear,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2945,7 +2963,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="岭回归",
-    command=add_ridge,
+    command=API.add_ridge,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2959,7 +2977,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="Lasso",
-    command=add_lasso,
+    command=API.add_lasso,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2975,7 +2993,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="逻辑回归",
-    command=add_logistic_regression,
+    command=API.add_logistic_regression,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2989,7 +3007,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="决策树",
-    command=show_sorry,
+    command=show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3003,7 +3021,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="SVM",
-    command=show_sorry,
+    command=show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3019,7 +3037,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="朴素贝叶斯",
-    command=show_sorry,
+    command=show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3033,7 +3051,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="K邻近分类",
-    command=add_knn_regression,
+    command=API.add_knn_regression,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3047,7 +3065,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="K邻近预测",
-    command=add_knn_class,
+    command=API.add_knn_class,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3058,9 +3076,7 @@ tkinter.Button(
 )
 
 row += 1
-learner_parameters = tkinter.Text(
-    SCREEN, width=gui_width * 3, height=gui_height * 11
-)
+learner_parameters = tkinter.Text(SCREEN, width=gui_width * 3, height=gui_height * 11)
 learner_parameters.grid(
     column=column,
     row=row,
