@@ -1,9 +1,9 @@
-from algebraicfactory.template import AlgebraSymbol, AlgebraExp, AlgebraPolynomialSplit, AlgebraPolynomialMerge, \
+from algebraicfactory.template import AlgebraVisualization, AlgebraPolynomialSplit, AlgebraPolynomialMerge, \
     Fractional, Trig, AlgebraMul, General, AlgebraComplex, AlgebraSpecialFunc, Simultaneous, Sloving, Digitization, \
     AlgebraSimplify, Rewrite, AlgebraPlot
 
 
-class AlgebraPolynomial(AlgebraSymbol, AlgebraExp, AlgebraPolynomialSplit, AlgebraPolynomialMerge,
+class AlgebraPolynomial(AlgebraVisualization, AlgebraPolynomialSplit, AlgebraPolynomialMerge,
                         Fractional, Trig, AlgebraMul, General, AlgebraComplex, AlgebraSpecialFunc, Simultaneous,
                         Sloving, Digitization, AlgebraSimplify, Rewrite, AlgebraPlot):
     def __call__(self):  # 返回符号信息

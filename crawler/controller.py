@@ -1,8 +1,8 @@
-from crawler.template import UrlAdd, UrlReturn, PageDownloaderRequests, PageDownloaderSelenium, PageDownloaderRun, \
-    PageParserFind, PageParserAction, PageParserBrowser, PageParserData, PageParserChains
+from crawler.template import UrlAdd, UrlReturn, PageDownloaderRequests, PageDownloaderSelenium, PageDownloaderCookies, \
+     PageParserAutomation, PageParserBrowser, PageParserData, PageParserChains, UrlFile
 
 
-class Url(UrlAdd, UrlReturn):  # url管理器
+class Url(UrlAdd, UrlReturn, UrlFile):  # url管理器
 
     def return_url(self):
         return self.url_list.copy()
@@ -11,7 +11,7 @@ class Url(UrlAdd, UrlReturn):  # url管理器
         return self.url_history.copy()
 
 
-class PageDownloader(PageDownloaderRequests, PageDownloaderSelenium, PageDownloaderRun):
+class PageDownloader(PageDownloaderRequests, PageDownloaderSelenium, PageDownloaderCookies):
 
     def requests_mode(self, func_cookie, url):
         if self.last_mode == "get":
@@ -26,9 +26,7 @@ class PageDownloader(PageDownloaderRequests, PageDownloaderSelenium, PageDownloa
         self.parser.log = self.log
 
 
-class PageParser(PageParserFind, PageParserAction, PageParserBrowser, PageParserData, PageParserChains):
-
-    # 发送到指定元素
+class PageParser(PageParserAutomation, PageParserBrowser, PageParserData, PageParserChains):
 
     def element_interaction(self, update_func=lambda *args: None):  # 元素交互
         func_list = self.func_list

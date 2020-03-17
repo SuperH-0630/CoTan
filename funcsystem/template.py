@@ -44,13 +44,13 @@ def find_x_by_y(x_list, y_list, y):  # 输入x和y照除In_Y的所有对应x值
     return m
 
 
-class FuncBase:
+class FuncBase(metaclass=ABCMeta):
     @abstractmethod
     def best_value_core(self):
         pass
 
     @abstractmethod
-    def data_packet(self, number_type):
+    def data_packet(self, number_type=float):
         pass
 
     @abstractmethod
@@ -174,7 +174,7 @@ class ExpFuncBase(FuncBase, metaclass=ABCMeta):
         pass
 
 
-class SheetFuncInit:
+class SheetFuncInit(SheetFuncBase):
     def __init__(self, func, name, style):
         # 筛查可以数字化的结果
         float_x_list = []
@@ -234,13 +234,13 @@ class SheetFuncInit:
     def __str__(self):
         return f"{self.func_name}"
 
-
-@plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
     @abstractmethod
     def best_value_core(self):
         pass
 
+
+@plugin_class_loading(get_path(r'template/funcsystem'))
+class SheetDataPacket(SheetFuncInit):
     def data_packet(self, *args, **kwargs):
         if self.have_data_packet:
             return self.x, self.y, self.func_name, self.style
@@ -324,7 +324,7 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetBestValue(SheetDataPacket):
+class SheetBestValue(SheetFuncInit):
     def best_value_core(self):  # 计算最值和极值点
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
@@ -347,7 +347,7 @@ class SheetBestValue(SheetDataPacket):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetComputing(SheetBestValue):
+class SheetComputing(SheetFuncInit):
     def gradient_calculation(self, y_in, *args, **kwargs):  # 保持和下一个对象相同参数
         result = self.dichotomy(y_in)
         return result[0], result[0][0]
@@ -409,7 +409,7 @@ class SheetComputing(SheetBestValue):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetProperty(SheetComputing):
+class SheetProperty(SheetFuncInit):
     def parity(self, *args, **kwargs):  # 奇偶性
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
@@ -686,7 +686,7 @@ class SheetMemory(SheetFuncInit):
         return self.memore_x, self.memore_y
 
 
-class ExpFuncInit:
+class ExpFuncInit(ExpFuncBase):
     def __init__(
         self,
         func,
@@ -808,12 +808,13 @@ class ExpFuncInit:
     def __str__(self):
         return f"{self.func_name} {self.start, self.end, self.span}"
 
-
-@plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
     @abstractmethod
     def best_value_core(self):
         pass
+
+
+@plugin_class_loading(get_path(r'template/funcsystem'))
+class ExpDataPacket(ExpFuncInit):
 
     def data_packet(self, number_type=float):
         if self.have_data_packet:
@@ -917,7 +918,7 @@ class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpBestValue(ExpDataPacket):
+class ExpBestValue(ExpFuncInit):
     def best_value_core(self):  # 计算最值和极值点
         # 使用ya解决了因计算器误差而没计算到的最值，但是同时本不是最值的与最值相近的数字也被当为了最值，所以使用群组击破
         if not self.have_data_packet:
@@ -1004,7 +1005,7 @@ class ExpBestValue(ExpDataPacket):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpComputing(ExpBestValue):
+class ExpComputing(ExpFuncInit):
 
     def sympy_calculation(self, y_value):  # 利用Sympy解方程
         try:
@@ -1328,7 +1329,7 @@ class ExpComputing(ExpBestValue):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpProperty(ExpComputing):
+class ExpProperty(ExpFuncInit):
     def parity(self, precision=False):  # 启动round处理
         if not self.have_data_packet:
             self.data_packet(float)  # 运行Cul计算

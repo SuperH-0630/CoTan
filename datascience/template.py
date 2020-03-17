@@ -22,7 +22,22 @@ from system import plugin_class_loading, get_path
 CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
 
 
-class RowColumnBase(metaclass=ABCMeta):
+class FormBase(metaclass=ABCMeta):
+    def __init__(self, *args, **kwargs):
+        class Del:
+            pass
+
+        self.sheet_dict = {}
+        self.clean_func = {}
+        self.clean_func_code = {}
+        self.DEL = Del()
+        self.named_domain = {"pd": pd, "DEL": self.DEL, "re": re, "Sheet": self.sheet_dict}
+        self.all_render = {}  # 存放所有的图
+
+    @abstractmethod
+    def add_sheet(self, data, name):
+        pass
+
     @abstractmethod
     def get_column(self, name, only):
         pass
@@ -34,19 +49,6 @@ class RowColumnBase(metaclass=ABCMeta):
     @abstractmethod
     def get_sheet(self, name, all_row=None, all_colunm=None) -> pd.DataFrame:
         pass
-
-
-class FormBase(RowColumnBase):
-    def __init__(self, *args, **kwargs):
-        class Del:
-            pass
-
-        self.sheet_dict = {}
-        self.clean_func = {}
-        self.clean_func_code = {}
-        self.DEL = Del()
-        self.named_domain = {"pd": pd, "DEL": self.DEL, "re": re, "Sheet": self.sheet_dict}
-        self.all_render = {}  # 存放所有的图
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
@@ -129,9 +131,20 @@ class SheetIO(FormBase):
         get = self.get_sheet(name)
         get.to_csv(save_dir, sep=sep, na_rep="")
 
+    def get_sheet(self, name, all_row=None, all_colunm=None) -> pd.DataFrame:
+        try:
+            pd.set_option("display.max_rows", all_row)
+            pd.set_option("display.max_columns", all_colunm)
+        except BaseException:
+            pass
+        return self.sheet_dict[name]
+
+    def del_sheet(self, name):
+        del self.sheet_dict[name]
+
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetRender(SheetIO):
+class SheetRender(FormBase):
     def render_html_one(self, name, render_dir=""):
         if render_dir == "":
             render_dir = f"{name}.html"
@@ -210,7 +223,7 @@ class SheetRender(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetReport(SheetIO):
+class SheetReport(FormBase):
     def describe(self, name, new=False):  # 生成描述
         get = self.get_sheet(name)
         des = get.describe()
@@ -239,7 +252,7 @@ class SheetReport(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class Rename(SheetIO):
+class Rename(FormBase):
     def number_naming(self, name, is_column, save):
         get = self.get_sheet(name).copy()
         if is_column:  # 处理列名
@@ -308,7 +321,7 @@ class Rename(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class Sorted(SheetIO):
+class Sorted(FormBase):
     def sorted_index(self, name, row: bool, new=False, a=True):
         get = self.get_sheet(name)
         if row:  # row-行名排序
@@ -411,7 +424,7 @@ class RowColumn(Rename, Sorted):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetSlice(SheetIO):
+class SheetSlice(FormBase):
     def get_slice(
         self, name, column, row, is_iloc=True, new=False
     ):  # iloc(Row,Column) or loc
@@ -444,7 +457,7 @@ class SheetSlice(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DatacleaningFunc(SheetIO):
+class DatacleaningFunc(FormBase):
     def add_clean_func(self, code):
         name = self.named_domain.copy()
         try:
@@ -537,7 +550,7 @@ class DatacleaningFunc(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetDtype(SheetIO):
+class SheetDtype(FormBase):
     def set_dtype(self, name, column, dtype, wrong):
         get = self.get_sheet(name).copy()
         for i in range(len(column)):
@@ -591,7 +604,7 @@ class SheetDtype(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataNan(SheetIO):
+class DataNan(FormBase):
     def is_nan(self, name):
         get = self.get_sheet(name)
         bool_nan = pd.isna(get)
@@ -606,7 +619,7 @@ class DataNan(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class BoolSheet(SheetIO):
+class BoolSheet(FormBase):
     def to_bool(self, name, exp, new=False):
         get = self.get_sheet(name)
         try:
@@ -619,7 +632,7 @@ class BoolSheet(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataSample(SheetIO):
+class DataSample(FormBase):
     def sample(self, name, new):
         get = self.get_sheet(name)
         sample = get.sample(frac=1)  # 返回比，默认按行打乱
@@ -629,7 +642,7 @@ class DataSample(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataTranspose(SheetIO):
+class DataTranspose(FormBase):
     def transpose(self, name, new=True):
         get = self.get_sheet(name)
         t = get.T.copy()  # 复制一份，防止冲突
@@ -639,23 +652,8 @@ class DataTranspose(SheetIO):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataFormBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc, SheetDtype, DataNan, BoolSheet,
-                   DataSample, DataTranspose):
-
-    def get_sheet(self, name, all_row=None, all_colunm=None) -> pd.DataFrame:
-        try:
-            pd.set_option("display.max_rows", all_row)
-            pd.set_option("display.max_columns", all_colunm)
-        except BaseException:
-            pass
-        return self.sheet_dict[name]
-
-    def del_sheet(self, name):
-        del self.sheet_dict[name]
-
-
-@plugin_class_loading(get_path(r'template/datascience'))
-class PlotBase(DataFormBase):
+class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc, SheetDtype, DataNan, BoolSheet,
+                   DataSample, DataTranspose, SheetIO):
     def parsing_parameters(self, text):  # 解析文本参数
         args = {}  # 解析到的参数
         exec(text, args)
@@ -960,6 +958,24 @@ class Render(PlotBase):
             # 转换为16进制,upper表示小写(规范化)
             color += str(hex(a))[-2:].replace("x", "0").upper()
         return color
+
+    def get_all_render(self):
+        return self.all_render.copy()
+
+    def del_render(self, key):
+        del self.all_render[key]
+
+    def clean_render(self):
+        self.all_render = {}
+
+    def custom_graph(self, text):
+        named_domain = {}
+        named_domain.update(locals())
+        named_domain.update(globals())
+        exec(text, named_domain)
+        exec("c = Page()", named_domain)
+        self.all_render[f"自定义图[{len(self.all_render)}]"] = named_domain["c"]
+        return named_domain["c"]
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
@@ -2011,28 +2027,7 @@ class SolidPlot(Render):
         return c
 
 
-@plugin_class_loading(get_path(r'template/datascience'))
-class Plot(AxisPlot, GeneralPlot, RelationshipPlot, GeographyPlot, WordPlot, SolidPlot):
-    def custom_graph(self, text):
-        named_domain = {}
-        named_domain.update(locals())
-        named_domain.update(globals())
-        exec(text, named_domain)
-        exec("c = Page()", named_domain)
-        self.all_render[f"自定义图[{len(self.all_render)}]"] = named_domain["c"]
-        return named_domain["c"]
-
-    def get_all_render(self):
-        return self.all_render.copy()
-
-    def del_render(self, key):
-        del self.all_render[key]
-
-    def clean_render(self):
-        self.all_render = {}
-
-
-class MachineLearnerBase(Plot):
+class MachineLearnerBase(AxisPlot, GeneralPlot, RelationshipPlot, GeographyPlot, WordPlot, SolidPlot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.learner = {}  # 记录机器

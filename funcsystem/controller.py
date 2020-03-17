@@ -1,11 +1,7 @@
-import tkinter.messagebox
-import tkinter.filedialog
-
-from funcsystem.template import SheetFuncBase, SheetProperty, SheetMemory, ExpFuncBase, ExpMemory, ExpComputing, \
-    ExpCheck
+from funcsystem.template import *
 
 
-class SheetFunc(SheetProperty, SheetMemory, SheetFuncBase):
+class SheetFunc(SheetMemory, SheetComputing, SheetDataPacket, SheetProperty, SheetBestValue):
 
     def save_csv(self, file_dir):
         if not self.have_data_packet:
@@ -38,7 +34,7 @@ class SheetFunc(SheetProperty, SheetMemory, SheetFuncBase):
         )
 
 
-class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpFuncBase):
+class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpDataPacket, ExpProperty, ExpBestValue):
 
     def return_son(self):
         return self.son_list
@@ -55,7 +51,7 @@ class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpFuncBase):
 
     def return_list(self):  # 导出列表
         if not self.have_data_packet:
-            self.data_packet(float)
+            self.data_packet()
         # 最值和极值点设计
         a = []
         for i in self.min_x:
@@ -66,7 +62,7 @@ class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpFuncBase):
 
     def get_plot_data(self):
         if not self.have_data_packet:
-            self.data_packet(float)
+            self.data_packet()
         return (
             self.classification_x,
             self.classification_y,

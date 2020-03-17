@@ -4,13 +4,6 @@ import tarfile
 from abc import ABCMeta, abstractmethod
 from os import getcwd, mkdir
 from os.path import split as path_split, splitext, basename, exists
-from sklearn.feature_selection import (
-    chi2,
-    f_classif,
-    mutual_info_classif,
-    f_regression,
-    mutual_info_regression,
-)
 
 from sklearn.svm import SVC, SVR  # SVC是svm分类，SVR是svm回归
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
@@ -40,7 +33,7 @@ from scipy import optimize
 from scipy.cluster.hierarchy import dendrogram, ward
 from pyecharts.components import Table as TableFisrt  # 绘制表格
 from pyecharts.options.series_options import JsCode
-from pyecharts.charts import Tab as tab_First, Line, Scatter, Bar
+from pyecharts.charts import Tab as tab_First
 from pyecharts.charts import *
 from pyecharts import options as opts
 from pyecharts.components import Image
@@ -71,7 +64,7 @@ tar_global = True  # 是否打包tar
 new_dir_global = True  # 是否新建目录
 
 
-class LearnBase:
+class LearnBase(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         self.numpy_dict = {}  # name:numpy
         self.fucn_add()  # 制作Func_Dic
@@ -113,6 +106,10 @@ class LearnBase:
 
     def get_sheet(self, name) -> np.array:
         return self.numpy_dict[name].copy()
+
+    @abstractmethod
+    def add_form(self, data, name):
+        pass
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
@@ -231,7 +228,7 @@ class LearnerIO(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerMerge(LearnerIO):
+class LearnerMerge(LearnBase):
     def merge(self, name, axis=0):  # aiis:0-横向合并(hstack),1-纵向合并(vstack)，2-深度合并
         sheet_list = []
         for i in name:
@@ -241,7 +238,7 @@ class LearnerMerge(LearnerIO):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerSplit(LearnerIO):
+class LearnerSplit(LearnBase):
     def split(self, name, split=2, axis=0):  # aiis:0-横向分割(hsplit),1-纵向分割(vsplit)
         sheet = self.get_sheet(name)
         get = {0: np.hsplit, 1: np.vsplit, 2: np.dsplit}[axis](sheet, split)
@@ -264,7 +261,7 @@ class LearnerSplit(LearnerIO):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerDimensions(LearnerIO):
+class LearnerDimensions(LearnBase):
     def deep(self, sheet: np.ndarray):
         return sheet.ravel()
 
@@ -295,7 +292,7 @@ class LearnerDimensions(LearnerIO):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerShape(LearnerIO):
+class LearnerShape(LearnBase):
     def transpose(self, name, func: list):
         sheet = self.get_sheet(name)
         if sheet.ndim <= 2:
@@ -309,7 +306,7 @@ class LearnerShape(LearnerIO):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class Learner(LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape):
+class Calculation(LearnBase):
     def calculation_matrix(self, data, data_type, func):
         if 1 not in data_type:
             raise Exception
@@ -325,7 +322,7 @@ class Learner(LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape):
         return get
 
 
-class Machinebase(metaclass=ABCMeta):
+class Machinebase(metaclass=ABCMeta):  # 学习器的基类
     def __init__(self, *args, **kwargs):
         self.model = None
         self.have_fit = False
@@ -4682,7 +4679,7 @@ def set_global(
     new_dir_global = new  # 是否新建目录
 
 
-class MachineLearnerInit(Learner):
+class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape, ):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.learner = {}  # 记录机器

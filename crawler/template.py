@@ -62,6 +62,43 @@ class Database(metaclass=ABCMeta):
         pass
 
 
+class CoTanDB(Database):
+    def __init__(self, name):
+        self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
+        self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
+        self.id = 0
+        self.name = name
+        for _ in self.file.readlines():
+            self.id += 1
+
+    def __str__(self):
+        return self.name
+
+    def close(self):
+        try:
+            self.file.close()
+        except BaseException:
+            pass
+
+    def add_new(self, data):
+        data_str = str(self.id)
+        for i in data:
+            data_str += "," + str(i)
+        data_str += "\n"
+        self.file.write(data_str)
+        self.file.flush()
+        self.id += 1
+
+    def remove(self):
+        self.file.close()
+        os.remove(self.dir)
+
+    def out_file(self, out_dir):
+        with open(out_dir + fr"/{self.name}.contanDB", "w") as f:
+            with open(self.dir) as g:
+                f.write(g.read())
+
+
 class DatabaseControllerBase:
     def __init__(self):
         self.database = {}
@@ -91,16 +128,6 @@ class DatabaseControllerCustom(metaclass=ABCMeta):
 
     @abstractmethod
     def return_database(self):
-        pass
-
-
-class LogBase(metaclass=ABCMeta):
-    @abstractmethod
-    def write(self, data):
-        pass
-
-    @abstractmethod
-    def close(self):
         pass
 
 
@@ -134,6 +161,36 @@ class DatabaseController(AddDatabase, DatabaseControllerCustom):  # data base控
 
     def return_database(self):
         return list(self.database.keys())
+
+
+class LogBase(metaclass=ABCMeta):
+    @abstractmethod
+    def write(self, data):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+
+class Log(LogBase):
+    def __init__(self, log_dir):
+        self.log_dir = log_dir
+        self.log_file = open(
+            log_dir + "/log.coTanLog",
+            "r+" if os.path.exists(log_dir + "log.coTanLog") else "w+",
+        )
+
+    def write(self, data):
+        self.log_file.write(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] "
+            + data
+            + "\n"
+        )
+        self.log_file.flush()
+
+    def close(self):
+        self.log_file.close()
 
 
 class PageBase:
@@ -171,36 +228,13 @@ class __RequestsBase(PageBase):
         self.new = True
 
 
-class Urlbase:
-    url_count = 0  # url处理器个数
-
-    def __init__(self, dic=f"", dic_run=f""):
-        Urlbase.url_count += 1
-        self.save_dir = dic
-        dic += f"/url[{Urlbase.url_count}].cot_url"
-        dic_run += f"/url_run[{Urlbase.url_count}].cot_url"
-        self.dir = dic
-        self.dir_run = dic_run
-        self.file = open(dic, "a")  # 写入url_history的文件
-        self.file_run = open(dic_run, "a")  # 写入已读url文件
-        self.url_list = []  # 待读url
-        self.url_history = []  # url历史
-        self.filter = {}  # 过滤函数
-
-
 @plugin_class_loading(get_path(r'template/crawler'))
-class UrlFile(Urlbase):
-    def close(self):
-        self.file.close()
-        self.file_run.close()
-
-    def out_url_history(self, url):  # 输出url历史
-        self.file.write(f"{url}\n")
-        self.file.flush()
-
-    def out_url_run(self, url):  # 输出已经运行的url
-        self.file_run.write(f"{url}\n")
-        self.file_run.flush()
+class UrlGet(__RequestsBase):  # 通过requests的post请求
+    def __init__(self, url, time_out, user_agent="", cookies=None, **kwargs):
+        super(UrlGet, self).__init__(time_out)
+        self.mode = "simplify_get"
+        self.requests = requests.get
+        self.init(user_agent, url, cookies)
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
@@ -214,15 +248,6 @@ class UrlPost(__RequestsBase):  # 通过requests的post请求
 
     def __str__(self):
         return super(UrlPost, self).__str__() + f";data>{self.data}"
-
-
-@plugin_class_loading(get_path(r'template/crawler'))
-class UrlGet(__RequestsBase):  # 通过requests的post请求
-    def __init__(self, url, time_out, user_agent="", cookies=None, **kwargs):
-        super(UrlGet, self).__init__(time_out)
-        self.mode = "simplify_get"
-        self.requests = requests.get
-        self.init(user_agent, url, cookies)
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
@@ -284,8 +309,68 @@ class UrlPage(PageBase):
         return f"{self.mode}-{self.url}:UA>{self.user_agent}"
 
 
+class Urlbase(metaclass=ABCMeta):
+    url_count = 0  # url处理器个数
+
+    def __init__(self, dic=f"", dic_run=f""):
+        Urlbase.url_count += 1
+        self.save_dir = dic
+        dic += f"/url[{Urlbase.url_count}].cot_url"
+        dic_run += f"/url_run[{Urlbase.url_count}].cot_url"
+        self.dir = dic
+        self.dir_run = dic_run
+        self.file = open(dic, "a")  # 写入url_history的文件
+        self.file_run = open(dic_run, "a")  # 写入已读url文件
+        self.url_list = []  # 待读url
+        self.url_history = []  # url历史
+        self.filter = {}  # 过滤函数
+
+    @abstractmethod
+    def filter_func(self, url, **kwargs):
+        pass
+
+    @abstractmethod
+    def add_filter_func(self, func, name):
+        pass
+
+    @abstractmethod
+    def del_filter_func(self, index):
+        pass
+
+    @abstractmethod
+    def return_filter_func(self):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractmethod
+    def out_url_history(self, url):
+        pass
+
+    @abstractmethod
+    def out_url_run(self, url):
+        pass
+
+
 @plugin_class_loading(get_path(r'template/crawler'))
-class UrlAdd(UrlFile):
+class UrlFile(Urlbase):
+    def close(self):
+        self.file.close()
+        self.file_run.close()
+
+    def out_url_history(self, url):  # 输出url历史
+        self.file.write(f"{url}\n")
+        self.file.flush()
+
+    def out_url_run(self, url):  # 输出已经运行的url
+        self.file_run.write(f"{url}\n")
+        self.file_run.flush()
+
+
+@plugin_class_loading(get_path(r'template/crawler'))
+class UrlAdd(Urlbase):
     def filter_func(self, url, **kwargs):  # url过滤系统
         for i in self.filter:
             if not self.filter[i](url):
@@ -301,6 +386,22 @@ class UrlAdd(UrlFile):
     def return_filter_func(self):
         return list(self.filter.keys())
 
+
+@plugin_class_loading(get_path(r'template/crawler'))
+class UrlReturn(Urlbase):
+    def del_url(self, index):  # 删除url
+        self.out_url_run(f"DELETE {self.url_list[index]}")
+        del self.url_list[index]
+
+    def get_url(self):  # 取得url
+        url_page = self.url_list[0]
+        self.out_url_run(url_page.url)
+        del self.url_list[0]
+        return url_page
+
+    def is_finish(self):
+        return len(self.url_list) == 0
+
     def add_url(self, url, func, data=None, **kwargs):  # 添加url
         if func == "":
             func = "get"
@@ -308,9 +409,7 @@ class UrlAdd(UrlFile):
             url_ = url
         else:
             url_ = url + str(data)
-        if url_ not in self.url_history and self.filter_func(
-            url, func=func
-        ):  # 1.url不存在历史，2.url满足筛选条件
+        if url_ not in self.url_history and self.filter_func(url, func=func):  # 1.url不存在历史，2.url满足筛选条件
             if func == "get":
                 self.url_list.append(
                     UrlPage(url=url, **kwargs, down_load_dir=self.dir)
@@ -326,22 +425,6 @@ class UrlAdd(UrlFile):
             self.out_url_history(url_)  # 输出历史url
             return True  # 写入成功
         return False  # 写入失败
-
-
-@plugin_class_loading(get_path(r'template/crawler'))
-class UrlReturn(UrlFile):
-    def del_url(self, index):  # 删除url
-        self.out_url_run(f"DELETE {self.url_list[index]}")
-        del self.url_list[index]
-
-    def get_url(self):  # 取得url
-        url_page = self.url_list[0]
-        self.out_url_run(url_page.url)
-        del self.url_list[0]
-        return url_page
-
-    def is_finish(self):
-        return len(self.url_list) == 0
 
 
 class SeleniumBase(metaclass=ABCMeta):
@@ -408,7 +491,7 @@ class PageDownloaderRun(PagedownloaderBase):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderCookies(PageDownloaderRun):
+class PageDownloaderCookies(PagedownloaderBase):
     def monitoring_del_cookies(self, name):  # 删除指定cookies
         self.browser.delete_cookie(name)
 
@@ -430,7 +513,7 @@ class PageDownloaderCookies(PageDownloaderRun):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderRequests(PageDownloaderCookies):
+class PageDownloaderRequests(PageDownloaderRun):
     def requests_start_cookies(self, func_cookie, url):
         self.cookie_dict[url] = requests.utils.dict_from_cookiejar(
             self.browser.cookies
@@ -468,7 +551,7 @@ class PageDownloaderRequests(PageDownloaderCookies):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderSelenium(PageDownloaderCookies):
+class PageDownloaderSelenium(PageDownloaderRun):
 
     def selenium_quit(self):
         try:
@@ -820,7 +903,7 @@ class PageParserActionListBox(PageParserFunc):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageParserAction(PageParserActionListBox):
+class PageParserAction(PageParserFunc):
     def send_keys(self, text, element_value, index=0, **kwargs):  # 输入文字
         @self.add_base
         def action(*args, **kwargs):
@@ -894,8 +977,12 @@ class PageParserAction(PageParserActionListBox):
         self.add_func(f"run_js:{js}", action)
 
 
+class PageParserAutomation(PageParserFind, PageParserActionListBox, PageParserAction):
+    pass
+
+
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageParserBrowserCookies(PageParserFunc):
+class PageParserCookies(PageParserFunc):
     def del_all_cookies(self, **kwargs):  # 删除所有曲奇
         @self.add_base
         def action(*args, **kwargs):
@@ -951,7 +1038,7 @@ class PageParserBrowserCookies(PageParserFunc):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageParserBrowser(PageParserBrowserCookies):
+class PageParserBrowserActions(PageParserFunc):
     def back(self, **kwargs):  # 返回
         @self.add_base
         def action(*args, **kwargs):
@@ -991,6 +1078,10 @@ class PageParserBrowser(PageParserBrowserCookies):
             sleep(time)
 
         self.add_func(f"Loading_wait:{time}s", action)
+
+
+class PageParserBrowser(PageParserBrowserActions, PageParserCookies):
+    pass
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
@@ -1253,8 +1344,7 @@ class PageParserDataSource(PageParserFunc):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageParserData(PageParserNeighbor, PageParserDataFindall, PageParserDatabase,
-                     PageParserDataSource):
+class PageParserTool(PageParserFunc):
 
     def list_slicing(self, index: (slice, int), element_value):
         if isinstance(index, int):
@@ -1295,6 +1385,11 @@ class PageParserData(PageParserNeighbor, PageParserDataFindall, PageParserDataba
             sleep(1)
 
         self.add_func(f"Webpage_snapshot", action)  # 添加func
+
+
+class PageParserData(PageParserDatabase, PageParserDatabase, PageParserDataSource, PageParserDataFindall,
+                     PageParserTool):
+    pass
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
@@ -1504,63 +1599,6 @@ class PageParserChains(PageParserChainsWindow, PageParserClick, PageParserChains
 
 for i in range(1, 13):  # F1 - F12按键
     keys_name_dict[f"f{i}"] = eval(f"Keys.F{i}", {'Keys': Keys})
-
-
-class CoTanDB(Database):
-    def __init__(self, name):
-        self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
-        self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
-        self.id = 0
-        self.name = name
-        for _ in self.file.readlines():
-            self.id += 1
-
-    def __str__(self):
-        return self.name
-
-    def close(self):
-        try:
-            self.file.close()
-        except BaseException:
-            pass
-
-    def add_new(self, data):
-        data_str = str(self.id)
-        for i in data:
-            data_str += "," + str(i)
-        data_str += "\n"
-        self.file.write(data_str)
-        self.file.flush()
-        self.id += 1
-
-    def remove(self):
-        self.file.close()
-        os.remove(self.dir)
-
-    def out_file(self, out_dir):
-        with open(out_dir + fr"/{self.name}.contanDB", "w") as f:
-            with open(self.dir) as g:
-                f.write(g.read())
-
-
-class Log(LogBase):
-    def __init__(self, log_dir):
-        self.log_dir = log_dir
-        self.log_file = open(
-            log_dir + "/log.coTanLog",
-            "r+" if os.path.exists(log_dir + "log.coTanLog") else "w+",
-        )
-
-    def write(self, data):
-        self.log_file.write(
-            f"[{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}] "
-            + data
-            + "\n"
-        )
-        self.log_file.flush()
-
-    def close(self):
-        self.log_file.close()
 
 
 data_base = DatabaseController()

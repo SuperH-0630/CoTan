@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor, factor_list, expand, collect, Add, \
     Mul, ratsimp, cancel, apart, together, radsimp, trigsimp, expand_trig, expand_mul, expand_multinomial, powdenest, \
     powsimp, expand_power_base, expand_power_exp, logcombine, expand_log, ceiling, expand_complex, expand_func, Eq, \
@@ -7,7 +8,7 @@ from sympy.plotting import plot3d
 from system import plugin_class_loading, get_path, plugin_func_loading
 
 
-class __AlgebraInit:
+class AlgebraInit:
     def __init__(self, new=lambda x: x):
         self.symbol_dict = {"self": self}  # 命名空间
         self.symbol_dict.update(globals())
@@ -25,8 +26,148 @@ class __AlgebraInit:
             return self.algebra_dict[name]
 
 
+class AlgebraSymbolBase(AlgebraInit, metaclass=ABCMeta):
+    @abstractmethod
+    def del_symbol(self, x):
+        pass
+
+    @abstractmethod
+    def add_symbol(self, name, is_generation, is_rational, is_prime, is_even, is_finite, is_complex, is_natural,
+                   is_integer, no_constraint, describe):
+        pass
+
+    @abstractmethod
+    def variable_prediction(self, n):
+        pass
+
+
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraFormat(__AlgebraInit):
+class AlgebraSymbol(AlgebraSymbolBase):
+    def del_symbol(self, x):
+        del self.symbol_describe[x]
+        del self.symbol_dict[x]
+
+    def add_symbol(
+        self,
+        name,
+        is_generation=0,
+        is_rational=0,
+        is_prime=0,
+        is_even=0,
+        is_finite=0,
+        is_complex=None,
+        is_natural=None,
+        is_integer=0,
+        no_constraint=0,
+        describe="自定义符号",
+    ):
+        k = {}
+        try:
+            name = name.replace(" ", "")
+            exec(f"{name} = 5", {})  # 测试name有没有做符号名字的资质
+            if no_constraint == 1:
+                raise Exception
+            if is_generation == 1:  # 代数
+                k["algebraic"] = True
+            elif is_generation == 2:  # 超越数
+                k["transcendental"] = True
+            if is_rational == 1:  # 有理数
+                k["rational"] = True
+            elif is_rational == 2:  # 无理数
+                k["irrational"] = True
+            if is_prime == 1:  # 质数
+                k["prime"] = True
+            elif is_prime == 2:  # 合数
+                k["composite"] = True
+            if is_even == 1:  # 偶数
+                k["even"] = True
+            elif is_even == 2:  # 奇数
+                k["odd"] = True
+            if is_finite == 1:  # 有限实数
+                k["finite"] = True
+            elif is_finite == 2:  # 无穷
+                k["infinite"] = True
+            elif is_finite == 3:  # 广义实数
+                k["extended_real"] = True
+            if is_integer == 1:
+                k["integer"] = True
+            try:  # 避免CIR不是list而是None
+                k[is_complex[0]] = is_complex[1]
+            except BaseException:
+                pass
+            try:  # 避免NZ不是list而是None
+                k[is_natural[0]] = is_natural[1]
+            except BaseException:
+                pass
+        except BaseException:
+            pass
+        new_name = self.symbol_dict.copy()
+        new_name.update({"k": k})
+        exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
+        self.symbol_describe[name] = describe
+        return True
+
+    def variable_prediction(self, n):
+        value = self.symbol_dict[n]
+        get = value.assumptions0
+        establish_forecast = []  # 成立的预测
+        no_prediction = []  # 不成立的预测
+        for i in get:
+            if get[i]:
+                establish_forecast.append(f"{interpreter(i)} >>> {get[i]}")
+            else:
+                no_prediction.append(f"{interpreter(i)} >>> {get[i]}")
+        return establish_forecast + no_prediction
+
+
+class AlgebraExpBase(AlgebraInit, metaclass=ABCMeta):
+    @abstractmethod
+    def formula_export(self, f):
+        pass
+
+    @abstractmethod
+    def format_func(self, args, name, result_str):
+        pass
+
+    @abstractmethod
+    def format_rational(self, f, result_str):
+        pass
+
+    @abstractmethod
+    def format_mul(self, args, result_str):
+        pass
+
+    @abstractmethod
+    def format_add(self, args, result_str):
+        pass
+
+    @abstractmethod
+    def format_log(self, args, result_str):
+        pass
+
+    @abstractmethod
+    def format_pow(self, args, f, result_str):
+        pass
+
+    @abstractmethod
+    def print_expression_core(self, e, level, first, q):
+        pass
+
+    @abstractmethod
+    def print_expression_str(self, e, level, first):
+        pass
+
+    @abstractmethod
+    def split_func_core(self, exp, deep, name_list, first):
+        pass
+
+    @abstractmethod
+    def merge_func_core(self, name_list, func):
+        pass
+
+
+@plugin_class_loading(get_path(r"template/algebraicfactory"))
+class AlgebraFormat(AlgebraExpBase):
     def formula_export(self, f):
         result_str = []
         try:
@@ -114,7 +255,7 @@ class AlgebraFormat(__AlgebraInit):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraPrint(__AlgebraInit):
+class AlgebraPrint(AlgebraExpBase):
     def print_expression_core(self, e, level=0, first=True, q=1):  # 递归
         str_print = " " * level
         if first:
@@ -143,7 +284,7 @@ class AlgebraPrint(__AlgebraInit):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraSplit(__AlgebraInit):
+class AlgebraSplit(AlgebraExpBase):
     def split_func_core(self, exp, deep, name_list, first=True):  # 递归
         try:
             name = exp.func.__name__
@@ -170,7 +311,7 @@ class AlgebraSplit(__AlgebraInit):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraMerge(__AlgebraInit):
+class AlgebraMerge(AlgebraExpBase):
     def merge_func_core(self, name_list, func):
         if len(name_list) < 2:
             return None
@@ -181,7 +322,7 @@ class AlgebraMerge(__AlgebraInit):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraBase(AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
+class AlgebraBase(AlgebraSymbol, AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
 
     def simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
         if func is None:
@@ -208,86 +349,7 @@ class AlgebraBase(AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraSymbol(__AlgebraInit):
-    def del_symbol(self, x):
-        del self.symbol_describe[x]
-        del self.symbol_dict[x]
-
-    def add_symbol(
-        self,
-        name,
-        is_generation=0,
-        is_rational=0,
-        is_prime=0,
-        is_even=0,
-        is_finite=0,
-        is_complex=None,
-        is_natural=None,
-        is_integer=0,
-        no_constraint=0,
-        describe="自定义符号",
-    ):
-        k = {}
-        try:
-            name = name.replace(" ", "")
-            exec(f"{name} = 5", {})  # 测试name有没有做符号名字的资质
-            if no_constraint == 1:
-                raise Exception
-            if is_generation == 1:  # 代数
-                k["algebraic"] = True
-            elif is_generation == 2:  # 超越数
-                k["transcendental"] = True
-            if is_rational == 1:  # 有理数
-                k["rational"] = True
-            elif is_rational == 2:  # 无理数
-                k["irrational"] = True
-            if is_prime == 1:  # 质数
-                k["prime"] = True
-            elif is_prime == 2:  # 合数
-                k["composite"] = True
-            if is_even == 1:  # 偶数
-                k["even"] = True
-            elif is_even == 2:  # 奇数
-                k["odd"] = True
-            if is_finite == 1:  # 有限实数
-                k["finite"] = True
-            elif is_finite == 2:  # 无穷
-                k["infinite"] = True
-            elif is_finite == 3:  # 广义实数
-                k["extended_real"] = True
-            if is_integer == 1:
-                k["integer"] = True
-            try:  # 避免CIR不是list而是None
-                k[is_complex[0]] = is_complex[1]
-            except BaseException:
-                pass
-            try:  # 避免NZ不是list而是None
-                k[is_natural[0]] = is_natural[1]
-            except BaseException:
-                pass
-        except BaseException:
-            pass
-        new_name = self.symbol_dict.copy()
-        new_name.update({"k": k})
-        exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
-        self.symbol_describe[name] = describe
-        return True
-
-    def variable_prediction(self, n):
-        value = self.symbol_dict[n]
-        get = value.assumptions0
-        establish_forecast = []  # 成立的预测
-        no_prediction = []  # 不成立的预测
-        for i in get:
-            if get[i]:
-                establish_forecast.append(f"{interpreter(i)} >>> {get[i]}")
-            else:
-                no_prediction.append(f"{interpreter(i)} >>> {get[i]}")
-        return establish_forecast + no_prediction
-
-
-@plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraExp(AlgebraPrint):
+class AlgebraVisualization(AlgebraBase):
     def add_expression(self, name, alg):  # 添加表达式
         try:
             name = name.replace(" ", "")
@@ -315,7 +377,7 @@ class AlgebraExp(AlgebraPrint):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraPolynomialSplit(AlgebraSplit):
+class AlgebraPolynomialSplit(AlgebraBase):
     def split_mul(self, name, return_num=False, return_one=False):
         exp = self.get_expression(name)
         factor_exp = factor(exp)  # 因式分解
@@ -376,7 +438,7 @@ class AlgebraPolynomialSplit(AlgebraSplit):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraPolynomialMerge(AlgebraMerge):
+class AlgebraPolynomialMerge(AlgebraBase):
     def merge_add(self, name_list):
         exp = []
         for n in name_list:
@@ -406,8 +468,102 @@ class AlgebraPolynomialMerge(AlgebraMerge):
         return self.merge_func_core(name, func)
 
 
+class AlgebraMath(AlgebraBase, metaclass=ABCMeta):
+    @abstractmethod
+    def fractional_merge(self, name):
+        pass
+
+    @abstractmethod
+    def fraction_reduction(self, name):
+        pass
+
+    @abstractmethod
+    def fractional_fission(self, name, x):
+        pass
+
+    @abstractmethod
+    def as_fraction(self, name, deep):
+        pass
+
+    @abstractmethod
+    def fractional_rat(self, name, rationalized_unknown, maximum_irrational_term):
+        pass
+
+    @abstractmethod
+    def trig_simp(self, name):
+        pass
+
+    @abstractmethod
+    def trig_expansion(self, name, deep):
+        pass
+
+    @abstractmethod
+    def mul_expansion(self, name):
+        pass
+
+    @abstractmethod
+    def multinomial_expansion(self, name):
+        pass
+
+    @abstractmethod
+    def pow_simp_multinomial(self, name):
+        pass
+
+    @abstractmethod
+    def pow_simp_core(self, name, keep_assumptions, combine):
+        pass
+
+    @abstractmethod
+    def pow_simp_base(self, name, keep_assumptions):
+        pass
+
+    @abstractmethod
+    def pow_simp_exp(self, name, keep_assumptions):
+        pass
+
+    @abstractmethod
+    def pow_expansion_base(self, name, deep):
+        pass
+
+    @abstractmethod
+    def pow_expansion_exp(self, name, deep):
+        pass
+
+    @abstractmethod
+    def pow_expansion_core(self, name, deep):
+        pass
+
+    @abstractmethod
+    def log_simp(self, name, keep_assumptions):
+        pass
+
+    @abstractmethod
+    def log_expansion(self, name, deep, keep_assumptions):
+        pass
+
+    @abstractmethod
+    def expansion(self, name, is_expand_complex):
+        pass
+
+    @abstractmethod
+    def factor(self, name, modulus, is_gaussian, deep, rat):
+        pass
+
+    @abstractmethod
+    def merger_of_similar_items(self, name, x):
+        pass
+
+    @abstractmethod
+    def expand_complex(self, name):
+        pass
+
+    @abstractmethod
+    def expand_special(self, name):
+        pass
+
+
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class Fractional(AlgebraBase):
+class Fractional(AlgebraMath):
     def fractional_merge(self, name):  # 最小公分母合并
         alg = self.get_expression(name)
         return ratsimp(alg)
@@ -433,7 +589,7 @@ class Fractional(AlgebraBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class Trig(AlgebraBase):
+class Trig(AlgebraMath):
     def trig_simp(self, name):  # 三角化简
         alg = self.get_expression(name)
         return trigsimp(alg)
@@ -444,7 +600,7 @@ class Trig(AlgebraBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraMul(AlgebraBase):
+class AlgebraMul(AlgebraMath):
     def mul_expansion(self, name):
         alg = self.get_expression(name)
         return expand_mul(alg)
@@ -498,7 +654,7 @@ class AlgebraMul(AlgebraBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class General(AlgebraBase):
+class General(AlgebraMath):
     def expansion(self, name, is_expand_complex):
         alg = self.get_expression(name)
         return expand(alg, complex=is_expand_complex)
@@ -521,14 +677,14 @@ class General(AlgebraBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraComplex(AlgebraBase):
+class AlgebraComplex(AlgebraMath):
     def expand_complex(self, name):
         alg = self.get_expression(name)
         return expand_complex(alg)
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraSpecialFunc(AlgebraBase):
+class AlgebraSpecialFunc(AlgebraMath):
     def expand_special(self, name):
         alg = self.get_expression(name)
         return expand_func(alg)
