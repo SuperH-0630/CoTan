@@ -63,22 +63,30 @@ class FunctionExpression:
 
 
 def custom():
-    global func_input, help_doc, logger
-    func_str = func_input.get().replace(" ", "")
+    global help_doc, logger
+    func_str = UIAPI.get_func_str_gui()
     if func_str:
-        if tkinter.messagebox.askokcancel(
-            "提示", f"是否确认生成自定义函数:\n{func_input.get()}\n(点击取消可撤销未执行的制造函数)"
-        ):
+        if UIAPI.askok_gui(f"是否确认生成自定义函数:\n{func_input.get()}\n(点击取消可撤销未执行的制造函数)"):
             logger.set(FunctionExpression(func_input.get()))
         else:
             logger.set(None)
     else:
-        if tkinter.messagebox.askokcancel("提示", f"点击确定撤销为执行的制造函数"):
+        if UIAPI.askok_gui(f"点击确定撤销为执行的制造函数"):
             logger.set(None)
 
 
-def get_help():
-    tkinter.messagebox.showinfo(title="帮助", message=help_doc)
+class UIAPI:
+    @staticmethod
+    def get_help_gui():
+        tkinter.messagebox.showinfo(title="帮助", message=help_doc)
+
+    @staticmethod
+    def get_func_str_gui():
+        return func_input.get().replace(" ", "")
+
+    @staticmethod
+    def askok_gui(message):
+        return tkinter.messagebox.askokcancel("提示", message)
 
 
 def make_func():
@@ -99,7 +107,7 @@ def make_func():
     help = tkinter.Button(
         SCREEN,
         text="帮助",
-        command=get_help,
+        command=UIAPI.get_help_gui,
         width=28,
         height=1,
         bg=bg_color,

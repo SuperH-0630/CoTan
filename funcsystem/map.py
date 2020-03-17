@@ -545,7 +545,6 @@ class API:
 
 def function_mapping():
     global SCREEN
-
     SCREEN.mainloop()
 
 

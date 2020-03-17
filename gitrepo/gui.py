@@ -12,585 +12,582 @@ import gitrepo.template
 from gitrepo import controller
 
 
-def cli_gui(
-        func,
-        args,
-        name="CoTan Git",
-        break_time=0,
-        show_screen=True,
-        tip_text="",
-        is_threaded_refresh=False,
-        is_asynchronous_display=False,
-):
-    command_thread = func(*args)
-    format_flat = True
-    stop_key = gitrepo.template.stop_key
+class UIAPI:
+    @staticmethod
+    def cli_gui(
+            func,
+            args,
+            name="CoTan Git",
+            break_time=0,
+            show_screen=True,
+            tip_text="",
+            is_threaded_refresh=False,
+            is_asynchronous_display=False,
+    ):
+        command_thread = func(*args)
+        format_flat = True
+        stop_key = gitrepo.template.stop_key
 
-    def save_to_txt():
-        nonlocal data
-        dic = asksaveasfilename(title="选择文件保存位置", filetypes=[("TXT", ".txt")])
-        try:
-            if dic == "":
-                return False
-            if dic[-4] == ".txt":
-                pass
-            else:
-                raise Exception
-        except BaseException:
-            dic += ".txt"
-        with open(dic, "w", encoding="utf-8") as f:
-            f.write(data)
-
-    keep_button = True
-    stop_button = True
-
-    def update_button():
-        if not keep_button:
-            button_list[1].config(state=tkinter.DISABLED)
-        if not stop_button:
-            button_list[0].config(state=tkinter.DISABLED)
-
-    def stop():
-        nonlocal start, keep_button, stop_button
-        start = 0
-        stop_button = False
-        keep_button = False
-        update_button()
-
-    def keep():
-        nonlocal start, keep_button
-        start = float("inf")
-        keep_button = False
-        update_button()
-
-    def pipe():
-        pass
-
-    def format():
-        nonlocal text, out_data, data, format_flat
-        text.clear()
-        if format_flat:
-            text.insert(tkinter.END, data)
-        else:
-            text.insert(tkinter.END, out_data)
-        format_flat = not format_flat
-
-    start = time.time()
-    data = ""
-    out_data = ""  # 包含out的data
-    if show_screen:
-        text, cli_screen, button_list = show_cli_gui(
-            save_to_txt, stop, keep, format, pipe, name=name
-        )  # [close,keep]
-        update_button()
-        if tip_text != "":
-            text.insert("0.0", f"载入前提示>>> {tip_text}\n")
-            out_data += f"载入前提示>>> {tip_text}\n"
-            data += f"{tip_text}\n"
-        cli_screen.update()
-    else:
-        u = threading.Thread(target=progress_bar_gui)
-        u.start()
-    SCREEN.update()
-
-    def update_screen():
-        nonlocal start
-        while True:
+        def save_to_txt():
+            nonlocal data
+            dic = asksaveasfilename(title="选择文件保存位置", filetypes=[("TXT", ".txt")])
             try:
-                SCREEN.update()
-                if show_screen:
-                    try:
-                        cli_screen.update()
-                    except BaseException:
-                        pass
-                if time.time() - start >= break_time and break_time != 0:
-                    raise Exception
-                elif break_time == 0 and start == 0:
+                if dic == "":
+                    return False
+                if dic[-4] == ".txt":
+                    pass
+                else:
                     raise Exception
             except BaseException:
-                start = 0
-                break
+                dic += ".txt"
+            with open(dic, "w", encoding="utf-8") as f:
+                f.write(data)
 
-    if is_threaded_refresh or not is_asynchronous_display:
-        # 如果没有启动到多进程的效果，请检查Update是不是加了()，这里需要回调
-        threaded_update = threading.Thread(target=update_screen)
-        threaded_update.start()
+        keep_button = True
+        stop_button = True
 
-    if is_asynchronous_display:  # 等待后显示
-        if break_time == 0:
-            break_ti = None  # 此处break_ti是为了别面覆盖break_time，因为Update进程需要用
-        else:
-            break_ti = break_time
+        def update_button():
+            if not keep_button:
+                button_list[1].config(state=tkinter.DISABLED)
+            if not stop_button:
+                button_list[0].config(state=tkinter.DISABLED)
 
-        def wait_command_thread():
-            nonlocal start
-            command_thread.wait(break_ti)
+        def stop():
+            nonlocal start, keep_button, stop_button
             start = 0
+            stop_button = False
+            keep_button = False
+            update_button()
 
-        threaded_update = threading.Thread(
-            target=wait_command_thread
-        )  # 这么做不是多此一举，如果没有wait，进程并不会退出
-        threaded_update.start()
-        update_screen()  # 遇到sleep等主线程阻塞，top.update等会阻塞子线程，因此，必须保证主线程不会被wait所阻塞
-        out = command_thread.stdout.read().split("\n")
-        for i in out:
-            if show_screen:
-                try:  # 如果界面被关掉了，会报错
-                    cli_screen.title(f"{name} : 运行中")
+        def keep():
+            nonlocal start, keep_button
+            start = float("inf")
+            keep_button = False
+            update_button()
+
+        def pipe():
+            pass
+
+        def format():
+            nonlocal text, out_data, data, format_flat
+            text.clear()
+            if format_flat:
+                text.insert(tkinter.END, data)
+            else:
+                text.insert(tkinter.END, out_data)
+            format_flat = not format_flat
+
+        start = time.time()
+        data = ""
+        out_data = ""  # 包含out的data
+        if show_screen:
+            text, cli_screen, button_list = UIAPI.show_cli_gui(
+                save_to_txt, stop, keep, format, pipe, name=name
+            )  # [close,keep]
+            update_button()
+            if tip_text != "":
+                text.insert("0.0", f"载入前提示>>> {tip_text}\n")
+                out_data += f"载入前提示>>> {tip_text}\n"
+                data += f"{tip_text}\n"
+            cli_screen.update()
+        else:
+            u = threading.Thread(target=UIAPI.progress_bar_gui)
+            u.start()
+        SCREEN.update()
+
+        def update_screen():
+            nonlocal start
+            while True:
+                try:
+                    SCREEN.update()
+                    if show_screen:
+                        try:
+                            cli_screen.update()
+                        except BaseException:
+                            pass
+                    if time.time() - start >= break_time and break_time != 0:
+                        raise Exception
+                    elif break_time == 0 and start == 0:
+                        raise Exception
                 except BaseException:
-                    text, cli_screen, button_list = show_cli_gui(
+                    start = 0
+                    break
+
+        if is_threaded_refresh or not is_asynchronous_display:
+            # 如果没有启动到多进程的效果，请检查Update是不是加了()，这里需要回调
+            threaded_update = threading.Thread(target=update_screen)
+            threaded_update.start()
+
+        if is_asynchronous_display:  # 等待后显示
+            if break_time == 0:
+                break_ti = None  # 此处break_ti是为了别面覆盖break_time，因为Update进程需要用
+            else:
+                break_ti = break_time
+
+            def wait_command_thread():
+                nonlocal start
+                command_thread.wait(break_ti)
+                start = 0
+
+            threaded_update = threading.Thread(
+                target=wait_command_thread
+            )  # 这么做不是多此一举，如果没有wait，进程并不会退出
+            threaded_update.start()
+            update_screen()  # 遇到sleep等主线程阻塞，top.update等会阻塞子线程，因此，必须保证主线程不会被wait所阻塞
+            out = command_thread.stdout.read().split("\n")
+            for i in out:
+                if show_screen:
+                    try:  # 如果界面被关掉了，会报错
+                        cli_screen.title(f"{name} : 运行中")
+                    except BaseException:
+                        text, cli_screen, button_list = UIAPI.show_cli_gui(
+                            save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                        )
+                        update_button()
+                        text.insert(tkinter.END, out_data)
+                    if stop and i.replace(" ", "").replace("\n", "") != stop_key:
+                        text.insert(tkinter.END, f"[out]> {i}\n")
+                        data += i + "\n"
+                        out_data += f"[out]> {i}\n"
+                else:
+                    break
+            else:
+                text.insert(tkinter.END, "[END]")
+                out_data += f"[END]"
+                data += f"[END]"
+            start = 0
+        else:  # 即时显示
+            while True:
+                # 界面设置
+                try:  # 如果界面被关掉了，会报错
+                    if show_screen:
+                        cli_screen.title(f"{name} : 运行中")
+                except BaseException:
+                    text, cli_screen, button_list = UIAPI.show_cli_gui(
                         save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
                     )
                     update_button()
                     text.insert(tkinter.END, out_data)
-                if stop and i.replace(" ", "").replace("\n", "") != stop_key:
-                    text.insert(tkinter.END, f"[out]> {i}\n")
-                    data += i + "\n"
-                    out_data += f"[out]> {i}\n"
-            else:
-                break
-        else:
-            text.insert(tkinter.END, "[END]")
-            out_data += f"[END]"
-            data += f"[END]"
-        start = 0
-    else:  # 即时显示
-        while True:
-            # 界面设置
-            try:  # 如果界面被关掉了，会报错
-                if show_screen:
-                    cli_screen.title(f"{name} : 运行中")
-            except BaseException:
-                text, cli_screen, button_list = show_cli_gui(
-                    save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
-                )
-                update_button()
-                text.insert(tkinter.END, out_data)
-            # 界面刷新
-            try:
-                if not is_threaded_refresh:
-                    SCREEN.update()
-                    if show_screen:
-                        cli_screen.update()
-            except BaseException:
-                break
-            # 输出字符
-            try:
-                # .decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
-                i = command_thread.stdout.readline()
-                bool_text = i.replace(" ", "").replace("\n", "")
-                if bool_text != "":
-                    if stop and bool_text == stop_key:
-                        start = 0
-                    else:
-                        if show_screen:
-                            text.insert(tkinter.END, f"[out]> {i}")
-                        data += i
-                        out_data += f"[out]> {i}"
-                if (
-                        command_thread.returncode == 0
-                        or (time.time() - start >= break_time and break_time != 0)
-                        or (break_time == 0 and start == 0)
-                ):
-                    if show_screen:
-                        text.insert(tkinter.END, "[END]")
-                        out_data += f"[END]"
-                        data += f"[END]"
-                    break
-                elif command_thread.returncode is not None:
-                    raise Exception
-            except BaseException:
+                # 界面刷新
                 try:
-                    if show_screen:
-                        text.insert(tkinter.END, "[ERROR]")
-                        out_data += f"[ERROR]"
-                        data += f"[ERROR]"
-                    raise Exception
+                    if not is_threaded_refresh:
+                        SCREEN.update()
+                        if show_screen:
+                            cli_screen.update()
                 except BaseException:
                     break
-        try:  # 如果界面被关掉了，会报错
+                # 输出字符
+                try:
+                    # .decode(str_code)#不需要decode,因为Popen已经设置了universal_newlines=True
+                    i = command_thread.stdout.readline()
+                    bool_text = i.replace(" ", "").replace("\n", "")
+                    if bool_text != "":
+                        if stop and bool_text == stop_key:
+                            start = 0
+                        else:
+                            if show_screen:
+                                text.insert(tkinter.END, f"[out]> {i}")
+                            data += i
+                            out_data += f"[out]> {i}"
+                    if (
+                            command_thread.returncode == 0
+                            or (time.time() - start >= break_time and break_time != 0)
+                            or (break_time == 0 and start == 0)
+                    ):
+                        if show_screen:
+                            text.insert(tkinter.END, "[END]")
+                            out_data += f"[END]"
+                            data += f"[END]"
+                        break
+                    elif command_thread.returncode is not None:
+                        raise Exception
+                except BaseException:
+                    try:
+                        if show_screen:
+                            text.insert(tkinter.END, "[ERROR]")
+                            out_data += f"[ERROR]"
+                            data += f"[ERROR]"
+                        raise Exception
+                    except BaseException:
+                        break
+            try:  # 如果界面被关掉了，会报错
+                if show_screen:
+                    cli_screen.title(f"{name} : 运行完毕")
+            except BaseException:
+                pass
+            command_thread.kill()
+        try:
             if show_screen:
-                cli_screen.title(f"{name} : 运行完毕")
+                button_list[0].config(state=tkinter.DISABLED)
+                button_list[1].config(state=tkinter.DISABLED)
         except BaseException:
             pass
-        command_thread.kill()
-    try:
-        if show_screen:
-            button_list[0].config(state=tkinter.DISABLED)
-            button_list[1].config(state=tkinter.DISABLED)
-    except BaseException:
-        pass
-    return data
+        return data
 
-
-def progress_bar_gui(*args, name="CoTan_Git >>> 运行中...", **kwargs):
-    progress_screen = tkinter.Toplevel(bg=bg_color)
-    progress_screen.title(name)
-    progress_screen.geometry("+10+10")  # 设置所在位置
-    mpb = ttk.Progressbar(
-        progress_screen, orient="horizontal", length=300, mode="determinate"
-    )
-    mpb.pack()
-    progress_screen.resizable(width=False, height=False)
-    mpb["maximum"] = 50
-    mpb["value"] = 0
-    for i in range(50):
-        mpb["value"] = i + 1
-        progress_screen.update()
-        SCREEN.update()
-        time.sleep(0.001)
-    progress_screen.destroy()
-
-
-def get_commit_id_gui():
-    global commit
-    the_commit = commit.get()
-    return the_commit
-
-
-def show_cli_gui(
-        out_func, close_func, keep_func, not_out, pipe_func, name="CoTan_Git >>> 命令行"
-):
-    global bg_color
-    cli_screen = tkinter.Toplevel(bg=bg_color)
-    cli_screen.title(name)
-    cli_screen.geometry("+10+10")  # 设置所在位置
-    cli_screen.resizable(width=False, height=False)
-
-    class ScrolledCli(ScrolledText):
-        def __init__(self, *args, **kwargs):
-            super(ScrolledCli, self).__init__(*args, **kwargs)
-
-        def insert(self, index, chars, *args):
-            text.config(state=tkinter.NORMAL)
-            super(ScrolledCli, self).insert(index, chars, *args)
-            text.config(state=tkinter.DISABLED)
-
-        def clear(self):
-            text.config(state=tkinter.NORMAL)
-            self.delete("0.0", tkinter.END)
-            text.config(state=tkinter.DISABLED)
-
-    text = ScrolledCli(cli_screen, font=("黑体", 11), height=30, width=100)
-    text.grid(column=0, row=0, columnspan=5, sticky=tkinter.E + tkinter.W)
-    text.config(state=tkinter.DISABLED)
-    tkinter.Button(
-        cli_screen,
-        bg=bg_color,
-        fg=word_color,
-        text="输出文档",
-        font=("黑体", 11),
-        width=20,
-        height=2,
-        command=out_func,
-    ).grid(column=4, row=1, sticky=tkinter.E + tkinter.W)
-    close = tkinter.Button(
-        cli_screen,
-        bg=bg_color,
-        fg=word_color,
-        text="关闭子线程连接",
-        font=("黑体", 11),
-        width=20,
-        height=2,
-        command=close_func,
-    )
-    close.grid(column=0, row=1, sticky=tkinter.E + tkinter.W)
-    keep = tkinter.Button(
-        cli_screen,
-        bg=bg_color,
-        fg=word_color,
-        text="保持线程连接",
-        font=("黑体", 11),
-        width=20,
-        height=2,
-        command=keep_func,
-    )
-    keep.grid(column=1, row=1, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(
-        cli_screen,
-        bg=bg_color,
-        fg=word_color,
-        text="格式化输出",
-        font=("黑体", 11),
-        width=20,
-        height=2,
-        command=not_out,
-    ).grid(column=2, row=1, sticky=tkinter.E + tkinter.W)
-    tkinter.Button(
-        cli_screen,
-        bg=bg_color,
-        fg=word_color,
-        text="启动CoTan命令行",
-        font=("黑体", 11),
-        width=20,
-        height=2,
-        command=pipe_func,
-        state=tkinter.DISABLED,
-    ).grid(column=3, row=1, sticky=tkinter.E + tkinter.W)
-    cli_screen.update()
-    return text, cli_screen, [close, keep]
-
-
-def repo_init_gui():
-    new_dir = askdirectory(title="选择仓库地址")
-    if new_dir == "":
-        raise Exception
-    return new_dir
-
-
-def get_repo_name_gui():  # 获得名字统一接口
-    global git, repo_list, repo_box
-    try:
-        return repo_list[repo_box.curselection()[0]]
-    except BaseException:
-        try:
-            return repo_list[0]
-        except BaseException:
-            return None
-
-
-def update_repo_box_gui():
-    global git, repo_list, repo_box
-    repo_list = list(git.get_git_dict().keys())
-    repo_box.delete(0, tkinter.END)
-    repo_box.insert(tkinter.END, *repo_list)
-
-
-def update_file_box_gui():
-    global file_list, file_box
-    file_box.delete(0, tkinter.END)
-    file_box.insert(tkinter.END, *file_list)
-
-
-def update_git_file_last_gui():
-    global last_name
-    if last_name is None:
-        return False
-    update_git_file_gui(last_name)
-
-
-def update_git_file_select_gui():
-    name = get_repo_name_gui()
-    update_git_file_gui(name)
-
-
-def update_git_file_gui(name):
-    global git, repo_dir, last_name
-    dir_list = git.get_dir(name)
-    try:  # 窗口可能已经关闭
-        repo_dir.delete(0, tkinter.END)
-        repo_dir.insert(tkinter.END, *dir_list)
-    except BaseException:
-        pass
-    last_name = name
-
-
-def add_file_list_gui():
-    global file_list, file_box
-    new_file = set(askopenfilenames(title=f"选择文件"))
-    have_file = set(file_list)
-    file_list += list(new_file - (new_file & have_file))  # 筛选出重复
-    update_file_box_gui()
-
-
-def add_file_input_dir_gui():
-    global file_dir
-    new_dir = file_dir.get()
-    if new_dir.replace(" ", "") != "" and new_dir not in file_list:
-        file_list.append(new_dir)
-    update_file_box_gui()
-
-
-def add_file_by_git_gui():
-    global file_dir
-    new_dir = file_dir.get()
-    if new_dir.replace(" ", "") != "":
-        name = get_repo_name_gui()
-        new_dir = git.make_dir(name, new_dir)
-        if new_dir not in file_list:
-            file_list.append(new_dir)
-    update_file_box_gui()
-
-
-def diff_gui():
-    branch = master.get()
-    if branch == "":
-        branch = "HEAD"
-    return branch
-
-
-def commit_file_gui():
-    m = commit_message.get()
-    if m.replace(" ", "") == "":
-        tkinter.messagebox.showinfo("警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！")
-        raise Exception
-    return m
-
-
-def log_gui(log_type):
-    graph = bool(log_type[0].get())
-    abbrev = bool(log_type[1].get())
-    pretty = bool(log_type[2].get())
-    return abbrev, graph, pretty
-
-
-def reset_head_gui():
-    repo_head = head.get()
-    if repo_head == "":
-        repo_head = "HEAD~1"
-    the_reset_type = reset_type.get()
-    return repo_head, the_reset_type
-
-
-def reset_file_gui():
-    repo_head = head.get()
-    if repo_head == "":
-        repo_head = "HEAD~1"
-    return repo_head
-
-
-def add_new_branch_gui():
-    name = get_branch_name_gui()
-    origin = origin_branch.get()
-    return name, origin
-
-
-def branch_merge_gui():
-    message = commit_message.get()
-    parameters_no_ff = not bool(no_fast_forward.get())  # 对于no_ff来说，True - 使用快速合并，所以要翻转
-    if message.replace(" ", "") == "" and parameters_no_ff:
-        tkinter.messagebox.showinfo(
-            "警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！" "(如果你不想添加描述，请使用快速合并，但我并不建议！)"
+    @staticmethod
+    def progress_bar_gui(*args, name="CoTan_Git >>> 运行中...", **kwargs):
+        progress_screen = tkinter.Toplevel(bg=bg_color)
+        progress_screen.title(name)
+        progress_screen.geometry("+10+10")  # 设置所在位置
+        mpb = ttk.Progressbar(
+            progress_screen, orient="horizontal", length=300, mode="determinate"
         )
-        raise Exception
-    name = get_branch_name_gui()
-    return message, name, parameters_no_ff
+        mpb.pack()
+        progress_screen.resizable(width=False, height=False)
+        mpb["maximum"] = 50
+        mpb["value"] = 0
+        for i in range(50):
+            mpb["value"] = i + 1
+            progress_screen.update()
+            SCREEN.update()
+            time.sleep(0.001)
+        progress_screen.destroy()
 
+    @staticmethod
+    def get_commit_id_gui():
+        global commit
+        the_commit = commit.get()
+        return the_commit
 
-def get_branch_name_gui():
-    return branch_name.get()
+    @staticmethod
+    def show_cli_gui(
+            out_func, close_func, keep_func, not_out, pipe_func, name="CoTan_Git >>> 命令行"
+    ):
+        global bg_color
+        cli_screen = tkinter.Toplevel(bg=bg_color)
+        cli_screen.title(name)
+        cli_screen.geometry("+10+10")  # 设置所在位置
+        cli_screen.resizable(width=False, height=False)
 
+        class ScrolledCli(ScrolledText):
+            def __init__(self, *args, **kwargs):
+                super(ScrolledCli, self).__init__(*args, **kwargs)
 
-def get_stash_gui():
-    stash_num = stash_name.get()
-    return stash_num
+            def insert(self, index, chars, *args):
+                text.config(state=tkinter.NORMAL)
+                super(ScrolledCli, self).insert(index, chars, *args)
+                text.config(state=tkinter.DISABLED)
 
+            def clear(self):
+                text.config(state=tkinter.NORMAL)
+                self.delete("0.0", tkinter.END)
+                text.config(state=tkinter.DISABLED)
 
-def add_remote_gui():
-    ssh = remote_ssh.get()
-    name = remote_name.get()
-    return name, ssh
+        text = ScrolledCli(cli_screen, font=("黑体", 11), height=30, width=100)
+        text.grid(column=0, row=0, columnspan=5, sticky=tkinter.E + tkinter.W)
+        text.config(state=tkinter.DISABLED)
+        tkinter.Button(
+            cli_screen,
+            bg=bg_color,
+            fg=word_color,
+            text="输出文档",
+            font=("黑体", 11),
+            width=20,
+            height=2,
+            command=out_func,
+        ).grid(column=4, row=1, sticky=tkinter.E + tkinter.W)
+        close = tkinter.Button(
+            cli_screen,
+            bg=bg_color,
+            fg=word_color,
+            text="关闭子线程连接",
+            font=("黑体", 11),
+            width=20,
+            height=2,
+            command=close_func,
+        )
+        close.grid(column=0, row=1, sticky=tkinter.E + tkinter.W)
+        keep = tkinter.Button(
+            cli_screen,
+            bg=bg_color,
+            fg=word_color,
+            text="保持线程连接",
+            font=("黑体", 11),
+            width=20,
+            height=2,
+            command=keep_func,
+        )
+        keep.grid(column=1, row=1, sticky=tkinter.E + tkinter.W)
+        tkinter.Button(
+            cli_screen,
+            bg=bg_color,
+            fg=word_color,
+            text="格式化输出",
+            font=("黑体", 11),
+            width=20,
+            height=2,
+            command=not_out,
+        ).grid(column=2, row=1, sticky=tkinter.E + tkinter.W)
+        tkinter.Button(
+            cli_screen,
+            bg=bg_color,
+            fg=word_color,
+            text="启动CoTan命令行",
+            font=("黑体", 11),
+            width=20,
+            height=2,
+            command=pipe_func,
+            state=tkinter.DISABLED,
+        ).grid(column=3, row=1, sticky=tkinter.E + tkinter.W)
+        cli_screen.update()
+        return text, cli_screen, [close, keep]
 
+    @staticmethod
+    def repo_init_gui():
+        new_dir = askdirectory(title="选择仓库地址")
+        if new_dir == "":
+            raise Exception
+        return new_dir
 
-def del_remote_gui():
-    name = remote_name.get()
-    return name
+    @staticmethod
+    def get_repo_name_gui():  # 获得名字统一接口
+        global git, repo_list, repo_box
+        try:
+            return repo_list[repo_box.curselection()[0]]
+        except BaseException:
+            try:
+                return repo_list[0]
+            except BaseException:
+                return None
 
+    @staticmethod
+    def update_repo_box_gui():
+        global git, repo_list, repo_box
+        repo_list = list(git.get_git_dict().keys())
+        repo_box.delete(0, tkinter.END)
+        repo_box.insert(tkinter.END, *repo_list)
 
-def bind_remote_branch_gui():
-    remote = remote_branch.get()
-    local = local_branch.get()
-    return local, remote
+    @staticmethod
+    def update_file_box_gui():
+        global file_list, file_box
+        file_box.delete(0, tkinter.END)
+        file_box.insert(tkinter.END, *file_list)
 
+    @staticmethod
+    def update_git_file_last_gui():
+        global last_name
+        if last_name is None:
+            return False
+        UIAPI.update_git_file_gui(last_name)
 
-def pull_push_gui():
-    branch = remote_branch.get()
-    remote = remote_name.get()
-    local = local_branch.get()
-    allow = bool(allow_history.get())
-    parameters_u = bool(push_bind.get())
-    parameters_f = tkinter.messagebox.askokcancel("提示", f"是否需要强制推送？(强制推送不被建议)")
-    return allow, branch, local, parameters_f, parameters_u, remote
+    @staticmethod
+    def update_git_file_select_gui():
+        name = UIAPI.get_repo_name_gui()
+        UIAPI.update_git_file_gui(name)
 
+    @staticmethod
+    def update_git_file_gui(name):
+        global git, repo_dir, last_name
+        dir_list = git.get_dir(name)
+        try:  # 窗口可能已经关闭
+            repo_dir.delete(0, tkinter.END)
+            repo_dir.insert(tkinter.END, *dir_list)
+        except BaseException:
+            pass
+        last_name = name
 
-def get_search_key_gui():
-    return show_search_key.get()
+    @staticmethod
+    def add_file_list_gui():
+        global file_list, file_box
+        new_file = set(askopenfilenames(title=f"选择文件"))
+        have_file = set(file_list)
+        file_list += list(new_file - (new_file & have_file))  # 筛选出重复
+        UIAPI.update_file_box_gui()
 
+    @staticmethod
+    def add_file_input_dir_gui():
+        global file_dir
+        new_dir = file_dir.get()
+        if new_dir.replace(" ", "") != "" and new_dir not in file_list:
+            file_list.append(new_dir)
+        UIAPI.update_file_box_gui()
 
-def add_tag_gui():
-    global tag_name, commit, tag_message
-    the_tag_name = tag_name.get()
-    the_commit = tag_commit.get()
-    the_tag_message = tag_message.get()
-    return the_tag_name, the_commit, the_tag_message
+    @staticmethod
+    def add_file_by_git_gui():
+        global file_dir
+        new_dir = file_dir.get()
+        if new_dir.replace(" ", "") != "":
+            name = UIAPI.get_repo_name_gui()
+            new_dir = git.make_dir(name, new_dir)
+            if new_dir not in file_list:
+                file_list.append(new_dir)
+        UIAPI.update_file_box_gui()
 
+    @staticmethod
+    def diff_gui():
+        branch = master.get()
+        if branch == "":
+            branch = "HEAD"
+        return branch
 
-def push_tag_gui():
-    global tag_name
-    the_tag_name = tag_name.get()
-    remoto = remote_name.get()
-    return remoto, the_tag_name
+    @staticmethod
+    def commit_file_gui():
+        m = commit_message.get()
+        if m.replace(" ", "") == "":
+            tkinter.messagebox.showinfo("警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！")
+            raise Exception
+        return m
 
+    @staticmethod
+    def log_gui(log_type):
+        graph = bool(log_type[0].get())
+        abbrev = bool(log_type[1].get())
+        pretty = bool(log_type[2].get())
+        return abbrev, graph, pretty
 
-def get_remote_name_gui():
-    remoto = remote_name.get()
-    return remoto
+    @staticmethod
+    def reset_head_gui():
+        repo_head = head.get()
+        if repo_head == "":
+            repo_head = "HEAD~1"
+        the_reset_type = reset_type.get()
+        return repo_head, the_reset_type
 
+    @staticmethod
+    def reset_file_gui():
+        repo_head = head.get()
+        if repo_head == "":
+            repo_head = "HEAD~1"
+        return repo_head
 
-def del_remote_tag_gui():
-    remoto = remote_name.get()
-    tag = tag_name.get()
-    return remoto, tag
+    @staticmethod
+    def add_new_branch_gui():
+        name = UIAPI.get_branch_name_gui()
+        origin = origin_branch.get()
+        return name, origin
 
+    @staticmethod
+    def branch_merge_gui():
+        message = commit_message.get()
+        parameters_no_ff = not bool(no_fast_forward.get())  # 对于no_ff来说，True - 使用快速合并，所以要翻转
+        if message.replace(" ", "") == "" and parameters_no_ff:
+            tkinter.messagebox.showinfo(
+                "警告!", "非常遗憾，我不同意你commit而不添加任何描述！\n描述是很重要的！" "(如果你不想添加描述，请使用快速合并，但我并不建议！)"
+            )
+            raise Exception
+        name = UIAPI.get_branch_name_gui()
+        return message, name, parameters_no_ff
 
-def del_remote_branch_gui():
-    remote = remote_name.get()
-    branch = remote_branch.get()
-    return branch, remote
+    @staticmethod
+    def get_branch_name_gui():
+        return branch_name.get()
 
+    @staticmethod
+    def get_stash_gui():
+        stash_num = stash_name.get()
+        return stash_num
 
-def del_tag_gui():
-    tag = tag_name.get()
-    return tag
+    @staticmethod
+    def add_remote_gui():
+        ssh = remote_ssh.get()
+        name = remote_name.get()
+        return name, ssh
 
+    @staticmethod
+    def del_remote_gui():
+        name = remote_name.get()
+        return name
 
-def featch_remote_gui():
-    branch = remote_branch.get()
-    remote = remote_name.get()
-    local = local_branch.get()
-    return branch, local, remote
+    @staticmethod
+    def bind_remote_branch_gui():
+        remote = remote_branch.get()
+        local = local_branch.get()
+        return local, remote
 
+    @staticmethod
+    def pull_push_gui():
+        branch = remote_branch.get()
+        remote = remote_name.get()
+        local = local_branch.get()
+        allow = bool(allow_history.get())
+        parameters_u = bool(push_bind.get())
+        parameters_f = tkinter.messagebox.askokcancel("提示", f"是否需要强制推送？(强制推送不被建议)")
+        return allow, branch, local, parameters_f, parameters_u, remote
 
-def get_customize_gui():
-    command = customize_input.get()
-    is_threaded_refresh = bool(threaded_refresh.get())
-    is_asynchronous_display = bool(asynchronous_display.get())
-    return command, is_asynchronous_display, is_threaded_refresh
+    @staticmethod
+    def get_search_key_gui():
+        return show_search_key.get()
 
+    @staticmethod
+    def add_tag_gui():
+        global tag_name, commit, tag_message
+        the_tag_name = tag_name.get()
+        the_commit = tag_commit.get()
+        the_tag_message = tag_message.get()
+        return the_tag_name, the_commit, the_tag_message
 
-def clone_git_gui():
-    new_dir = askdirectory(title="选择仓库地址")
-    name = git.clone_repo(new_dir)
-    return name
+    @staticmethod
+    def push_tag_gui():
+        global tag_name
+        the_tag_name = tag_name.get()
+        remoto = remote_name.get()
+        return remoto, the_tag_name
 
+    @staticmethod
+    def get_remote_name_gui():
+        remoto = remote_name.get()
+        return remoto
 
-def branch_new_gui():
-    new_name = branch_new_name.get()
-    old_name = get_branch_name_gui()
-    return new_name, old_name
+    @staticmethod
+    def del_remote_tag_gui():
+        remoto = remote_name.get()
+        tag = tag_name.get()
+        return remoto, tag
 
+    @staticmethod
+    def del_remote_branch_gui():
+        remote = remote_name.get()
+        branch = remote_branch.get()
+        return branch, remote
 
-def git_main():
-    global SCREEN, git, PATH, bg_color, buttom_color, word_color, repo_list, last_name, file_list, FONT
-    SCREEN.mainloop()
+    @staticmethod
+    def del_tag_gui():
+        tag = tag_name.get()
+        return tag
+
+    @staticmethod
+    def featch_remote_gui():
+        branch = remote_branch.get()
+        remote = remote_name.get()
+        local = local_branch.get()
+        return branch, local, remote
+
+    @staticmethod
+    def get_customize_gui():
+        command = customize_input.get()
+        is_threaded_refresh = bool(threaded_refresh.get())
+        is_asynchronous_display = bool(asynchronous_display.get())
+        return command, is_asynchronous_display, is_threaded_refresh
+
+    @staticmethod
+    def clone_git_gui():
+        new_dir = askdirectory(title="选择仓库地址")
+        name = git.clone_repo(new_dir)
+        return name
+
+    @staticmethod
+    def branch_new_gui():
+        new_name = branch_new_name.get()
+        old_name = UIAPI.get_branch_name_gui()
+        return new_name, old_name
 
 
 class API:
     @staticmethod
     def branch_new():  # 克隆仓库
-        new_name, old_name = branch_new_gui()
-        cli_gui(git.rename_branch, (get_repo_name_gui(), old_name, new_name), show_screen=False)
-        update_repo_box_gui()
+        new_name, old_name = UIAPI.branch_new_gui()
+        UIAPI.cli_gui(git.rename_branch, (UIAPI.get_repo_name_gui(), old_name, new_name), show_screen=False)
+        UIAPI.update_repo_box_gui()
 
     @staticmethod
     def clone_git():  # 克隆仓库
-        name = clone_git_gui()
+        name = UIAPI.clone_git_gui()
         API.clone_core(name, clone_repo.get())
-        update_repo_box_gui()
+        UIAPI.update_repo_box_gui()
 
     @staticmethod
     def clone_core(name, url):
-        cli_gui(
+        UIAPI.cli_gui(
             git.clone,
             (name, url),
             break_time=0,
@@ -599,235 +596,235 @@ class API:
             is_asynchronous_display=True,
         )
         git.after_clone(name)
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def customize():
-        command, is_asynchronous_display, is_threaded_refresh = get_customize_gui()
-        cli_gui(
+        command, is_asynchronous_display, is_threaded_refresh = UIAPI.get_customize_gui()
+        UIAPI.cli_gui(
             git.customize_command,
-            (get_repo_name_gui(), command),
+            (UIAPI.get_repo_name_gui(), command),
             break_time=0,
             tip_text=f"{command}:操作进行中",
             is_threaded_refresh=is_threaded_refresh,
             is_asynchronous_display=is_asynchronous_display,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def fetch_remote():
-        branch, local, remote = featch_remote_gui()
-        cli_gui(
+        branch, local, remote = UIAPI.featch_remote_gui()
+        UIAPI.cli_gui(
             git.fetch,
-            (get_repo_name_gui(), local, remote, branch),
+            (UIAPI.get_repo_name_gui(), local, remote, branch),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def del_tag():
-        tag = del_tag_gui()
-        cli_gui(git.del_tag, (get_repo_name_gui(), tag))
-        update_git_file_last_gui()
+        tag = UIAPI.del_tag_gui()
+        UIAPI.cli_gui(git.del_tag, (UIAPI.get_repo_name_gui(), tag))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def del_remote_branch():
-        branch, remote = del_remote_branch_gui()
-        cli_gui(
+        branch, remote = UIAPI.del_remote_branch_gui()
+        UIAPI.cli_gui(
             git.del_branch_remote,
-            (get_repo_name_gui(), remote, branch),
+            (UIAPI.get_repo_name_gui(), remote, branch),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def del_remote_tag():
-        remoto, tag = del_remote_tag_gui()
-        cli_gui(
+        remoto, tag = UIAPI.del_remote_tag_gui()
+        UIAPI.cli_gui(
             git.del_tag_remote,
-            (get_repo_name_gui(), remoto, tag),
+            (UIAPI.get_repo_name_gui(), remoto, tag),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def push_all_tag():
-        remoto = get_remote_name_gui()
-        cli_gui(
+        remoto = UIAPI.get_remote_name_gui()
+        UIAPI.cli_gui(
             git.push_all_tag,
-            (get_repo_name_gui(), remoto),
+            (UIAPI.get_repo_name_gui(), remoto),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def push_tag():
-        remoto, the_tag_name = push_tag_gui()
-        cli_gui(
+        remoto, the_tag_name = UIAPI.push_tag_gui()
+        UIAPI.cli_gui(
             git.push_tag,
-            (get_repo_name_gui(), the_tag_name, remoto),
+            (UIAPI.get_repo_name_gui(), the_tag_name, remoto),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def add_tag():
-        the_tag_name, the_commit, the_tag_message = add_tag_gui()
-        cli_gui(
-            git.add_tag, (get_repo_name_gui(), the_tag_name, the_commit, the_tag_message), show_screen=False
+        the_tag_name, the_commit, the_tag_message = UIAPI.add_tag_gui()
+        UIAPI.cli_gui(
+            git.add_tag, (UIAPI.get_repo_name_gui(), the_tag_name, the_commit, the_tag_message), show_screen=False
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def show_tag(type_):
         global git
-        key = get_search_key_gui()
-        cli_gui(
+        key = UIAPI.get_search_key_gui()
+        UIAPI.cli_gui(
             {1: git.get_tag_list, 0: git.search_commit}.get(type_, git.search_commit),
-            (get_repo_name_gui(), key),
+            (UIAPI.get_repo_name_gui(), key),
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def pull_push_remote(type_):
-        allow, branch, local, parameters_f, parameters_u, remote = pull_push_gui()
-        cli_gui(
+        allow, branch, local, parameters_f, parameters_u, remote = UIAPI.pull_push_gui()
+        UIAPI.cli_gui(
             {0: git.pull_from_remote, 1: git.push_to_remote}.get(
                 type_, git.pull_from_remote
             ),
-            (get_repo_name_gui(), local, remote, branch, allow, parameters_u, parameters_f),
+            (UIAPI.get_repo_name_gui(), local, remote, branch, allow, parameters_u, parameters_f),
             break_time=0,
             tip_text=f"此操作需要连接远程仓库，请稍等...",
             is_threaded_refresh=True,
             is_asynchronous_display=True,
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def bind_remote_branch():
-        local, remote = bind_remote_branch_gui()
-        cli_gui(git.bind_branch, (get_repo_name_gui(), local, remote))
-        update_git_file_last_gui()
+        local, remote = UIAPI.bind_remote_branch_gui()
+        UIAPI.cli_gui(git.bind_branch, (UIAPI.get_repo_name_gui(), local, remote))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def del_remote():
-        name = del_remote_gui()
-        cli_gui(git.del_remote, (get_repo_name_gui(), name))
-        update_git_file_last_gui()
+        name = UIAPI.del_remote_gui()
+        UIAPI.cli_gui(git.del_remote, (UIAPI.get_repo_name_gui(), name))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def add_remote():
-        name, ssh = add_remote_gui()
-        cli_gui(git.remote_add, (get_repo_name_gui(), ssh, name))
-        update_git_file_last_gui()
+        name, ssh = UIAPI.add_remote_gui()
+        UIAPI.cli_gui(git.remote_add, (UIAPI.get_repo_name_gui(), ssh, name))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def cherry_pick():
-        the_commit = get_commit_id_gui()
-        cli_gui(git.cherry_pick, (get_repo_name_gui(), the_commit))
-        update_git_file_last_gui()
+        the_commit = UIAPI.get_commit_id_gui()
+        UIAPI.cli_gui(git.cherry_pick, (UIAPI.get_repo_name_gui(), the_commit))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def open_stash(type_):
-        stash_num = get_stash_gui()
+        stash_num = UIAPI.get_stash_gui()
         if stash_num == "":
             stash_num = "0"
-        cli_gui([git.drop_stash, git.apply_stash][type_], (get_repo_name_gui(), stash_num))
-        update_git_file_last_gui()
+        UIAPI.cli_gui([git.drop_stash, git.apply_stash][type_], (UIAPI.get_repo_name_gui(), stash_num))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def branch_merge():
-        message, name, parameters_no_ff = branch_merge_gui()
-        cli_gui(git.merge_branch, (get_repo_name_gui(), name, parameters_no_ff, message))
-        update_git_file_last_gui()
+        message, name, parameters_no_ff = UIAPI.branch_merge_gui()
+        UIAPI.cli_gui(git.merge_branch, (UIAPI.get_repo_name_gui(), name, parameters_no_ff, message))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def del_branch(type_):
-        name = get_branch_name_gui()
-        cli_gui(git.del_branch, (get_repo_name_gui(), name, type_))
-        update_git_file_last_gui()
+        name = UIAPI.get_branch_name_gui()
+        UIAPI.cli_gui(git.del_branch, (UIAPI.get_repo_name_gui(), name, type_))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def switch_branch():
-        name = get_branch_name_gui()
-        cli_gui(git.switch_branch, (get_repo_name_gui(), name), break_time=1, show_screen=False)
-        update_git_file_last_gui()
+        name = UIAPI.get_branch_name_gui()
+        UIAPI.cli_gui(git.switch_branch, (UIAPI.get_repo_name_gui(), name), break_time=1, show_screen=False)
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def add_new_branch():
-        name, origin = add_new_branch_gui()
-        cli_gui(
-            git.new_branch, (get_repo_name_gui(), name, origin), break_time=1, show_screen=False
+        name, origin = UIAPI.add_new_branch_gui()
+        UIAPI.cli_gui(
+            git.new_branch, (UIAPI.get_repo_name_gui(), name, origin), break_time=1, show_screen=False
         )
-        update_git_file_last_gui()
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def remove_file():
         if file_list == []:
             return False
-        cli_gui(git.rm, (get_repo_name_gui(), file_list))
-        update_git_file_last_gui()
+        UIAPI.cli_gui(git.rm, (UIAPI.get_repo_name_gui(), file_list))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def checkout_file():  # 从暂存区、仓库返回文件
         if file_list == []:
             return False
-        cli_gui(git.checkout_version, (get_repo_name_gui(), file_list))
-        update_git_file_last_gui()
+        UIAPI.cli_gui(git.checkout_version, (UIAPI.get_repo_name_gui(), file_list))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def reset_file():  # 使用reset回退文件
-        repo_head = reset_file_gui()
-        cli_gui(git.back_version_file, (get_repo_name_gui(), repo_head, file_list))
-        update_git_file_last_gui()
+        repo_head = UIAPI.reset_file_gui()
+        UIAPI.cli_gui(git.back_version_file, (UIAPI.get_repo_name_gui(), repo_head, file_list))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def reset_head():
-        repo_head, the_reset_type = reset_head_gui()
-        cli_gui(git.back_version, (get_repo_name_gui(), repo_head, the_reset_type))
-        update_git_file_last_gui()
+        repo_head, the_reset_type = UIAPI.reset_head_gui()
+        UIAPI.cli_gui(git.back_version, (UIAPI.get_repo_name_gui(), repo_head, the_reset_type))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def log():
         global git, log_type
-        name = get_repo_name_gui()
-        abbrev, graph, pretty = log_gui(log_type)
-        cli_gui(git.log, (name, graph, pretty, abbrev))
-        update_git_file_last_gui()
+        name = UIAPI.get_repo_name_gui()
+        abbrev, graph, pretty = UIAPI.log_gui(log_type)
+        UIAPI.cli_gui(git.log, (name, graph, pretty, abbrev))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def not_parameters_call(func):
         global git
-        name = get_repo_name_gui()
-        cli_gui(func, (name,))
-        update_git_file_last_gui()
+        name = UIAPI.get_repo_name_gui()
+        UIAPI.cli_gui(func, (name,))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def commit_file():
-        name = get_repo_name_gui()
-        cli_gui(git.commit_file, (name, commit_file_gui()))
-        update_git_file_last_gui()
+        name = UIAPI.get_repo_name_gui()
+        UIAPI.cli_gui(git.commit_file, (name, UIAPI.commit_file_gui()))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def diff():
-        branch = diff_gui()
-        cli_gui(git.diff_file, (get_repo_name_gui(), branch))
-        update_git_file_last_gui()
+        branch = UIAPI.diff_gui()
+        UIAPI.cli_gui(git.diff_file, (UIAPI.get_repo_name_gui(), branch))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def remove_the_staging():
@@ -835,16 +832,16 @@ class API:
         dic = file_list
         if dic == []:
             dic = "."
-        cli_gui(git.reset_file, (get_repo_name_gui(), dic))
-        update_git_file_last_gui()
+        UIAPI.cli_gui(git.reset_file, (UIAPI.get_repo_name_gui(), dic))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def add():
         dic = file_list
         if dic == []:
             dic = "."  # 查一下取消的dic
-        cli_gui(git.add_file, (get_repo_name_gui(), dic))
-        update_git_file_last_gui()
+        UIAPI.cli_gui(git.add_file, (UIAPI.get_repo_name_gui(), dic))
+        UIAPI.update_git_file_last_gui()
 
     @staticmethod
     def get_file_box_index():
@@ -854,7 +851,7 @@ class API:
     def del_file():
         try:
             del file_list[API.get_file_box_index()]
-            update_file_box_gui()
+            UIAPI.update_file_box_gui()
         except BaseException:
             pass
 
@@ -862,14 +859,19 @@ class API:
     def clean_file():
         global file_list
         file_list = []
-        update_file_box_gui()
+        UIAPI.update_file_box_gui()
 
     @staticmethod
     def repo_init():  # 创建仓库
         global git
-        new_dir = repo_init_gui()
+        new_dir = UIAPI.repo_init_gui()
         git.open_repo(new_dir)
-        update_repo_box_gui()
+        UIAPI.update_repo_box_gui()
+
+
+def git_main():
+    global SCREEN, git, PATH, bg_color, buttom_color, word_color, repo_list, last_name, file_list, FONT
+    SCREEN.mainloop()
 
 
 file_list = []
@@ -917,7 +919,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="查看文件",
-    command=update_git_file_select_gui,
+    command=UIAPI.update_git_file_select_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1003,7 +1005,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="填充路径并添加",
-    command=add_file_by_git_gui,
+    command=UIAPI.add_file_by_git_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1013,7 +1015,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="直接添加",
-    command=add_file_input_dir_gui,
+    command=UIAPI.add_file_input_dir_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1023,7 +1025,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="选择文件",
-    command=add_file_list_gui,
+    command=UIAPI.add_file_list_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,

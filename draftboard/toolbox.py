@@ -66,122 +66,107 @@ help_doc = """
 """
 
 
-def increasing_func_color():
-    global increasing_color
-    increasing_color = askcolor(title="选择颜色")[0]
+class UIAPI:
+    @staticmethod
+    def askok_gui(message):
+        return tkinter.messagebox.askokcancel('提示', message)
 
 
-def subtraction_func_color():
-    global subtraction_color
-    subtraction_color = askcolor(title="选择颜色")[0]
+class API:
+    @staticmethod
+    def increasing_func_color():
+        global increasing_color
+        increasing_color = askcolor(title="选择颜色")[0]
 
+    @staticmethod
+    def subtraction_func_color():
+        global subtraction_color
+        subtraction_color = askcolor(title="选择颜色")[0]
 
-def select_color():
-    global pen_color
-    pen_color = askcolor(title="选择颜色")[0]
+    @staticmethod
+    def select_color():
+        global pen_color
+        pen_color = askcolor(title="选择颜色")[0]
 
+    @staticmethod
+    def choose_save():
+        global save_dir
+        save_dir = asksaveasfilename(
+            title="选择保存位置", filetypes=[("PNG", ".png")]
+        )
+        if not save_dir:
+            save_dir = None
+        else:
+            save_dir += ".png"
 
-def choose_save():
-    global save_dir
-    save_dir = asksaveasfilename(
-        title="选择保存位置", filetypes=[("PNG", ".png")]
-    )
-    if not save_dir:
-        save_dir = None
-    else:
-        save_dir += ".png"
+    @staticmethod
+    def choose_open():
+        global background_image
+        background_image = askopenfilename(
+            title="选择载入图片", filetypes=[("PNG", ".png"), ("JPG", ".jpg")]
+        )
+        if not background_image:
+            background_image = None
 
+    @staticmethod
+    def switch_brush():
+        global pen_weight
+        if UIAPI.askok_gui("要切换到刷子吗（可当橡皮使用）"):
+            pen_weight = 10
 
-def choose_open():
-    global background_image
-    background_image = askopenfilename(
-        title="选择载入图片", filetypes=[("PNG", ".png"), ("JPG", ".jpg")]
-    )
-    if not background_image:
-        background_image = None
+    @staticmethod
+    def switch_big():
+        global pen_weight
+        if UIAPI.askok_gui("要切换到大笔吗"):
+            pen_weight = 3
 
+    @staticmethod
+    def set_pen():
+        global pen_weight, pen_weight_input
+        pen = pen_weight_input.get().replace(" ", "")
+        try:
+            pen = int(pen)
+            if UIAPI.askok_gui(f"是否设定大小为{pen}(系统默认大小为：2)"):
+                pen_weight = pen
+        except BaseException:
+            if UIAPI.askok_gui("设置失败，是否要切换到中笔吗"):
+                pen_weight = 2
 
-def switch_brush():
-    global pen_weight
-    if tkinter.messagebox.askokcancel("提示", "要切换到刷子吗（可当橡皮使用）"):
-        pen_weight = 10
-
-
-def switch_big():
-    global pen_weight
-    if tkinter.messagebox.askokcancel("提示", "要切换到大笔吗"):
-        pen_weight = 3
-
-
-def set_pen():
-    global pen_weight, pen_weight_input
-    pen = pen_weight_input.get().replace(" ", "")
-    try:
-        pen = int(pen)
-        if tkinter.messagebox.askokcancel("提示", f"是否设定大小为{pen}(系统默认大小为：2)"):
-            pen_weight = pen
-    except BaseException:
-        if tkinter.messagebox.askokcancel("提示", "设置失败，是否要切换到中笔吗"):
+    @staticmethod
+    def switch_stroke():
+        global pen_weight
+        if UIAPI.askok_gui("要切换到中笔吗"):
             pen_weight = 2
 
+    @staticmethod
+    def switch_small():
+        global pen_weight
+        if UIAPI.askok_gui("要切换到小笔吗？"):
+            pen_weight = 1
 
-def switch_stroke():
-    global pen_weight
-    if tkinter.messagebox.askokcancel("提示", "要切换到中笔吗"):
-        pen_weight = 2
-
-
-def switch_small():
-    global pen_weight
-    if tkinter.messagebox.askokcancel("提示", "要切换到小笔吗？"):
-        pen_weight = 1
-
-
-def plot_coordinate():
-    global coordinate_system_drawing_method
-    if tkinter.messagebox.askokcancel(
-        "提示", "是否绘制坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
-    ):
-        coordinate_system_drawing_method = 1
-    else:
-        coordinate_system_drawing_method = None
-
-
-def plot_coordinate_small():
-    global coordinate_system_drawing_method
-    if tkinter.messagebox.askokcancel(
-        "提示", "是否绘制小跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
-    ):
-        coordinate_system_drawing_method = 2
-    else:
-        coordinate_system_drawing_method = None
-
-
-def plot_coordinate_big_span():
-    global coordinate_system_drawing_method
-    if tkinter.messagebox.askokcancel(
-        "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
-    ):
-        coordinate_system_drawing_method = 3
-    else:
-        coordinate_system_drawing_method = None
-
-
-def set_span():
-    global coordinate_system_drawing_method, span, span_input
-    span_input_str = span_input.get().replace(" ", "")
-    try:
-        span_input_str = int(span_input_str)
+    @staticmethod
+    def plot_coordinate():
+        global coordinate_system_drawing_method
         if tkinter.messagebox.askokcancel(
-            "提示", f"是否设定跨度为{span_input_str}(跨度代表坐标系一个单位大小的实际像素，系统默认大跨度为：120)"
+            "提示", "是否绘制坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
         ):
-            span = span_input_str
             coordinate_system_drawing_method = 1
         else:
             coordinate_system_drawing_method = None
-            span = None
-    except BaseException:
-        span = None
+
+    @staticmethod
+    def plot_coordinate_small():
+        global coordinate_system_drawing_method
+        if tkinter.messagebox.askokcancel(
+            "提示", "是否绘制小跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+        ):
+            coordinate_system_drawing_method = 2
+        else:
+            coordinate_system_drawing_method = None
+
+    @staticmethod
+    def plot_coordinate_big_span():
+        global coordinate_system_drawing_method
         if tkinter.messagebox.askokcancel(
             "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
         ):
@@ -189,23 +174,46 @@ def set_span():
         else:
             coordinate_system_drawing_method = None
 
+    @staticmethod
+    def set_span():
+        global coordinate_system_drawing_method, span, span_input
+        span_input_str = span_input.get().replace(" ", "")
+        try:
+            span_input_str = int(span_input_str)
+            if tkinter.messagebox.askokcancel(
+                "提示", f"是否设定跨度为{span_input_str}(跨度代表坐标系一个单位大小的实际像素，系统默认大跨度为：120)"
+            ):
+                span = span_input_str
+                coordinate_system_drawing_method = 1
+            else:
+                coordinate_system_drawing_method = None
+                span = None
+        except BaseException:
+            span = None
+            if tkinter.messagebox.askokcancel(
+                "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+            ):
+                coordinate_system_drawing_method = 3
+            else:
+                coordinate_system_drawing_method = None
 
-def empty():
-    global background_color
-    if tkinter.messagebox.askokcancel("提示", "是否清空草稿(点击取消可撤销未执行的清空)"):
-        background_color = askcolor(title="选择背景颜色")[0]
-    else:
-        background_color = None
+    @staticmethod
+    def empty():
+        global background_color
+        if UIAPI.askok_gui("是否清空草稿(点击取消可撤销未执行的清空)"):
+            background_color = askcolor(title="选择背景颜色")[0]
+        else:
+            background_color = None
 
+    @staticmethod
+    def open_func_box():
+        global func_logger
+        func_logger = drawingfunction.func_box()
 
-def open_func_box():
-    global func_logger
-    func_logger = drawingfunction.func_box()
-
-
-def _help():
-    global help_doc
-    tkinter.messagebox.showinfo(title="帮助", message=help_doc)
+    @staticmethod
+    def show_help():
+        global help_doc
+        tkinter.messagebox.showinfo(title="帮助", message=help_doc)
 
 
 def tool_box():
@@ -220,7 +228,7 @@ def tool_box():
         text="选择颜色",
         bg=bg_color,
         fg=word_color,
-        command=select_color,
+        command=API.select_color,
         width=gui_width,
         height=gui_height,
     ).pack()
@@ -229,7 +237,7 @@ def tool_box():
         text="选择增函数颜色",
         bg=bg_color,
         fg=word_color,
-        command=increasing_func_color,
+        command=API.increasing_func_color,
         width=gui_width,
         height=1,
     ).pack()
@@ -238,7 +246,7 @@ def tool_box():
         text="选择减函数颜色",
         bg=bg_color,
         fg=word_color,
-        command=subtraction_func_color,
+        command=API.subtraction_func_color,
         width=gui_width,
         height=1,
     ).pack()
@@ -247,7 +255,7 @@ def tool_box():
         text="使用中笔(默认笔)",
         bg=bg_color,
         fg=word_color,
-        command=switch_stroke,
+        command=API.switch_stroke,
         width=gui_width,
         height=gui_height,
     ).pack()
@@ -256,7 +264,7 @@ def tool_box():
         text="使用大笔",
         bg=bg_color,
         fg=word_color,
-        command=switch_big,
+        command=API.switch_big,
         width=gui_width,
         height=1,
     ).pack()  # 切换到大笔
@@ -265,7 +273,7 @@ def tool_box():
         text="使用小笔",
         bg=bg_color,
         fg=word_color,
-        command=switch_small,
+        command=API.switch_small,
         width=gui_width,
         height=1,
     ).pack()  # 切换笔
@@ -274,7 +282,7 @@ def tool_box():
         text="使用刷子",
         bg=bg_color,
         fg=word_color,
-        command=switch_brush,
+        command=API.switch_brush,
         width=gui_width,
         height=1,
     ).pack()  # 切换笔
@@ -285,7 +293,7 @@ def tool_box():
         text="使用自定义大小",
         bg=bg_color,
         fg=word_color,
-        command=set_pen,
+        command=API.set_pen,
         width=gui_width,
         height=1,
     ).pack()  # 切换笔
@@ -294,7 +302,7 @@ def tool_box():
         text="清空草稿",
         bg=bg_color,
         fg=word_color,
-        command=empty,
+        command=API.empty,
         width=gui_width,
         height=gui_height,
     ).pack()  # 填充背景
@@ -303,7 +311,7 @@ def tool_box():
         text="绘制坐标系",
         bg=bg_color,
         fg=word_color,
-        command=plot_coordinate,
+        command=API.plot_coordinate,
         width=gui_width,
         height=gui_height,
     ).pack()
@@ -312,14 +320,14 @@ def tool_box():
         text="绘制坐标系(小跨度)",
         bg=bg_color,
         fg=word_color,
-        command=plot_coordinate_small,
+        command=API.plot_coordinate_small,
         width=gui_width,
         height=1,
     ).pack()
     tkinter.Button(
         SCREEN,
         text="绘制坐标系(大跨度)",
-        command=plot_coordinate_big_span,
+        command=API.plot_coordinate_big_span,
         width=gui_width,
         height=1,
         bg=bg_color,
@@ -332,7 +340,7 @@ def tool_box():
         text="使用自定义跨度",
         bg=bg_color,
         fg=word_color,
-        command=set_span,
+        command=API.set_span,
         width=gui_width,
         height=1,
     ).pack()  # 切换笔
@@ -341,7 +349,7 @@ def tool_box():
         text="绘制函数",
         bg=bg_color,
         fg=word_color,
-        command=open_func_box,
+        command=API.open_func_box,
         width=gui_width,
         height=gui_height,
     ).pack()
@@ -350,7 +358,7 @@ def tool_box():
         text="保存",
         bg=bg_color,
         fg=word_color,
-        command=choose_save,
+        command=API.choose_save,
         width=gui_width,
         height=1,
     ).pack()
@@ -359,7 +367,7 @@ def tool_box():
         text="载入",
         bg=bg_color,
         fg=word_color,
-        command=choose_open,
+        command=API.choose_open,
         width=gui_width,
         height=1,
     ).pack()
@@ -368,7 +376,7 @@ def tool_box():
         text="帮助",
         bg=bg_color,
         fg=word_color,
-        command=_help,
+        command=API.show_help,
         width=gui_width,
         height=1,
     ).pack()  # help是系统保留关键词，用_help代替

@@ -88,387 +88,384 @@ max_Visual_mapping #映射的最大值
 """
 
 
-def add_from_python_gui():
-    file_dir = askopenfilename(
-        title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
-    )
-    name = sheet_name.get().replace(" ", "")
-    if name == "":
-        name = os.path.splitext(os.path.split(file_dir)[1])[0]
-    with open(file_dir, "r") as f:
-        code = f.read()
-    return code, name
+class UIAPI:
+    @staticmethod
+    def add_from_python_gui():
+        file_dir = askopenfilename(
+            title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
+        )
+        name = sheet_name.get().replace(" ", "")
+        if name == "":
+            name = os.path.splitext(os.path.split(file_dir)[1])[0]
+        with open(file_dir, "r") as f:
+            code = f.read()
+        return code, name
 
-
-def get_sheet_name_gui():  # 获得名字统一接口
-    global sheet_list
-    try:
-        return sheet_list[sheet_box.curselection()[0]]
-    except BaseException:
+    @staticmethod
+    def get_sheet_name_gui():  # 获得名字统一接口
+        global sheet_list
         try:
-            return sheet_list[0]
+            return sheet_list[sheet_box.curselection()[0]]
         except BaseException:
-            return None
-
-
-def update_sheet_box_gui():
-    global SCREEN, sheet_box, sheet_list
-    sheet_list = machine_controller.get_sheet_list()
-    sheet_box.delete(0, tkinter.END)
-    sheet_box.insert(tkinter.END, *sheet_list)
-
-
-def update_combo_box_gui():
-    overlap_box.delete(0, tkinter.END)
-    if base_image is not None:
-        overlap_box.insert(tkinter.END, f"底图: {base_image}")
-    if top_image is not None:
-        overlap_box.insert(tkinter.END, f"顶图: {top_image}")
-
-
-def add_csv_gui():
-    file_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
-    csv_sep = sep.get()
-    csv_encoding = encoding.get()
-    str_ = bool(str_must.get())
-    index = bool(index_must.get())
-    name = sheet_name.get().replace(" ", "")
-    if name == "":
-        name = os.path.splitext(os.path.split(file_dir)[1])[0]
-    if csv_encoding == "":
-        with open(file_dir, "rb") as f:
-            csv_encoding = chardet.detect(f.read())["encoding"]
-    if csv_sep == "":
-        csv_sep = ","
-    return csv_encoding, csv_sep, file_dir, index, name, str_
-
-
-def to_csv_gui():
-    save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
-    csv_sep = sep.get()
-    return csv_sep, save_dir
-
-
-def update_index_box_gui(index):
-    global SCREEN, index_box
-    index_box.delete(0, tkinter.END)
-    index_box.insert(tkinter.END, *index)
-
-
-def vitables_gui(data, name):
-    global bg_color, FONT1
-    new_top = tkinter.Toplevel(bg=bg_color)
-    new_top.title(name)
-    new_top.geometry("+10+10")  # 设置所在位置
-    text = ScrolledText(new_top, font=FONT1, height=50)
-    text.pack(fill=tkinter.BOTH)
-    text.insert("0.0", data)
-    text.config(state=tkinter.DISABLED)
-    new_top.resizable(width=False, height=False)
-
-
-def get_des_bool_gui():
-    return bool(des_bool.get())
-
-
-def sort_by_column_gui():
-    ascending = not bool(ascending_type.get())
-    new = bool(ascending_new.get())
-    return new, ascending
-
-
-def add_baseline_gui(ascending_type, sort_by):
-    ascending = not bool(ascending_type.get())
-    value = int(sort_by.get())
-    return ascending, value
-
-
-def update_sort_box_gui():
-    global stored_list, stored_box
-    re = []
-    d = {True: "正序", False: "倒叙"}
-    for i in stored_list:
-        re.append(f"列号:{i[0]}, 排序方式{d[i[1]]}")
-    stored_box.delete(0, tkinter.END)
-    stored_box.insert(tkinter.END, *re)
-
-
-def get_stored_box_index_gui():
-    return stored_box.curselection()[0]
-
-
-def get_ascending_new_gui():
-    new = bool(ascending_new.get())
-    return new
-
-
-def slice_data_gui():
-    def split_slice_core(slice_list, func_type):
-        a = []
-        for i in slice_list:
-            b = i.get().replace(" ", "")
-            if b == "":
-                a.append(None)
-            else:
-                try:
-                    a.append(func_type(b))
-                except BaseException:
-                    a.append(None)
-        if a[0] is not None and a[1] is None:
-            a[1] = a[0] + 1
-            a[2] = None
-        return a
-    the_column_type = column_type.get()
-    is_iloc = True
-    if the_column_type == 0:  # 输入的列号
-        column = slice(*split_slice_core(column_clist, int))
-    elif the_column_type == 1:
-        is_iloc = False
-        column = slice(*split_slice_core(column_clist, str))
-    else:
-        get = column_clist[0].get().replace(" ", "").split(",")
-        column = []
-        for i in get:
             try:
-                column.append(int(i))
-            except BaseException:
-                pass
-    the_row_type = row_type.get()
-    if the_row_type == 0:  # 输入的列号
-        row = slice(*split_slice_core(row_clist, int))
-    elif the_row_type == 1:
-        row = slice(*split_slice_core(row_clist, str))
-    else:
-        get = row_clist[0].get().replace(" ", "").split(",")
-        row = []
-        for i in get:
-            try:
-                row.append(int(i))
-            except BaseException:
-                pass
-    new = bool(slice_new.get())
-    return column, is_iloc, new, row
-
-
-def del_data_gui():
-    column = column_clist[0].get().replace(" ", "").split(",")
-    row = row_clist[0].get().replace(" ", "").split(",")
-    new = bool(slice_new.get())
-    return column, new, row
-
-
-def get_clean_code_gui():
-    exp = clean_code.get("0.0", tkinter.END)
-    return exp
-
-
-def view_cleaning_script_gui():
-    name = clean_list[get_clean_func_box_index_gui()]
-    API.update_clean_code(machine_controller.get_clean_code(name))
-
-
-def get_clean_func_box_index_gui():
-    return clean_func_box.curselection()[0]
-
-
-def show_dictionary_gui():
-    tkinter.messagebox.showinfo("帮助字典", clean_help)
-
-
-def open_python_for_clean_gui():
-    global clean_code
-    file_dir = askopenfilename(
-        title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
-    )
-    with open(file_dir) as f:
-        get = f.read()
-        clean_code.delete("0.0", tkinter.END)
-        clean_code.insert("0.0", get)
-
-
-def reset_clean_code_gui():
-    global clean_code, clean_default_script
-    API.update_clean_code(clean_default_script)
-
-
-def update_render_box_gui():
-    global render_dict, render_box, machine_controller
-    render_dict = machine_controller.get_all_render()
-    render_box.delete(0, tkinter.END)
-    render_box.insert(tkinter.END, *render_dict.keys())
-
-
-def get_draw_as_well_gui():
-    return bool(draw_as_well.get())
-
-
-def render_box_index_gui():
-    return render_box.curselection()[0]
-
-
-def rendering_one_gui():
-    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
-    try:
-        if render_dir[-5:] != ".html":
-            raise Exception
-    except BaseException:
-        render_dir += ".html"
-    return render_dir
-
-
-def rendering_gui():
-    render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
-    try:
-        if render_dir[-5:] != ".html":
-            raise Exception
-    except BaseException:
-        render_dir += ".html"
-    return render_dir
-
-
-def set_dtype_gui():
-    type_ = bool(dtype_func.get())
-    name = get_sheet_name_gui()
-    column_list = dtype_column.get().split(",")
-    if column_list == [""]:
-        column_list = []
-    dtype = dtype_input.get()
-    wrong = dtype_wrong.get()
-    return column_list, dtype, name, type_, wrong
-
-
-def datetime_index_gui():
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-    k = ["start", "end", "freq"]
-    init = {}
-    for i in range(len(date_input)):
-        data = date_input[i].get()
-        if data == "":
-            continue
-        init[k[i]] = data
-    if len(init) == 3:
-        if bool(date_type.get()):  # 使用间隔
-            del init["end"]
-        else:
-            del init["freq"]
-    return init, is_column, save
-
-
-def num_with_name_gui():
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-    return is_column, save
-
-
-def num_to_name_gui():
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    save = bool(replace_type[0].get())
-    return is_column, save
-
-
-def change_index_gui():
-    is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
-    iloc = int(replace_iloc.get())  # 替换的列号(行号)
-    save = bool(replace_type[0].get())
-    drop = not bool(replace_type[1].get())
-    return drop, iloc, is_column, save
-
-
-def replace_index_func_gui():
-    the_replace_dict = eval(replace_dict.get())
-    is_column = bool(replace_index.get())  # 操作行-False，操作列-True
-    save = bool(replace_type[0].get())
-    return is_column, save, the_replace_dict
-
-
-def update_leaner_box_gui():
-    global learn_dict, learner_box
-    learn_dict = machine_controller.return_learner()
-    learner_box.delete(0, tkinter.END)
-    learner_box.insert(tkinter.END, *learn_dict.keys())
-
-
-def get_data_split_gui():
-    try:
-        split = float(data_split.get())
-        if split < 0 or 1 < split:
-            raise Exception
-    except BaseException:
-        split = 0.3
-    return split
-
-
-def set_learner_gui():
-    global chose_learner
-    chose_learner.set(get_learner_name_gui(True))
-
-
-def get_learner_name_gui(learner_type=False):
-    global learn_dict, learner_box, chose_learner
-    if learner_type:
-        try:
-            return list(learn_dict.keys())[learner_box.curselection()[0]]
-        except BaseException:
-            # raise
-            try:
-                return list(learn_dict.keys)[0]
+                return sheet_list[0]
             except BaseException:
                 return None
-    else:
+
+    @staticmethod
+    def update_sheet_box_gui():
+        global SCREEN, sheet_box, sheet_list
+        sheet_list = machine_controller.get_sheet_list()
+        sheet_box.delete(0, tkinter.END)
+        sheet_box.insert(tkinter.END, *sheet_list)
+
+    @staticmethod
+    def update_combo_box_gui():
+        overlap_box.delete(0, tkinter.END)
+        if base_image is not None:
+            overlap_box.insert(tkinter.END, f"底图: {base_image}")
+        if top_image is not None:
+            overlap_box.insert(tkinter.END, f"顶图: {top_image}")
+
+    @staticmethod
+    def add_csv_gui():
+        file_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
+        csv_sep = sep.get()
+        csv_encoding = encoding.get()
+        str_ = bool(str_must.get())
+        index = bool(index_must.get())
+        name = sheet_name.get().replace(" ", "")
+        if name == "":
+            name = os.path.splitext(os.path.split(file_dir)[1])[0]
+        if csv_encoding == "":
+            with open(file_dir, "rb") as f:
+                csv_encoding = chardet.detect(f.read())["encoding"]
+        if csv_sep == "":
+            csv_sep = ","
+        return csv_encoding, csv_sep, file_dir, index, name, str_
+
+    @staticmethod
+    def to_csv_gui():
+        save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
+        csv_sep = sep.get()
+        return csv_sep, save_dir
+
+    @staticmethod
+    def update_index_box_gui(index):
+        global SCREEN, index_box
+        index_box.delete(0, tkinter.END)
+        index_box.insert(tkinter.END, *index)
+
+    @staticmethod
+    def vitables_gui(data, name):
+        global bg_color, FONT1
+        new_top = tkinter.Toplevel(bg=bg_color)
+        new_top.title(name)
+        new_top.geometry("+10+10")  # 设置所在位置
+        text = ScrolledText(new_top, font=FONT1, height=50)
+        text.pack(fill=tkinter.BOTH)
+        text.insert("0.0", data)
+        text.config(state=tkinter.DISABLED)
+        new_top.resizable(width=False, height=False)
+
+    @staticmethod
+    def get_des_bool_gui():
+        return bool(des_bool.get())
+
+    @staticmethod
+    def sort_by_column_gui():
+        ascending = not bool(ascending_type.get())
+        new = bool(ascending_new.get())
+        return new, ascending
+
+    @staticmethod
+    def add_baseline_gui(ascending_type, sort_by):
+        ascending = not bool(ascending_type.get())
+        value = int(sort_by.get())
+        return ascending, value
+
+    @staticmethod
+    def update_sort_box_gui():
+        global stored_list, stored_box
+        re = []
+        d = {True: "正序", False: "倒叙"}
+        for i in stored_list:
+            re.append(f"列号:{i[0]}, 排序方式{d[i[1]]}")
+        stored_box.delete(0, tkinter.END)
+        stored_box.insert(tkinter.END, *re)
+
+    @staticmethod
+    def get_stored_box_index_gui():
+        return stored_box.curselection()[0]
+
+    @staticmethod
+    def get_ascending_new_gui():
+        new = bool(ascending_new.get())
+        return new
+
+    @staticmethod
+    def slice_data_gui():
+        def split_slice_core(slice_list, func_type):
+            a = []
+            for i in slice_list:
+                b = i.get().replace(" ", "")
+                if b == "":
+                    a.append(None)
+                else:
+                    try:
+                        a.append(func_type(b))
+                    except BaseException:
+                        a.append(None)
+            if a[0] is not None and a[1] is None:
+                a[1] = a[0] + 1
+                a[2] = None
+            return a
+        the_column_type = column_type.get()
+        is_iloc = True
+        if the_column_type == 0:  # 输入的列号
+            column = slice(*split_slice_core(column_clist, int))
+        elif the_column_type == 1:
+            is_iloc = False
+            column = slice(*split_slice_core(column_clist, str))
+        else:
+            get = column_clist[0].get().replace(" ", "").split(",")
+            column = []
+            for i in get:
+                try:
+                    column.append(int(i))
+                except BaseException:
+                    pass
+        the_row_type = row_type.get()
+        if the_row_type == 0:  # 输入的列号
+            row = slice(*split_slice_core(row_clist, int))
+        elif the_row_type == 1:
+            row = slice(*split_slice_core(row_clist, str))
+        else:
+            get = row_clist[0].get().replace(" ", "").split(",")
+            row = []
+            for i in get:
+                try:
+                    row.append(int(i))
+                except BaseException:
+                    pass
+        new = bool(slice_new.get())
+        return column, is_iloc, new, row
+
+    @staticmethod
+    def del_data_gui():
+        column = column_clist[0].get().replace(" ", "").split(",")
+        row = row_clist[0].get().replace(" ", "").split(",")
+        new = bool(slice_new.get())
+        return column, new, row
+
+    @staticmethod
+    def get_clean_code_gui():
+        exp = clean_code.get("0.0", tkinter.END)
+        return exp
+
+    @staticmethod
+    def view_cleaning_script_gui():
+        name = clean_list[UIAPI.get_clean_func_box_index_gui()]
+        API.update_clean_code(machine_controller.get_clean_code(name))
+
+    @staticmethod
+    def get_clean_func_box_index_gui():
+        return clean_func_box.curselection()[0]
+
+    @staticmethod
+    def show_dictionary_gui():
+        tkinter.messagebox.showinfo("帮助字典", clean_help)
+
+    @staticmethod
+    def open_python_for_clean_gui():
+        global clean_code
+        file_dir = askopenfilename(
+            title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
+        )
+        with open(file_dir) as f:
+            get = f.read()
+            clean_code.delete("0.0", tkinter.END)
+            clean_code.insert("0.0", get)
+
+    @staticmethod
+    def reset_clean_code_gui():
+        global clean_code, clean_default_script
+        API.update_clean_code(clean_default_script)
+
+    @staticmethod
+    def update_render_box_gui():
+        global render_dict, render_box, machine_controller
+        render_dict = machine_controller.get_all_render()
+        render_box.delete(0, tkinter.END)
+        render_box.insert(tkinter.END, *render_dict.keys())
+
+    @staticmethod
+    def get_draw_as_well_gui():
+        return bool(draw_as_well.get())
+
+    @staticmethod
+    def render_box_index_gui():
+        return render_box.curselection()[0]
+
+    @staticmethod
+    def rendering_one_gui():
+        render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
         try:
-            return chose_learner.get()
+            if render_dir[-5:] != ".html":
+                raise Exception
         except BaseException:
-            return None
+            render_dir += ".html"
+        return render_dir
 
+    @staticmethod
+    def rendering_gui():
+        render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
+        try:
+            if render_dir[-5:] != ".html":
+                raise Exception
+        except BaseException:
+            render_dir += ".html"
+        return render_dir
 
-def askokcancel_gui(messgae):
-    return tkinter.messagebox.askokcancel("提示", messgae)
+    @staticmethod
+    def set_dtype_gui():
+        type_ = bool(dtype_func.get())
+        name = UIAPI.get_sheet_name_gui()
+        column_list = dtype_column.get().split(",")
+        if column_list == [""]:
+            column_list = []
+        dtype = dtype_input.get()
+        wrong = dtype_wrong.get()
+        return column_list, dtype, name, type_, wrong
 
+    @staticmethod
+    def datetime_index_gui():
+        is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+        save = bool(replace_type[0].get())
+        k = ["start", "end", "freq"]
+        init = {}
+        for i in range(len(date_input)):
+            data = date_input[i].get()
+            if data == "":
+                continue
+            init[k[i]] = data
+        if len(init) == 3:
+            if bool(date_type.get()):  # 使用间隔
+                del init["end"]
+            else:
+                del init["freq"]
+        return init, is_column, save
 
-def show_tips_gui():
-    tkinter.messagebox.showinfo("使用提示", drawing_parameters)
+    @staticmethod
+    def num_with_name_gui():
+        is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+        save = bool(replace_type[0].get())
+        return is_column, save
 
+    @staticmethod
+    def num_to_name_gui():
+        is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+        save = bool(replace_type[0].get())
+        return is_column, save
 
-def show_sorry_gui():
-    tkinter.messagebox.showinfo("非常抱歉", "高级别的机器学习请到机器学习板块深入研究...")
+    @staticmethod
+    def change_index_gui():
+        is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
+        iloc = int(replace_iloc.get())  # 替换的列号(行号)
+        save = bool(replace_type[0].get())
+        drop = not bool(replace_type[1].get())
+        return drop, iloc, is_column, save
 
+    @staticmethod
+    def replace_index_func_gui():
+        the_replace_dict = eval(replace_dict.get())
+        is_column = bool(replace_index.get())  # 操作行-False，操作列-True
+        save = bool(replace_type[0].get())
+        return is_column, save, the_replace_dict
 
-def machine_learning():
-    global SCREEN
-    SCREEN.mainloop()
+    @staticmethod
+    def update_leaner_box_gui():
+        global learn_dict, learner_box
+        learn_dict = machine_controller.return_learner()
+        learner_box.delete(0, tkinter.END)
+        learner_box.insert(tkinter.END, *learn_dict.keys())
+
+    @staticmethod
+    def get_data_split_gui():
+        try:
+            split = float(data_split.get())
+            if split < 0 or 1 < split:
+                raise Exception
+        except BaseException:
+            split = 0.3
+        return split
+
+    @staticmethod
+    def set_learner_gui():
+        global chose_learner
+        chose_learner.set(UIAPI.get_learner_name_gui(True))
+
+    @staticmethod
+    def get_learner_name_gui(learner_type=False):
+        global learn_dict, learner_box, chose_learner
+        if learner_type:
+            try:
+                return list(learn_dict.keys())[learner_box.curselection()[0]]
+            except BaseException:
+                # raise
+                try:
+                    return list(learn_dict.keys)[0]
+                except BaseException:
+                    return None
+        else:
+            try:
+                return chose_learner.get()
+            except BaseException:
+                return None
+
+    @staticmethod
+    def askokcancel_gui(messgae):
+        return tkinter.messagebox.askokcancel("提示", messgae)
+
+    @staticmethod
+    def show_tips_gui():
+        tkinter.messagebox.showinfo("使用提示", drawing_parameters)
+
+    @staticmethod
+    def show_sorry_gui():
+        tkinter.messagebox.showinfo("非常抱歉", "高级别的机器学习请到机器学习板块深入研究...")
 
 
 class API:
     @staticmethod
     def clear_rendering():
         machine_controller.clean_render()
-        update_render_box_gui()
+        UIAPI.update_render_box_gui()
 
     @staticmethod
     def del_form():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         machine_controller.del_sheet(name)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def del_learner():
-        learner = get_learner_name_gui(True)
-        set_learne = get_learner_name_gui(False)  # 获取学习器Learner
+        learner = UIAPI.get_learner_name_gui(True)
+        set_learne = UIAPI.get_learner_name_gui(False)  # 获取学习器Learner
         if set_learne != learner:
             machine_controller.del_leaner(learner)
-        update_leaner_box_gui()
+        UIAPI.update_leaner_box_gui()
 
     @staticmethod
     def visual_learner():
-        learner = get_learner_name_gui(True)
+        learner = UIAPI.get_learner_name_gui(True)
         data = machine_controller.visual_learner(
-            learner, askokcancel_gui(f"是否将数据生成表格。\n(可绘制成散点图对比数据)")
+            learner, UIAPI.askokcancel_gui(f"是否将数据生成表格。\n(可绘制成散点图对比数据)")
         )
-        vitables_gui(
+        UIAPI.vitables_gui(
             f"对象:{learner}\n\n{data[0]}\n\n\n{data[1]}", f"CoTan数据处理 查看数据:{learner}"
         )
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def get_learner_config():
@@ -476,8 +473,8 @@ class API:
 
     @staticmethod
     def test_learner():
-        name = get_sheet_name_gui()  # 表格数据
-        learner = get_learner_name_gui()
+        name = UIAPI.get_sheet_name_gui()  # 表格数据
+        learner = UIAPI.get_learner_name_gui()
         try:
             split = float(data_split.get())
             if split < 0 or 1 < split:
@@ -491,18 +488,18 @@ class API:
 
     @staticmethod
     def predict_learner():
-        name = get_sheet_name_gui()  # 表格数据
-        learner = get_learner_name_gui()
+        name = UIAPI.get_sheet_name_gui()  # 表格数据
+        learner = UIAPI.get_learner_name_gui()
         data = machine_controller.predict(name, learner)
         title = f"CoTan数据处理 表格:{name} 学习器:{learner}"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def fit_learner():
-        name = get_sheet_name_gui()  # 表格数据
-        learner = get_learner_name_gui()
-        split = get_data_split_gui()
+        name = UIAPI.get_sheet_name_gui()  # 表格数据
+        learner = UIAPI.get_learner_name_gui()
+        split = UIAPI.get_data_split_gui()
         socore = machine_controller.training_machine(
             name, learner, parameters=API.get_learner_config(), split=split
         )
@@ -539,54 +536,54 @@ class API:
     @staticmethod
     def add_learner_core(learner_type):  # 添加Lenear的核心
         machine_controller.add_learner(learner_type, parameters=API.get_learner_config())
-        update_leaner_box_gui()
+        UIAPI.update_leaner_box_gui()
 
     @staticmethod
     def feature_extraction():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         machine_controller.decision_tree_classifier(name)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def replace_index_func():
-        name = get_sheet_name_gui()
-        is_column, save, the_replace_dict = replace_index_func_gui()
+        name = UIAPI.get_sheet_name_gui()
+        is_column, save, the_replace_dict = UIAPI.replace_index_func_gui()
         machine_controller.replace_index(name, is_column, the_replace_dict, save)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def change_index():
-        name = get_sheet_name_gui()  # 名字
-        drop, iloc, is_column, save = change_index_gui()
+        name = UIAPI.get_sheet_name_gui()  # 名字
+        drop, iloc, is_column, save = UIAPI.change_index_gui()
 
         machine_controller.change_index(name, is_column, iloc, save, drop)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def num_to_name():
-        name = get_sheet_name_gui()  # 名字
-        is_column, save = num_to_name_gui()
+        name = UIAPI.get_sheet_name_gui()  # 名字
+        is_column, save = UIAPI.num_to_name_gui()
 
         machine_controller.number_naming(name, is_column, save)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def num_with_name():
-        name = get_sheet_name_gui()  # 名字
-        is_column, save = num_with_name_gui()
+        name = UIAPI.get_sheet_name_gui()  # 名字
+        is_column, save = UIAPI.num_with_name_gui()
 
         machine_controller.name_with_number(name, is_column, save)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def datetime_index(is_date=True):
-        name = get_sheet_name_gui()  # 名字
-        init, is_column, save = datetime_index_gui()
+        name = UIAPI.get_sheet_name_gui()  # 名字
+        init, is_column, save = UIAPI.datetime_index_gui()
         if is_date:
             machine_controller.date_index(name, is_column, save, **init)
         else:
             machine_controller.time_naming(name, is_column, save, **init)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def date_index():
@@ -598,14 +595,14 @@ class API:
 
     @staticmethod
     def set_dtype():
-        column_list, dtype, name, type_, wrong = set_dtype_gui()
+        column_list, dtype, name, type_, wrong = UIAPI.set_dtype_gui()
         if type_:  # 软转换
             if wrong != "ignore":
                 wrong = "coerce"
             machine_controller.set_dtype(name, column_list, dtype, wrong)
         else:
             machine_controller.as_dtype(name, column_list, dtype, "ignore")
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def python_render():  # 导入绘制方法
@@ -622,18 +619,18 @@ class API:
 
     @staticmethod
     def rendering():
-        render_dir = rendering_gui()
+        render_dir = UIAPI.rendering_gui()
         webbrowser.open(
             machine_controller.render_all(API.get_rendering_parameters(), render_dir)
         )
-        update_render_box_gui()
+        UIAPI.update_render_box_gui()
 
     @staticmethod
     def rendering_one():
-        render_dir = rendering_one_gui()
-        list(render_dict.values())[render_box_index_gui()].render(render_dir)
+        render_dir = UIAPI.rendering_one_gui()
+        list(render_dict.values())[UIAPI.render_box_index_gui()].render(render_dir)
         webbrowser.open(render_dir)
-        update_render_box_gui()
+        UIAPI.update_render_box_gui()
 
     @staticmethod
     def make_overlap():
@@ -645,182 +642,182 @@ class API:
                 raise
             base_image = None
             top_image = None
-        update_combo_box_gui()
+        UIAPI.update_combo_box_gui()
 
     @staticmethod
     def add_basemap():
         global base_image
-        base_image = list(render_dict.keys())[render_box_index_gui()]
-        update_combo_box_gui()
+        base_image = list(render_dict.keys())[UIAPI.render_box_index_gui()]
+        UIAPI.update_combo_box_gui()
 
     @staticmethod
     def add_top_image():
         global top_image
-        top_image = list(render_dict.keys())[render_box_index_gui()]
-        update_combo_box_gui()
+        top_image = list(render_dict.keys())[UIAPI.render_box_index_gui()]
+        UIAPI.update_combo_box_gui()
 
     @staticmethod
     def del_rendering():
-        key = list(render_dict.keys())[render_box_index_gui()]
+        key = list(render_dict.keys())[UIAPI.render_box_index_gui()]
         machine_controller.del_render(key)
-        update_render_box_gui()
+        UIAPI.update_render_box_gui()
 
     @staticmethod
     def new_render(c, name):
-        if get_draw_as_well_gui():
+        if UIAPI.get_draw_as_well_gui():
             c.render(f"{PATH}\\{name}.html")
-        update_render_box_gui()
+        UIAPI.update_render_box_gui()
 
     @staticmethod
     def to_geo():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_geo(name, API.get_rendering_parameters()), "Geo地图")
 
     @staticmethod
     def to_map():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_map(name, API.get_rendering_parameters()), "Map地图")
 
     @staticmethod
     def to_scattergeo():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_scattergeo(name, API.get_rendering_parameters()), "Geo点地图"
         )
 
     @staticmethod
     def to_treemap():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_tree_map(name, API.get_rendering_parameters()), "矩形树图")
 
     @staticmethod
     def to_tree():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_tree(name, API.get_rendering_parameters()), "树状图")
 
     @staticmethod
     def to_sankey():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_sankey(name, API.get_rendering_parameters()), "桑基图")
 
     @staticmethod
     def to_sunburst():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_sunburst(name, API.get_rendering_parameters()), "旭日图")
 
     @staticmethod
     def to_theme_river():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_theme_river(name, API.get_rendering_parameters()), "河流图"
         )
 
     @staticmethod
     def to_calendar():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_calendar(name, API.get_rendering_parameters()), "日历图")
 
     @staticmethod
     def to_gauge():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_gauge(name, API.get_rendering_parameters()), "仪表图")
 
     @staticmethod
     def to_liquid():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_liquid(name, API.get_rendering_parameters()), "水球图")
 
     @staticmethod
     def to_line3d():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_line3d(name, API.get_rendering_parameters()), "3D折线图")
 
     @staticmethod
     def to_scatter3d():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_scatter3d(name, API.get_rendering_parameters()), "3D散点图"
         )
 
     @staticmethod
     def to_bar3d():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_bar3d(name, API.get_rendering_parameters()), "3D柱状图")
 
     @staticmethod
     def to_word_cloud():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_word_cloud(name, API.get_rendering_parameters()), "词云图"
         )
 
     @staticmethod
     def to_radar():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_radar(name, API.get_rendering_parameters()), "雷达图")
 
     @staticmethod
     def to_polar():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_polar(name, API.get_rendering_parameters()), "极坐标图")
 
     @staticmethod
     def to_pie():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_pie(name, API.get_rendering_parameters()), "饼图")
 
     @staticmethod
     def to_parallel():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_parallel(name, API.get_rendering_parameters()), "多轴图")
 
     @staticmethod
     def to_graph():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_graph(name, API.get_rendering_parameters()), "关系图")
 
     @staticmethod
     def to_format_graph():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_format_graph(name, API.get_rendering_parameters()), "关系图"
         )
 
     @staticmethod
     def to_funnel():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_funnel(name, API.get_rendering_parameters()), "漏斗图")
 
     @staticmethod
     def to_heat_map():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_heatmap(name, API.get_rendering_parameters()), "热力图")
 
     @staticmethod
     def to_boxpolt():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_boxpolt(name, API.get_rendering_parameters()), "箱形图")
 
     @staticmethod
     def to_pictorialbar():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(
             machine_controller.to_pictorialbar(name, API.get_rendering_parameters()), "象形柱状图"
         )
 
     @staticmethod
     def to_scatter():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_scatter(name, API.get_rendering_parameters()), "散点图")
 
     @staticmethod
     def to_line():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_line(name, API.get_rendering_parameters()), "折线图")
 
     @staticmethod
     def to_bar():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         API.new_render(machine_controller.to_bar(name, API.get_rendering_parameters()), "柱状图")
 
     @staticmethod
@@ -831,19 +828,19 @@ class API:
     @staticmethod
     def empty_cleaning_script():
         machine_controller.del_all_clean_func()
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def execute_cleaning_script():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         data = machine_controller.data_clean(name)
         title = f"CoTan数据处理 表格:{name}.数据清洗"
-        vitables_gui(data,title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data,title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def del_cleaning_script():
-        name = clean_list[get_clean_func_box_index_gui()]
+        name = clean_list[UIAPI.get_clean_func_box_index_gui()]
         machine_controller.del_clean_func(name)
         API.update_cleaning_script_box()
 
@@ -855,126 +852,126 @@ class API:
 
     @staticmethod
     def add_cleaning_script():
-        exp = get_clean_code_gui()
+        exp = UIAPI.get_clean_code_gui()
         machine_controller.add_clean_func(exp)
         API.update_cleaning_script_box()
 
     @staticmethod
     def clean_nan_row():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         data = machine_controller.del_nan(name, True)
         title = f"CoTan数据处理 表格:{name}.NaN"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def is_nan():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         data = machine_controller.is_nan(name)
         title = f"CoTan数据处理 表格:{name}.NaN"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def to_bool():
         the_bool_exp = bool_exp.get()
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         data = machine_controller.to_bool(name, the_bool_exp, True)
         title = f"CoTan数据处理 表格:{name} 布尔化"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def del_data():
-        name = get_sheet_name_gui()
-        column, new, row = del_data_gui()
+        name = UIAPI.get_sheet_name_gui()
+        column, new, row = UIAPI.del_data_gui()
         try:
             data = machine_controller.del_slice(name, column, row, new)
         except BaseException:
             data = "None 你的操作不被允许"
         title = f"CoTan数据处理 表格:{name}"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def slice_data():
-        column, is_iloc, new, row = slice_data_gui()
-        name = get_sheet_name_gui()
+        column, is_iloc, new, row = UIAPI.slice_data_gui()
+        name = UIAPI.get_sheet_name_gui()
         try:
             data = machine_controller.get_slice(name, column, row, is_iloc, new)
         except BaseException:
             data = "None 你的操作不被允许"
         title = f"CoTan数据处理 表格:{name}"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def sample_data():
-        name = get_sheet_name_gui()
-        new = get_ascending_new_gui()
+        name = UIAPI.get_sheet_name_gui()
+        new = UIAPI.get_ascending_new_gui()
         data = machine_controller.sample(name, new)
         title = f"CoTan数据处理 打乱表格:{name}"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def stored_value():
-        name = get_sheet_name_gui()
-        new = get_ascending_new_gui()
+        name = UIAPI.get_sheet_name_gui()
+        new = UIAPI.get_ascending_new_gui()
         data = machine_controller.stored_value(name, stored_list, new)
         title = f"CoTan数据处理 表格:{name}.Stored"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def del_baseline():
         global stored_list, stored_box
-        del stored_list[get_stored_box_index_gui()]
-        update_sort_box_gui()
+        del stored_list[UIAPI.get_stored_box_index_gui()]
+        UIAPI.update_sort_box_gui()
 
     @staticmethod
     def add_baseline():  # 按基准列排行
         try:
-            ascending, value = add_baseline_gui(ascending_type, sort_by)
+            ascending, value = UIAPI.add_baseline_gui(ascending_type, sort_by)
             stored_list.append((value, ascending))
         except BaseException:
             pass
-        update_sort_box_gui()
+        UIAPI.update_sort_box_gui()
 
     @staticmethod
     def sort_by_column():  # 行
-        name = get_sheet_name_gui()
-        new, ascending = sort_by_column_gui()
+        name = UIAPI.get_sheet_name_gui()
+        new, ascending = UIAPI.sort_by_column_gui()
         data = machine_controller.sorted_index(name, False, new, ascending)
         title = f"CoTan数据处理 表格:{name}.Stored by Column"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def sort_by_tow():  # 行
-        name = get_sheet_name_gui()
-        new, ascending = sort_by_column_gui()
+        name = UIAPI.get_sheet_name_gui()
+        new, ascending = UIAPI.sort_by_column_gui()
         data = machine_controller.sorted_index(name, True, new, ascending)
         title = f"CoTan数据处理 表格:{name}.Stored by Row"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def transpose():
-        name = get_sheet_name_gui()
-        new = get_ascending_new_gui()
+        name = UIAPI.get_sheet_name_gui()
+        new = UIAPI.get_ascending_new_gui()
         data = machine_controller.transpose(name, new)
         title = f"CoTan数据处理 表格:{name}.T"
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def show_report():
-        if not askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
+        if not UIAPI.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
             raise Exception
         report_dir = f"{PATH}/$Show_Des_Sheet.html"
         try:
-            name = get_sheet_name_gui()
+            name = UIAPI.get_sheet_name_gui()
             if name is None:
                 raise Exception
             machine_controller.to_report(name, report_dir)
@@ -984,36 +981,36 @@ class API:
 
     @staticmethod
     def show_describe():
-        describe = get_des_bool_gui()
-        name = get_sheet_name_gui()
+        describe = UIAPI.get_des_bool_gui()
+        name = UIAPI.get_sheet_name_gui()
         title = f"CoTan数据处理 表格:{name}_describe"
         data = str(machine_controller.describe(name, describe))
-        vitables_gui(data, title)
-        update_sheet_box_gui()
+        UIAPI.vitables_gui(data, title)
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def show_sheet():
-        name = get_sheet_name_gui()
+        name = UIAPI.get_sheet_name_gui()
         title = f"CoTan数据处理 表格:{name}"
         data = str(machine_controller.get_sheet(name))
-        vitables_gui(data, title)
+        UIAPI.vitables_gui(data, title)
 
     @staticmethod
     def get_column():  # 列名(横行竖列，列名是上面的)
-        name = get_sheet_name_gui()
-        update_index_box_gui(machine_controller.get_column(name))
+        name = UIAPI.get_sheet_name_gui()
+        UIAPI.update_index_box_gui(machine_controller.get_column(name))
 
     @staticmethod
     def get_row():  # 行名(横行竖列，行名左)
-        name = get_sheet_name_gui()
-        update_index_box_gui(machine_controller.get_index(name))
+        name = UIAPI.get_sheet_name_gui()
+        UIAPI.update_index_box_gui(machine_controller.get_index(name))
 
     @staticmethod
     def show_one_sheet_html():
         global PATH, to_html_type
         html_dir = f"{PATH}/$Show_Sheet.html"
         try:
-            name = get_sheet_name_gui()
+            name = UIAPI.get_sheet_name_gui()
             if name is None:
                 raise Exception
             machine_controller.render_html_one(name, html_dir)
@@ -1026,7 +1023,7 @@ class API:
         global PATH, to_html_type
         html_dir = f"{PATH}/$Show_Sheet.html"
         try:
-            name = get_sheet_name_gui()
+            name = UIAPI.get_sheet_name_gui()
             if name is None:
                 raise Exception
             machine_controller.render_html_all(name, html_dir, to_html_type.get())
@@ -1037,24 +1034,29 @@ class API:
     @staticmethod
     def to_csv():
         global SCREEN, sep, encoding, str_must, index_must
-        csv_sep, save_dir = to_csv_gui()
-        name = get_sheet_name_gui()
+        csv_sep, save_dir = UIAPI.to_csv_gui()
+        name = UIAPI.get_sheet_name_gui()
         machine_controller.to_csv(name, save_dir, csv_sep)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def add_csv():
         global SCREEN, sep, encoding, str_must, index_must, sheet_name
-        csv_encoding, csv_sep, file_dir, index, name, str_ = add_csv_gui()
+        csv_encoding, csv_sep, file_dir, index, name, str_ = UIAPI.add_csv_gui()
         machine_controller.add_csv(file_dir, name, csv_sep, csv_encoding, str_, index)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
 
     @staticmethod
     def add_from_python():
         global SCREEN, sep, encoding, str_must, index_must
-        code, name = add_from_python_gui()
+        code, name = UIAPI.add_from_python_gui()
         machine_controller.add_python(code, name)
-        update_sheet_box_gui()
+        UIAPI.update_sheet_box_gui()
+
+
+def machine_learning():
+    global SCREEN
+    SCREEN.mainloop()
 
 
 tkinter.Button(
@@ -1641,7 +1643,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看词典",
-    command=show_dictionary_gui,
+    command=UIAPI.show_dictionary_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1655,7 +1657,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="恢复显示",
-    command=reset_clean_code_gui,
+    command=UIAPI.reset_clean_code_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1706,7 +1708,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看执行方法",
-    command=view_cleaning_script_gui,
+    command=UIAPI.view_cleaning_script_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1720,7 +1722,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="导入执行方法",
-    command=open_python_for_clean_gui,
+    command=UIAPI.open_python_for_clean_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2310,7 +2312,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看词典",
-    command=show_dictionary_gui,
+    command=UIAPI.show_dictionary_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2324,7 +2326,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="恢复显示",
-    command=show_tips_gui,
+    command=UIAPI.show_tips_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -2810,7 +2812,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="选用学习器",
-    command=set_learner_gui,
+    command=UIAPI.set_learner_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3007,7 +3009,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="决策树",
-    command=show_sorry_gui,
+    command=UIAPI.show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3021,7 +3023,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="SVM",
-    command=show_sorry_gui,
+    command=UIAPI.show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -3037,7 +3039,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="朴素贝叶斯",
-    command=show_sorry_gui,
+    command=UIAPI.show_sorry_gui,
     font=FONT,
     width=gui_width,
     height=gui_height,

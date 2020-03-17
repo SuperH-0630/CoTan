@@ -81,6 +81,7 @@ def functionmapping_run():
 
 def functionfactory_main():
     from funcsystem.factory import function_factory_main
+    print('函数工厂加载完毕')
     function_factory_main()
 
 
@@ -88,6 +89,7 @@ def functionfactory_main():
 def functionfactory_run():
     global SCREEN, functionfactory_start
     functionfactory_start = Process(target=functionfactory_main)
+    print('函数工厂加载完毕')
     functionfactory_start.start()
 
 

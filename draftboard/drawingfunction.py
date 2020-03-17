@@ -22,169 +22,177 @@ class Logger:
         return func_dict
 
 
-def linear_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制1次函数(点击取消可撤销未执行的函数)"):
-        func_dict[1] = lambda x: x
-    else:
-        func_dict[1] = None
+class UIAPI:
+    @staticmethod
+    def askok_gui(message):
+        return tkinter.messagebox.askokcancel('提示', message)
 
 
-def quadratic_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制2次函数(点击取消可撤销未执行的函数)"):
-        func_dict[2] = lambda x: x ** 2
-    else:
-        func_dict[2] = None
+class API:
+    @staticmethod
+    def linear_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制1次函数(点击取消可撤销未执行的函数)"):
+            func_dict[1] = lambda x: x
+        else:
+            func_dict[1] = None
 
+    @staticmethod
+    def quadratic_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制2次函数(点击取消可撤销未执行的函数)"):
+            func_dict[2] = lambda x: x ** 2
+        else:
+            func_dict[2] = None
 
-def cubic_function():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制3次函数(点击取消可撤销未执行的函数)"):
-        func_dict[4] = lambda x: x ** 3
-    else:
-        func_dict[4] = None
+    @staticmethod
+    def cubic_function():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制3次函数(点击取消可撤销未执行的函数)"):
+            func_dict[4] = lambda x: x ** 3
+        else:
+            func_dict[4] = None
 
+    @staticmethod
+    def inverse_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制-1次函数(点击取消可撤销未执行的函数)"):
+            func_dict[3] = lambda x: 1 / x
+        else:
+            func_dict[3] = None
 
-def inverse_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制-1次函数(点击取消可撤销未执行的函数)"):
-        func_dict[3] = lambda x: 1 / x
-    else:
-        func_dict[3] = None
+    @staticmethod
+    def radical_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制根号函数(点击取消可撤销未执行的函数)"):
+            func_dict[5] = lambda x: x ** (1 / 2)
+        else:
+            func_dict[5] = None
 
+    @staticmethod
+    def exp_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制指数函数(点击取消可撤销未执行的函数)"):
+            func_dict[6] = lambda x: 10 ** x
+        else:
+            func_dict[6] = None
 
-def radical_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制根号函数(点击取消可撤销未执行的函数)"):
-        func_dict[5] = lambda x: x ** (1 / 2)
-    else:
-        func_dict[5] = None
+    @staticmethod
+    def log_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制对数函数(点击取消可撤销未执行的函数)"):
+            func_dict[7] = lambda x: math.log(x, 2)
+        else:
+            func_dict[7] = None
 
+    @staticmethod
+    def log2_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制对数函数2(点击取消可撤销未执行的函数)"):
+            func_dict[8] = lambda x: math.log(2, x)
+        else:
+            func_dict[8] = None
 
-def exp_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制指数函数(点击取消可撤销未执行的函数)"):
-        func_dict[6] = lambda x: 10 ** x
-    else:
-        func_dict[6] = None
+    @staticmethod
+    def sin_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制正弦函数(点击取消可撤销未执行的函数)"):
+            func_dict[9] = lambda x: math.sin(x)
+        else:
+            func_dict[9] = None
 
+    @staticmethod
+    def cos_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制余弦函数(点击取消可撤销未执行的函数)"):
+            func_dict[10] = lambda x: math.cos(x)
+        else:
+            func_dict[10] = None
 
-def log_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制对数函数(点击取消可撤销未执行的函数)"):
-        func_dict[7] = lambda x: math.log(x, 2)
-    else:
-        func_dict[7] = None
+    @staticmethod
+    def tan_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制正切函数(点击取消可撤销未执行的函数)"):
+            func_dict[11] = lambda x: math.tan(x)
+        else:
+            func_dict[11] = None
 
+    @staticmethod
+    def cot_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制余切函数(点击取消可撤销未执行的函数)"):
+            func_dict[12] = lambda x: 1 / math.tan(x)
+        else:
+            func_dict[12] = None
 
-def log2_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制对数函数2(点击取消可撤销未执行的函数)"):
-        func_dict[8] = lambda x: math.log(2, x)
-    else:
-        func_dict[8] = None
+    @staticmethod
+    def sec_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制正割函数(点击取消可撤销未执行的函数)"):
+            func_dict[13] = lambda x: 1 / math.cos(x)
+        else:
+            func_dict[13] = None
 
+    @staticmethod
+    def csc_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制余割函数(点击取消可撤销未执行的函数)"):
+            func_dict[11] = lambda x: 1 / math.sin(x)
+        else:
+            func_dict[11] = None
 
-def sin_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制正弦函数(点击取消可撤销未执行的函数)"):
-        func_dict[9] = lambda x: math.sin(x)
-    else:
-        func_dict[9] = None
+    @staticmethod
+    def arcsin_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反正弦函数(点击取消可撤销未执行的函数)"):
+            func_dict[12] = lambda x: math.asin(x)
+        else:
+            func_dict[12] = None
 
+    @staticmethod
+    def arccos_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反余弦函数(点击取消可撤销未执行的函数)"):
+            func_dict[13] = lambda x: math.acos(x)
+        else:
+            func_dict[13] = None
 
-def cos_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制余弦函数(点击取消可撤销未执行的函数)"):
-        func_dict[10] = lambda x: math.cos(x)
-    else:
-        func_dict[10] = None
+    @staticmethod
+    def arctan_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反正切函数(点击取消可撤销未执行的函数)"):
+            func_dict[14] = lambda x: math.atan(x)
+        else:
+            func_dict[14] = None
 
+    @staticmethod
+    def arccot_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反余切函数(点击取消可撤销未执行的函数)"):
+            func_dict[15] = lambda x: 1 / math.atan(x)
+        else:
+            func_dict[15] = None
 
-def tan_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制正切函数(点击取消可撤销未执行的函数)"):
-        func_dict[11] = lambda x: math.tan(x)
-    else:
-        func_dict[11] = None
+    @staticmethod
+    def arcsec_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反正割函数(点击取消可撤销未执行的函数)"):
+            func_dict[16] = lambda x: 1 / math.acos(x)
+        else:
+            func_dict[16] = None
 
+    @staticmethod
+    def arccsc_func():
+        global func_dict
+        if UIAPI.askok_gui("是否绘制反余割函数(点击取消可撤销未执行的函数)"):
+            func_dict[17] = lambda x: 1 / math.asin(x)
+        else:
+            func_dict[17] = None
 
-def cot_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制余切函数(点击取消可撤销未执行的函数)"):
-        func_dict[12] = lambda x: 1 / math.tan(x)
-    else:
-        func_dict[12] = None
-
-
-def sec_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制正割函数(点击取消可撤销未执行的函数)"):
-        func_dict[13] = lambda x: 1 / math.cos(x)
-    else:
-        func_dict[13] = None
-
-
-def csc_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制余割函数(点击取消可撤销未执行的函数)"):
-        func_dict[11] = lambda x: 1 / math.sin(x)
-    else:
-        func_dict[11] = None
-
-
-def arcsin_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反正弦函数(点击取消可撤销未执行的函数)"):
-        func_dict[12] = lambda x: math.asin(x)
-    else:
-        func_dict[12] = None
-
-
-def arccos_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反余弦函数(点击取消可撤销未执行的函数)"):
-        func_dict[13] = lambda x: math.acos(x)
-    else:
-        func_dict[13] = None
-
-
-def arctan_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反正切函数(点击取消可撤销未执行的函数)"):
-        func_dict[14] = lambda x: math.atan(x)
-    else:
-        func_dict[14] = None
-
-
-def arccot_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反余切函数(点击取消可撤销未执行的函数)"):
-        func_dict[15] = lambda x: 1 / math.atan(x)
-    else:
-        func_dict[15] = None
-
-
-def arcsec_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反正割函数(点击取消可撤销未执行的函数)"):
-        func_dict[16] = lambda x: 1 / math.acos(x)
-    else:
-        func_dict[16] = None
-
-
-def arccsc_func():
-    global func_dict
-    if tkinter.messagebox.askokcancel("提示", "是否绘制反余割函数(点击取消可撤销未执行的函数)"):
-        func_dict[17] = lambda x: 1 / math.asin(x)
-    else:
-        func_dict[17] = None
-
-
-def custom_func():
-    global func_dict, custom_function_index, custom_func_dict
-    custom_func_dict[custom_function_index] = customfunctions.make_func()
+    @staticmethod
+    def custom_func():
+        global func_dict, custom_function_index, custom_func_dict
+        custom_func_dict[custom_function_index] = customfunctions.make_func()
 
 
 def func_box():
@@ -199,7 +207,7 @@ def func_box():
         text="1次函数",
         bg=bg_color,
         fg=word_color,
-        command=linear_func,
+        command=API.linear_func,
         width=width,
         height=1,
     ).pack()
@@ -208,7 +216,7 @@ def func_box():
         text="2次函数",
         bg=bg_color,
         fg=word_color,
-        command=quadratic_func,
+        command=API.quadratic_func,
         width=width,
         height=1,
     ).pack()
@@ -217,7 +225,7 @@ def func_box():
         text="-1次函数",
         bg=bg_color,
         fg=word_color,
-        command=inverse_func,
+        command=API.inverse_func,
         width=width,
         height=1,
     ).pack()
@@ -226,7 +234,7 @@ def func_box():
         text="3次函数",
         bg=bg_color,
         fg=word_color,
-        command=cubic_function,
+        command=API.cubic_function,
         width=width,
         height=1,
     ).pack()
@@ -235,7 +243,7 @@ def func_box():
         text="根号函数",
         bg=bg_color,
         fg=word_color,
-        command=radical_func,
+        command=API.radical_func,
         width=width,
         height=1,
     ).pack()
@@ -244,7 +252,7 @@ def func_box():
         text="对数函数",
         bg=bg_color,
         fg=word_color,
-        command=log_func,
+        command=API.log_func,
         width=width,
         height=1,
     ).pack()
@@ -253,7 +261,7 @@ def func_box():
         text="指数函数",
         bg=bg_color,
         fg=word_color,
-        command=exp_func,
+        command=API.exp_func,
         width=width,
         height=1,
     ).pack()
@@ -262,7 +270,7 @@ def func_box():
         text="对数底函数",
         bg=bg_color,
         fg=word_color,
-        command=log2_func,
+        command=API.log2_func,
         width=width,
         height=1,
     ).pack()
@@ -271,7 +279,7 @@ def func_box():
         text="sin函数",
         bg=bg_color,
         fg=word_color,
-        command=sin_func,
+        command=API.sin_func,
         width=width,
         height=1,
     ).pack()
@@ -280,7 +288,7 @@ def func_box():
         text="cos函数",
         bg=bg_color,
         fg=word_color,
-        command=cos_func,
+        command=API.cos_func,
         width=width,
         height=1,
     ).pack()
@@ -289,7 +297,7 @@ def func_box():
         text="tan函数",
         bg=bg_color,
         fg=word_color,
-        command=tan_func,
+        command=API.tan_func,
         width=width,
         height=1,
     ).pack()
@@ -298,7 +306,7 @@ def func_box():
         text="cot函数",
         bg=bg_color,
         fg=word_color,
-        command=tan_func,
+        command=API.tan_func,
         width=width,
         height=1,
     ).pack()
@@ -307,7 +315,7 @@ def func_box():
         text="csc函数",
         bg=bg_color,
         fg=word_color,
-        command=csc_func,
+        command=API.csc_func,
         width=width,
         height=1,
     ).pack()
@@ -316,7 +324,7 @@ def func_box():
         text="sec函数",
         bg=bg_color,
         fg=word_color,
-        command=sec_func,
+        command=API.sec_func,
         width=width,
         height=1,
     ).pack()
@@ -325,7 +333,7 @@ def func_box():
         text="arcsin函数",
         bg=bg_color,
         fg=word_color,
-        command=arcsin_func,
+        command=API.arcsin_func,
         width=width,
         height=1,
     ).pack()
@@ -334,7 +342,7 @@ def func_box():
         text="arccos函数",
         bg=bg_color,
         fg=word_color,
-        command=arccos_func,
+        command=API.arccos_func,
         width=width,
         height=1,
     ).pack()
@@ -343,7 +351,7 @@ def func_box():
         text="arctan函数",
         bg=bg_color,
         fg=word_color,
-        command=arctan_func,
+        command=API.arctan_func,
         width=width,
         height=1,
     ).pack()
@@ -352,7 +360,7 @@ def func_box():
         text="arccot函数",
         bg=bg_color,
         fg=word_color,
-        command=arccot_func,
+        command=API.arccot_func,
         width=width,
         height=1,
     ).pack()
@@ -361,7 +369,7 @@ def func_box():
         text="arccsc函数",
         bg=bg_color,
         fg=word_color,
-        command=arccsc_func,
+        command=API.arccsc_func,
         width=width,
         height=1,
     ).pack()
@@ -370,7 +378,7 @@ def func_box():
         text="arcsec函数",
         bg=bg_color,
         fg=word_color,
-        command=arcsec_func,
+        command=API.arcsec_func,
         width=width,
         height=1,
     ).pack()
@@ -379,7 +387,7 @@ def func_box():
         text="自定义函数",
         bg=bg_color,
         fg=word_color,
-        command=custom_func,
+        command=API.custom_func,
         width=width,
         height=3,
     ).pack()

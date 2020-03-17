@@ -41,431 +41,433 @@ column = 0
 new_text = None
 
 
-def update_simultaneous_equations_box_gui():
-    box = []
-    if left_equation is not None or right_equation is not None:
-        box.append(f"(选定){left_equation} = {right_equation}")
-    for i in equation_set:
-        box.append(f"{i[0]} = {i[1]}")
-    equation_box.delete(0, tkinter.END)
-    equation_box.insert(tkinter.END, *box)
-
-
-def get_merge_func_gui():
-    return merge_func.get()
-
-
-def add_variable_assignment_gui():
-    return number.get(), number_type.get()
-
-
-def algebraic_partition_gui():
-    deep = deep_split.get()
-    f = split_func.get().split(",")
-    m = return_type.get()
-    if m == 1:
-        must = False
-    else:
-        must = True
-    return deep, f, m, must
-
-
-def algebraic_similarity_split_gui():
-    name = get_algebraic_name_gui()
-    value = similar_items.get().split("#")
-    f = return_type.get()
-    return f, name, value
-
-
-def algebraic_factorization_gui():
-    all = return_type.get()
-    if all == 0:
-        return True, False
-    elif all == 1:
-        return False, False
-    else:
-        return True, True
-
-
-def askok_gui(message):
-    return tkinter.messagebox.askokcancel('提示', message)
-
-
-def get_algebraic_name_gui():
-    global algebra_list, algebra_box
-    try:
-        name = algebra_list[algebra_box.curselection()[0]]
-    except BaseException:
-        name = None
-        output_prompt_gui("请选定代数式")
-    return name
-
-
-def add_algebraic_gui():
-    alg_str = algebra_expression.get()
-    name = algebra_name.get().replace(" ", "")
-    ratdio_list = ratdio.get().split("#")
-    try:
-        the_ratdio = float(ratdio_list[0])
-    except BaseException:
-        the_ratdio = 1.7
-    rat = bool(init_rationalization.get())
-    inverse = bool(init_ignore_assumptions.get())
-    the_standardization = bool(standardization.get())
-    return alg_str, inverse, name, rat, the_ratdio, the_standardization
-
-
-def update_predictions_box_gui(index):
-    predictions_box.delete(0, tkinter.END)
-    predictions_box.insert(tkinter.END, *algebra_controller.variable_prediction(index))
-
-
-def update_symbol_algebraic_box_gui():
-    global algebra_controller, variable_box, variable_list, algebra_box, algebra_list, option_list, on_hold_algebra
-    # 保存符号
-    re = algebra_controller()  # 0-value,1-alg
-    variable_list = re[0][1]
-    # 显示符号
-    variable_box.delete(0, tkinter.END)
-    variable_box.insert(tkinter.END, *re[0][0])
-    # 保存代数式
-    algebra_list = re[1][1]
-    # 显示代数式
-    algebra_box.delete(0, tkinter.END)
-    algebra_box.insert(tkinter.END, *re[1][0])
-    option_list = []
-    on_hold_algebra.delete(0, tkinter.END)
-
-
-def update_operation_box_gui():
-    global on_hold_algebra, option_list
-    re = []
-    for i in range(len(option_list)):
-        re.append(f"({i + 1}) --> {option_list[i]}")
-    on_hold_algebra.delete(0, tkinter.END)
-    on_hold_algebra.insert(tkinter.END, *re)
-
-
-def get_on_hold_algebra_gui():
-    return on_hold_algebra.curselection()[0]
-
-
-def denominator_rationalization_gui():
-    try:
-        maximum = int(maximum_irrational_term.get())
-    except BaseException:
-        maximum = 4
-    rationalized = bool(rationalized_unknown.get())
-    return maximum, rationalized
-
-
-def get_fully_divided_gui():
-    deep = bool(fully_divided.get())
-    return deep
-
-
-def get_apart_gui():
-    x = apart.get().replace(" ", "")
-    if x == "":
-        x = None
-    return x
-
-
-def get_trig_fully_expand_gui():
-    return bool(trig_fully_expand.get())
-
-
-def get_ignore_assumptions_gui():
-    return not bool(ignore_assumptions.get())
-
-
-def get_fully_expand_gui():
-    deep = bool(fully_expand.get())
-    return deep
-
-
-def get_reduce_log_gui():
-    return not bool(ignore_assumptions_log.get())
-
-
-def get_expand_log_gui():
-    ignore_assumptions = not bool(ignore_assumptions_log.get())
-    deep = bool(log_fully_expand.get())
-    return deep, ignore_assumptions
-
-
-def get_standardization_gui():
-    try:
-        radio = float(simplify_ratio_input.get())
-    except BaseException:
-        radio = 1.7
-    rat = bool(init_rationalization.get())
-    inverse = bool(init_ignore_assumptions.get())
-    name = get_algebraic_name_gui()
-    return inverse, name, radio, rat
-
-
-def get_factorization_gui():
-    gaussian = bool(is_gaussian.get())
-    deep = bool(fully_factor.get())
-    rat = bool(factor_rat.get())
-    try:
-        modulus_num = int(modulus.get())
-    except BaseException:
-        modulus_num = None
-    return deep, gaussian, modulus_num, rat
-
-
-def get_is_expand_complex_gui():
-    return bool(is_expand_complex.get())
-
-
-def get_similar_items_gui():
-    global similar_items_object
-    return similar_items_object.get().split("#")
-
-
-def get_valid_number_gui():
-    global valid_number
-    try:
-        num = int(valid_number.get())
-    except BaseException:
-        num = 5
-    return num
-
-
-def get_value_algebra_box_index_gui():
-    return value_algebra_box.curselection()[0]
-
-
-def update_value_algebraic_box_gui():
-    global algebra_controller, variable_list, variable_box, value_algebra_dict, right_algebra, left_value
-    global value_algebra_box
-    box = []
-    if left_value is not None or right_algebra is not None:
-        box.append(f"选定:{left_value} = {right_algebra}")
-    for v in value_algebra_dict:
-        box.append(f"{v} = {value_algebra_dict[v]}")
-    value_algebra_box.delete(0, tkinter.END)
-    value_algebra_box.insert(tkinter.END, *box)
-
-
-def get_algebra_value_box_index_gui():
-    global algebra_value_box
-    return algebra_value_box.curselection()[0]
-
-
-def update_algebraic_value_box_gui():
-    global algebra_controller, algebra_value_dict, left_algebra, right_value, algebra_value_box
-    box = []
-    if right_value is not None or left_algebra is not None:
-        box.append(f"选定:{left_algebra} = {right_value}")
-    for v in algebra_value_dict:
-        box.append(f"{v} = {algebra_value_dict[v]}")
-    algebra_value_box.delete(0, tkinter.END)
-    algebra_value_box.insert(tkinter.END, *box)
-
-
-def get_variable_assignment_box_index_gui():
-    global variable_assignment_box
-    return variable_assignment_box.curselection()[0]
-
-
-def update_variable_assignment_box_gui():
-    global algebra_controller, value_sub_dict, variable_assignment_box
-    box = []
-    for v in value_sub_dict:
-        box.append(f"{v} = {value_sub_dict[v]}")
-    variable_assignment_box.delete(0, tkinter.END)
-    variable_assignment_box.insert(tkinter.END, *box)
-
-
-def get_equation_box_index_gui():
-    global equation_box
-    return equation_box.curselection()[0]
-
-
-def update_equation_solution_box_gui(re):
-    global equation_solution_box
-    equation_solution_box.delete(0, tkinter.END)
-    equation_solution_box.insert(tkinter.END, *re)
-
-
-def equation_solution_set_gui():
-    return equation_solution_set[equation_solution_box.curselection()[0]][1]
-
-
-def update_inequality_solution_box_gui(get):
-    inequality_solution_box.delete(0, tkinter.END)
-    inequality_solution_box.insert(tkinter.END, *get)
-
-
-def get_inequality_symbol_gui():
-    return inequality_symbol.get()
-
-
-def rewrite_algebra_gui():
-    func = rewrite_func.get()
-    rewrite = rewrite_object.get().split(",")
-    deep = bool(rewrite_deep.get())
-    name = get_algebraic_name_gui()
-    if rewrite == [""]:
-        rewrite = []
-    return deep, func, name, rewrite
-
-
-def update_inequality_box_gui():
-    global left_inequality, right_inequality, inequality_symbol, inequality_box
-    re = []
-    if left_inequality is not None and right_inequality is not None:
-        inequality_type = [">", "<", ">=", "<="][inequality_symbol.get()]
-        re.append(f"{left_inequality} {inequality_type} {right_inequality}")
-    else:
-        if left_inequality is not None:
-            re.append(f"左代数式:{left_inequality}")
-        if right_inequality is not None:
-            re.append(f"右代数式:{right_inequality}")
-    inequality_box.delete(0, tkinter.END)
-    inequality_box.insert(tkinter.END, *re)
-
-
-def update_plot_value_gui():
-    global plot_object_box, plot_type, p2d_value, p3d_value
-    ty = plot_type.get()
-    re = []
-    try:
-        if ty == 0:  # 2D
-            re = [f"二维:{p2d_value[0]} -> ({p2d_value[1]},{p2d_value[2]})"]
+class UIAPI:
+    @staticmethod
+    def update_simultaneous_equations_box_gui():
+        box = []
+        if left_equation is not None or right_equation is not None:
+            box.append(f"(选定){left_equation} = {right_equation}")
+        for i in equation_set:
+            box.append(f"{i[0]} = {i[1]}")
+        equation_box.delete(0, tkinter.END)
+        equation_box.insert(tkinter.END, *box)
+
+    @staticmethod
+    def get_merge_func_gui():
+        return merge_func.get()
+
+    @staticmethod
+    def add_variable_assignment_gui():
+        return number.get(), number_type.get()
+
+    @staticmethod
+    def algebraic_partition_gui():
+        deep = deep_split.get()
+        f = split_func.get().split(",")
+        m = return_type.get()
+        if m == 1:
+            must = False
         else:
-            re = [
-                f"三维:{p2d_value[0]} -> ({p2d_value[1]},{p2d_value[2]})",
-                f"三维:{p3d_value[0]} -> ({p3d_value[1]},{p3d_value[2]})",
-            ]
-    except BaseException:
-        pass
-    plot_object_box.delete(0, tkinter.END)
-    plot_object_box.insert(tkinter.END, *re)
+            must = True
+        return deep, f, m, must
 
+    @staticmethod
+    def algebraic_similarity_split_gui():
+        name = UIAPI.get_algebraic_name_gui()
+        value = similar_items.get().split("#")
+        f = return_type.get()
+        return f, name, value
 
-def get_range_of_values_gui():
-    global range_of_values
-    return range_of_values.get().split(",")
+    @staticmethod
+    def algebraic_factorization_gui():
+        all = return_type.get()
+        if all == 0:
+            return True, False
+        elif all == 1:
+            return False, False
+        else:
+            return True, True
 
+    @staticmethod
+    def askok_gui(message):
+        return tkinter.messagebox.askokcancel('提示', message)
 
-def get_var_name_gui():
-    global variable_list, variable_box
-    return variable_list[variable_box.curselection()[0]]
+    @staticmethod
+    def get_algebraic_name_gui():
+        global algebra_list, algebra_box
+        try:
+            name = algebra_list[algebra_box.curselection()[0]]
+        except BaseException:
+            name = None
+            UIAPI.output_prompt_gui("请选定代数式")
+        return name
 
+    @staticmethod
+    def add_algebraic_gui():
+        alg_str = algebra_expression.get()
+        name = algebra_name.get().replace(" ", "")
+        ratdio_list = ratdio.get().split("#")
+        try:
+            the_ratdio = float(ratdio_list[0])
+        except BaseException:
+            the_ratdio = 1.7
+        rat = bool(init_rationalization.get())
+        inverse = bool(init_ignore_assumptions.get())
+        the_standardization = bool(standardization.get())
+        return alg_str, inverse, name, rat, the_ratdio, the_standardization
 
-def creat_tree_gui(bg_color, h, str_, w):
-    global new_text
-    new_top = tkinter.Toplevel(bg=bg_color)
-    new_top.resizable(width=False, height=False)
-    new_top.geometry("+10+10")  # 设置所在位置
-    new_text = tkinter.Text(new_top, width=w, height=h)
-    new_text.pack()
-    new_text.delete(1.0, tkinter.END)
-    new_text.insert(tkinter.END, str_)
-    new_text.config(state=tkinter.DISABLED)
+    @staticmethod
+    def update_predictions_box_gui(index):
+        predictions_box.delete(0, tkinter.END)
+        predictions_box.insert(tkinter.END, *algebra_controller.variable_prediction(index))
 
+    @staticmethod
+    def update_symbol_algebraic_box_gui():
+        global algebra_controller, variable_box, variable_list, algebra_box, algebra_list, option_list, on_hold_algebra
+        # 保存符号
+        re = algebra_controller()  # 0-value,1-alg
+        variable_list = re[0][1]
+        # 显示符号
+        variable_box.delete(0, tkinter.END)
+        variable_box.insert(tkinter.END, *re[0][0])
+        # 保存代数式
+        algebra_list = re[1][1]
+        # 显示代数式
+        algebra_box.delete(0, tkinter.END)
+        algebra_box.insert(tkinter.END, *re[1][0])
+        option_list = []
+        on_hold_algebra.delete(0, tkinter.END)
 
-def creat_text_gui(font, paint_container, te, x, y):
-    paint_container.create_text(x, y, font=font, text=te)
+    @staticmethod
+    def update_operation_box_gui():
+        global on_hold_algebra, option_list
+        re = []
+        for i in range(len(option_list)):
+            re.append(f"({i + 1}) --> {option_list[i]}")
+        on_hold_algebra.delete(0, tkinter.END)
+        on_hold_algebra.insert(tkinter.END, *re)
 
+    @staticmethod
+    def get_on_hold_algebra_gui():
+        return on_hold_algebra.curselection()[0]
 
-def make_artboard_gui(h, w):
-    new_top = tkinter.Toplevel(bg=bg_color)
-    new_top.resizable(width=False, height=False)
-    new_top.geometry("+10+10")  # 设置所在位置
-    paint_container = tkinter.Canvas(new_top, bg=bg_color, width=w, height=h)
-    paint_container.pack()
-    return paint_container, new_top
+    @staticmethod
+    def denominator_rationalization_gui():
+        try:
+            maximum = int(maximum_irrational_term.get())
+        except BaseException:
+            maximum = 4
+        rationalized = bool(rationalized_unknown.get())
+        return maximum, rationalized
 
+    @staticmethod
+    def get_fully_divided_gui():
+        deep = bool(fully_divided.get())
+        return deep
 
-def draw_algebra_gui():
-    return bool(bracket.get()), bool(log_bracket.get()), can_input.get().split(",")
+    @staticmethod
+    def get_apart_gui():
+        x = apart.get().replace(" ", "")
+        if x == "":
+            x = None
+        return x
 
+    @staticmethod
+    def get_trig_fully_expand_gui():
+        return bool(trig_fully_expand.get())
 
-def add_custom_symbol_gui():
-    # 复选框系统
-    parameter = []
-    n = 0
-    for i in is_complex:
-        parameter.append(i.get())
-        n += parameter[-1]
-    if n == 1:  # 选一个设为True
-        is_the_complex = [
-            ["complex", "real", "imaginary"][parameter.index(1)],
-            True,
-        ]  # 对象，布尔
-    elif n == 2:  # 选两个设为False
-        is_the_complex = [
-            ["complex", "real", "imaginary"][parameter.index(0)],
-            False,
-        ]  # 对象，布尔
-    else:
-        is_the_complex = None  # 其余
-    parameter = []
-    n = 0
-    for i in is_positives:
-        parameter.append(i.get())
-        n += parameter[-1]
-    if n == 1:  # 选一个设为True
-        is_natural = [
-            ["positive", "negative", "zero"][parameter.index(1)],
-            True,
-        ]  # 对象，布尔
-    elif n == 2:  # 选两个设为False
-        is_natural = [
-            ["positive", "negative", "zero"][parameter.index(0)],
-            False,
-        ]  # 对象，布尔
-    else:
-        is_natural = None  # 其余
-    return [
-        is_generation.get(),
-        is_rational.get(),
-        is_prime.get(),
-        is_even.get(),
-        is_limited.get(),
-        is_the_complex,
-        is_natural,
-        integer.get(),
-    ]
+    @staticmethod
+    def get_ignore_assumptions_gui():
+        return not bool(ignore_assumptions.get())
 
+    @staticmethod
+    def get_fully_expand_gui():
+        deep = bool(fully_expand.get())
+        return deep
 
-def get_var_name_list_gui():  # 获取variable_name的name而不是box
-    name_list = variable_name.get().split(",")
-    return name_list
+    @staticmethod
+    def get_reduce_log_gui():
+        return not bool(ignore_assumptions_log.get())
 
+    @staticmethod
+    def get_expand_log_gui():
+        ignore_assumptions = not bool(ignore_assumptions_log.get())
+        deep = bool(log_fully_expand.get())
+        return deep, ignore_assumptions
 
-def output_prompt_gui(news):
-    global prompt_box, prompt_num, SCREEN
-    prompt_num += 1
-    news = str(news)
-    prompt_box.insert(0, news + f"({prompt_num})")
-    SCREEN.update()
+    @staticmethod
+    def get_standardization_gui():
+        try:
+            radio = float(simplify_ratio_input.get())
+        except BaseException:
+            radio = 1.7
+        rat = bool(init_rationalization.get())
+        inverse = bool(init_ignore_assumptions.get())
+        name = UIAPI.get_algebraic_name_gui()
+        return inverse, name, radio, rat
+
+    @staticmethod
+    def get_factorization_gui():
+        gaussian = bool(is_gaussian.get())
+        deep = bool(fully_factor.get())
+        rat = bool(factor_rat.get())
+        try:
+            modulus_num = int(modulus.get())
+        except BaseException:
+            modulus_num = None
+        return deep, gaussian, modulus_num, rat
+
+    @staticmethod
+    def get_is_expand_complex_gui():
+        return bool(is_expand_complex.get())
+
+    @staticmethod
+    def get_similar_items_gui():
+        global similar_items_object
+        return similar_items_object.get().split("#")
+
+    @staticmethod
+    def get_valid_number_gui():
+        global valid_number
+        try:
+            num = int(valid_number.get())
+        except BaseException:
+            num = 5
+        return num
+
+    @staticmethod
+    def get_value_algebra_box_index_gui():
+        return value_algebra_box.curselection()[0]
+
+    @staticmethod
+    def update_value_algebraic_box_gui():
+        global algebra_controller, variable_list, variable_box, value_algebra_dict, right_algebra, left_value
+        global value_algebra_box
+        box = []
+        if left_value is not None or right_algebra is not None:
+            box.append(f"选定:{left_value} = {right_algebra}")
+        for v in value_algebra_dict:
+            box.append(f"{v} = {value_algebra_dict[v]}")
+        value_algebra_box.delete(0, tkinter.END)
+        value_algebra_box.insert(tkinter.END, *box)
+
+    @staticmethod
+    def get_algebra_value_box_index_gui():
+        global algebra_value_box
+        return algebra_value_box.curselection()[0]
+
+    @staticmethod
+    def update_algebraic_value_box_gui():
+        global algebra_controller, algebra_value_dict, left_algebra, right_value, algebra_value_box
+        box = []
+        if right_value is not None or left_algebra is not None:
+            box.append(f"选定:{left_algebra} = {right_value}")
+        for v in algebra_value_dict:
+            box.append(f"{v} = {algebra_value_dict[v]}")
+        algebra_value_box.delete(0, tkinter.END)
+        algebra_value_box.insert(tkinter.END, *box)
+
+    @staticmethod
+    def get_variable_assignment_box_index_gui():
+        global variable_assignment_box
+        return variable_assignment_box.curselection()[0]
+
+    @staticmethod
+    def update_variable_assignment_box_gui():
+        global algebra_controller, value_sub_dict, variable_assignment_box
+        box = []
+        for v in value_sub_dict:
+            box.append(f"{v} = {value_sub_dict[v]}")
+        variable_assignment_box.delete(0, tkinter.END)
+        variable_assignment_box.insert(tkinter.END, *box)
+
+    @staticmethod
+    def get_equation_box_index_gui():
+        global equation_box
+        return equation_box.curselection()[0]
+
+    @staticmethod
+    def update_equation_solution_box_gui(re):
+        global equation_solution_box
+        equation_solution_box.delete(0, tkinter.END)
+        equation_solution_box.insert(tkinter.END, *re)
+
+    @staticmethod
+    def equation_solution_set_gui():
+        return equation_solution_set[equation_solution_box.curselection()[0]][1]
+
+    @staticmethod
+    def update_inequality_solution_box_gui(get):
+        inequality_solution_box.delete(0, tkinter.END)
+        inequality_solution_box.insert(tkinter.END, *get)
+
+    @staticmethod
+    def get_inequality_symbol_gui():
+        return inequality_symbol.get()
+
+    @staticmethod
+    def rewrite_algebra_gui():
+        func = rewrite_func.get()
+        rewrite = rewrite_object.get().split(",")
+        deep = bool(rewrite_deep.get())
+        name = UIAPI.get_algebraic_name_gui()
+        if rewrite == [""]:
+            rewrite = []
+        return deep, func, name, rewrite
+
+    @staticmethod
+    def update_inequality_box_gui():
+        global left_inequality, right_inequality, inequality_symbol, inequality_box
+        re = []
+        if left_inequality is not None and right_inequality is not None:
+            inequality_type = [">", "<", ">=", "<="][inequality_symbol.get()]
+            re.append(f"{left_inequality} {inequality_type} {right_inequality}")
+        else:
+            if left_inequality is not None:
+                re.append(f"左代数式:{left_inequality}")
+            if right_inequality is not None:
+                re.append(f"右代数式:{right_inequality}")
+        inequality_box.delete(0, tkinter.END)
+        inequality_box.insert(tkinter.END, *re)
+
+    @staticmethod
+    def update_plot_value_gui():
+        global plot_object_box, plot_type, p2d_value, p3d_value
+        ty = plot_type.get()
+        re = []
+        try:
+            if ty == 0:  # 2D
+                re = [f"二维:{p2d_value[0]} -> ({p2d_value[1]},{p2d_value[2]})"]
+            else:
+                re = [
+                    f"三维:{p2d_value[0]} -> ({p2d_value[1]},{p2d_value[2]})",
+                    f"三维:{p3d_value[0]} -> ({p3d_value[1]},{p3d_value[2]})",
+                ]
+        except BaseException:
+            pass
+        plot_object_box.delete(0, tkinter.END)
+        plot_object_box.insert(tkinter.END, *re)
+
+    @staticmethod
+    def get_range_of_values_gui():
+        global range_of_values
+        return range_of_values.get().split(",")
+
+    @staticmethod
+    def get_var_name_gui():
+        global variable_list, variable_box
+        return variable_list[variable_box.curselection()[0]]
+
+    @staticmethod
+    def creat_tree_gui(bg_color, h, str_, w):
+        global new_text
+        new_top = tkinter.Toplevel(bg=bg_color)
+        new_top.resizable(width=False, height=False)
+        new_top.geometry("+10+10")  # 设置所在位置
+        new_text = tkinter.Text(new_top, width=w, height=h)
+        new_text.pack()
+        new_text.delete(1.0, tkinter.END)
+        new_text.insert(tkinter.END, str_)
+        new_text.config(state=tkinter.DISABLED)
+
+    @staticmethod
+    def creat_text_gui(font, paint_container, te, x, y):
+        paint_container.create_text(x, y, font=font, text=te)
+
+    @staticmethod
+    def make_artboard_gui(h, w):
+        new_top = tkinter.Toplevel(bg=bg_color)
+        new_top.resizable(width=False, height=False)
+        new_top.geometry("+10+10")  # 设置所在位置
+        paint_container = tkinter.Canvas(new_top, bg=bg_color, width=w, height=h)
+        paint_container.pack()
+        return paint_container, new_top
+
+    @staticmethod
+    def draw_algebra_gui():
+        return bool(bracket.get()), bool(log_bracket.get()), can_input.get().split(",")
+
+    @staticmethod
+    def add_custom_symbol_gui():
+        # 复选框系统
+        parameter = []
+        n = 0
+        for i in is_complex:
+            parameter.append(i.get())
+            n += parameter[-1]
+        if n == 1:  # 选一个设为True
+            is_the_complex = [
+                ["complex", "real", "imaginary"][parameter.index(1)],
+                True,
+            ]  # 对象，布尔
+        elif n == 2:  # 选两个设为False
+            is_the_complex = [
+                ["complex", "real", "imaginary"][parameter.index(0)],
+                False,
+            ]  # 对象，布尔
+        else:
+            is_the_complex = None  # 其余
+        parameter = []
+        n = 0
+        for i in is_positives:
+            parameter.append(i.get())
+            n += parameter[-1]
+        if n == 1:  # 选一个设为True
+            is_natural = [
+                ["positive", "negative", "zero"][parameter.index(1)],
+                True,
+            ]  # 对象，布尔
+        elif n == 2:  # 选两个设为False
+            is_natural = [
+                ["positive", "negative", "zero"][parameter.index(0)],
+                False,
+            ]  # 对象，布尔
+        else:
+            is_natural = None  # 其余
+        return [
+            is_generation.get(),
+            is_rational.get(),
+            is_prime.get(),
+            is_even.get(),
+            is_limited.get(),
+            is_the_complex,
+            is_natural,
+            integer.get(),
+        ]
+
+    @staticmethod
+    def get_var_name_list_gui():  # 获取variable_name的name而不是box
+        name_list = variable_name.get().split(",")
+        return name_list
+
+    @staticmethod
+    def output_prompt_gui(news):
+        global prompt_box, prompt_num, SCREEN
+        prompt_num += 1
+        news = str(news)
+        prompt_box.insert(0, news + f"({prompt_num})")
+        SCREEN.update()
 
 
 class API:
     @staticmethod
     def algebraic_factorization():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
-            re = algebra_controller.split_mul(name, *algebraic_factorization_gui())
-            output_prompt_gui("拆分成功")
+            re = algebra_controller.split_mul(name, *UIAPI.algebraic_factorization_gui())
+            UIAPI.output_prompt_gui("拆分成功")
         except BaseException:
-            output_prompt_gui("拆分失败")
+            UIAPI.output_prompt_gui("拆分失败")
             return False
         if tkinter.messagebox.askokcancel("提示", f"{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?"):
             for in_alg in re[0]:
                 algebra_controller.add_expression("", in_alg)
-                update_symbol_algebraic_box_gui()
+                UIAPI.update_symbol_algebraic_box_gui()
 
     @staticmethod
     def draw_algebra_core():
-        bracket, log_bracket, wh = draw_algebra_gui()
-        name = get_algebraic_name_gui()
+        bracket, log_bracket, wh = UIAPI.draw_algebra_gui()
+        name = UIAPI.get_algebraic_name_gui()
         get = algebra_controller.get_expression_from_name(name)
         try:
             w = int(wh[0])
@@ -478,12 +480,12 @@ class API:
         x = 30
         y = 150
         plot_len = (size / 16) * 5.5
-        paint_container, new_top = make_artboard_gui(h, w)
+        paint_container, new_top = UIAPI.make_artboard_gui(h, w)
         for i in get:
             if i[0] == "A":
                 te = f"{i[1]}"
                 x += len(te) * plot_len
-                creat_text_gui(font, paint_container, te, x, y)
+                UIAPI.creat_text_gui(font, paint_container, te, x, y)
                 x += len(te) * plot_len
             elif i[0] == "B":
                 if bracket:
@@ -611,7 +613,7 @@ class API:
                         bracket,
                         log_bracket,
                     )  # 递归呼叫儿子
-        output_prompt_gui("运算完毕")
+        UIAPI.output_prompt_gui("运算完毕")
 
     @staticmethod
     def draw_algebra_son(n, paint_container, x, y, size, max_y, bracket=True, log_bracket=True):
@@ -622,7 +624,7 @@ class API:
                 max_y.append(y)
                 te = f"{i[1]}"
                 x += len(te) * plot_len
-                creat_text_gui(font, paint_container, te, x, y)
+                UIAPI.creat_text_gui(font, paint_container, te, x, y)
                 x += len(te) * plot_len
             elif i[0] == "B":
                 if bracket:
@@ -759,7 +761,7 @@ class API:
     @staticmethod
     def show_algebraic():
         try:
-            str_ = algebra_controller.print_expression(get_algebraic_name_gui())
+            str_ = algebra_controller.print_expression(UIAPI.get_algebraic_name_gui())
         except BaseException:
             return False
         try:
@@ -769,38 +771,38 @@ class API:
         except BaseException:
             w = 40
             h = 20
-        output_prompt_gui("系统运算中")
-        creat_tree_gui(bg_color, h, str_, w)
-        output_prompt_gui("运算完毕")
+        UIAPI.output_prompt_gui("系统运算中")
+        UIAPI.creat_tree_gui(bg_color, h, str_, w)
+        UIAPI.output_prompt_gui("运算完毕")
 
     @staticmethod
     def clear_algebra():
         try:
             algebra_controller.clean_expression()
-            update_symbol_algebraic_box_gui()
-            output_prompt_gui("删除完成")
+            UIAPI.update_symbol_algebraic_box_gui()
+            UIAPI.output_prompt_gui("删除完成")
         except BaseException:
-            output_prompt_gui("删除失败")
+            UIAPI.output_prompt_gui("删除失败")
 
     @staticmethod
     def del_algebra():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             algebra_controller.del_expression(name)
-            update_symbol_algebraic_box_gui()
-            output_prompt_gui("删除完成")
+            UIAPI.update_symbol_algebraic_box_gui()
+            UIAPI.output_prompt_gui("删除完成")
         except BaseException:
-            output_prompt_gui("删除失败")
+            UIAPI.output_prompt_gui("删除失败")
 
     @staticmethod
     def del_symbol():
-        name = get_var_name_gui()
+        name = UIAPI.get_var_name_gui()
         try:
             algebra_controller.del_symbol(name)
-            update_symbol_algebraic_box_gui()
-            output_prompt_gui("删除完成")
+            UIAPI.update_symbol_algebraic_box_gui()
+            UIAPI.output_prompt_gui("删除完成")
         except BaseException:
-            output_prompt_gui("删除失败")
+            UIAPI.output_prompt_gui("删除失败")
 
     @staticmethod
     def get_plot_type():
@@ -815,21 +817,21 @@ class API:
                 raise Exception
             if the_plot_type == 1 and p3d_value is None:
                 raise Exception
-            name = get_algebraic_name_gui()
+            name = UIAPI.get_algebraic_name_gui()
             algebra_controller.plot(name, p2d_value, p3d_value)
         except BaseException:
-            output_prompt_gui("画图失败")
+            UIAPI.output_prompt_gui("画图失败")
 
     @staticmethod
     def add_plot_value():
         global p2d_value, p3d_value
         try:
             try:
-                value = get_var_name_gui()
+                value = UIAPI.get_var_name_gui()
             except BaseException:
-                output_prompt_gui("请选定符号")
+                UIAPI.output_prompt_gui("请选定符号")
                 return False
-            value_range = get_range_of_values_gui()
+            value_range = UIAPI.get_range_of_values_gui()
             if value_range == [""]:
                 value_range = [-10, 10]
 
@@ -839,7 +841,7 @@ class API:
             ]
             ty = API.get_plot_type()
         except BaseException:
-            output_prompt_gui("修改失败")
+            UIAPI.output_prompt_gui("修改失败")
             return False
         if p2d_value is None:
             p2d_value = tup
@@ -860,83 +862,83 @@ class API:
                 else:
                     p2d_value = p3d_value
                     p3d_value = tup
-        output_prompt_gui("修改完成")
-        update_plot_value_gui()
+        UIAPI.output_prompt_gui("修改完成")
+        UIAPI.update_plot_value_gui()
 
     @staticmethod
     def rewrite_algebra():
-        deep, func, name, rewrite = rewrite_algebra_gui()
+        deep, func, name, rewrite = UIAPI.rewrite_algebra_gui()
         try:
             get = algebra_controller.rewrite_exp(name, func, rewrite, deep)
-            output_prompt_gui("运行完成")
+            UIAPI.output_prompt_gui("运行完成")
             API.apply_algebraic_tips(get, f"代数式重写的结果为:{get},是否应用？")
         except BaseException:
-            output_prompt_gui("运行失败")
+            UIAPI.output_prompt_gui("运行失败")
 
     @staticmethod
     def inequality_solve():
         if left_inequality is not None and right_inequality is not None:
-            type = get_inequality_symbol_gui()
+            type = UIAPI.get_inequality_symbol_gui()
             try:
                 get = algebra_controller.solving_inequality(
                     [left_inequality, right_inequality], type
                 )
-                update_inequality_solution_box_gui(get)
-                output_prompt_gui("运行完成")
+                UIAPI.update_inequality_solution_box_gui(get)
+                UIAPI.output_prompt_gui("运行完成")
             except BaseException:
-                output_prompt_gui("解不等式失败")
+                UIAPI.output_prompt_gui("解不等式失败")
 
     @staticmethod
     def add_left_algebra():
         global left_inequality
-        left_inequality = get_algebraic_name_gui()
-        update_inequality_box_gui()
+        left_inequality = UIAPI.get_algebraic_name_gui()
+        UIAPI.update_inequality_box_gui()
 
     @staticmethod
     def add_right_algebra():
         global right_inequality
-        right_inequality = get_algebraic_name_gui()
-        update_inequality_box_gui()
+        right_inequality = UIAPI.get_algebraic_name_gui()
+        UIAPI.update_inequality_box_gui()
 
     @staticmethod
     def add_to_algebraic_box():
-        get = equation_solution_set_gui()[
+        get = UIAPI.equation_solution_set_gui()[
             1
         ]  # [1]取结果
         API.apply_algebraic_tips(get, f"联立结果为:{get},是否应用？")
 
     @staticmethod
     def add_to_value_algebraic_box():
-        get = equation_solution_set_gui()
+        get = UIAPI.equation_solution_set_gui()
         value_algebra_dict[get[0]] = get[1]
-        update_value_algebraic_box_gui()
+        UIAPI.update_value_algebraic_box_gui()
 
     @staticmethod
     def add_to_algebraic_value_box():
-        get = equation_solution_set_gui()
+        get = UIAPI.equation_solution_set_gui()
         algebra_value_dict[get[1]] = get[0]
-        update_algebraic_value_box_gui()
+        UIAPI.update_algebraic_value_box_gui()
 
     @staticmethod
     def solve_simultaneous_equations():
         global equation_solution_set
         try:
             get = algebra_controller.solving_equations(equation_set)
-            output_prompt_gui("运行成功")
+            UIAPI.output_prompt_gui("运行成功")
         except BaseException:
-            output_prompt_gui("解方程失败")
+            UIAPI.output_prompt_gui("解方程失败")
             return False
         equation_solution_set = []
         re = []
         for i in get:
             re.append(f"{i[0]} = {i[1]}")  # i[0]是一个字母=i[1]是一个代数式
             equation_solution_set.append((i[0], i[1]))
-        update_equation_solution_box_gui(re)
+        UIAPI.update_equation_solution_box_gui(re)
 
     @staticmethod
     def del_equation():
         global left_equation, right_equation
-        num = get_equation_box_index_gui()
+        num = UIAPI.get_equation_box_index_gui()
         if left_equation is not None or right_equation is not None:
             if num == 0:
                 left_equation = None
@@ -946,7 +948,7 @@ class API:
                 del equation_set[num]
         else:
             del equation_set[num]
-        update_simultaneous_equations_box_gui()
+        UIAPI.update_simultaneous_equations_box_gui()
 
     @staticmethod
     def generating_equation():
@@ -955,63 +957,63 @@ class API:
             equation_set.append((left_equation, right_equation))
             left_equation = None
             right_equation = None
-        update_simultaneous_equations_box_gui()
+        UIAPI.update_simultaneous_equations_box_gui()
 
     @staticmethod
     def add_equation_left():
         global left_equation
-        left_equation = get_algebraic_name_gui()
-        update_simultaneous_equations_box_gui()
+        left_equation = UIAPI.get_algebraic_name_gui()
+        UIAPI.update_simultaneous_equations_box_gui()
 
     @staticmethod
     def add_equation_right():
         global right_equation
-        right_equation = get_algebraic_name_gui()
-        update_simultaneous_equations_box_gui()
+        right_equation = UIAPI.get_algebraic_name_gui()
+        UIAPI.update_simultaneous_equations_box_gui()
 
     @staticmethod
     def algebraic_assignment():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.algebraic_assignment(name, value_sub_dict)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("代数运算失败")
+            UIAPI.output_prompt_gui("代数运算失败")
             return False
         API.apply_algebraic_tips(get, f"联立结果为:{get},是否应用？")
 
     @staticmethod
     def del_variable_assignment():
-        num = get_variable_assignment_box_index_gui()
+        num = UIAPI.get_variable_assignment_box_index_gui()
         del value_sub_dict[list(value_sub_dict.keys())[num]]
-        update_variable_assignment_box_gui()
+        UIAPI.update_variable_assignment_box_gui()
 
     @staticmethod
     def add_variable_assignment():
         try:
-            value_name = get_variable_assignment_box_index_gui()
+            value_name = UIAPI.get_variable_assignment_box_index_gui()
         except BaseException:
-            output_prompt_gui("请选定符号")
+            UIAPI.output_prompt_gui("请选定符号")
             return False
-        value_num = algebra_controller.creat_num(*add_variable_assignment_gui())  # 不同类型
+        value_num = algebra_controller.creat_num(*UIAPI.add_variable_assignment_gui())  # 不同类型
         value_sub_dict[value_name] = value_num
-        update_variable_assignment_box_gui()
+        UIAPI.update_variable_assignment_box_gui()
 
     @staticmethod
     def algebragic_value_simultaneous():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.algebragic_value_simultaneous(name, algebra_value_dict)
-            output_prompt_gui("反向联立完成")
+            UIAPI.output_prompt_gui("反向联立完成")
         except BaseException:
-            output_prompt_gui("无法联立")
+            UIAPI.output_prompt_gui("无法联立")
             return False
         API.apply_algebraic_tips(get, f"联立结果为:{get},是否应用？")
 
     @staticmethod
     def del_algebraic_value_simultaneousness():
         global left_algebra, right_value
-        num = get_algebra_value_box_index_gui()
+        num = UIAPI.get_algebra_value_box_index_gui()
         if right_value is not None or left_algebra is not None:
             if num == 0:
                 right_value = None
@@ -1021,7 +1023,7 @@ class API:
                 del algebra_value_dict[list(algebra_value_dict.keys())[num]]
         else:
             del algebra_value_dict[list(algebra_value_dict.keys())[num]]
-        update_algebraic_value_box_gui()
+        UIAPI.update_algebraic_value_box_gui()
 
     @staticmethod
     def add_algebraic_values_simultaneously():
@@ -1029,41 +1031,41 @@ class API:
         if right_value is not None and left_algebra is not None:
             algebra_value_dict[left_algebra] = right_value
             right_value, left_algebra = None, None
-        update_algebraic_value_box_gui()
+        UIAPI.update_algebraic_value_box_gui()
 
     @staticmethod
     def add_left_simultaneous_algebra():  # 代数式=值的左代数式
         global left_algebra
-        alg_name = get_algebraic_name_gui()
+        alg_name = UIAPI.get_algebraic_name_gui()
         left_algebra = alg_name
-        update_algebraic_value_box_gui()
+        UIAPI.update_algebraic_value_box_gui()
 
     @staticmethod
     def add_right_simultaneous_values():  # 解释同上
         global right_value
         try:
-            value_name = get_var_name_gui()
+            value_name = UIAPI.get_var_name_gui()
         except BaseException:
-            output_prompt_gui("请选定符号")
+            UIAPI.output_prompt_gui("请选定符号")
             return False
         right_value = value_name
-        update_algebraic_value_box_gui()
+        UIAPI.update_algebraic_value_box_gui()
 
     @staticmethod
     def value_algebraic_simultaneous():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.value_algebraic_simultaneous(name, value_algebra_dict)
-            output_prompt_gui("联立完成")
+            UIAPI.output_prompt_gui("联立完成")
         except BaseException:
-            output_prompt_gui("无法联立")
+            UIAPI.output_prompt_gui("无法联立")
             return False
         API.apply_algebraic_tips(get, f"联立结果为:{get},是否应用？")
 
     @staticmethod
     def del_value_algebraic_simultaneous():
         global right_algebra, left_value
-        num = get_value_algebra_box_index_gui()
+        num = UIAPI.get_value_algebra_box_index_gui()
         if left_value is not None or right_algebra is not None:
             if num == 0:
                 left_value = None
@@ -1073,7 +1075,7 @@ class API:
                 del value_algebra_dict[list(value_algebra_dict.keys())[num]]
         else:
             del value_algebra_dict[list(value_algebra_dict.keys())[num]]
-        update_value_algebraic_box_gui()
+        UIAPI.update_value_algebraic_box_gui()
 
     @staticmethod
     def add_value_algebraic_simultaneous():
@@ -1081,335 +1083,336 @@ class API:
         if left_value is not None and right_algebra is not None:
             value_algebra_dict[left_value] = right_algebra
             left_value, right_algebra = None, None
-        update_value_algebraic_box_gui()
+        UIAPI.update_value_algebraic_box_gui()
 
     @staticmethod
     def add_right_simultaneous_algebra():
         global right_algebra
-        alg_name = get_algebraic_name_gui()
+        alg_name = UIAPI.get_algebraic_name_gui()
         right_algebra = alg_name
-        update_value_algebraic_box_gui()
+        UIAPI.update_value_algebraic_box_gui()
 
     @staticmethod
     def add_left_simultaneous_values():
         global left_value
         try:
-            value_name = get_var_name_gui()
+            value_name = UIAPI.get_var_name_gui()
         except BaseException:
-            output_prompt_gui("请选定符号")
+            UIAPI.output_prompt_gui("请选定符号")
             return False
         left_value = value_name
-        update_value_algebraic_box_gui()
+        UIAPI.update_value_algebraic_box_gui()
 
     @staticmethod
     def algebraic_digitization():
         try:
-            get = algebra_controller.algebraic_digitization(get_valid_number_gui())
-            output_prompt_gui("数字化完成")
+            get = (algebra_controller
+                   .algebraic_digitization(UIAPI.get_algebraic_name_gui(), UIAPI.get_valid_number_gui()))
+            UIAPI.output_prompt_gui("数字化完成")
         except BaseException:
-            output_prompt_gui("数字化失败")
+            UIAPI.output_prompt_gui("数字化失败")
             return False
         API.apply_algebraic_tips(get, f"数字化的结果为:{get},是否应用？")
 
     @staticmethod
     def expand_special():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.expand_special(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开特殊函数的结果为:{get},是否应用？")
 
     @staticmethod
     def expand_complex():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.expand_complex(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开虚数的结果为:{get},是否应用？")
 
     @staticmethod
     def merger_of_similar_items():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
-            get = algebra_controller.merger_of_similar_items(name, get_similar_items_gui())
-            output_prompt_gui("运算成功")
+            get = algebra_controller.merger_of_similar_items(name, UIAPI.get_similar_items_gui())
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"合并同类项的结果为:{get},是否应用？")
 
     @staticmethod
     def general_expansion():
-        complex = get_is_expand_complex_gui()
-        name = get_algebraic_name_gui()
+        complex = UIAPI.get_is_expand_complex_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.expansion(name, complex)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"普遍展开的结果为:{get},是否应用？")
 
     @staticmethod
     def factorization():
-        name = get_algebraic_name_gui()
-        deep, gaussian, modulus_num, rat = get_factorization_gui()
+        name = UIAPI.get_algebraic_name_gui()
+        deep, gaussian, modulus_num, rat = UIAPI.get_factorization_gui()
         try:
             get = algebra_controller.factor(name, modulus_num, gaussian, deep, rat)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"因式分解的结果为:{get},是否应用？")
 
     @staticmethod
     def standardization():
-        inverse, name, radio, rat = get_standardization_gui()
+        inverse, name, radio, rat = UIAPI.get_standardization_gui()
         try:
             get = algebra_controller.simplify(name, radio, rat=rat, inv=inverse)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"化简(标准化)为:{get},是否应用？")
 
     @staticmethod
     def apply_algebraic_tips(re, message):
-        if askok_gui(message):
+        if UIAPI.askok_gui(message):
             algebra_controller.add_expression("", re)
-            update_symbol_algebraic_box_gui()
+            UIAPI.update_symbol_algebraic_box_gui()
 
     @staticmethod
     def expand_log():
-        deep, ignore_assumptions = get_expand_log_gui()
-        name = get_algebraic_name_gui()
+        deep, ignore_assumptions = UIAPI.get_expand_log_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.log_expansion(name, ignore_assumptions, deep)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开对数结果为:{get},是否应用？")
 
     @staticmethod
     def reduce_log():
-        ignore = get_reduce_log_gui()
-        name = get_algebraic_name_gui()
+        ignore = UIAPI.get_reduce_log_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.log_simp(name, ignore)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"化简对数结果为:{get},是否应用？")
 
     @staticmethod
     def expand_mul():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.mul_expansion(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开乘法结果为:{get},是否应用？")
 
     @staticmethod
     def expand_additive_index():
         global algebra_controller, ignore_assumptions
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.multinomial_expansion(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开加法式幂结果为:{get},是否应用？")
 
     @staticmethod
     def composite_index():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_simp_multinomial(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"合成幂指数的结果为:{get},是否应用？(彻底化简加法式幂可以使用因式分解)")
 
     @staticmethod
     def expand_exp_base():
-        deep = get_fully_expand_gui()
-        name = get_algebraic_name_gui()
+        deep = UIAPI.get_fully_expand_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_expansion_base(name, deep)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开指数底数结果为:{get},是否应用？")
 
     @staticmethod
     def expand_exp_index():
-        deep = get_fully_expand_gui()
-        name = get_algebraic_name_gui()
+        deep = UIAPI.get_fully_expand_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_expansion_exp(name, deep)
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开指数幂结果为:{get},是否应用？")
 
     @staticmethod
     def expand_power():
-        deep = get_fully_expand_gui()
-        name = get_algebraic_name_gui()
+        deep = UIAPI.get_fully_expand_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_expansion_core(name, deep)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"展开指数结果为:{get},是否应用？")
 
     @staticmethod
     def reduce_exp_base():
-        ignore = get_ignore_assumptions_gui()
-        name = get_algebraic_name_gui()
+        ignore = UIAPI.get_ignore_assumptions_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_simp_base(name, ignore)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"化简指数底数结果为:{get},是否应用？")
 
     @staticmethod
     def reduce_exp_index():
-        ignore = get_ignore_assumptions_gui()
-        name = get_algebraic_name_gui()
+        ignore = UIAPI.get_ignore_assumptions_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_simp_exp(name, ignore)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"化简指数幂结果为:{get},是否应用？")
 
     @staticmethod
     def reduced_power():
-        ignore = get_ignore_assumptions_gui()
-        name = get_algebraic_name_gui()
+        ignore = UIAPI.get_ignore_assumptions_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.pow_simp_core(name, ignore)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"化简指数结果为:{get},是否应用？")
 
     @staticmethod
     def reduced_trigonometric():  # 三角函数化简
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.trig_simp(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"三角化简结果为:{get},是否应用？")
 
     @staticmethod
     def expand_trigonometric():  # 三角展开
-        deep = get_trig_fully_expand_gui()
-        name = get_algebraic_name_gui()
+        deep = UIAPI.get_trig_fully_expand_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.trig_expansion(name, deep)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"三角展开结果为:{get},是否应用？")
 
     @staticmethod
     def fractional_division():  # 通分
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.fractional_merge(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"分式通分结果为:{get},是否应用？")
 
     @staticmethod
     def fraction_reduction():  # 约分
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.fraction_reduction(name)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"分式约分结果为:{get},是否应用？")
 
     @staticmethod
     def fractional_fission():  # 裂项
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
-            get = algebra_controller.fractional_fission(name, get_apart_gui())
-            output_prompt_gui("运算成功")
+            get = algebra_controller.fractional_fission(name, UIAPI.get_apart_gui())
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"分式裂项结果为:{get},是否应用？")
 
     @staticmethod
     def fractional_synthesis():  # together
-        deep = get_fully_divided_gui()
-        name = get_algebraic_name_gui()
+        deep = UIAPI.get_fully_divided_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.as_fraction(name, deep)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"合成分式结果为:{get},是否应用？")
 
     @staticmethod
     def denominator_rationalization():  # 分母有理化
-        maximum, rationalized = denominator_rationalization_gui()
-        name = get_algebraic_name_gui()
+        maximum, rationalized = UIAPI.denominator_rationalization_gui()
+        name = UIAPI.get_algebraic_name_gui()
         try:
             get = algebra_controller.fractional_rat(name, rationalized, maximum)
-            output_prompt_gui("运算成功")
+            UIAPI.output_prompt_gui("运算成功")
         except BaseException:
-            output_prompt_gui("运算失败")
+            UIAPI.output_prompt_gui("运算失败")
             return False
         API.apply_algebraic_tips(get, f"分母有理化结果为:{get},是否应用？")
 
     @staticmethod
     def add_operation_algebra():
-        name = get_algebraic_name_gui()
+        name = UIAPI.get_algebraic_name_gui()
         if name is None:
             return False
         option_list.append(name)
-        update_operation_box_gui()
+        UIAPI.update_operation_box_gui()
 
     @staticmethod
     def del_operation_algebra():
-        del option_list[get_on_hold_algebra_gui()]
-        update_operation_box_gui()
+        del option_list[UIAPI.get_on_hold_algebra_gui()]
+        UIAPI.update_operation_box_gui()
 
     @staticmethod
     def clear_operational_algebra():
-        update_symbol_algebraic_box_gui()
+        UIAPI.update_symbol_algebraic_box_gui()
 
     @staticmethod
     def algebraic_composition():
@@ -1418,10 +1421,10 @@ class API:
         if len(name) < 2:
             raise Exception
         try:
-            re = algebra_controller.merge_func(name, get_merge_func_gui())
-            output_prompt_gui("合成成功")
+            re = algebra_controller.merge_func(name, UIAPI.get_merge_func_gui())
+            UIAPI.output_prompt_gui("合成成功")
         except BaseException:
-            output_prompt_gui("合成失败")
+            UIAPI.output_prompt_gui("合成失败")
             return False
         API.apply_algebraic_tips(re, f"合成结果为:{re}，是否应用?")
 
@@ -1432,9 +1435,9 @@ class API:
             raise Exception
         try:
             re = algebra_controller.merge_mul(name)
-            output_prompt_gui("合成成功")
+            UIAPI.output_prompt_gui("合成成功")
         except BaseException:
-            output_prompt_gui("合成失败")
+            UIAPI.output_prompt_gui("合成失败")
             return False
         API.apply_algebraic_tips(re, f"合成结果为:{re}，是否应用?")
 
@@ -1445,39 +1448,39 @@ class API:
             raise Exception
         try:
             re = algebra_controller.merge_add(name)
-            output_prompt_gui("合成成功")
+            UIAPI.output_prompt_gui("合成成功")
         except BaseException:
-            output_prompt_gui("合成失败")
+            UIAPI.output_prompt_gui("合成失败")
             return False
         API.apply_algebraic_tips(re, f"合成结果为:{re}，是否应用?")
 
     @staticmethod
     def algebraic_partition():
-        name = get_algebraic_name_gui()
-        deep, f, m, must = algebraic_partition_gui()
+        name = UIAPI.get_algebraic_name_gui()
+        deep, f, m, must = UIAPI.algebraic_partition_gui()
         try:
             re = algebra_controller.split_func(name, deep, f, must)
-            output_prompt_gui("拆分成功")
+            UIAPI.output_prompt_gui("拆分成功")
         except BaseException:
-            output_prompt_gui("拆分失败")
+            UIAPI.output_prompt_gui("拆分失败")
             return False
         API.split_apply_algebraic_tips(re, f"{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?")
 
     @staticmethod
     def split_apply_algebraic_tips(re, message):
-        if askok_gui(message):
+        if UIAPI.askok_gui(message):
             for in_alg in re[0]:
                 algebra_controller.add_expression("", in_alg)
-                update_symbol_algebraic_box_gui()
+                UIAPI.update_symbol_algebraic_box_gui()
 
     @staticmethod
     def algebraic_similarity_split():
-        f, name, value = algebraic_similarity_split_gui()
+        f, name, value = UIAPI.algebraic_similarity_split_gui()
         try:
             re = algebra_controller.split_add(name, value, f)
-            output_prompt_gui("拆分成功")
+            UIAPI.output_prompt_gui("拆分成功")
         except BaseException:
-            output_prompt_gui("拆分失败")
+            UIAPI.output_prompt_gui("拆分失败")
             return False
         API.split_apply_algebraic_tips(re, f"{name}分解结果为:{re[1]},拆分之后:{re[0]}，是否应用?")
 
@@ -1491,7 +1494,7 @@ class API:
                 rat,
                 the_ratdio,
                 the_standardization,
-            ) = add_algebraic_gui()
+            ) = UIAPI.add_algebraic_gui()
             if the_standardization:  # 标准化
                 new_alg = algebra_controller.simplify(
                     alg_str, ratdio=the_ratdio, rat=rat, inv=inverse
@@ -1501,15 +1504,15 @@ class API:
             if not algebra_controller.add_expression(name, alg_str):
                 raise Exception
 
-            update_symbol_algebraic_box_gui()
-            output_prompt_gui("代数式新增成功")
+            UIAPI.update_symbol_algebraic_box_gui()
+            UIAPI.output_prompt_gui("代数式新增成功")
         except BaseException:
             # raise
-            output_prompt_gui("新增代数式无法应用")
+            UIAPI.output_prompt_gui("新增代数式无法应用")
 
     @staticmethod
     def application(alg_str, new_alg):
-        if new_alg is not None and askok_gui(f"约简函数为:{new_alg}，是否应用?"):
+        if new_alg is not None and UIAPI.askok_gui(f"约简函数为:{new_alg}，是否应用?"):
             alg_str = new_alg
         return alg_str
 
@@ -1518,21 +1521,21 @@ class API:
         global variable_box, variable_list, algebra_controller, predictions_box
         try:
             try:
-                index = get_var_name_gui()
+                index = UIAPI.get_var_name_gui()
             except BaseException:
-                output_prompt_gui("请选定符号")
+                UIAPI.output_prompt_gui("请选定符号")
                 return False
-            update_predictions_box_gui(index)
-            output_prompt_gui("性质预测成功")
+            UIAPI.update_predictions_box_gui(index)
+            UIAPI.output_prompt_gui("性质预测成功")
         except BaseException:
-            output_prompt_gui("性质预测失败")
+            UIAPI.output_prompt_gui("性质预测失败")
 
     @staticmethod
     def add_custom_symbol():  # 添加自定义Symbol
         try:
-            API.__add_symbot_core(*add_custom_symbol_gui())
+            API.__add_symbot_core(*UIAPI.add_custom_symbol_gui())
         except BaseException:
-            output_prompt_gui("自定义符号新增失败")
+            UIAPI.output_prompt_gui("自定义符号新增失败")
 
     @staticmethod
     def add_real():  # 添加实数符号
@@ -1590,7 +1593,7 @@ class API:
         describe="自定义符号",
     ):
         # 代数，有理，质数，偶数，有限实数，复数，正负，整数，取消
-        name_list = get_var_name_list_gui()
+        name_list = UIAPI.get_var_name_list_gui()
         for name in name_list:
             try:
                 if not algebra_controller.add_symbol(
@@ -1608,10 +1611,10 @@ class API:
                 ):
                     raise Exception
             except BaseException:
-                output_prompt_gui(f"新增“{name}”失败")
+                UIAPI.output_prompt_gui(f"新增“{name}”失败")
                 raise
-        output_prompt_gui(f"新增“{describe}”完成")
-        update_symbol_algebraic_box_gui()
+        UIAPI.output_prompt_gui(f"新增“{describe}”完成")
+        UIAPI.update_symbol_algebraic_box_gui()
 
 
 def algebraic_factory_main():
@@ -1619,7 +1622,7 @@ def algebraic_factory_main():
     SCREEN.mainloop()
 
 
-algebra_controller = AlgebraPolynomial(output_prompt_gui)
+algebra_controller = AlgebraPolynomial(UIAPI.output_prompt_gui)
 tkinter.Label(
     SCREEN,
     text="符号名字:",
@@ -3361,7 +3364,7 @@ lable = ["大于>", "小于<", "大于等于>=", "小于等于<="]
 for i in range(2):
     tkinter.Radiobutton(
         SCREEN,
-        command=update_inequality_box_gui,
+        command=UIAPI.update_inequality_box_gui,
         bg=bg_color,
         fg=word_color,
         activebackground=bg_color,
@@ -3376,7 +3379,7 @@ for i in range(2):
     i += 2
     tkinter.Radiobutton(
         SCREEN,
-        command=update_inequality_box_gui,
+        command=UIAPI.update_inequality_box_gui,
         bg=bg_color,
         fg=word_color,
         activebackground=bg_color,
@@ -3454,7 +3457,7 @@ lable = ["二维图像", "三维图像"]
 for i in range(2):
     tkinter.Radiobutton(
         SCREEN,
-        command=update_plot_value_gui,
+        command=UIAPI.update_plot_value_gui,
         bg=bg_color,
         fg=word_color,
         activebackground=bg_color,
@@ -3533,4 +3536,4 @@ prompt_box.grid(
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
 
-output_prompt_gui("加载完成")
+UIAPI.output_prompt_gui("加载完成")
