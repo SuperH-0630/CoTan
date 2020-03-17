@@ -78,7 +78,7 @@ class FuncBase:
         pass
 
     @abstractmethod
-    def save_csv(self):
+    def save_csv(self, file_dir):
         pass
 
     @abstractmethod

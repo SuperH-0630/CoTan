@@ -24,16 +24,16 @@ def progress_bar(func):
         progress_screen = tkinter.Toplevel()
         progress_screen.title('系统持续加载中...')
         progress_screen.geometry("+10+10")  # 设置所在位置
-        mpb = ttk.Progressbar(
+        progress = ttk.Progressbar(
             progress_screen, orient="horizontal", length=300, mode="determinate"
         )
-        mpb.pack()
+        progress.pack()
         progress_screen.resizable(width=False, height=False)
-        mpb["maximum"] = 50
-        mpb["value"] = 0
+        progress["maximum"] = 50
+        progress["value"] = 0
         for i in range(50):
             try:
-                mpb["value"] = i + 1
+                progress["value"] = i + 1
                 progress_screen.update()
             except BaseException:
                 pass
@@ -211,7 +211,7 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='寄忆草稿版',
+        text='寄忆草稿板',
         cursor=button_cursor,
         command=draftboard_run,
         height=2,

@@ -7,24 +7,15 @@ from funcsystem.template import SheetFuncBase, SheetProperty, SheetMemory, ExpFu
 
 class SheetFunc(SheetProperty, SheetMemory, SheetFuncBase):
 
-    def save_csv(self):
+    def save_csv(self, file_dir):
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
-        if tkinter.messagebox.askokcancel("提示", f"是否确认导出函数:\n{str(self)}"):
-            try:
-                file_dir = (
-                    tkinter.filedialog.asksaveasfilename(
-                        title="选择导出位置", filetypes=[("CSV", ".csv")]
-                    )
-                    + ".csv"
-                )
-                if file_dir == ".csv":
-                    raise Exception
-                self.dataframe.to_csv(file_dir)
-                return True
-            except BaseException:
-                pass
-        return False
+        try:
+            self.dataframe.to_csv(file_dir)
+        except BaseException:
+            return False
+        else:
+            return True
 
     def return_list(self):
         # 最值和极值点设计
@@ -52,24 +43,15 @@ class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpFuncBase):
     def return_son(self):
         return self.son_list
 
-    def save_csv(self):
+    def save_csv(self, file_dir):
         if not self.have_data_packet:
-            self.data_packet(float)
-        if tkinter.messagebox.askokcancel("提示", f"是否确认导出函数:\n{str(self)}"):
-            try:
-                file_dir = (
-                    tkinter.filedialog.asksaveasfilename(
-                        title="选择导出位置", filetypes=[("CSV", ".csv")]
-                    )
-                    + ".csv"
-                )
-                if file_dir == ".csv":
-                    raise Exception
-                self.dataframe.to_csv(file_dir)
-                return True
-            except BaseException:
-                pass
-        return False
+            self.data_packet()  # 检查Cul的计算
+        try:
+            self.dataframe.to_csv(file_dir)
+        except BaseException:
+            return False
+        else:
+            return True
 
     def return_list(self):  # 导出列表
         if not self.have_data_packet:

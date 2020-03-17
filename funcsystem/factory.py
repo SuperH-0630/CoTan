@@ -9,6 +9,7 @@ from matplotlib import rcParams
 from matplotlib.animation import FuncAnimation
 
 from funcsystem.controller import ExpFunc as ExpFunc
+from newtkinter import asksaveasfilename
 
 func = None
 fig = None
@@ -46,613 +47,33 @@ row = 0
 column = 1
 
 
-def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
-    x = []
-    for i in sequence:
+def dichotomy_gui():
+    parameters = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
+    for i in range(11):
         try:
-            if type_(i) == type_(0) and convert:
-                continue
-            x.append(type_(i))
-        except ValueError:
+            if i in (4, 5, 9):
+                a = dicon_parameters[i].get()
+            else:
+                a = float(dicon_parameters[i].get())
+            parameters[i] = a
+        except BaseException:
             pass
-    return x
+    return parameters
 
 
-def save_to_csv():  # 导出CSV
-    try:
-        succ = func.save_csv()  # 是否成功
-        if not succ:
-            raise Exception
-        output_prompt("CSV导出成功")
-    except BaseException:
-        output_prompt("CSV导出失败")
+def output_prompt_gui(news):
+    global prompt_box, prompt_num, SCREEN
+    prompt_num += 1
+    news = str(news)
+    prompt_box.insert(0, news + f"({prompt_num})")
+    SCREEN.update()
 
 
-def to_sheet():  # 生成表格
-    global func, sheet_box
-    try:
-        sheet_box.delete(0, tkinter.END)
-        sheet_box.insert(tkinter.END, *func.return_list())
-        output_prompt("表格创建成功")
-    except BaseException:
-        output_prompt("无法创建表格")
-
-
-def sympy_computing(exp_str) -> tuple:
-    try:
-        named_domain = {
-            "Pi": sympy.pi,
-            "e": sympy.E,
-            "log": sympy.log,
-            "sin": sympy.sin,
-            "cos": sympy.cos,
-            "tan": sympy.tan,
-            "cot": lambda x: 1 / sympy.tan(x),
-            "csc": lambda x: 1 / sympy.sin(x),
-            "sec": lambda x: 1 / sympy.cos(x),
-            "sinh": sympy.sinh,
-            "cosh": sympy.cosh,
-            "tanh": sympy.tanh,
-            "asin": sympy.asin,
-            "acos": sympy.acos,
-            "atan": sympy.atan,
-        }
-        ans = eval(exp_str, named_domain)
-        return ans, True
-    except BaseException:
-        return None, False
-
-
-# 确认表达式被正确计算
-def confirmation_expression(c):
-    get = sympy_computing(c)
-    if not get[1]:
-        return c
-    return get[0]
-
-
-def check_center_of_symmetry():
-    global func, projection_value, projection_box, prediction_accuracy
-    a, must = sympy_computing(prediction_accuracy.get())
-    try:
-        result = func.check_symmetry_center(
-            confirmation_expression(projection_value.get()), output_prompt, a
-        )
-        if result[1]:
-            projection_box.insert(tkinter.END, result[1])
-            output_prompt("预测完成")
-        else:
-            raise Exception
-    except BaseException:
-        output_prompt("预测失败")
-
-
-def check_symmetry_axis():
-    global func, projection_value, projection_box, prediction_accuracy
-    a, must = sympy_computing(prediction_accuracy.get())
-    try:
-        result = func.check_symmetry_axis(
-            confirmation_expression(projection_value.get()), output_prompt, a
-        )
-        if result[1]:
-            projection_box.insert(tkinter.END, result[1])
-            output_prompt("预测完成")
-        else:
-            raise Exception
-    except BaseException:
-        output_prompt("预测失败")
-
-
-def check_periodic():
-    global func, projection_value, projection_box, prediction_accuracy
-    a, must = sympy_computing(prediction_accuracy.get())
-    try:
-        result = func.check_periodic(
-            confirmation_expression(projection_value.get()), output_prompt, a
-        )
-        if result[1]:
-            projection_box.insert(tkinter.END, result[1])
-            output_prompt("预测完成")
-        else:
-            raise Exception
-    except BaseException:
-        output_prompt("预测失败")
-
-
-def check_monotonic():
-    global func, projection_value, projection_box, prediction_accuracy
-    a, must = sympy_computing(prediction_accuracy.get())
-    try:
-        result = func.check_monotonic(projection_value.get(), output_prompt, a)
-        if result[1]:
-            projection_box.insert(tkinter.END, result[1])
-            output_prompt("预测完成")
-        else:
-            raise Exception
-    except BaseException:
-        output_prompt("预测失败")
-
-
-def clear_memory():
-    global func
-    try:
-        if tkinter.messagebox.askokcancel("提示", f"确定删除{func}的记忆吗？"):
-            result_box.delete(0, tkinter.END)
-            func.clean_memory()
-            output_prompt("删除完毕")
-        else:
-            output_prompt("删除取消")
-    except BaseException:
-        output_prompt("删除失败")
-
-
-def show_hidden_memory():  # 显示xy
-    global func, result_box
-    try:
-        result_box.delete(0, tkinter.END)
-        func.hide_or_show()
-        output_prompt("已清空卡槽")
-    except BaseException:
-        output_prompt("隐藏（显示）失败")
-
-
-def gradient_method_calculation():
-    global func, y_value_gradient, gradient_parameters, result_box
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)  # 清空
-        parameters = []
-        for i in gradient_parameters:
-            parameters.append(i.get())
-        output_prompt("系统运算中")
-        answer = func.gradient_calculation(y_value_gradient.get(), *parameters)
-        if answer[1] is not None:
-            result_box.insert(tkinter.END, answer[0])
-            output_prompt("系统运算完成")
-        else:
-            output_prompt("系统运算无结果")
-    except BaseException:
-        output_prompt("系统运算失败，请注意参数设置")
-
-
-def calculate():
-    global x_value, func, result_box
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)
-        x = x_value.get().split(",")
-        answer = func.calculation(x)
-        if answer != []:
-            result_box.insert(tkinter.END, *answer)
-            output_prompt("系统运算完毕")
-        else:
-            output_prompt("系统运算无结果")
-    except BaseException:
-        output_prompt("计算失败")
-
-
-def sympy_calculation_x():
-    global y_value_symbol, func, result_box
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)
-        x = y_value_symbol.get().split(",")
-        answer = []
-        for i in x:
-            answer += func.sympy_calculation(i)[0]
-        if answer != []:
-            result_box.insert(tkinter.END, *answer)
-            output_prompt("系统运算完毕")
-        else:
-            output_prompt("系统运算无结果")
-    except BaseException:
-        output_prompt("计算失败")
-
-
-def function_differentiation():
-    global x_value_derivation, func, result_box, proximity_accuracy
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)
-        x = x_value_derivation.get().split(",")
-        accuracy = proximity_accuracy.get()
-        answer = []
-        for i in x:
-            get = func.derivative(i, accuracy)[0]
-            if get is not None:
-                answer.append(get)
-        if answer != []:
-            result_box.insert(tkinter.END, *answer)
-            output_prompt("系统运算完毕")
-        else:
-            output_prompt("系统运算无结果")
-    except IndexError:
-        output_prompt("计算失败")
-
-
-def approximation():  # 逼近法
-    global x_value_derivation, func, result_box, proximity_accuracy
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)
-        x = x_value_derivation.get().split(",")
-        accuracy = proximity_accuracy.get()
-        answer = []
-        for i in x:
-            get = func.derivative(i, accuracy, True)[0]
-            if get is not None:
-                answer.append(get)
-        if answer != []:
-            result_box.insert(tkinter.END, *answer)
-            output_prompt("系统运算完毕")
-        else:
-            output_prompt("系统运算无结果")
-    except IndexError:
-        output_prompt("计算失败")
-
-
-def dichotomy():  # 二分法
-    global y_value, dicon_parameters, func, result_box
-    try:
-        output_prompt("计算过程程序可能无响应")
-        result_box.delete(0, tkinter.END)  # 清空
-        y = y_value.get().split(",")  # 拆解输入
-        parameters = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
-        for i in range(11):
-            try:
-                if i in (4, 5, 9):
-                    a = dicon_parameters[i].get()
-                else:
-                    a = float(dicon_parameters[i].get())
-                parameters[i] = a
-            except BaseException:
-                pass
-        answer = []
-        output_prompt("系统运算中")
-        for i in y:
-            try:
-                answer += func.dichotomy(float(i), *parameters)[0]
-            except BaseException:
-                pass
-        if answer:
-            output_prompt("系统运算完成")
-            result_box.insert(tkinter.END, *answer)
-        else:
-            output_prompt("系统运算无结果")
-    except BaseException:
-        output_prompt("系统运算失败")
-
-
-def property_prediction():
-    global func, prediction_box, prediction_accuracy
-    try:
-        a, must = sympy_computing(prediction_accuracy.get())
-        output_prompt("预测过程程序可能无响应")
-        prediction_box.delete(0, tkinter.END)
-        answer = func.property_prediction(output_prompt, True, a)
-        prediction_box.insert(tkinter.END, *answer)
-        output_prompt("性质预测完成")
-    except IndexError:
-        output_prompt("性质预测失败")
-
-
-def function_drawing():
-    global x_scale, start_x_plot, start_x_polt, span_x_plot, y_scale, start_y_plot, end_y_plot, span_y_plot
-    global start_x_limit, end_x_limit, start_y_limit, end_y_limit
-    global func, fig, show_point, show_best_value, show_text, plot_type, frame_rate
-    try:
-        draw_type = plot_type.curselection()[0]
-    except BaseException:
-        draw_type = 0
-    # 画板创造
-    output_prompt("生成绘制取...")
-    fig = plt.figure(num="CoTan函数")  # 定义一个图像窗口
-    if draw_type in (0, 1, 2, 3, 8, 9):
-        plt.grid(True, ls="--")  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
-    axis = plt.gca()
-    text_y = ""
-    text_x = ""
-
-    def init():
-        nonlocal text_x, text_y
-        if draw_type in (0, 2, 4, 6, 8):
-            axis.spines["right"].set_color("none")
-            axis.spines["top"].set_color("none")
-            axis.xaxis.set_ticks_position("bottom")
-            axis.yaxis.set_ticks_position("left")
-            axis.spines["bottom"].set_position(("data", 0))  # 设置x轴, y轴在(0, 0)的位置
-            axis.spines["left"].set_position(("data", 0))
-        # 检测x
-        try:
-            if x_scale.get()[0] == "c":  # 如果输入函数cx#-10#10#1#1
-                plot_parameter = [
-                    x_scale.get()[1:],
-                    start_x_plot.get(),
-                    start_x_polt.get(),
-                    span_x_plot.get(),
-                    2,
-                ]  # 第一部分HS，第二部分S，第三部分E，第四部分KD，第五部分JD
-                exp_parameter = ["x", -10, 10, 1, 2]  # 保护系统
-                try:
-                    exp_parameter[0] = plot_parameter[0]
-                    exp_parameter[1] = int(plot_parameter[1])
-                    exp_parameter[2] = int(plot_parameter[2])
-                    exp_parameter[3] = int(plot_parameter[3])
-                    exp_parameter[4] = int(plot_parameter[4])
-                except BaseException:  # 迭代匹配直到出现错误
-                    pass
-                plot_parameter = exp_parameter
-                x_exp_scale = type_selection(
-                    ExpFunc(
-                        plot_parameter[0],
-                        "x",
-                        "",
-                        plot_parameter[1],
-                        plot_parameter[2],
-                        plot_parameter[3],
-                        plot_parameter[4],
-                    ).data_packet()[1]
-                )  # 取y
-                axis.set_xticks(x_exp_scale)  # 输入表达式计算刻度
-            elif x_scale.get()[0] == "y":  # 输入函数y
-                # 不错要错误捕捉，外围有个大的捕捉
-                x_exp_scale = abs(int(start_x_plot.get()))
-                x_major_locator = plt.MultipleLocator(x_exp_scale)
-                axis.xaxis.set_major_locator(x_major_locator)
-            else:  # 输入纯数字
-                x_exp_scale = type_selection(x_scale.get().split(","))
-                axis.set_xticks(x_exp_scale)
-        except BaseException:
-            x_major_locator = plt.MultipleLocator(2)
-            axis.xaxis.set_major_locator(x_major_locator)
-        # 检测y
-        try:  # 意外捕捉
-            if y_scale.get()[0] == "c":  # 如果输入函数cx#-10#10#1#1
-                plot_parameter = [
-                    y_scale.get()[1:],
-                    start_y_plot.get(),
-                    end_y_plot.get(),
-                    span_y_plot.get(),
-                    2,
-                ]  # 第一部分HS，第二部分S，第三部分E，第四部分KD，第五部分JD
-                exp_parameter = ["x", -10, 10, 1, 2]  # 保护系统
-                try:
-                    exp_parameter[0] = plot_parameter[0]
-                    exp_parameter[1] = int(plot_parameter[1])
-                    exp_parameter[2] = int(plot_parameter[2])
-                    exp_parameter[3] = int(plot_parameter[3])
-                    exp_parameter[4] = int(plot_parameter[4])
-                except BaseException:  # 迭代匹配直到出现错误
-                    pass
-                plot_parameter = exp_parameter
-                y_exp_scale = type_selection(
-                    ExpFunc(
-                        plot_parameter[0],
-                        "y",
-                        "",
-                        plot_parameter[1],
-                        plot_parameter[2],
-                        plot_parameter[3],
-                        plot_parameter[4],
-                    ).data_packet()[1]
-                )  # 取y
-                axis.set_yticks(y_exp_scale)
-            elif y_scale.get()[0] == "y":  # 输入函数y
-                y_exp_scale = abs(int(start_y_plot.get()))
-                y_major_locator = plt.MultipleLocator(y_exp_scale)
-                axis.yaxis.set_major_locator(y_major_locator)
-            else:
-                y_exp_scale = type_selection(y_scale.get().split(","))
-                axis.set_yticks(y_exp_scale)
-        except BaseException:
-            y_major_locator = plt.MultipleLocator(2)
-            axis.yaxis.set_major_locator(y_major_locator)
-        # 极限
-        try:
-            x_limit = type_selection(
-                [start_x_limit.get(), end_x_limit.get()], type_=int, convert=False
-            )
-            y_limit = type_selection(
-                [start_y_limit.get(), end_y_limit.get()], type_=int, convert=False
-            )
-            try:
-                _x_limit = [x_limit[0], x_limit[1]]
-            except BaseException:
-                _x_limit = [-10, 10]
-            try:
-                _y_limit = [y_limit[0], y_limit[1]]
-            except BaseException:
-                _y_limit = _x_limit
-        except BaseException:
-            _x_limit = [-10, 10]
-            _y_limit = [-10, 10]
-        _x_limit.sort()
-        _y_limit.sort()
-        axis.set_xlim(_x_limit)
-        axis.set_ylim(_y_limit)
-        text_x = _x_limit[0] + abs(_x_limit[0]) * 0.01
-        text_y = _y_limit[1] - abs(_y_limit[1]) * 0.01
-
-    init()
-    # 函数绘图系统
-    output_prompt("图像绘制中...")
-    if func is None:
-        return False
-    if draw_type in (0, 1, 4, 5):
-        # 绘制曲线
-        get = func.get_plot_data()
-        plot_x = get[0]
-        plot_y = get[1]
-        func_label = get[2]
-        exp_style = get[3]
-        first = True
-        for i in range(len(plot_x)):
-            plot_x = plot_x[i]
-            plot_y = plot_y[i]
-            if first:
-                plt.plot(plot_x, plot_y, exp_style, label=func_label)  # plot()画出曲线
-                first = False
-            else:
-                plt.plot(plot_x, plot_y, exp_style)
-        # 绘制记忆点
-        get = func.get_memory()
-        plot_memory_x = get[0]
-        plot_memory_y = get[1]
-        max_x, max_y, min_x, min_y = func.best_value()
-        if show_point.get():
-            plt.plot(
-                plot_memory_x,
-                plot_memory_y,
-                exp_style[0] + "o",
-                label=f"Point of {func_label}",
-            )  # 画出一些点
-            memory_x = sorted(list(set(plot_memory_x)))  # 去除list重复项目
-            extreme_points = max_x + min_x
-
-            if show_text.get():
-                last_x = None
-                for i in range(len(memory_x)):
-                    if i in extreme_points:
-                        continue  # 去除极值点
-                    now_x = memory_x[i]  # x
-                    if last_x is None or abs(now_x - last_x) >= 1:  # 确保位置
-                        num = plot_memory_x.index(now_x)  # y的座位
-                        now_y = plot_memory_y[num]
-                        plt.text(
-                            now_x,
-                            now_y,
-                            f"({now_x},{int(now_y)})",
-                            fontdict={"size": "10", "color": "b"},
-                        )  # 标出坐标
-                        last_x = now_x
-        if show_best_value.get():
-            last_x = None
-            plot_max = []
-            for i in range(len(max_x)):  # 画出最大值
-                now_x = max_x[i]
-                if last_x is None or abs(now_x - last_x) >= 1:  # 确保位置
-                    if show_text.get():
-                        plt.text(
-                            now_x - 1,
-                            max_y,
-                            f"max:({now_x},{int(max_y)})",
-                            fontdict={"size": "10", "color": "b"},
-                        )  # 标出坐标
-                    plot_max.append(now_x)
-                    last_x = now_x
-            last_x = None
-            plot_min = []
-            for i in range(len(min_x)):  # 画出最小值
-                now_x = min_x[i]
-                if last_x is None or abs(now_x - last_x) >= 1:
-                    plot_min.append(now_x)
-                    if show_text.get():
-                        plt.text(
-                            now_x - 1,
-                            min_y,
-                            f"min:({now_x},{int(min_y)})",
-                            fontdict={"size": "10", "color": "b"},
-                        )  # 标出坐标
-                    last_x = now_x
-            plt.plot(plot_min, [min_y] * len(plot_min), exp_style[0] + "o")  # 画出一些点
-            plt.plot(plot_max, [max_y] * len(plot_max), exp_style[0] + "o")  # 画出一些点
-        plt.legend()  # 显示图示
-    elif draw_type in (8, 9):
-        get = func.data_packet()
-        plot_x = get[0]
-        plot_y = get[1]
-        plot_x_len = len(plot_x)
-        x_data = []
-        y_data = []
-        func_label = get[2]
-        exp_style = get[3]
-        plot_ln = axis.plot([], [], exp_style, label=func_label, animated=False)[0]
-        text = plt.text(text_x, text_y, "", fontdict={"size": "10", "color": "b"})
-
-        def _init():
-            init()
-            return plot_ln, text
-
-        def update(n):
-            nonlocal x_data, y_data
-            if n == 0:
-                x_data = []
-                y_data = []
-            x_data.append(plot_x[n])
-            y_data.append(plot_y[n])
-            text.set_text(f"x={plot_x[n]},y={plot_y[n]}")
-            plot_ln.set_data(x_data, y_data)
-            return plot_ln, text
-
-        try:  # 自定义帧率
-            frame = int(frame_rate.get())
-        except BaseException:
-            frame = 100
-        FuncAnimation(
-            fig,
-            update,
-            frames=plot_x_len,
-            init_func=_init,
-            interval=frame,
-            blit=False,
-            repeat_delay=3000,
-        )  # 动态绘图
-    elif draw_type in (2, 3, 6, 7):
-        text = plt.text(text_x, text_y, "", fontdict={"size": "10", "color": "b"})
-        all_func = func.return_son()
-        func_cul_list = []
-        plot_x_len = len(all_func)
-        m = []  # 每个群组中fx分类的个数
-        for i in all_func:  # 预先生成函数
-            output_prompt(f"迭代计算中...(共{plot_x_len}次)")
-            get = i.get_plot_data()
-            m.append(len(get[0]))
-            func_cul_list.append(get)
-        func_cul_list += func_cul_list[::-1]
-        ln_list = [text]
-        for i in range(max(m)):
-            ln_list.append(
-                axis.plot([], [], func_cul_list[0][3], animated=False)[0]
-            )  # 创建足够的i
-        plot_x_len = len(func_cul_list)
-
-        def _init():
-            init()
-            text.set_text("")
-            return None
-
-        def update(n):
-            get = func_cul_list[n - 1]
-            ln_list[0].set_text(get[2])
-            for i in range(max(m)):
-                try:
-                    x = get[0][i]
-                    y = get[1][i]
-                    ln_list[i + 1].set_data(x, y)
-                except BaseException:
-                    ln_list[i + 1].set_data([], [])
-            return ln_list
-
-        try:  # 自定义帧率
-            frame = int(frame_rate.get())
-        except BaseException:
-            frame = 100
-        FuncAnimation(
-            fig, update, frames=plot_x_len, init_func=_init, interval=frame, blit=False
-        )  # 动态绘图
-    output_prompt("绘制完毕")
-    plt.show()  # 显示图像
-    return True
-
-
-def set_function():
-    global func_exp, start_definition, end_definition, span_definition, accuracy, func_name, func_style, line_style
-    global point_style, func, SCREEN
-    global default_a, start_a, end_a, span_a
+def set_func_gui():
     new_func = func_exp.get().replace(" ", "")
     if new_func == "":
-        output_prompt("应用失败")
-        return None
+        output_prompt_gui("应用失败")
+        raise Exception
     default_value = [-10, 10, 0.1, 2, 1, -10, 10, 1]
     get = [
         start_definition,
@@ -697,7 +118,6 @@ def set_function():
             pass
     if span is not None:
         default_value[2] = span
-
     # View的处理
     style_str = func_style.get().split("#")
     try:
@@ -713,21 +133,647 @@ def set_function():
     name = func_name.get().replace(" ", "")
     if name == "":
         name = new_func
-    try:
-        func = ExpFunc(new_func, name, style, *default_value, have_son=True)
-        output_prompt("应用成功")
-        SCREEN.title(f"CoTan函数工厂  {func}")
-    except BaseException:
-        output_prompt("应用失败2")
-        raise
+    return [new_func, name, style]+default_value
 
 
-def output_prompt(news):
-    global prompt_box, prompt_num, SCREEN
-    prompt_num += 1
-    news = str(news)
-    prompt_box.insert(0, news + f"({prompt_num})")
-    SCREEN.update()
+def get_y_value_gui():
+    return y_value.get().split(",")
+
+
+def update_prediction_box_gui(answer):
+    prediction_box.delete(0, tkinter.END)
+    prediction_box.insert(tkinter.END, *answer)
+
+
+def get_projection_value_gui():
+    return projection_value.get
+
+
+def get_proximity_accuracy_gui():
+    return proximity_accuracy.get()
+
+
+def get_x_value_derivation_gui():
+    return x_value_derivation.get().split(",")
+
+
+def get_y_value_symbol_gui():
+    return y_value_symbol.get().split(",")
+
+
+def get_x_value_gui():
+    return x_value.get().split(",")
+
+
+def update_result_box_gui(answer):
+    result_box.delete(0, tkinter.END)  # 清空
+    result_box.insert(tkinter.END, *answer)
+
+
+def get_y_value_gradient_gui():
+    return y_value_gradient.get()
+
+
+def askokcancel_gui(message):
+    return tkinter.messagebox.askokcancel("提示", message)
+
+
+def add_projection_box_gui(result):
+    projection_box.insert(tkinter.END, result)
+
+
+def update_sheet_box_gui(sheet):
+    sheet_box.delete(0, tkinter.END)
+    sheet_box.insert(tkinter.END, *sheet)
+
+
+def get_save_dir_gui():
+    return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
+
+
+class API:
+    @staticmethod
+    def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
+        x = []
+        for i in sequence:
+            try:
+                if type_(i) == type_(0) and convert:
+                    continue
+                x.append(type_(i))
+            except ValueError:
+                pass
+        return x
+
+    @staticmethod
+    def save_to_csv():  # 导出CSV
+        try:
+            if not func.save_csv(get_save_dir_gui()):
+                raise Exception
+            output_prompt_gui("CSV导出成功")
+        except BaseException:
+            output_prompt_gui("CSV导出失败")
+
+    @staticmethod
+    def save_to_sheet():  # 生成表格
+        try:
+            update_sheet_box_gui(func.return_list())
+            output_prompt_gui("表格创建成功")
+        except BaseException:
+            output_prompt_gui("无法创建表格")
+
+    @staticmethod
+    def sympy_computing(exp_str) -> tuple:
+        try:
+            named_domain = {
+                "Pi": sympy.pi,
+                "e": sympy.E,
+                "log": sympy.log,
+                "sin": sympy.sin,
+                "cos": sympy.cos,
+                "tan": sympy.tan,
+                "cot": lambda x: 1 / sympy.tan(x),
+                "csc": lambda x: 1 / sympy.sin(x),
+                "sec": lambda x: 1 / sympy.cos(x),
+                "sinh": sympy.sinh,
+                "cosh": sympy.cosh,
+                "tanh": sympy.tanh,
+                "asin": sympy.asin,
+                "acos": sympy.acos,
+                "atan": sympy.atan,
+            }
+            answer = eval(exp_str, named_domain)
+            return answer, True
+        except BaseException:
+            return None, False
+
+    @staticmethod
+    def computing_gui():
+        accuracy, must = API.sympy_computing(prediction_accuracy.get())
+        return accuracy
+
+    @staticmethod
+    def confirmation_expression(c):
+        get = API.sympy_computing(c)
+        if not get[1]:
+            return c
+        return get[0]
+
+    @staticmethod
+    def check_center_of_symmetry():
+        accuracy = API.computing_gui()
+        try:
+            result = func.check_symmetry_center(
+                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+            )
+            if result[0]:
+                add_projection_box_gui(result[1])
+                output_prompt_gui("预测完成")
+            else:
+                raise Exception
+        except BaseException:
+            output_prompt_gui("预测失败")
+
+    @staticmethod
+    def check_symmetry_axis():
+        accuracy = API.computing_gui()
+        try:
+            result = func.check_symmetry_axis(
+                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+            )
+            if result[0]:
+                add_projection_box_gui(result[1])
+                output_prompt_gui("预测完成")
+            else:
+                raise Exception
+        except BaseException:
+            output_prompt_gui("预测失败")
+
+    @staticmethod
+    def check_periodic():
+        accuracy = API.computing_gui()
+        try:
+            result = func.check_periodic(
+                API.confirmation_expression(get_projection_value_gui()), output_prompt_gui, accuracy
+            )
+            if result[0]:
+                add_projection_box_gui(result[1])
+                output_prompt_gui("预测完成")
+            else:
+                raise Exception
+        except BaseException:
+            output_prompt_gui("预测失败")
+
+    @staticmethod
+    def check_monotonic():
+        accuracy = API.computing_gui()
+        try:
+            result = func.check_monotonic(
+                get_projection_value_gui(), output_prompt_gui, accuracy
+            )
+            if result[1]:
+                add_projection_box_gui(result[1])
+                output_prompt_gui("预测完成")
+            else:
+                raise Exception
+        except BaseException:
+            output_prompt_gui("预测失败")
+
+    @staticmethod
+    def clear_memory():
+        try:
+            if askokcancel_gui(f"确定删除{func}的记忆吗？"):
+                update_result_box_gui([])
+                func.clean_memory()
+                output_prompt_gui("删除完毕")
+            else:
+                output_prompt_gui("删除取消")
+        except BaseException:
+            output_prompt_gui("删除失败")
+
+    @staticmethod
+    def show_hidden_memory():  # 显示xy
+        try:
+            update_result_box_gui([])
+            func.hide_or_show()
+            output_prompt_gui("已清空卡槽")
+        except BaseException:
+            output_prompt_gui("隐藏（显示）失败")
+
+    @staticmethod
+    def gradient_method_calculation():
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            parameters = []
+            for i in gradient_parameters:
+                parameters.append(i.get())
+            output_prompt_gui("系统运算中")
+            answer = func.gradient_calculation(get_y_value_gradient_gui(), *parameters)
+            if answer[1] is not None:
+                update_result_box_gui(answer[0])
+                output_prompt_gui("系统运算完成")
+            else:
+                output_prompt_gui("系统运算无结果")
+        except BaseException:
+            output_prompt_gui("系统运算失败，请注意参数设置")
+
+    @staticmethod
+    def calculate():
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            answer = func.calculation(get_x_value_gui())
+            if answer != []:
+                output_prompt_gui("系统运算完毕")
+            else:
+                output_prompt_gui("系统运算无结果")
+            update_result_box_gui(answer)
+        except BaseException:
+            output_prompt_gui("计算失败")
+            # raise
+
+    @staticmethod
+    def sympy_calculation_x():
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            answer = []
+            for i in get_y_value_symbol_gui():
+                answer += func.sympy_calculation(i)[0]
+            if answer:
+                output_prompt_gui("系统运算完毕")
+            else:
+                output_prompt_gui("系统运算无结果")
+            update_result_box_gui(answer)
+        except BaseException:
+            output_prompt_gui("计算失败")
+
+    @staticmethod
+    def function_differentiation():
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            accuracy = get_proximity_accuracy_gui()
+            answer = []
+            for i in get_x_value_derivation_gui():
+                get = func.derivative(i, accuracy)[0]
+                if get is not None:
+                    answer.append(get)
+            if answer != []:
+                output_prompt_gui("系统运算完毕")
+            else:
+                output_prompt_gui("系统运算无结果")
+            update_result_box_gui(answer)
+        except IndexError:
+            output_prompt_gui("计算失败")
+
+    @staticmethod
+    def approximation():  # 逼近法
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            accuracy = get_proximity_accuracy_gui()
+            answer = []
+            for i in get_x_value_derivation_gui():
+                get = func.derivative(i, accuracy, True)[0]
+                if get is not None:
+                    answer.append(get)
+            if answer:
+                output_prompt_gui("系统运算完毕")
+            else:
+                output_prompt_gui("系统运算无结果")
+            update_result_box_gui(answer)
+        except IndexError:
+            output_prompt_gui("计算失败")
+
+    @staticmethod
+    def dichotomy():  # 二分法
+        global dicon_parameters, func, result_box
+        try:
+            output_prompt_gui("计算过程程序可能无响应")
+            answer = []
+            output_prompt_gui("系统运算中")
+            for i in get_y_value_gui():
+                print(i)
+                try:
+                    answer += func.dichotomy(float(i), *dichotomy_gui())[0]
+                except BaseException:
+                    pass
+            if answer:
+                output_prompt_gui("系统运算完成")
+            else:
+                output_prompt_gui("系统运算无结果")
+            update_result_box_gui(answer)
+        except BaseException:
+            # raise
+            output_prompt_gui("系统运算失败")
+
+    @staticmethod
+    def property_prediction():
+        try:
+            accuracy = API.computing_gui()
+            output_prompt_gui("预测过程程序可能无响应")
+            answer = func.property_prediction(output_prompt_gui, True, accuracy)
+            update_prediction_box_gui(*answer)
+            output_prompt_gui("性质预测完成")
+        except IndexError:
+            output_prompt_gui("性质预测失败")
+
+    @staticmethod
+    def function_drawing():
+        global x_scale, start_x_plot, start_x_polt, span_x_plot, y_scale, start_y_plot, end_y_plot, span_y_plot
+        global start_x_limit, end_x_limit, start_y_limit, end_y_limit
+        global func, fig, show_point, show_best_value, show_text, plot_type, frame_rate
+        try:
+            draw_type = plot_type.curselection()[0]
+        except BaseException:
+            draw_type = 0
+        # 画板创造
+        output_prompt_gui("生成绘制取...")
+        fig = plt.figure(num="CoTan函数")  # 定义一个图像窗口
+        if draw_type in (0, 1, 2, 3, 8, 9):
+            plt.grid(True, ls="--")  # 显示网格(不能放到后面，因为后面调整成为了笛卡尔坐标系)
+        axis = plt.gca()
+        text_y = ""
+        text_x = ""
+
+        def init():
+            nonlocal text_x, text_y
+            if draw_type in (0, 2, 4, 6, 8):
+                axis.spines["right"].set_color("none")
+                axis.spines["top"].set_color("none")
+                axis.xaxis.set_ticks_position("bottom")
+                axis.yaxis.set_ticks_position("left")
+                axis.spines["bottom"].set_position(("data", 0))  # 设置x轴, y轴在(0, 0)的位置
+                axis.spines["left"].set_position(("data", 0))
+            # 检测x
+            try:
+                if x_scale.get()[0] == "c":  # 如果输入函数cx#-10#10#1#1
+                    plot_parameter = [
+                        x_scale.get()[1:],
+                        start_x_plot.get(),
+                        start_x_polt.get(),
+                        span_x_plot.get(),
+                        2,
+                    ]  # 第一部分HS，第二部分S，第三部分E，第四部分KD，第五部分JD
+                    exp_parameter = ["x", -10, 10, 1, 2]  # 保护系统
+                    try:
+                        exp_parameter[0] = plot_parameter[0]
+                        exp_parameter[1] = int(plot_parameter[1])
+                        exp_parameter[2] = int(plot_parameter[2])
+                        exp_parameter[3] = int(plot_parameter[3])
+                        exp_parameter[4] = int(plot_parameter[4])
+                    except BaseException:  # 迭代匹配直到出现错误
+                        pass
+                    plot_parameter = exp_parameter
+                    x_exp_scale = API.type_selection(
+                        ExpFunc(
+                            plot_parameter[0],
+                            "x",
+                            "",
+                            plot_parameter[1],
+                            plot_parameter[2],
+                            plot_parameter[3],
+                            plot_parameter[4],
+                        ).data_packet()[1]
+                    )  # 取y
+                    axis.set_xticks(x_exp_scale)  # 输入表达式计算刻度
+                elif x_scale.get()[0] == "y":  # 输入函数y
+                    # 不错要错误捕捉，外围有个大的捕捉
+                    x_exp_scale = abs(int(start_x_plot.get()))
+                    x_major_locator = plt.MultipleLocator(x_exp_scale)
+                    axis.xaxis.set_major_locator(x_major_locator)
+                else:  # 输入纯数字
+                    x_exp_scale = API.type_selection(x_scale.get().split(","))
+                    axis.set_xticks(x_exp_scale)
+            except BaseException:
+                x_major_locator = plt.MultipleLocator(2)
+                axis.xaxis.set_major_locator(x_major_locator)
+            # 检测y
+            try:  # 意外捕捉
+                if y_scale.get()[0] == "c":  # 如果输入函数cx#-10#10#1#1
+                    plot_parameter = [
+                        y_scale.get()[1:],
+                        start_y_plot.get(),
+                        end_y_plot.get(),
+                        span_y_plot.get(),
+                        2,
+                    ]  # 第一部分HS，第二部分S，第三部分E，第四部分KD，第五部分JD
+                    exp_parameter = ["x", -10, 10, 1, 2]  # 保护系统
+                    try:
+                        exp_parameter[0] = plot_parameter[0]
+                        exp_parameter[1] = int(plot_parameter[1])
+                        exp_parameter[2] = int(plot_parameter[2])
+                        exp_parameter[3] = int(plot_parameter[3])
+                        exp_parameter[4] = int(plot_parameter[4])
+                    except BaseException:  # 迭代匹配直到出现错误
+                        pass
+                    plot_parameter = exp_parameter
+                    y_exp_scale = API.type_selection(
+                        ExpFunc(
+                            plot_parameter[0],
+                            "y",
+                            "",
+                            plot_parameter[1],
+                            plot_parameter[2],
+                            plot_parameter[3],
+                            plot_parameter[4],
+                        ).data_packet()[1]
+                    )  # 取y
+                    axis.set_yticks(y_exp_scale)
+                elif y_scale.get()[0] == "y":  # 输入函数y
+                    y_exp_scale = abs(int(start_y_plot.get()))
+                    y_major_locator = plt.MultipleLocator(y_exp_scale)
+                    axis.yaxis.set_major_locator(y_major_locator)
+                else:
+                    y_exp_scale = API.type_selection(y_scale.get().split(","))
+                    axis.set_yticks(y_exp_scale)
+            except BaseException:
+                y_major_locator = plt.MultipleLocator(2)
+                axis.yaxis.set_major_locator(y_major_locator)
+            # 极限
+            try:
+                x_limit = API.type_selection(
+                    [start_x_limit.get(), end_x_limit.get()], type_=int, convert=False
+                )
+                y_limit = API.type_selection(
+                    [start_y_limit.get(), end_y_limit.get()], type_=int, convert=False
+                )
+                try:
+                    _x_limit = [x_limit[0], x_limit[1]]
+                except BaseException:
+                    _x_limit = [-10, 10]
+                try:
+                    _y_limit = [y_limit[0], y_limit[1]]
+                except BaseException:
+                    _y_limit = _x_limit
+            except BaseException:
+                _x_limit = [-10, 10]
+                _y_limit = [-10, 10]
+            _x_limit.sort()
+            _y_limit.sort()
+            axis.set_xlim(_x_limit)
+            axis.set_ylim(_y_limit)
+            text_x = _x_limit[0] + abs(_x_limit[0]) * 0.01
+            text_y = _y_limit[1] - abs(_y_limit[1]) * 0.01
+
+        init()
+        # 函数绘图系统
+        output_prompt_gui("图像绘制中...")
+        if func is None:
+            return False
+        if draw_type in (0, 1, 4, 5):
+            # 绘制曲线
+            get = func.get_plot_data()
+            plot_x = get[0]
+            plot_y = get[1]
+            func_label = get[2]
+            exp_style = get[3]
+            first = True
+            for i in range(len(plot_x)):
+                plot_x = plot_x[i]
+                plot_y = plot_y[i]
+                if first:
+                    plt.plot(plot_x, plot_y, exp_style, label=func_label)  # plot()画出曲线
+                    first = False
+                else:
+                    plt.plot(plot_x, plot_y, exp_style)
+            # 绘制记忆点
+            get = func.get_memory()
+            plot_memory_x = get[0]
+            plot_memory_y = get[1]
+            max_x, max_y, min_x, min_y = func.best_value()
+            if show_point.get():
+                plt.plot(
+                    plot_memory_x,
+                    plot_memory_y,
+                    exp_style[0] + "o",
+                    label=f"Point of {func_label}",
+                )  # 画出一些点
+                memory_x = sorted(list(set(plot_memory_x)))  # 去除list重复项目
+                extreme_points = max_x + min_x
+
+                if show_text.get():
+                    last_x = None
+                    for i in range(len(memory_x)):
+                        if i in extreme_points:
+                            continue  # 去除极值点
+                        now_x = memory_x[i]  # x
+                        if last_x is None or abs(now_x - last_x) >= 1:  # 确保位置
+                            num = plot_memory_x.index(now_x)  # y的座位
+                            now_y = plot_memory_y[num]
+                            plt.text(
+                                now_x,
+                                now_y,
+                                f"({now_x},{int(now_y)})",
+                                fontdict={"size": "10", "color": "b"},
+                            )  # 标出坐标
+                            last_x = now_x
+            if show_best_value.get():
+                last_x = None
+                plot_max = []
+                for i in range(len(max_x)):  # 画出最大值
+                    now_x = max_x[i]
+                    if last_x is None or abs(now_x - last_x) >= 1:  # 确保位置
+                        if show_text.get():
+                            plt.text(
+                                now_x - 1,
+                                max_y,
+                                f"max:({now_x},{int(max_y)})",
+                                fontdict={"size": "10", "color": "b"},
+                            )  # 标出坐标
+                        plot_max.append(now_x)
+                        last_x = now_x
+                last_x = None
+                plot_min = []
+                for i in range(len(min_x)):  # 画出最小值
+                    now_x = min_x[i]
+                    if last_x is None or abs(now_x - last_x) >= 1:
+                        plot_min.append(now_x)
+                        if show_text.get():
+                            plt.text(
+                                now_x - 1,
+                                min_y,
+                                f"min:({now_x},{int(min_y)})",
+                                fontdict={"size": "10", "color": "b"},
+                            )  # 标出坐标
+                        last_x = now_x
+                plt.plot(plot_min, [min_y] * len(plot_min), exp_style[0] + "o")  # 画出一些点
+                plt.plot(plot_max, [max_y] * len(plot_max), exp_style[0] + "o")  # 画出一些点
+            plt.legend()  # 显示图示
+        elif draw_type in (8, 9):
+            get = func.data_packet()
+            plot_x = get[0]
+            plot_y = get[1]
+            plot_x_len = len(plot_x)
+            x_data = []
+            y_data = []
+            func_label = get[2]
+            exp_style = get[3]
+            plot_ln = axis.plot([], [], exp_style, label=func_label, animated=False)[0]
+            text = plt.text(text_x, text_y, "", fontdict={"size": "10", "color": "b"})
+
+            def _init():
+                init()
+                return plot_ln, text
+
+            def update(n):
+                nonlocal x_data, y_data
+                if n == 0:
+                    x_data = []
+                    y_data = []
+                x_data.append(plot_x[n])
+                y_data.append(plot_y[n])
+                text.set_text(f"x={plot_x[n]},y={plot_y[n]}")
+                plot_ln.set_data(x_data, y_data)
+                return plot_ln, text
+
+            try:  # 自定义帧率
+                frame = int(frame_rate.get())
+            except BaseException:
+                frame = 100
+            FuncAnimation(
+                fig,
+                update,
+                frames=plot_x_len,
+                init_func=_init,
+                interval=frame,
+                blit=False,
+                repeat_delay=3000,
+            )  # 动态绘图
+        elif draw_type in (2, 3, 6, 7):
+            text = plt.text(text_x, text_y, "", fontdict={"size": "10", "color": "b"})
+            all_func = func.return_son()
+            func_cul_list = []
+            plot_x_len = len(all_func)
+            m = []  # 每个群组中fx分类的个数
+            for i in all_func:  # 预先生成函数
+                output_prompt_gui(f"迭代计算中...(共{plot_x_len}次)")
+                get = i.get_plot_data()
+                m.append(len(get[0]))
+                func_cul_list.append(get)
+            func_cul_list += func_cul_list[::-1]
+            ln_list = [text]
+            for i in range(max(m)):
+                ln_list.append(
+                    axis.plot([], [], func_cul_list[0][3], animated=False)[0]
+                )  # 创建足够的i
+            plot_x_len = len(func_cul_list)
+
+            def _init():
+                init()
+                text.set_text("")
+                return None
+
+            def update(n):
+                get = func_cul_list[n - 1]
+                ln_list[0].set_text(get[2])
+                for i in range(max(m)):
+                    try:
+                        x = get[0][i]
+                        y = get[1][i]
+                        ln_list[i + 1].set_data(x, y)
+                    except BaseException:
+                        ln_list[i + 1].set_data([], [])
+                return ln_list
+
+            try:  # 自定义帧率
+                frame = int(frame_rate.get())
+            except BaseException:
+                frame = 100
+            FuncAnimation(
+                fig, update, frames=plot_x_len, init_func=_init, interval=frame, blit=False
+            )  # 动态绘图
+        output_prompt_gui("绘制完毕")
+        plt.show()  # 显示图像
+        return True
+
+    @staticmethod
+    def set_function():
+        global func
+        default_value = set_func_gui()
+        try:
+            func = ExpFunc(*default_value, have_son=True)
+            output_prompt_gui("应用成功")
+            SCREEN.title(f"CoTan函数工厂  {func}")
+        except BaseException:
+            output_prompt_gui("应用失败2")
+            raise
 
 
 def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
@@ -754,9 +800,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 func_exp = tkinter.Entry(SCREEN, width=gui_width * 2)
-func_exp.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+func_exp.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -822,9 +866,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 accuracy = tkinter.Entry(SCREEN, width=gui_width * 2)
-accuracy.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+accuracy.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -839,9 +881,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 func_name = tkinter.Entry(SCREEN, width=gui_width * 2)
-func_name.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+func_name.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -856,9 +896,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 func_style = tkinter.Entry(SCREEN, width=gui_width * 2)
-func_style.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+func_style.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -873,9 +911,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 default_a = tkinter.Entry(SCREEN, width=gui_width * 2)
-default_a.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+default_a.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -928,7 +964,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="应用函数",
-    command=set_function,
+    command=API.set_function,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -940,7 +976,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="绘制图像",
-    command=function_drawing,
+    command=API.function_drawing,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -950,7 +986,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="性质预测",
-    command=property_prediction,
+    command=API.property_prediction,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1055,9 +1091,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 span_x_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-span_x_plot.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+span_x_plot.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -1104,9 +1138,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 end_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-end_y_plot.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+end_y_plot.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -1121,9 +1153,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 span_y_plot = tkinter.Entry(SCREEN, width=gui_width * 2)
-span_y_plot.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+span_y_plot.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -1155,9 +1185,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 end_x_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-end_x_limit.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+end_x_limit.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -1189,9 +1217,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 end_y_limit = tkinter.Entry(SCREEN, width=gui_width * 2)
-end_y_limit.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+end_y_limit.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 tkinter.Label(
@@ -1206,9 +1232,7 @@ tkinter.Label(
     column=column, row=row
 )  # 设置说明
 frame_rate = tkinter.Entry(SCREEN, width=gui_width * 2)
-frame_rate.grid(
-    column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
-)
+frame_rate.grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
 
 row += 1
 show_point = tkinter.IntVar()
@@ -1350,9 +1374,9 @@ for i in range(11):
     ).grid(
         column=column, row=row
     )  # 设置说明
-    tkinter.Entry(
-        SCREEN, width=gui_width * 2, textvariable=dicon_parameters[-1]
-    ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+    tkinter.Entry(SCREEN, width=gui_width * 2, textvariable=dicon_parameters[-1]).grid(
+        column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W
+    )
 
 row += 1
 tkinter.Label(
@@ -1460,7 +1484,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="计算(y)",
-    command=calculate,
+    command=API.calculate,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1472,7 +1496,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="二分法计算(x)",
-    command=dichotomy,
+    command=API.dichotomy,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1482,7 +1506,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="梯度法计算(x)",
-    command=gradient_method_calculation,
+    command=API.gradient_method_calculation,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1494,7 +1518,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="代数法计算",
-    command=sympy_calculation_x,
+    command=API.sympy_calculation_x,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1504,7 +1528,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="逼近法导数计算",
-    command=approximation,
+    command=API.approximation,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1514,7 +1538,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="导数计算",
-    command=function_differentiation,
+    command=API.function_differentiation,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1554,7 +1578,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="周期性",
-    command=check_periodic,
+    command=API.check_periodic,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1564,7 +1588,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="对称轴",
-    command=check_symmetry_axis,
+    command=API.check_symmetry_axis,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1574,7 +1598,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="对称中心",
-    command=check_center_of_symmetry,
+    command=API.check_center_of_symmetry,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1586,13 +1610,11 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="单调性",
-    command=check_monotonic,
+    command=API.check_monotonic,
     font=FONT,
     width=gui_width,
     height=gui_height,
-).grid(
-    column=column, row=row, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W
-)
+).grid(column=column, row=row, columnspan=3, sticky=tkinter.N + tkinter.E + tkinter.W)
 
 row += 1
 # 显示函数的xy
@@ -1619,7 +1641,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="生成表格",
-    command=to_sheet,
+    command=API.save_to_sheet,
     font=FONT,
     width=gui_width * 2,
     height=gui_height,
@@ -1629,7 +1651,7 @@ tkinter.Button(
     bg=botton_color,
     fg=word_color,
     text="导出表格",
-    command=save_to_csv,
+    command=API.save_to_csv,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -1646,4 +1668,4 @@ sheet_box.grid(
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
 
-output_prompt("加载完毕")
+output_prompt_gui("加载完毕")
