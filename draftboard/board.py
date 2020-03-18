@@ -96,7 +96,7 @@ def func_draw(func_list, pixel_accuracy=1000):
             break
 
 
-def draw_line(xy_coordinates: tuple, with_point=False):
+def draw_line(xy_coordinates: (list, tuple), with_point=False):
     global previous_x, previous_y
     if with_point:
         pygame.draw.circle(SCREEN, pen_color, xy_coordinates, pen_weight, 0)

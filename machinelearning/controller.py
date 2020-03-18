@@ -9,3 +9,6 @@ class MachineLearner(MachineLearnerAdd, MachineLearnerScore, LearnerActions):  #
     def del_leaner(self, leaner):
         del self.learner[leaner]
         del self.data_type[leaner]
+
+
+MachineLearner()

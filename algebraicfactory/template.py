@@ -167,7 +167,7 @@ class AlgebraExpBase(AlgebraInit, metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraFormat(AlgebraExpBase):
+class AlgebraFormat(AlgebraExpBase, metaclass=ABCMeta):
     def formula_export(self, f):
         result_str = []
         try:
@@ -255,7 +255,7 @@ class AlgebraFormat(AlgebraExpBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraPrint(AlgebraExpBase):
+class AlgebraPrint(AlgebraExpBase, metaclass=ABCMeta):
     def print_expression_core(self, e, level=0, first=True, q=1):  # 递归
         str_print = " " * level
         if first:
@@ -284,7 +284,7 @@ class AlgebraPrint(AlgebraExpBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraSplit(AlgebraExpBase):
+class AlgebraSplit(AlgebraExpBase, metaclass=ABCMeta):
     def split_func_core(self, exp, deep, name_list, first=True):  # 递归
         try:
             name = exp.func.__name__
@@ -311,7 +311,7 @@ class AlgebraSplit(AlgebraExpBase):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraMerge(AlgebraExpBase):
+class AlgebraMerge(AlgebraExpBase, metaclass=ABCMeta):
     def merge_func_core(self, name_list, func):
         if len(name_list) < 2:
             return None
@@ -563,7 +563,7 @@ class AlgebraMath(AlgebraBase, metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class Fractional(AlgebraMath):
+class Fractional(AlgebraMath, metaclass=ABCMeta):
     def fractional_merge(self, name):  # 最小公分母合并
         alg = self.get_expression(name)
         return ratsimp(alg)
@@ -589,7 +589,7 @@ class Fractional(AlgebraMath):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class Trig(AlgebraMath):
+class Trig(AlgebraMath, metaclass=ABCMeta):
     def trig_simp(self, name):  # 三角化简
         alg = self.get_expression(name)
         return trigsimp(alg)
@@ -600,7 +600,7 @@ class Trig(AlgebraMath):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraMul(AlgebraMath):
+class AlgebraMul(AlgebraMath, metaclass=ABCMeta):
     def mul_expansion(self, name):
         alg = self.get_expression(name)
         return expand_mul(alg)
@@ -654,7 +654,7 @@ class AlgebraMul(AlgebraMath):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class General(AlgebraMath):
+class General(AlgebraMath, metaclass=ABCMeta):
     def expansion(self, name, is_expand_complex):
         alg = self.get_expression(name)
         return expand(alg, complex=is_expand_complex)
@@ -677,14 +677,14 @@ class General(AlgebraMath):
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraComplex(AlgebraMath):
+class AlgebraComplex(AlgebraMath, metaclass=ABCMeta):
     def expand_complex(self, name):
         alg = self.get_expression(name)
         return expand_complex(alg)
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
-class AlgebraSpecialFunc(AlgebraMath):
+class AlgebraSpecialFunc(AlgebraMath, metaclass=ABCMeta):
     def expand_special(self, name):
         alg = self.get_expression(name)
         return expand_func(alg)
@@ -780,7 +780,7 @@ class Rewrite(AlgebraBase):
     def rewrite_exp(self, name, rewrite_func, rewrite_object, deep=False):
         alg = self.get_expression(name)
         initial_object = sympify(rewrite_func, locals=self.symbol_dict)
-        if rewrite_object != []:
+        if rewrite_object:
             sympify_rewrite_object = []  # 重写对象
             for i in rewrite_object:
                 sympify_rewrite_object.append(sympify(i, locals=self.symbol_dict))

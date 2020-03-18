@@ -80,6 +80,7 @@ class UIAPI:
         start = time.time()
         data = ""
         out_data = ""  # 包含out的data
+
         if show_screen:
             text, cli_screen, button_list = API.show_cli_gui(
                 save_to_txt, stop, keep, format, pipe, name=name
@@ -91,6 +92,22 @@ class UIAPI:
                 data += f"{tip_text}\n"
             cli_screen.update()
         else:
+            class TkNone:
+                def title(self, *args, **kwargs):
+                    return
+
+                def insert(self, *args, **kwargs):
+                    return
+
+                def update(self, *args, **kwargs):
+                    return
+
+                def config(self, *args, **kwargs):
+                    return
+
+            text = TkNone()
+            cli_screen = TkNone()
+            button_list = [TkNone(), TkNone()]
             u = threading.Thread(target=API.progress_bar_gui)
             u.start()
         SCREEN.update()
@@ -105,7 +122,7 @@ class UIAPI:
                             cli_screen.update()
                         except BaseException:
                             pass
-                    if time.time() - start >= break_time and break_time != 0:
+                    if time.time() - start >= break_time != 0:
                         raise Exception
                     elif break_time == 0 and start == 0:
                         raise Exception
@@ -136,21 +153,20 @@ class UIAPI:
             update_screen()  # 遇到sleep等主线程阻塞，top.update等会阻塞子线程，因此，必须保证主线程不会被wait所阻塞
             out = command_thread.stdout.read().split("\n")
             for i in out:
-                if show_screen:
-                    try:  # 如果界面被关掉了，会报错
-                        cli_screen.title(f"{name} : 运行中")
-                    except BaseException:
-                        text, cli_screen, button_list = API.show_cli_gui(
-                            save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
-                        )
-                        update_button()
-                        text.insert(tkinter.END, out_data)
-                    if stop and i.replace(" ", "").replace("\n", "") != stop_key:
-                        text.insert(tkinter.END, f"[out]> {i}\n")
-                        data += i + "\n"
-                        out_data += f"[out]> {i}\n"
-                else:
+                if not show_screen:
                     break
+                try:  # 如果界面被关掉了，会报错
+                    cli_screen.title(f"{name} : 运行中")
+                except BaseException:
+                    text, cli_screen, button_list = API.show_cli_gui(
+                        save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                    )
+                    update_button()
+                    text.insert(tkinter.END, out_data)
+                if stop and i.replace(" ", "").replace("\n", "") != stop_key:
+                    text.insert(tkinter.END, f"[out]> {i}\n")
+                    data += i + "\n"
+                    out_data += f"[out]> {i}\n"
             else:
                 text.insert(tkinter.END, "[END]")
                 out_data += f"[END]"
@@ -160,8 +176,7 @@ class UIAPI:
             while True:
                 # 界面设置
                 try:  # 如果界面被关掉了，会报错
-                    if show_screen:
-                        cli_screen.title(f"{name} : 运行中")
+                    cli_screen.title(f"{name} : 运行中")
                 except BaseException:
                     text, cli_screen, button_list = API.show_cli_gui(
                         save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
@@ -172,8 +187,7 @@ class UIAPI:
                 try:
                     if not is_threaded_refresh:
                         SCREEN.update()
-                        if show_screen:
-                            cli_screen.update()
+                        cli_screen.update()
                 except BaseException:
                     break
                 # 输出字符
@@ -185,19 +199,17 @@ class UIAPI:
                         if stop and bool_text == stop_key:
                             start = 0
                         else:
-                            if show_screen:
-                                text.insert(tkinter.END, f"[out]> {i}")
+                            text.insert(tkinter.END, f"[out]> {i}")
                             data += i
                             out_data += f"[out]> {i}"
                     if (
                             command_thread.returncode == 0
-                            or (time.time() - start >= break_time and break_time != 0)
+                            or (time.time() - start >= break_time != 0)
                             or (break_time == 0 and start == 0)
                     ):
-                        if show_screen:
-                            text.insert(tkinter.END, "[END]")
-                            out_data += f"[END]"
-                            data += f"[END]"
+                        text.insert(tkinter.END, "[END]")
+                        out_data += f"[END]"
+                        data += f"[END]"
                         break
                     elif command_thread.returncode is not None:
                         raise Exception
@@ -217,9 +229,8 @@ class UIAPI:
                 pass
             command_thread.kill()
         try:
-            if show_screen:
-                button_list[0].config(state=tkinter.DISABLED)
-                button_list[1].config(state=tkinter.DISABLED)
+            button_list[0].config(state=tkinter.DISABLED)
+            button_list[1].config(state=tkinter.DISABLED)
         except BaseException:
             pass
         return data
@@ -775,14 +786,14 @@ class API(UIAPI):
 
     @staticmethod
     def remove_file():
-        if file_list == []:
+        if not file_list:
             return False
         API.cli_gui(git.rm, (API.get_repo_name_gui(), file_list))
         API.update_git_file_last_gui()
 
     @staticmethod
     def checkout_file():  # 从暂存区、仓库返回文件
-        if file_list == []:
+        if not file_list:
             return False
         API.cli_gui(git.checkout_version, (API.get_repo_name_gui(), file_list))
         API.update_git_file_last_gui()
@@ -830,7 +841,7 @@ class API(UIAPI):
     def remove_the_staging():
         global git
         dic = file_list
-        if dic == []:
+        if not dic:
             dic = "."
         API.cli_gui(git.reset_file, (API.get_repo_name_gui(), dic))
         API.update_git_file_last_gui()
@@ -838,7 +849,7 @@ class API(UIAPI):
     @staticmethod
     def add():
         dic = file_list
-        if dic == []:
+        if not dic:
             dic = "."  # 查一下取消的dic
         API.cli_gui(git.add_file, (API.get_repo_name_gui(), dic))
         API.update_git_file_last_gui()

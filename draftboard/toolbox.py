@@ -8,7 +8,7 @@ SCREEN = None
 pen_weight_input = None
 span_input = None
 background_image = None
-func_logger = None
+func_logger = drawingfunction.Logger()
 coordinate_system_drawing_method = None
 background_color = None
 pen_weight = None
@@ -381,10 +381,7 @@ def tool_box():
         height=1,
     ).pack()  # help是系统保留关键词，用_help代替
     SCREEN.mainloop()
-    try:
-        func = func_logger()
-    except BaseException:
-        func = {}
+    func = func_logger()
     return [
         pen_color,
         pen_weight,

@@ -31,7 +31,11 @@ class FormBase(metaclass=ABCMeta):
         self.clean_func = {}
         self.clean_func_code = {}
         self.DEL = Del()
-        self.named_domain = {"pd": pd, "DEL": self.DEL, "re": re, "Sheet": self.sheet_dict}
+        self.named_domain = {
+            "pd": pd,
+            "DEL": self.DEL,
+            "re": re,
+            "Sheet": self.sheet_dict}
         self.all_render = {}  # 存放所有的图
 
     @abstractmethod
@@ -52,7 +56,7 @@ class FormBase(metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetIO(FormBase):
+class SheetIO(FormBase, metaclass=ABCMeta):
 
     def add_sheet(self, data, name=""):
         if name == "":
@@ -73,15 +77,25 @@ class SheetIO(FormBase):
         return self.add_sheet(data, name)
 
     def add_csv(
-        self, data_dir, name="", sep=",", encodeding="utf-8", str_=True, index=True
-    ):
+            self,
+            data_dir,
+            name="",
+            sep=",",
+            encodeding="utf-8",
+            str_=True,
+            index=True):
         if str_:
             k = {"dtype": "object"}
         else:
             k = {}
         return self.__add_sheet(
-            data_dir, pd.read_csv, name, index, sep=sep, encoding=encodeding, **k
-        )
+            data_dir,
+            pd.read_csv,
+            name,
+            index,
+            sep=sep,
+            encoding=encodeding,
+            **k)
 
     def add_python(self, python_file, sheet_name="") -> pd.DataFrame:
         name = {"Sheet": self.get_sheet}
@@ -113,7 +127,13 @@ class SheetIO(FormBase):
         self.add_sheet(get, sheet_name)
         return get
 
-    def add_html(self, data_dir, name="", encoding="utf-8", str_=True, index=True):
+    def add_html(
+            self,
+            data_dir,
+            name="",
+            encoding="utf-8",
+            str_=True,
+            index=True):
         if str_:
             k = {"dtype": "object"}
         else:
@@ -144,7 +164,7 @@ class SheetIO(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetRender(FormBase):
+class SheetRender(FormBase, metaclass=ABCMeta):
     def render_html_one(self, name, render_dir=""):
         if render_dir == "":
             render_dir = f"{name}.html"
@@ -192,14 +212,20 @@ class SheetRender(FormBase):
                 def add(self, render, *more):
                     self.original_tab.add(render)
 
-            tab = TabOne(Page(page_title="CoTan:查看表格", layout=Page.DraggablePageLayout))
+            tab = TabOne(
+                Page(
+                    page_title="CoTan:查看表格",
+                    layout=Page.DraggablePageLayout))
         else:
 
             class TabTwo(TabNew):
                 def add(self, render, *more):
                     self.original_tab.add(render)
 
-            tab = TabTwo(Page(page_title="CoTan:查看表格", layout=Page.SimplePageLayout))
+            tab = TabTwo(
+                Page(
+                    page_title="CoTan:查看表格",
+                    layout=Page.SimplePageLayout))
         # 迭代添加内容
         for name in sheet_list:
             try:
@@ -223,7 +249,7 @@ class SheetRender(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetReport(FormBase):
+class SheetReport(FormBase, metaclass=ABCMeta):
     def describe(self, name, new=False):  # 生成描述
         get = self.get_sheet(name)
         des = get.describe()
@@ -236,10 +262,10 @@ class SheetReport(FormBase):
         tail = get.tail(3)
         return (
             f"1)基本\n{des}\n\n2)形状:{shape}\n\n3)数据类型\n{dtype}\n\n4)数据维度:{n}\n\n5)头部数据\n{head}"
-            f"\n\n6)尾部数据\n{tail}\n\n7)行名\n{get.index}\n\n8)列名\n{get.columns}"
-        )
+            f"\n\n6)尾部数据\n{tail}\n\n7)行名\n{get.index}\n\n8)列名\n{get.columns}")
 
-    def sheet_profile_report_core(self, sheet, save_dir):
+    @staticmethod
+    def sheet_profile_report_core(sheet, save_dir):
         report = pp.ProfileReport(sheet)
         report.to_file(save_dir)
 
@@ -252,7 +278,7 @@ class SheetReport(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class Rename(FormBase):
+class Rename(FormBase, metaclass=ABCMeta):
     def number_naming(self, name, is_column, save):
         get = self.get_sheet(name).copy()
         if is_column:  # 处理列名
@@ -321,7 +347,7 @@ class Rename(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class Sorted(FormBase):
+class Sorted(FormBase, metaclass=ABCMeta):
     def sorted_index(self, name, row: bool, new=False, a=True):
         get = self.get_sheet(name)
         if row:  # row-行名排序
@@ -350,7 +376,7 @@ class Sorted(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class RowColumn(Rename, Sorted):
+class RowColumn(Rename, Sorted, metaclass=ABCMeta):
     def get_column(self, name, only=False):  # 列名
         get = self.get_sheet(name)
         if only:
@@ -394,12 +420,12 @@ class RowColumn(Rename, Sorted):
         return new
 
     def change_index(
-        self,
-        name: str,
-        is_column: bool,
-        iloc: int,
-        save: bool = True,
-        drop: bool = False,
+            self,
+            name: str,
+            is_column: bool,
+            iloc: int,
+            save: bool = True,
+            drop: bool = False,
     ):
         get = self.get_sheet(name).copy()
         if is_column:  # 列名
@@ -424,9 +450,9 @@ class RowColumn(Rename, Sorted):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetSlice(FormBase):
+class SheetSlice(FormBase, metaclass=ABCMeta):
     def get_slice(
-        self, name, column, row, is_iloc=True, new=False
+            self, name, column, row, is_iloc=True, new=False
     ):  # iloc(Row,Column) or loc
         get = self.get_sheet(name)
         if is_iloc:
@@ -457,23 +483,23 @@ class SheetSlice(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DatacleaningFunc(FormBase):
+class DatacleaningFunc(FormBase, metaclass=ABCMeta):
     def add_clean_func(self, code):
         name = self.named_domain.copy()
         try:
             exec(code, name)
         except BaseException:
             return False
-        func_dict = {}
-        func_dict["Done_Row"] = name.get("Done_Row", [])
-        func_dict["Done_Column"] = name.get("Done_Column", [])
-        func_dict["axis"] = name.get("axis", True)
-        func_dict["check"] = name.get("check", lambda data, x, b, c, d, e: True)
-        func_dict["done"] = name.get("done", lambda data, x, b, c, d, e: data)
+        func_dict = {
+            "Done_Row": name.get(
+                "Done_Row", []), "Done_Column": name.get(
+                "Done_Column", []), "axis": name.get(
+                "axis", True), "check": name.get(
+                    "check", lambda data, x, b, c, d, e: True), "done": name.get(
+                        "done", lambda data, x, b, c, d, e: data)}
         title = (
             f"[{name.get('name', f'[{len(self.clean_func)}')}] Done_Row={func_dict['Done_Row']}_Done_Column="
-            f"{func_dict['Done_Column']}_axis={func_dict['axis']}"
-        )
+            f"{func_dict['Done_Column']}_axis={func_dict['axis']}")
         self.clean_func[title] = func_dict
         self.clean_func_code[title] = code
 
@@ -499,9 +525,9 @@ class DatacleaningFunc(FormBase):
         for i in list(self.clean_func.values()):
             done_row = i["Done_Row"]
             done_column = i["Done_Column"]
-            if done_row == []:
+            if not done_row:
                 done_row = range(get.shape[0])  # shape=[行,列]#不需要回调
-            if done_column == []:
+            if not done_column:
                 done_column = range(get.shape[1])  # shape=[行,列]#不需要回调
             if i["axis"]:
                 axis = 0
@@ -518,12 +544,12 @@ class DatacleaningFunc(FormBase):
                         column_data = eval(f"get.iloc[{row}]", {"get": get})
                         row_data = eval(f"get.iloc[:,{column}]", {"get": get})
                         if not check(
-                            data,
-                            row,
-                            column,
-                            get.copy(),
-                            column_data.copy(),
-                            row_data.copy(),
+                                data,
+                                row,
+                                column,
+                                get.copy(),
+                                column_data.copy(),
+                                row_data.copy(),
                         ):
                             d = done(
                                 data,
@@ -539,10 +565,13 @@ class DatacleaningFunc(FormBase):
                                     get = get.drop(row_list[int(row)])
                                 else:  # 常规删除
                                     columns_list = get.columns.values
-                                    get = get.drop(columns_list[int(row)], axis=1)
+                                    get = get.drop(
+                                        columns_list[int(row)], axis=1)
                             else:
                                 # 第一个是行名，然后是列名
-                                exec(f"get.iloc[{row},{column}] = {d}", {"get": get})
+                                exec(
+                                    f"get.iloc[{row},{column}] = {d}", {
+                                        "get": get})
                     except BaseException:
                         pass
         self.add_sheet(get, f"{name}:清洗")
@@ -550,7 +579,7 @@ class DatacleaningFunc(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class SheetDtype(FormBase):
+class SheetDtype(FormBase, metaclass=ABCMeta):
     def set_dtype(self, name, column, dtype, wrong):
         get = self.get_sheet(name).copy()
         for i in range(len(column)):
@@ -565,14 +594,18 @@ class SheetDtype(FormBase):
                 "Date": pd.to_datetime,
                 "Time": pd.to_timedelta,
             }
-            if column != []:
+            if column:
                 get.iloc[:, column] = get.iloc[:, column].apply(
                     func_dic.get(dtype, pd.to_numeric), errors=wrong
                 )
             else:
-                get = get.apply(func_dic.get(dtype, pd.to_numeric), errors=wrong)
+                get = get.apply(
+                    func_dic.get(
+                        dtype,
+                        pd.to_numeric),
+                    errors=wrong)
         else:
-            if column != []:
+            if column:
                 get.iloc[:, column] = get.iloc[:, column].infer_objects()
             else:
                 get = get.infer_objects()
@@ -593,7 +626,7 @@ class SheetDtype(FormBase):
             "Date": pd.Timestamp,
             "TimeDelta": pd.Timedelta,
         }
-        if column != []:
+        if column:
             get.iloc[:, column] = get.iloc[:, column].astype(
                 func_dic.get(dtype, dtype), errors=wrong
             )
@@ -604,7 +637,7 @@ class SheetDtype(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataNan(FormBase):
+class DataNan(FormBase, metaclass=ABCMeta):
     def is_nan(self, name):
         get = self.get_sheet(name)
         bool_nan = pd.isna(get)
@@ -619,7 +652,7 @@ class DataNan(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class BoolSheet(FormBase):
+class BoolSheet(FormBase, metaclass=ABCMeta):
     def to_bool(self, name, exp, new=False):
         get = self.get_sheet(name)
         try:
@@ -632,7 +665,7 @@ class BoolSheet(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataSample(FormBase):
+class DataSample(FormBase, metaclass=ABCMeta):
     def sample(self, name, new):
         get = self.get_sheet(name)
         sample = get.sample(frac=1)  # 返回比，默认按行打乱
@@ -642,7 +675,7 @@ class DataSample(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class DataTranspose(FormBase):
+class DataTranspose(FormBase, metaclass=ABCMeta):
     def transpose(self, name, new=True):
         get = self.get_sheet(name)
         t = get.T.copy()  # 复制一份，防止冲突
@@ -652,120 +685,102 @@ class DataTranspose(FormBase):
 
 
 @plugin_class_loading(get_path(r'template/datascience'))
-class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc, SheetDtype, DataNan, BoolSheet,
-                   DataSample, DataTranspose, SheetIO):
-    def parsing_parameters(self, text):  # 解析文本参数
+class PlotBase(
+        SheetRender,
+        SheetReport,
+        RowColumn,
+        SheetSlice,
+        DatacleaningFunc,
+        SheetDtype,
+        DataNan,
+        BoolSheet,
+        DataSample,
+        DataTranspose,
+        SheetIO):
+    @staticmethod
+    def parsing_parameters(text):  # 解析文本参数
         args = {}  # 解析到的参数
         exec(text, args)
-        args_use = {}  # 真实的参数
-        # 标题设置，global
-        args_use["title"] = args.get("title", None)
-        args_use["vice_title"] = args.get("vice_title", "CoTan~数据处理:")
-        # 图例设置global
-        args_use["show_Legend"] = bool(args.get("show_Legend", True))  # 是否显示图例
-        args_use["ori_Legend"] = args.get("ori_Legend", "horizontal")  # 朝向
-        # 视觉映射设置global
-        args_use["show_Visual_mapping"] = bool(
+        args_use = {"title": args.get("title", None), "vice_title": args.get("vice_title", "CoTan~数据处理:"),
+                    "show_Legend": bool(args.get("show_Legend", True)),
+                    "ori_Legend": args.get("ori_Legend", "horizontal"), "show_Visual_mapping": bool(
             args.get("show_Visual_mapping", True)
-        )  # 是否显示视觉映射
-        args_use["is_color_Visual_mapping"] = bool(
+        ), "is_color_Visual_mapping": bool(
             args.get("is_color_Visual_mapping", True)
-        )  # 颜色 or 大小
-        args_use["min_Visual_mapping"] = args.get(
+        ), "min_Visual_mapping": args.get(
             "min_Visual_mapping", None
-        )  # 最小值(None表示现场计算)
-        args_use["max_Visual_mapping"] = args.get(
+        ), "max_Visual_mapping": args.get(
             "max_Visual_mapping", None
-        )  # 最大值(None表示现场计算)
-        args_use["color_Visual_mapping"] = args.get(
+        ), "color_Visual_mapping": args.get(
             "color_Visual_mapping", None
-        )  # 颜色列表
-        args_use["size_Visual_mapping"] = args.get("size_Visual_mapping", None)  # 大小列表
-        args_use["text_Visual_mapping"] = args.get("text_Visual_mapping", None)  # 文字
-        args_use["is_Subsection"] = bool(args.get("is_Subsection", False))  # 分段类型
-        args_use["Subsection_list"] = args.get("Subsection_list", [])  # 分段列表
-        args_use["ori_Visual"] = args.get("ori_Visual", "vertical")  # 朝向
+        ), "size_Visual_mapping": args.get("size_Visual_mapping", None),
+            "text_Visual_mapping": args.get("text_Visual_mapping", None),
+            "is_Subsection": bool(args.get("is_Subsection", False)),
+            "Subsection_list": args.get("Subsection_list", []),
+            "ori_Visual": args.get("ori_Visual", "vertical"), "Tool_BOX": bool(args.get("Tool_BOX", True)),
+            "Theme": args.get("Theme", "white"), "BG_Color": args.get("BG_Color", None),
+            "width": args.get("width", "900px"), "heigh": (
+                args.get("heigh", "500px")
+                if not bool(args.get("Square", False))
+                else args.get("width", "900px")
+        ), "page_Title": args.get("page_Title", ""), "show_Animation": args.get("show_Animation", True),
+            "show_Axis": bool(args.get("show_Axis", True)), "Axis_Zero": bool(args.get("Axis_Zero", False)),
+            "show_Axis_Scale": bool(args.get("show_Axis_Scale", True)), "x_type": args.get("x_type", None),
+            "y_type": args.get("y_type", None), "z_type": args.get("z_type", None),
+            "make_Line": args.get("make_Line", []), "Datazoom": args.get("Datazoom", "N"),
+            "show_Text": bool(args.get("show_Text", False)), "Size": args.get("Size", 10),
+            "Symbol": args.get("Symbol", "circle"), "bar_Stacking": bool(args.get("bar_Stacking", False)),
+            "EffectScatter": bool(
+                        args.get("EffectScatter", False)
+        ), "connect_None": bool(args.get("connect_None", False)),
+            "Smooth_Line": bool(args.get("Smooth_Line", False)),
+            "Area_chart": bool(args.get("Area_chart", False)), "paste_Y": bool(args.get("paste_Y", False)),
+            "step_Line": bool(args.get("step_Line", False)),
+            "size_PictorialBar": args.get("size_PictorialBar", None),
+            "Polar_units": args.get("Polar_units", "100"), "More": bool(args.get("More", False)),
+            "WordCould_Size": args.get("WordCould_Size", [20, 100]),
+            "WordCould_Shape": args.get("WordCould_Shape", "circle"),
+            "symbol_Graph": args.get("symbol_Graph", "circle"), "Repulsion": float(args.get("Repulsion", 8000)),
+            "Area_radar": bool(args.get("Area_radar", True)), "HTML_Type": args.get("HTML_Type", 2),
+            "Map": args.get("Map", "china"), "show_Map_Symbol": bool(
+                args.get("show_Map_Symbol", False)
+        ), "Geo_Type": {
+                "heatmap": GeoType.HEATMAP,
+                "scatter": "scatter",
+                "EFFECT": GeoType.EFFECT_SCATTER,
+        }.get(
+                args.get("Geo_Type", "heatmap"), GeoType.HEATMAP
+        ), "map_Type": args.get("map_Type", "2D"), "is_Dark": bool(args.get("is_Dark", False))}  # 真实的参数
+        # 标题设置，global
+        # 图例设置global
+        # 视觉映射设置global
         # 工具箱设置global
-        args_use["Tool_BOX"] = bool(args.get("Tool_BOX", True))  # 开启工具箱
         # Init设置global
-        args_use["Theme"] = args.get("Theme", "white")  # 设置style
-        args_use["BG_Color"] = args.get("BG_Color", None)  # 设置背景颜色
-        args_use["width"] = args.get("width", "900px")  # 设置宽度
-        args_use["heigh"] = (
-            args.get("heigh", "500px")
-            if not bool(args.get("Square", False))
-            else args.get("width", "900px")
-        )  # 设置高度
-        args_use["page_Title"] = args.get("page_Title", "")  # 设置HTML标题
-        args_use["show_Animation"] = args.get("show_Animation", True)  # 设置HTML标题
         # 坐标轴设置，2D坐标图和3D坐标图
-        args_use["show_Axis"] = bool(args.get("show_Axis", True))  # 显示坐标轴
-        args_use["Axis_Zero"] = bool(args.get("Axis_Zero", False))  # 重叠于原点
-        args_use["show_Axis_Scale"] = bool(args.get("show_Axis_Scale", True))  # 显示刻度
-        args_use["x_type"] = args.get("x_type", None)  # 坐标轴类型
-        args_use["y_type"] = args.get("y_type", None)
-        args_use["z_type"] = args.get("z_type", None)
         # Mark设置 坐标图专属
-        args_use["make_Line"] = args.get("make_Line", [])  # 设置直线
         # Datazoom设置 坐标图专属
-        args_use["Datazoom"] = args.get("Datazoom", "N")  # 设置Datazoom
 
         # 显示文字设置
-        args_use["show_Text"] = bool(args.get("show_Text", False))  # 显示文字
 
         # 统一化的设置
-        args_use["Size"] = args.get("Size", 10)  # Size
-        args_use["Symbol"] = args.get("Symbol", "circle")  # 散点样式
 
         # Bar设置
-        args_use["bar_Stacking"] = bool(args.get("bar_Stacking", False))  # 堆叠(2D和3D)
 
         # 散点图设置
-        args_use["EffectScatter"] = bool(
-            args.get("EffectScatter", False)
-        )  # 开启特效(2D和3D)
 
         # 折线图设置
-        args_use["connect_None"] = bool(args.get("connect_None", False))  # 连接None
-        args_use["Smooth_Line"] = bool(args.get("Smooth_Line", False))  # 平滑曲线
-        args_use["Area_chart"] = bool(args.get("Area_chart", False))  # 面积图
-        args_use["paste_Y"] = bool(args.get("paste_Y", False))  # 紧贴Y轴
-        args_use["step_Line"] = bool(args.get("step_Line", False))  # 阶梯式图
 
-        args_use["size_PictorialBar"] = args.get("size_PictorialBar", None)  # 象形柱状图大小
-
-        args_use["Polar_units"] = args.get("Polar_units", "100")  # 极坐标图单位制
-
-        args_use["More"] = bool(args.get("More", False))  # 均绘制水球图、仪表图
-
-        args_use["WordCould_Size"] = args.get("WordCould_Size", [20, 100])  # 开启特效
-        args_use["WordCould_Shape"] = args.get("WordCould_Shape", "circle")  # 开启特效
-
-        args_use["symbol_Graph"] = args.get("symbol_Graph", "circle")  # 关系点样式
-        args_use["Repulsion"] = float(args.get("Repulsion", 8000))  # 斥力因子
-
-        args_use["Area_radar"] = bool(args.get("Area_radar", True))  # 雷达图面积
-
-        args_use["HTML_Type"] = args.get("HTML_Type", 2)  # 输出Page的类型
-
-        args_use["Map"] = args.get("Map", "china")  # 输出Page的面积
-        args_use["show_Map_Symbol"] = bool(
-            args.get("show_Map_Symbol", False)
-        )  # 输出Page的面积
-        args_use["Geo_Type"] = {
-            "heatmap": GeoType.HEATMAP,
-            "scatter": "scatter",
-            "EFFECT": GeoType.EFFECT_SCATTER,
-        }.get(
-            args.get("Geo_Type", "heatmap"), GeoType.HEATMAP
-        )  # 输出Page的面积
-        args_use["map_Type"] = args.get("map_Type", "2D")  # 输出Page的面积
-        args_use["is_Dark"] = bool(args.get("is_Dark", False))  # 输出Page的面积
         return args_use
 
+    @staticmethod
     def global_set(
-        self, args_use, title, min_, max_, data_zoom=False, visual_mapping=True, axis=()
-    ):
+            args_use,
+            title,
+            min_,
+            max_,
+            data_zoom=False,
+            visual_mapping=True,
+            axis=()):
         k = {}
         # 标题设置
         if args_use["title"] is None:
@@ -828,19 +843,17 @@ class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc
                 axis_k[f"{axis[0]}axis_opts"] = opts.AxisOpts(is_show=False)
             else:
                 axis_k[f"{axis[0]}axis_opts"] = opts.AxisOpts(
-                    type_=args_use[f"{axis[0]}_type"],
-                    axisline_opts=opts.AxisLineOpts(is_on_zero=args_use["Axis_Zero"]),
-                    axistick_opts=opts.AxisTickOpts(
-                        is_show=args_use["show_Axis_Scale"]
-                    ),
-                )
+                    type_=args_use[f"{axis[0]}_type"], axisline_opts=opts.AxisLineOpts(
+                        is_on_zero=args_use["Axis_Zero"]), axistick_opts=opts.AxisTickOpts(
+                        is_show=args_use["show_Axis_Scale"]), )
             return axis_k
 
         for i in axis:
             k.update(axis_seeting(args_use, i))
         return k
 
-    def init_setting(self, args_use):
+    @staticmethod
+    def init_setting(args_use):
         k = {}
         # 设置标题
         if args_use["page_Title"] == "":
@@ -853,14 +866,17 @@ class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc
             width=args_use["width"],
             height=args_use["heigh"],
             page_title=title,
-            animation_opts=opts.AnimationOpts(animation=args_use["show_Animation"]),
+            animation_opts=opts.AnimationOpts(
+                animation=args_use["show_Animation"]),
         )
         return k
 
-    def get_title(self, args_use):
+    @staticmethod
+    def get_title(args_use):
         return f":{args_use['title']}"
 
-    def mark(self, args_use):
+    @staticmethod
+    def mark(args_use):
         k = {}
         line = []
         for i in args_use["make_Line"]:
@@ -873,19 +889,21 @@ class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc
                     raise Exception
             except BaseException:
                 line.append(opts.MarkLineItem(y=i[0], name=i[1]))
-        if line == []:
+        if not line:
             return k
         k["markline_opts"] = opts.MarkLineOpts(data=line)
         return k
 
-    def yaxis_label(self, args_use, position="inside"):
+    @staticmethod
+    def yaxis_label(args_use, position="inside"):
         return {
             "label_opts": opts.LabelOpts(
                 is_show=args_use["show_Text"], position=position
             )
         }
 
-    def special_setting(self, args_use, type_):  # 私人设定
+    @staticmethod
+    def special_setting(args_use, type_):  # 私人设定
         k = {}
         if type_ == "Bar":  # 设置y的重叠
             if args_use["bar_Stacking"]:
@@ -897,9 +915,8 @@ class PlotBase(SheetRender, SheetReport, RowColumn, SheetSlice, DatacleaningFunc
         elif type_ == "Line":
             k["is_connect_nones"] = args_use["connect_None"]
             # 平滑曲线或连接y轴
-            k["is_smooth"] = (
-                True if args_use["Smooth_Line"] or args_use["paste_Y"] else False
-            )
+            k["is_smooth"] = (True if args_use["Smooth_Line"]
+                              or args_use["paste_Y"] else False)
             k["areastyle_opts"] = opts.AreaStyleOpts(
                 opacity=0.5 if args_use["Area_chart"] else 0
             )
@@ -950,7 +967,8 @@ class Render(PlotBase):
         over_down.overlap(over_up)
         return over_down
 
-    def get_random_color(self):
+    @staticmethod
+    def get_random_color():
         # 随机颜色，雷达图默认非随机颜色
         rgb = [randint(0, 255), randint(0, 255), randint(0, 255)]
         color = "#"
@@ -1002,7 +1020,7 @@ class AxisPlot(Render):
                 y += list(map(int, q))
             except BaseException:
                 pass
-        if y == []:
+        if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
         c.set_global_opts(
@@ -1034,7 +1052,7 @@ class AxisPlot(Render):
                 y += list(map(int, q))
             except BaseException:
                 pass
-        if y == []:
+        if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
         c.set_global_opts(
@@ -1072,7 +1090,7 @@ class AxisPlot(Render):
                 y += list(map(int, q))
             except BaseException:
                 pass
-        if y == []:
+        if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
         c.set_global_opts(
@@ -1110,7 +1128,7 @@ class AxisPlot(Render):
                 y += list(map(int, q))
             except BaseException:
                 pass
-        if y == []:
+        if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
         c.set_global_opts(
@@ -1135,7 +1153,7 @@ class AxisPlot(Render):
                 y += list(map(float, q))
             except BaseException:
                 pass
-        if y == []:
+        if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
         c.set_global_opts(
@@ -1190,9 +1208,9 @@ class GeneralPlot(Render):
         for i in get.iterrows():  # 按行迭代
             q = i[1].tolist()  # 转换为列表
             try:
-                nodes.append(
-                    {"name": f"{i[0]}", "symbolSize": float(q[0]), "value": float(q[0])}
-                )
+                nodes.append({"name": f"{i[0]}",
+                              "symbolSize": float(q[0]),
+                              "value": float(q[0])})
                 for a in q[1:]:
                     n = str(a).split(":")
                     try:
@@ -1203,7 +1221,7 @@ class GeneralPlot(Render):
                         pass
             except BaseException:
                 pass
-        if link == []:
+        if not link:
             for i in nodes:
                 for j in nodes:
                     link.append(
@@ -1257,7 +1275,10 @@ class GeneralPlot(Render):
                 else:
                     have.append((y_n, x_n))
                 try:
-                    v = float(eval(f"get.iloc[{y},{x}]", {"get": get}))  # 取得value
+                    v = float(
+                        eval(
+                            f"get.iloc[{y},{x}]", {
+                                "get": get}))  # 取得value
                     link.append({"source": y_n, "target": x_n, "value": v})
                 except BaseException:
                     pass
@@ -1310,7 +1331,10 @@ class GeneralPlot(Render):
                 if source[y_n] & target[x_n] != set():
                     continue
                 try:
-                    v = float(eval(f"get.iloc[{y},{x}]", {"get": get}))  # 取得value
+                    v = float(
+                        eval(
+                            f"get.iloc[{y},{x}]", {
+                                "get": get}))  # 取得value
                     link.append({"source": y_n, "target": x_n, "value": v})
                     target[y_n].add(x_n)
                     source[x_n].add(y_n)
@@ -1363,12 +1387,15 @@ class GeneralPlot(Render):
             except BaseException:
                 pass
         args = self.parsing_parameters(text)
-        c = (
-            Pie(**self.init_setting(args))
-            .add(f"{name}", data, **self.yaxis_label(args, "top"))
-            .set_global_opts(**self.global_set(args, f"{name}饼图", 0, 100, False, False))
-            .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
-        )
+        c = (Pie(**self.init_setting(args)) .add(f"{name}",
+                                                 data,
+                                                 **self.yaxis_label(args,
+                                                                    "top")) .set_global_opts(**self.global_set(args,
+                                                                                                               f"{name}饼图",
+                                                                                                               0,
+                                                                                                               100,
+                                                                                                               False,
+                                                                                                               False)) .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}")))
         self.all_render[f"{name}饼图[{len(self.all_render)}]{self.get_title(args)}"] = c
         return c
 
@@ -1419,7 +1446,10 @@ class GeneralPlot(Render):
             data.append([f"{i[0]}", [add]])  # add是包含在一个list中的
 
         for i in range(len(max_list)):  # 计算x_list
-            x_list.append(opts.RadarIndicatorItem(name=x[i], max_=max(max_list[i])))
+            x_list.append(
+                opts.RadarIndicatorItem(
+                    name=x[i], max_=max(
+                        max_list[i])))
         args = self.parsing_parameters(text)
         c = (
             Radar(**self.init_setting(args))
@@ -1431,15 +1461,16 @@ class GeneralPlot(Render):
         k = self.special_setting(args, "Radar")
         for i in data:
             c.add(
-                *i, **self.yaxis_label(args), color=self.get_random_color(), **k
-            )  # 对i解包，取得name和data 随机颜色
+                *i,
+                **self.yaxis_label(args),
+                color=self.get_random_color(),
+                **k)  # 对i解包，取得name和data 随机颜色
         self.all_render[f"{name}雷达图[{len(self.all_render)}]{self.get_title(args)}"] = c
         return c
 
     def to_funnel(self, name, text) -> Funnel:
         get = self.get_sheet(name)
         y_name = self.get_index(name, True).tolist()  # 拿行名
-        x = self.get_column(name, True).tolist()[0]
         value = []
         y = []
         for r in range(len(y_name)):
@@ -1450,13 +1481,15 @@ class GeneralPlot(Render):
             value.append([f"{y_name[r]}", v])
             y.append(v)
         args = self.parsing_parameters(text)
-        c = (
-            Funnel(**self.init_setting(args))
-            .add(f"{name}", value, **self.yaxis_label(args, "top"))
-            .set_global_opts(
-                **self.global_set(args, f"{name}漏斗图", min(y), max(y), True, False)
-            )
-        )
+        c = (Funnel(**self.init_setting(args)) .add(f"{name}",
+                                                    value,
+                                                    **self.yaxis_label(args,
+                                                                       "top")) .set_global_opts(**self.global_set(args,
+                                                                                                                  f"{name}漏斗图",
+                                                                                                                  min(y),
+                                                                                                                  max(y),
+                                                                                                                  True,
+                                                                                                                  False)))
         self.all_render[f"{name}漏斗图[{len(self.all_render)}]{self.get_title(args)}"] = c
         return c
 
@@ -1475,7 +1508,7 @@ class GeneralPlot(Render):
                 except BaseException:
                     pass
         args = self.parsing_parameters(text)
-        if y == []:
+        if not y:
             y = [0, 100]
             args["show_Visual_mapping"] = False  # 关闭视觉映射
         c = Calendar(**self.init_setting(args)).set_global_opts(
@@ -1508,7 +1541,7 @@ class GeneralPlot(Render):
                 except BaseException:
                     pass
         args = self.parsing_parameters(text)
-        if y == []:
+        if not y:
             y = [0, 100]
             args["show_Visual_mapping"] = False  # 关闭视觉映射
         c = (
@@ -1548,7 +1581,8 @@ class RelationshipPlot(Render):
                     except BaseException:
                         q = len(str(content))
                     v += q
-                    k["children"].append({"name": f"{i}={content}", "value": q})
+                    k["children"].append(
+                        {"name": f"{i}={content}", "value": q})
             k["value"] = v
             return k
 
@@ -1615,7 +1649,8 @@ class RelationshipPlot(Render):
                     except BaseException:
                         q = len(str(content))
                     v += q
-                    k["children"].append({"name": f"{i}={content}", "value": q})
+                    k["children"].append(
+                        {"name": f"{i}={content}", "value": q})
             k["value"] = v
             return k
 
@@ -1674,7 +1709,7 @@ class RelationshipPlot(Render):
                 data[a].append((map, v))
         args = self.parsing_parameters(text)
         args["show_Visual_mapping"] = True  # 必须视觉映射
-        if y == []:
+        if not y:
             y = [0, 100]
         if args["is_Dark"]:
             g = {
@@ -1703,14 +1738,17 @@ class RelationshipPlot(Render):
                     symbol=SymbolType.ARROW,
                     symbol_size=6,
                     effect_opts=opts.EffectOpts(
-                        symbol=SymbolType.ARROW, symbol_size=6, color="blue"
-                    ),
+                        symbol=SymbolType.ARROW,
+                        symbol_size=6,
+                        color="blue"),
                     linestyle_opts=opts.LineStyleOpts(
-                        curve=0.2, color="#FFF8DC" if args["is_Dark"] else "#000000"
-                    ),
+                        curve=0.2,
+                        color="#FFF8DC" if args["is_Dark"] else "#000000"),
                 )
             c.add(f"{column[i]}", data[i], type_=data_type[i], **ka)
-        c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示数据,必须放在add后面生效
+        c.set_series_opts(
+            label_opts=opts.LabelOpts(
+                is_show=False))  # 不显示数据,必须放在add后面生效
         self.all_render[
             f"{name}Geo点地图[{len(self.all_render)}]{self.get_title(args)}"
         ] = c
@@ -1736,7 +1774,7 @@ class GeographyPlot(Render):
                     pass
         args = self.parsing_parameters(text)
         args["show_Visual_mapping"] = True  # 必须视觉映射
-        if y == []:
+        if not y:
             y = [0, 100]
         if args["map_Type"] == "GLOBE":
             func = MapGlobe
@@ -1797,8 +1835,7 @@ class GeographyPlot(Render):
                                 latitude=float(v[1]),
                             )
                             c.add_coordinate(
-                                name=f"({x},{y})", longitude=float(x), latitude=float(y)
-                            )
+                                name=f"({x},{y})", longitude=float(x), latitude=float(y))
                             c.add(
                                 f"{name}",
                                 [[f"({x},{y})", f"({v[0]},{v[1]})"]],
@@ -1822,8 +1859,9 @@ class GeographyPlot(Render):
                         continue
                 try:
                     c.add_coordinate(
-                        name=f"({x},{y})", longitude=float(x), latitude=float(y)
-                    )
+                        name=f"({x},{y})",
+                        longitude=float(x),
+                        latitude=float(y))
                     c.add(
                         f"{name}",
                         [[f"({x},{y})", v]],
@@ -1841,7 +1879,7 @@ class GeographyPlot(Render):
                     m.append(v)
                 except BaseException:
                     pass
-        if m == []:
+        if not m:
             m = [0, 100]
         c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示
         c.set_global_opts(
@@ -1882,12 +1920,12 @@ class WordPlot(Render):
             data = float(f"0.{c[0]}")
         args = self.parsing_parameters(text)
         c = (
-            Liquid(**self.init_setting(args))
-            .add(f"{name}", [data, data])
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title=f"{name}水球图", subtitle="CoTan~数据处理")
-            )
-        )
+            Liquid(
+                **self.init_setting(args)) .add(
+                f"{name}", [
+                    data, data]) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"{name}水球图", subtitle="CoTan~数据处理")))
         self.all_render[f"{name}水球图[{len(self.all_render)}]{self.get_title(args)}"] = c
         return c
 
@@ -1903,12 +1941,12 @@ class WordPlot(Render):
                 data = float(f"0.{data}") * 100
         args = self.parsing_parameters(text)
         c = (
-            Gauge(**self.init_setting(args))
-            .add(f"{name}", [(f"{name}", data)])
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title=f"{name}仪表图", subtitle="CoTan~数据处理")
-            )
-        )
+            Gauge(
+                **self.init_setting(args)) .add(
+                f"{name}", [
+                    (f"{name}", data)]) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"{name}仪表图", subtitle="CoTan~数据处理")))
         self.all_render[f"{name}仪表图[{len(self.all_render)}]{self.get_title(args)}"] = c
         return c
 
@@ -1930,7 +1968,7 @@ class SolidPlot(Render):
                 except BaseException:
                     pass
         args = self.parsing_parameters(text)
-        if q == []:
+        if not q:
             q = [0, 100]
             args["show_Visual_mapping"] = False  # 关闭视觉映射
         c = (
@@ -1968,7 +2006,7 @@ class SolidPlot(Render):
                 except BaseException:
                     pass
         args = self.parsing_parameters(text)
-        if q == []:
+        if not q:
             q = [0, 100]
             args["show_Visual_mapping"] = False  # 关闭视觉映射
         c = (
@@ -2004,7 +2042,7 @@ class SolidPlot(Render):
                 except BaseException:
                     pass
         args = self.parsing_parameters(text)
-        if q == []:
+        if not q:
             q = [0, 100]
             args["show_Visual_mapping"] = False  # 关闭视觉映射
         c = (
@@ -2027,7 +2065,13 @@ class SolidPlot(Render):
         return c
 
 
-class MachineLearnerBase(AxisPlot, GeneralPlot, RelationshipPlot, GeographyPlot, WordPlot, SolidPlot):
+class MachineLearnerBase(
+        AxisPlot,
+        GeneralPlot,
+        RelationshipPlot,
+        GeographyPlot,
+        WordPlot,
+        SolidPlot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.learner = {}  # 记录机器
@@ -2041,7 +2085,8 @@ class MachineLearnerBase(AxisPlot, GeneralPlot, RelationshipPlot, GeographyPlot,
         }
         self.learner_type = {}  # 记录机器的类型
 
-    def parsing(self, parameters):  # 解析参数
+    @staticmethod
+    def parsing(parameters):  # 解析参数
         args = {}
         args_use = {}
         # 输入数据
@@ -2077,8 +2122,7 @@ class VisualLearner(MachineLearnerBase):
             # 文档
             doc = (
                 f"阿尔法:alpha = {alpha}\n\n权重:\nw = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\n最大迭代数:{max_iter}"
-                f"\n\n\nEND"
-            )
+                f"\n\n\nEND")
             data = pd.DataFrame(data, index=index)
         elif learner_type in ("Line",):
             w = learner.coef_.tolist()  # w系数
@@ -2092,7 +2136,8 @@ class VisualLearner(MachineLearnerBase):
             classes = learner.classes_.tolist()  # 分类
             n = learner.n_neighbors  # 个数
             p = {1: "曼哈顿距离", 2: "欧几里得距离"}.get(learner.p)
-            index = [f"类目[{i}]" for i in range(len(classes))] + ["邻居个数", "距离公式"]
+            index = [f"类目[{i}]" for i in range(
+                len(classes))] + ["邻居个数", "距离公式"]
             data = classes + [n, p]
             doc = f"分类类目:\n{pd.DataFrame(classes)}\n\n邻居个数:{n}\n\n计算距离的方式:{p}\n\n\nEND"
             data = pd.DataFrame(data, index=index)
@@ -2108,12 +2153,10 @@ class VisualLearner(MachineLearnerBase):
             w = learner.coef_.tolist()  # w系数
             b = learner.intercept_
             c = learner.C
-            index = (
-                [f"类目[{i}]" for i in range(len(classes))]
-                + [f"权重:W[{j}][{i}]" for i in range(len(w)) for j in range(len(w[i]))]
-                + [f"截距:b[{i}]" for i in range(len(b))]
-                + ["C"]
-            )
+            index = ([f"类目[{i}]" for i in range(len(classes))] +
+                     [f"权重:W[{j}][{i}]" for i in range(len(w)) for j in range(len(w[i]))] +
+                     [f"截距:b[{i}]" for i in range(len(b))] +
+                     ["C"])
             data = classes + [j for i in w for j in i] + [i for i in b] + [c]
             doc = f"分类类目:\n{pd.DataFrame(classes)}\n\n权重:w = \n{pd.DataFrame(w)}\n\n截距:b = {b}\n\nC={c}\n\n\n"
             data = pd.DataFrame(data, index=index)
@@ -2136,8 +2179,13 @@ class Learner(MachineLearnerBase):
         return dec
 
     def training_machine_core(
-        self, name, learner, score_only=False, down_ndim=True, split=0.3, **kwargs
-    ):
+            self,
+            name,
+            learner,
+            score_only=False,
+            down_ndim=True,
+            split=0.3,
+            **kwargs):
         get = self.get_sheet(name)
         x = get.to_numpy()
         y = self.get_index(name, True)  # 获取y值(用index作为y)
@@ -2153,7 +2201,8 @@ class Learner(MachineLearnerBase):
             x = np.array(x)
         model = self.get_learner(learner)
         if not score_only:  # 只计算得分，全部数据用于测试
-            train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=split)
+            train_x, test_x, train_y, test_y = train_test_split(
+                x, y, test_size=split)
             model.fit(train_x, train_y)
             train_score = model.score(train_x, train_y)
             test_score = model.score(test_x, test_y)
@@ -2165,12 +2214,12 @@ class Learner(MachineLearnerBase):
         type_ = self.get_learner_type(learnner)
         args_use = self.parsing(parameters)
         if type_ in (
-            "Line",
-            "Ridge",
-            "Lasso",
-            "LogisticRegression",
-            "Knn",
-            "Knn_class",
+                "Line",
+                "Ridge",
+                "Lasso",
+                "LogisticRegression",
+                "Knn",
+                "Knn_class",
         ):
             return self.training_machine_core(
                 name, learnner, down_ndim=args_use["nDim_2"], **kwargs
@@ -2200,12 +2249,12 @@ class Learner(MachineLearnerBase):
         type_ = self.get_learner_type(learner)
         args_use = self.parsing(parameters)
         if type_ in (
-            "Line",
-            "Ridge",
-            "Lasso",
-            "LogisticRegression",
-            "Knn",
-            "Knn_class",
+                "Line",
+                "Ridge",
+                "Lasso",
+                "LogisticRegression",
+                "Knn",
+                "Knn_class",
         ):
             return self.predict_simp(
                 name, learner, down_ndim=args_use["nDim_2"], **kwargs

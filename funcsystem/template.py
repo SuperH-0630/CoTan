@@ -240,7 +240,7 @@ class SheetFuncInit(SheetFuncBase):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetDataPacket(SheetFuncInit):
+class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
     def data_packet(self, *args, **kwargs):
         if self.have_data_packet:
             return self.x, self.y, self.func_name, self.style
@@ -324,7 +324,7 @@ class SheetDataPacket(SheetFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetBestValue(SheetFuncInit):
+class SheetBestValue(SheetFuncInit, metaclass=ABCMeta):
     def best_value_core(self):  # 计算最值和极值点
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
@@ -347,7 +347,7 @@ class SheetBestValue(SheetFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetComputing(SheetFuncInit):
+class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
     def gradient_calculation(self, y_in, *args, **kwargs):  # 保持和下一个对象相同参数
         result = self.dichotomy(y_in)
         return result[0], result[0][0]
@@ -358,7 +358,7 @@ class SheetComputing(SheetFuncInit):
         result = None
         for i in y_list:
             try:
-                if (last_y < y_in and i > y_in) and (
+                if (last_y < y_in < i) and (
                     abs(((i + last_y) / 2) - y_in) < 0.1
                 ):
                     result = [last_y, i]
@@ -409,7 +409,7 @@ class SheetComputing(SheetFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetProperty(SheetFuncInit):
+class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
     def parity(self, *args, **kwargs):  # 奇偶性
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
@@ -666,7 +666,7 @@ class SheetProperty(SheetFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class SheetMemory(SheetFuncInit):
+class SheetMemory(SheetFuncInit, metaclass=ABCMeta):
     def hide_or_show(self):
         if self.have_prediction:
             if tkinter.messagebox.askokcancel("提示", f"是否显示{self}的记忆数据？"):
@@ -814,7 +814,7 @@ class ExpFuncInit(ExpFuncBase):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpDataPacket(ExpFuncInit):
+class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
 
     def data_packet(self, number_type=float):
         if self.have_data_packet:
@@ -918,7 +918,7 @@ class ExpDataPacket(ExpFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpBestValue(ExpFuncInit):
+class ExpBestValue(ExpFuncInit, metaclass=ABCMeta):
     def best_value_core(self):  # 计算最值和极值点
         # 使用ya解决了因计算器误差而没计算到的最值，但是同时本不是最值的与最值相近的数字也被当为了最值，所以使用群组击破
         if not self.have_data_packet:
@@ -1005,7 +1005,7 @@ class ExpBestValue(ExpFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpComputing(ExpFuncInit):
+class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
 
     def sympy_calculation(self, y_value):  # 利用Sympy解方程
         try:
@@ -1329,7 +1329,7 @@ class ExpComputing(ExpFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpProperty(ExpFuncInit):
+class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
     def parity(self, precision=False):  # 启动round处理
         if not self.have_data_packet:
             self.data_packet(float)  # 运行Cul计算
@@ -1639,7 +1639,7 @@ class ExpProperty(ExpFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpCheck(ExpFuncInit):
+class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
     def check_monotonic(
         self, parameters, output_prompt=lambda x: x, accuracy=None
     ):  # 检查单调性
@@ -1648,7 +1648,7 @@ class ExpCheck(ExpFuncInit):
             parameters = parameters.split(",")
             start = float(parameters[0])
             end = float(parameters[1])
-            flat = float(parameters[2])  # 当前研究反围:0-增区间,1-减区间,2-不增不减
+            flat = int(parameters[2])  # 当前研究反围:0-增区间,1-减区间,2-不增不减
         except BaseException:
             return False, ""
         if start > end:
@@ -1771,7 +1771,7 @@ class ExpCheck(ExpFuncInit):
 
 
 @plugin_class_loading(get_path(r'template/funcsystem'))
-class ExpMemory(ExpFuncInit):
+class ExpMemory(ExpFuncInit, metaclass=ABCMeta):
     def hide_or_show(self):  # 记忆数据显示和隐藏
         if self.have_prediction:
             if tkinter.messagebox.askokcancel("提示", f"是否显示{self}的记忆数据？"):

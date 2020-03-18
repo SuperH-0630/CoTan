@@ -355,7 +355,7 @@ class Urlbase(metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class UrlFile(Urlbase):
+class UrlFile(Urlbase, metaclass=ABCMeta):
     def close(self):
         self.file.close()
         self.file_run.close()
@@ -370,7 +370,7 @@ class UrlFile(Urlbase):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class UrlAdd(Urlbase):
+class UrlAdd(Urlbase, metaclass=ABCMeta):
     def filter_func(self, url, **kwargs):  # url过滤系统
         for i in self.filter:
             if not self.filter[i](url):
@@ -388,7 +388,7 @@ class UrlAdd(Urlbase):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class UrlReturn(Urlbase):
+class UrlReturn(Urlbase, metaclass=ABCMeta):
     def del_url(self, index):  # 删除url
         self.out_url_run(f"DELETE {self.url_list[index]}")
         del self.url_list[index]
@@ -459,7 +459,7 @@ class PagedownloaderBase(SeleniumBase, RequestsBase, metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderRun(PagedownloaderBase):
+class PageDownloaderRun(PagedownloaderBase, metaclass=ABCMeta):
     def close(self):
         self.log.close()
 
@@ -491,7 +491,7 @@ class PageDownloaderRun(PagedownloaderBase):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderCookies(PagedownloaderBase):
+class PageDownloaderCookies(PagedownloaderBase, metaclass=ABCMeta):
     def monitoring_del_cookies(self, name):  # 删除指定cookies
         self.browser.delete_cookie(name)
 
@@ -513,7 +513,7 @@ class PageDownloaderCookies(PagedownloaderBase):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderRequests(PageDownloaderRun):
+class PageDownloaderRequests(PageDownloaderRun, metaclass=ABCMeta):
     def requests_start_cookies(self, func_cookie, url):
         self.cookie_dict[url] = requests.utils.dict_from_cookiejar(
             self.browser.cookies
@@ -551,7 +551,7 @@ class PageDownloaderRequests(PageDownloaderRun):
 
 
 @plugin_class_loading(get_path(r'template/crawler'))
-class PageDownloaderSelenium(PageDownloaderRun):
+class PageDownloaderSelenium(PageDownloaderRun, metaclass=ABCMeta):
 
     def selenium_quit(self):
         try:
@@ -628,7 +628,8 @@ class PageParserBase:
         self.element_dict = {}  # 记录属性的名字
         self.url_text = url
 
-    def add_base(self, func):  # 装饰器
+    @staticmethod
+    def add_base(func):  # 装饰器
         def wrap(num=None, name=None, *args, **kwargs) -> bool:
             try:
                 func(num=num, name=name, *args, **kwargs)
@@ -1511,7 +1512,8 @@ class PageParserChainsMouse(PageParserFunc):
 
 @plugin_class_loading(get_path(r'template/crawler'))
 class PageParserChainsKeys(PageParserFunc):
-    def special_keys(self, key: str, is_special_keys):
+    @staticmethod
+    def special_keys(key: str, is_special_keys):
         if is_special_keys:
             return keys_name_dict.get(key.lower(), key), f"[{key.upper()}]"
         else:

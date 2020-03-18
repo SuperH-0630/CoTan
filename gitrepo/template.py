@@ -32,7 +32,8 @@ class GitBase(metaclass=ABCMeta):
     def init(self, repo_dir):
         pass
 
-    def make_stop_key(self):  # 生成一个随机stopKey
+    @staticmethod
+    def make_stop_key():  # 生成一个随机stopKey
         code = ""
         for _ in range(8):  # 八位随机数
             code += passwd[random.randint(0, len(passwd) - 1)]  # 时间戳+8位随机数
@@ -54,7 +55,7 @@ class GitBase(metaclass=ABCMeta):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class ViewClasses(GitBase):
+class ViewClasses(GitBase, metaclass=ABCMeta):
 
     def status(self):  # 执行status
         return subprocess.Popen(
@@ -142,7 +143,7 @@ class ViewClasses(GitBase):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class NewClasses(GitBase):
+class NewClasses(GitBase, metaclass=ABCMeta):
     def add(self, file_list):
         file = self.get_flie_list(file_list)
         return subprocess.Popen(
@@ -210,7 +211,7 @@ class NewClasses(GitBase):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class RemoveClass(GitBase):
+class RemoveClass(GitBase, metaclass=ABCMeta):
     def del_cached_file(self, file_list):
         file = self.get_flie_list(file_list)
         return subprocess.Popen(
@@ -272,7 +273,7 @@ class RemoveClass(GitBase):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class BackClasses(GitBase):
+class BackClasses(GitBase, metaclass=ABCMeta):
     def reset(self, head="HEAD~1", reset_type=0):
         if reset_type == 0:
             type_ = "--mixed"  # 退回到工作区
@@ -324,7 +325,7 @@ class BackClasses(GitBase):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class ParallelClasses(GitBase):
+class ParallelClasses(GitBase, metaclass=ABCMeta):
     def switch_branch(self, branch_name):  # 切换分支
         return subprocess.Popen(
             f"echo 切换分支... && {git_path} switch {branch_name} && echo {self.make_stop_key()}",
@@ -359,7 +360,7 @@ class ParallelClasses(GitBase):
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))
-class RemoteClasses(GitBase):
+class RemoteClasses(GitBase, metaclass=ABCMeta):
     def push_tag(self, tag, remote_name):
         return subprocess.Popen(
             f"echo 推送标签... && {git_path} push {remote_name} {tag} && echo {self.make_stop_key()}",

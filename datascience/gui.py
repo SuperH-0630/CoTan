@@ -220,6 +220,7 @@ class UIAPI:
                 a[1] = a[0] + 1
                 a[2] = None
             return a
+
         the_column_type = column_type.get()
         is_iloc = True
         if the_column_type == 0:  # 输入的列号
@@ -835,7 +836,7 @@ class API(UIAPI):
         name = API.get_sheet_name_gui()
         data = machine_controller.data_clean(name)
         title = f"CoTan数据处理 表格:{name}.数据清洗"
-        API.vitables_gui(data,title)
+        API.vitables_gui(data, title)
         API.update_sheet_box_gui()
 
     @staticmethod

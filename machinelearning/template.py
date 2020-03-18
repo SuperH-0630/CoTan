@@ -104,7 +104,7 @@ class LearnBase(metaclass=ABCMeta):
     def get_form(self) -> dict:
         return self.numpy_dict.copy()
 
-    def get_sheet(self, name) -> np.array:
+    def get_sheet(self, name) -> np.ndarray:
         return self.numpy_dict[name].copy()
 
     @abstractmethod
@@ -118,9 +118,19 @@ class LearnerIO(LearnBase):
         name = f"{name}[{len(self.numpy_dict)}]"
         self.numpy_dict[name] = data
 
-    def read_csv(self, file_dir, name, encoding="utf-8", str_must=False, sep=","):
+    def read_csv(
+            self,
+            file_dir,
+            name,
+            encoding="utf-8",
+            str_must=False,
+            sep=","):
         dtype = np.str if str_must else np.float
-        dataframe = read_csv(file_dir, encoding=encoding, delimiter=sep, header=None)
+        dataframe = read_csv(
+            file_dir,
+            encoding=encoding,
+            delimiter=sep,
+            header=None)
         try:
             data = dataframe.to_numpy(dtype=dtype)
         except ValueError:
@@ -147,17 +157,17 @@ class LearnerIO(LearnBase):
         return get
 
     def to_csv(self, save_dir: str, name, sep) -> str:
-        get = self.get_sheet(name)
+        get: np.ndarray = self.get_sheet(name)
         np.savetxt(save_dir, get, delimiter=sep)
         return save_dir
 
     def to_html_one(self, name, html_dir=""):
         if html_dir == "":
             html_dir = f"{name}.html"
-        get = self.get_sheet(name)
+        get: np.ndarray = self.get_sheet(name)
         if get.ndim == 1:
             get = np.expand_dims(get, axis=1)
-        get = get.tolist()
+        get: list = get.tolist()
         for i in range(len(get)):
             get[i] = [i + 1] + get[i]
         headers = [i for i in range(len(get[0]))]
@@ -199,20 +209,26 @@ class LearnerIO(LearnBase):
                 def add(self, table, *k):
                     self.tab.add(table)
 
-            tab = NewTab(Page(page_title="CoTan:查看表格", layout=Page.DraggablePageLayout))
+            tab = NewTab(
+                Page(
+                    page_title="CoTan:查看表格",
+                    layout=Page.DraggablePageLayout))
         else:
 
             class NewTab(TabBase):
                 def add(self, table, *k):
                     self.tab.add(table)
 
-            tab = NewTab(Page(page_title="CoTan:查看表格", layout=Page.SimplePageLayout))
+            tab = NewTab(
+                Page(
+                    page_title="CoTan:查看表格",
+                    layout=Page.SimplePageLayout))
         # 迭代添加内容
         for name in sheet_list:
-            get = self.get_sheet(name)
+            get: np.ndarray = self.get_sheet(name)
             if get.ndim == 1:
                 get = np.expand_dims(get, axis=1)
-            get = get.tolist()
+            get: list = get.tolist()
             for i in range(len(get)):
                 get[i] = [i + 1] + get[i]
             headers = [i for i in range(len(get[0]))]
@@ -228,7 +244,7 @@ class LearnerIO(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerMerge(LearnBase):
+class LearnerMerge(LearnBase, metaclass=ABCMeta):
     def merge(self, name, axis=0):  # aiis:0-横向合并(hstack),1-纵向合并(vstack)，2-深度合并
         sheet_list = []
         for i in name:
@@ -238,7 +254,7 @@ class LearnerMerge(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerSplit(LearnBase):
+class LearnerSplit(LearnBase, metaclass=ABCMeta):
     def split(self, name, split=2, axis=0):  # aiis:0-横向分割(hsplit),1-纵向分割(vsplit)
         sheet = self.get_sheet(name)
         get = {0: np.hsplit, 1: np.vsplit, 2: np.dsplit}[axis](sheet, split)
@@ -261,17 +277,20 @@ class LearnerSplit(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerDimensions(LearnBase):
-    def deep(self, sheet: np.ndarray):
+class LearnerDimensions(LearnBase, metaclass=ABCMeta):
+    @staticmethod
+    def deep(sheet: np.ndarray):
         return sheet.ravel()
 
-    def down_ndim(self, sheet: np.ndarray):  # 横向
+    @staticmethod
+    def down_ndim(sheet: np.ndarray):  # 横向
         down_list = []
         for i in sheet:
             down_list.append(i.ravel())
         return np.array(down_list)
 
-    def longitudinal_down_ndim(self, sheet: np.ndarray):  # 纵向
+    @staticmethod
+    def longitudinal_down_ndim(sheet: np.ndarray):  # 纵向
         down_list = []
         for i in range(len(sheet[0])):
             down_list.append(sheet[:, i].ravel())
@@ -292,11 +311,11 @@ class LearnerDimensions(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerShape(LearnBase):
+class LearnerShape(LearnBase, metaclass=ABCMeta):
     def transpose(self, name, func: list):
         sheet = self.get_sheet(name)
         if sheet.ndim <= 2:
-            self.add_form(sheet.transpose.copy(), f"{name}.T")
+            self.add_form(sheet.transpose().copy(), f"{name}.T")
         else:
             self.add_form(np.transpose(sheet, func).copy(), f"{name}.T")
 
@@ -306,7 +325,7 @@ class LearnerShape(LearnBase):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class Calculation(LearnBase):
+class Calculation(LearnBase, metaclass=ABCMeta):
     def calculation_matrix(self, data, data_type, func):
         if 1 not in data_type:
             raise Exception
@@ -346,20 +365,24 @@ class Machinebase(metaclass=ABCMeta):  # 学习器的基类
     def class_score(self, save_dir, x_data, y_really):
         pass
 
-    def _accuracy(self, y_predict, y_really):  # 准确率
+    @staticmethod
+    def _accuracy(y_predict, y_really):  # 准确率
         return accuracy_score(y_really, y_predict)
 
-    def _macro(self, y_predict, y_really):
+    @staticmethod
+    def _macro(y_predict, y_really):
         func = [recall_score, precision_score, f1_score]  # 召回率，精确率和f1
         class_ = np.unique(y_really).tolist()
         result = func[func](y_really, y_predict, class_, average=None)
         return result, class_
 
-    def _confusion_matrix(self, y_predict, y_really):  # 混淆矩阵
+    @staticmethod
+    def _confusion_matrix(y_predict, y_really):  # 混淆矩阵
         class_ = np.unique(y_really).tolist()
         return confusion_matrix(y_really, y_predict), class_
 
-    def _kappa_score(self, y_predict, y_really):
+    @staticmethod
+    def _kappa_score(y_predict, y_really):
         return cohen_kappa_score(y_really, y_predict)
 
     @abstractmethod
@@ -370,19 +393,23 @@ class Machinebase(metaclass=ABCMeta):  # 学习器的基类
     def clusters_score(self, save_dir, x_data, args):
         pass
 
-    def _mse(self, y_predict, y_really):  # 均方误差
+    @staticmethod
+    def _mse(y_predict, y_really):  # 均方误差
         return mean_squared_error(y_really, y_predict)
 
-    def _mae(self, y_predict, y_really):  # 中值绝对误差
+    @staticmethod
+    def _mae(y_predict, y_really):  # 中值绝对误差
         return median_absolute_error(y_really, y_predict)
 
-    def _r2_score(self, y_predict, y_really):  # 中值绝对误差
+    @staticmethod
+    def _r2_score(y_predict, y_really):  # 中值绝对误差
         return r2_score(y_really, y_predict)
 
     def _rmse(self, y_predict, y_really):  # 中值绝对误差
         return self._mse(y_predict, y_really) ** 0.5
 
-    def _coefficient_clustering(self, x_data, y_predict):
+    @staticmethod
+    def _coefficient_clustering(x_data, y_predict):
         means_score = silhouette_score(x_data, y_predict)
         outline_score = silhouette_samples(x_data, y_predict)
         return means_score, outline_score
@@ -427,8 +454,8 @@ class StudyMachinebase(Machinebase):
         return score
 
     def class_score(self, save_dir, x_data: np.ndarray, y_really: np.ndarray):
-        y_really = y_really.ravel()
-        y_predict = self.predict(x_data)[0]
+        y_really: np.ndarray = y_really.ravel()
+        y_predict: np.ndarray = self.predict(x_data)[0]
 
         accuracy = self._accuracy(y_predict, y_really)
 
@@ -436,9 +463,10 @@ class StudyMachinebase(Machinebase):
         precision, class_list = self._macro(y_predict, y_really)
         f1, class_list = self._macro(y_predict, y_really)
 
-        confusion_matrix, class_list = self._confusion_matrix(y_predict, y_really)
+        confusion_matrix, class_list = self._confusion_matrix(
+            y_predict, y_really)
         kappa = self._kappa_score(y_predict, y_really)
-
+        class_list: list
         tab = Tab()
 
         def gauge_base(name: str, value: float) -> Gauge:
@@ -505,13 +533,18 @@ class StudyMachinebase(Machinebase):
 
         des_to_csv(save_dir, "混淆矩阵", confusion_matrix, class_list, class_list)
         des_to_csv(
-            save_dir, "评分", [precision, recall, f1], class_list, ["精确率", "召回率", "F1"]
-        )
+            save_dir, "评分", [
+                precision, recall, f1], class_list, [
+                "精确率", "召回率", "F1"])
         save = save_dir + r"/分类模型评估.HTML"
         tab.render(save)
         return save,
 
-    def regression_score(self, save_dir, x_data: np.ndarray, y_really: np.ndarray):
+    def regression_score(
+            self,
+            save_dir,
+            x_data: np.ndarray,
+            y_really: np.ndarray):
         y_really = y_really.ravel()
         y_predict = self.predict(x_data)[0]
         tab = Tab()
@@ -521,10 +554,8 @@ class StudyMachinebase(Machinebase):
         r2_score = self._r2_score(y_predict, y_really)
         rmse = self._rmse(y_predict, y_really)
 
-        tab.add(
-            make_tab(["MSE", "MAE", "RMSE", "r2_Score"], [[mse, mae, rmse, r2_score]]),
-            "评估数据",
-        )
+        tab.add(make_tab(["MSE", "MAE", "RMSE", "r2_Score"], [
+            [mse, mae, rmse, r2_score]]), "评估数据", )
 
         save = save_dir + r"/回归模型评估.HTML"
         tab.render(save)
@@ -533,7 +564,8 @@ class StudyMachinebase(Machinebase):
     def clusters_score(self, save_dir, x_data: np.ndarray, *args):
         y_predict = self.predict(x_data)[0]
         tab = Tab()
-        coefficient, coefficient_array = self._coefficient_clustering(x_data, y_predict)
+        coefficient, coefficient_array = self._coefficient_clustering(
+            x_data, y_predict)
 
         def gauge_base(name: str, value: float) -> Gauge:
             c = (
@@ -748,8 +780,8 @@ class Corr(ToPyebase):  # 相关性和协方差
         tab = Tab()
 
         data = DataFrame(self.x_traindata)
-        corr = data.corr().to_numpy()  # 相关性
-        cov = data.cov().to_numpy()  # 协方差
+        corr: np.ndarray = data.corr().to_numpy()  # 相关性
+        cov: np.ndarray = data.cov().to_numpy()  # 协方差
 
         def heat_map(data, name: str, max_, min_):
             x = [f"特征[{i}]" for i in range(len(data))]
@@ -858,7 +890,8 @@ class MatrixScatter(ToPyebase):  # 矩阵散点图
             if data.ndim == 2:
                 for num in range(len(data)):
                     i = data[num]
-                    c.add_yaxis(f"{num}", [[f"{num}", x] for x in i], color="#FFFFFF")
+                    c.add_yaxis(f"{num}", [[f"{num}", x]
+                                           for x in i], color="#FFFFFF")
             else:
                 c.add_yaxis(f"0", [[0, x] for x in data], color="#FFFFFF")
             c.set_series_opts(
@@ -867,8 +900,7 @@ class MatrixScatter(ToPyebase):  # 矩阵散点图
                     color="#000000",
                     position="inside",
                     formatter=JsCode("function(params){return params.data[2];}"),
-                )
-            )
+                ))
         elif data.ndim == 3:
             c = Scatter3D().set_global_opts(
                 title_opts=opts.TitleOpts(title=f"矩阵散点图"), **global_not_legend
@@ -877,18 +909,20 @@ class MatrixScatter(ToPyebase):  # 矩阵散点图
                 i = data[num]
                 for s_num in range(len(i)):
                     s = i[s_num]
-                    y_data = [[num, s_num, x, float(s[x])] for x in range(len(s))]
+                    y_data = [[num, s_num, x, float(s[x])]
+                              for x in range(len(s))]
                     c.add(
-                        f"{num}", y_data, zaxis3d_opts=opts.Axis3DOpts(type_="category")
-                    )
+                        f"{num}",
+                        y_data,
+                        zaxis3d_opts=opts.Axis3DOpts(
+                            type_="category"))
             c.set_series_opts(
                 label_opts=opts.LabelOpts(
                     is_show=True,
                     color="#000000",
                     position="inside",
                     formatter=JsCode("function(params){return params.data[3];}"),
-                )
-            )
+                ))
         else:
             c = Scatter()
         tab.add(c, "矩阵散点图")
@@ -920,9 +954,9 @@ class ClusterTree(ToPyebase):  # 聚类树状图
 class ClassBar(ToPyebase):  # 类型柱状图
     def data_visualization(self, save_dir, *args, **kwargs):
         tab = Tab()
-        x_data = self.x_traindata.transpose()
-        y_data = self.y_traindata
-        class_ = np.unique(y_data).tolist()  # 类型
+        x_data: np.ndarray = self.x_traindata.transpose()
+        y_data: np.ndarray = self.y_traindata
+        class_: list = np.unique(y_data).tolist()  # 类型
         class_list = []
         for n_class in class_:  # 生成class_list(class是1,，也就是二维的，下面会压缩成一维)
             class_list.append(y_data == n_class)
@@ -941,8 +975,7 @@ class ClassBar(ToPyebase):  # 类型柱状图
                     # x_axis添加数据
                     x_axis.append(
                         f"({iter_num})[{round(start, 2)}-"
-                        f"{round((start + n) if (start + n) <= end or not iter_num == 9 else end, 2)}]"
-                    )
+                        f"{round((start + n) if (start + n) <= end or not iter_num == 9 else end, 2)}]")
                     try:
                         if iter_num == 9:
                             raise Exception  # 执行到第10次时，直接获取剩下的所有
@@ -974,7 +1007,7 @@ class ClassBar(ToPyebase):  # 类型柱状图
                         # 切片成和n_data一样的位置一样的形状(now_class就是一个bool矩阵)
                         bool_class = now_class[i == i_data]
                         # 用len计数 c_list = [[class1的数据],[class2的数据],[]]
-                        c_list[num][i_num] = int(np.sum(bool_class).tolist())
+                        c_list[num][i_num] = len(np.sum(bool_class).tolist())
             c = (
                 Bar()
                 .add_xaxis(x_axis)
@@ -989,7 +1022,12 @@ class ClassBar(ToPyebase):  # 类型柱状图
             for i in range(len(c_list)):
                 y_axis.append(f"{class_[i]}")
                 c.add_yaxis(f"{class_[i]}", c_list[i], **label_setting)
-            des_to_csv(save_dir, f"类型-[{num_i}]特征统计柱状图", c_list, x_axis, y_axis)
+            des_to_csv(
+                save_dir,
+                f"类型-[{num_i}]特征统计柱状图",
+                c_list,
+                x_axis,
+                y_axis)
             tab.add(c, f"类型-[{num_i}]特征统计柱状图")
 
         # 未完成
@@ -1017,7 +1055,8 @@ class NumpyHeatMap(ToPyebase):  # Numpy矩阵绘制热力图
             .set_global_opts(
                 title_opts=opts.TitleOpts(title="矩阵热力图"),
                 **global_not_legend,
-                yaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),  # 'category'
+                yaxis_opts=opts.AxisOpts(
+                    is_scale=True, type_="category"),  # 'category'
                 xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                 visualmap_opts=opts.VisualMapOpts(
                     is_show=True,
@@ -1039,7 +1078,14 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
     def __init__(
         self, args_use, learner, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
-        super(PredictiveHeatmapBase, self).__init__(args_use, learner, *args, **kwargs)
+        super(
+            PredictiveHeatmapBase,
+            self).__init__(
+            args_use,
+            learner,
+            *
+            args,
+            **kwargs)
 
         self.model = learner.Model
         self.select_model = None
@@ -1074,7 +1120,8 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
             class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
             # 获取数据
-            get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+            get, x_means, x_range, data_type = training_visualization(
+                x_data, class_, y)
             # 可使用自带的means，并且nan表示跳过
             for i in range(min([len(x_means), len(self.means)])):
                 try:
@@ -1137,8 +1184,7 @@ class NearFeatureScatterClassMore(ToPyebase):
         class_heard = [f"簇[{i}]" for i in range(len(class_))]
 
         get, x_means, x_range, data_type = training_visualization_more_no_center(
-            x_data, class_, y
-        )
+            x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f"{i}训练数据散点图")
 
@@ -1181,7 +1227,8 @@ class NearFeatureScatterClass(ToPyebase):  # 临近特征散点图：分类数�
 
         y = self.y_traindata
         x_data = self.x_traindata
-        get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+        get, x_means, x_range, data_type = training_visualization(
+            x_data, class_, y)
         for i in range(len(get)):
             tab.add(get[i], f"{i}临近特征散点图")
 
@@ -1200,7 +1247,8 @@ class NearFeatureScatter(ToPyebase):  # 临近特征散点图：连续数据
         tab = Tab()
         x_data = self.x_traindata.transpose()
 
-        get, x_means, x_range, data_type = training_visualization_no_class(x_data)
+        get, x_means, x_range, data_type = training_visualization_no_class(
+            x_data)
         for i in range(len(get)):
             tab.add(get[i], f"{i}临近特征散点图")
 
@@ -1238,7 +1286,10 @@ class LineModel(StudyMachinebase):
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(LineModel, self).__init__(*args, **kwargs)
-        all_model = {"Line": LinearRegression, "Ridge": Ridge, "Lasso": Lasso}[model]
+        all_model = {
+            "Line": LinearRegression,
+            "Ridge": Ridge,
+            "Lasso": Lasso}[model]
         if model == "Line":
             self.model = all_model()
             self.k = {}
@@ -1246,7 +1297,9 @@ class LineModel(StudyMachinebase):
             self.model = all_model(
                 alpha=args_use["alpha"], max_iter=args_use["max_iter"]
             )
-            self.k = {"alpha": args_use["alpha"], "max_iter": args_use["max_iter"]}
+            self.k = {
+                "alpha": args_use["alpha"],
+                "max_iter": args_use["max_iter"]}
         # 记录这两个是为了克隆
         self.Alpha = args_use["alpha"]
         self.max_iter = args_use["max_iter"]
@@ -1272,7 +1325,9 @@ class LineModel(StudyMachinebase):
         tab.add(coefficient_scatter_plot(w_heard, w_list), "系数w散点图")
         tab.add(coefficient_bar_plot(w_heard, self.model.coef_), "系数柱状图")
 
-        columns = [f"普适预测第{i}特征" for i in range(len(x_means))] + w_heard + ["截距b"]
+        columns = [
+            f"普适预测第{i}特征" for i in range(
+                len(x_means))] + w_heard + ["截距b"]
         data = [f"{i}" for i in x_means] + w_list + [b]
         if self.model_Name != "Line":
             columns += ["阿尔法", "最大迭代次数"]
@@ -1303,7 +1358,8 @@ class LogisticregressionModel(StudyMachinebase):
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(LogisticregressionModel, self).__init__(*args, **kwargs)
-        self.model = LogisticRegression(C=args_use["C"], max_iter=args_use["max_iter"])
+        self.model = LogisticRegression(
+            C=args_use["C"], max_iter=args_use["max_iter"])
         # 记录这两个是为了克隆
         self.C = args_use["C"]
         self.max_iter = args_use["max_iter"]
@@ -1323,7 +1379,8 @@ class LogisticregressionModel(StudyMachinebase):
 
         y = self.y_traindata
         x_data = self.x_traindata
-        get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+        get, x_means, x_range, data_type = training_visualization(
+            x_data, class_, y)
         get_line = training_w(x_data, class_, y, w_list, b, x_means.copy())
         for i in range(len(get)):
             tab.add(get[i].overlap(get_line[i]), f"{i}决策边界散点图")
@@ -1334,7 +1391,8 @@ class LogisticregressionModel(StudyMachinebase):
             tab.add(coefficient_scatter_plot(w_heard, w), f"系数w[{i}]散点图")
             tab.add(coefficient_bar_plot(w_heard, w_array[i]), f"系数w[{i}]柱状图")
 
-        columns = class_heard + [f"截距{i}" for i in range(len(b))] + ["C", "最大迭代数"]
+        columns = class_heard + \
+            [f"截距{i}" for i in range(len(b))] + ["C", "最大迭代数"]
         data = class_ + b.tolist() + [c, max_iter]
         c = Table().add(headers=columns, rows=[data])
         tab.add(c, "数据表")
@@ -1349,9 +1407,8 @@ class LogisticregressionModel(StudyMachinebase):
         )
         tab.add(c, "普适预测数据表")
 
-        des_to_csv(
-            save_dir, "系数表", w_list, [f"系数W[{i}]" for i in range(len(w_list[0]))]
-        )
+        des_to_csv(save_dir, "系数表", w_list, [
+            f"系数W[{i}]" for i in range(len(w_list[0]))])
         des_to_csv(save_dir, "截距表", [b], [f"截距{i}" for i in range(len(b))])
         des_to_csv(
             save_dir,
@@ -1417,10 +1474,12 @@ class KnnModel(StudyMachinebase):
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(KnnModel, self).__init__(*args, **kwargs)
-        all_model = {"Knn_class": KNeighborsClassifier, "Knn": KNeighborsRegressor}[
-            model
-        ]
-        self.model = all_model(p=args_use["p"], n_neighbors=args_use["n_neighbors"])
+        all_model = {
+            "Knn_class": KNeighborsClassifier,
+            "Knn": KNeighborsRegressor}[model]
+        self.model = all_model(
+            p=args_use["p"],
+            n_neighbors=args_use["n_neighbors"])
         # 记录这两个是为了克隆
         self.n_neighbors = args_use["n_neighbors"]
         self.p = args_use["p"]
@@ -1437,7 +1496,8 @@ class KnnModel(StudyMachinebase):
             class_ = self.model.classes_.tolist()
             class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
-            get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+            get, x_means, x_range, data_type = training_visualization(
+                x_data, class_, y)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}训练数据散点图")
 
@@ -1446,7 +1506,8 @@ class KnnModel(StudyMachinebase):
                 for i in range(len(get)):
                     tab.add(get[i], f"{i}测试数据散点图")
 
-            get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+            get = decision_boundary(
+                x_range, x_means, self.predict, class_, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1463,7 +1524,8 @@ class KnnModel(StudyMachinebase):
             for i in range(len(get)):
                 tab.add(get[i], f"{i}测试数据类型图")
 
-            get = prediction_boundary(x_range, x_means, self.predict, data_type)
+            get = prediction_boundary(
+                x_range, x_means, self.predict, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1538,7 +1600,8 @@ class TreeModel(StudyMachinebase):
             class_ = self.model.classes_.tolist()
             class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
-            get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+            get, x_means, x_range, data_type = training_visualization(
+                x_data, class_, y)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}训练数据散点图")
 
@@ -1546,7 +1609,8 @@ class TreeModel(StudyMachinebase):
             for i in range(len(get)):
                 tab.add(get[i], f"{i}测试数据散点图")
 
-            get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+            get = decision_boundary(
+                x_range, x_means, self.predict, class_, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1568,7 +1632,8 @@ class TreeModel(StudyMachinebase):
             for i in range(len(get)):
                 tab.add(get[i], f"{i}测试数据类型图")
 
-            get = prediction_boundary(x_range, x_means, self.predict, data_type)
+            get = prediction_boundary(
+                x_range, x_means, self.predict, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1630,7 +1695,11 @@ class ForestModel(StudyMachinebase):
             with open(save_dir + rf"\Tree_Gra[{i}].dot", "w") as f:
                 export_graphviz(self.model.estimators_[i], out_file=f)
 
-            tab.add(see_tree(save_dir + rf"\Tree_Gra[{i}].dot"), f"[{i}]决策树可视化")
+            tab.add(
+                see_tree(
+                    save_dir +
+                    rf"\Tree_Gra[{i}].dot"),
+                f"[{i}]决策树可视化")
 
         y = self.y_traindata
         x_data = self.x_traindata
@@ -1638,11 +1707,13 @@ class ForestModel(StudyMachinebase):
             class_ = self.model.classes_.tolist()
             class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
-            get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+            get, x_means, x_range, data_type = training_visualization(
+                x_data, class_, y)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}训练数据散点图")
 
-            get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+            get = decision_boundary(
+                x_range, x_means, self.predict, class_, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1658,7 +1729,8 @@ class ForestModel(StudyMachinebase):
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测类型图")
 
-            get = prediction_boundary(x_range, x_means, self.predict, data_type)
+            get = prediction_boundary(
+                x_range, x_means, self.predict, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1684,7 +1756,11 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
     def __init__(
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
-        super(GradienttreeModel, self).__init__(*args, **kwargs)  # 不需要执行Tree_Model的初始化
+        super(
+            GradienttreeModel,
+            self).__init__(
+            *args,
+            **kwargs)  # 不需要执行Tree_Model的初始化
         model = {
             "GradientTree_class": GradientBoostingClassifier,
             "GradientTree": GradientBoostingRegressor,
@@ -1719,8 +1795,10 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
                     export_graphviz(self.model.estimators_[a][i], out_file=f)
 
                 tab.add(
-                    see_tree(save_dir + rf"\Tree_Gra[{a},{i}].dot"), f"[{a},{i}]决策树可视化"
-                )
+                    see_tree(
+                        save_dir +
+                        rf"\Tree_Gra[{a},{i}].dot"),
+                    f"[{a},{i}]决策树可视化")
 
         y = self.y_traindata
         x_data = self.x_traindata
@@ -1728,11 +1806,13 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
             class_ = self.model.classes_.tolist()
             class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
-            get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
+            get, x_means, x_range, data_type = training_visualization(
+                x_data, class_, y)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}训练数据散点图")
 
-            get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+            get = decision_boundary(
+                x_range, x_means, self.predict, class_, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1748,7 +1828,8 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测类型图")
 
-            get = prediction_boundary(x_range, x_means, self.predict, data_type)
+            get = prediction_boundary(
+                x_range, x_means, self.predict, data_type)
             for i in range(len(get)):
                 tab.add(get[i], f"{i}预测热力图")
 
@@ -1796,42 +1877,45 @@ class SvcModel(StudyMachinebase):
             w_list = self.model.coef_.tolist()  # 未必有这个属性
             b = self.model.intercept_.tolist()
         except BaseException:
-            have_w = False
-        else:
-            have_w = True
+            w_list = []  # 未必有这个属性
+            b = []
+
         class_ = self.model.classes_.tolist()
         class_heard = [f"类别[{i}]" for i in range(len(class_))]
 
         y = self.y_traindata
         x_data = self.x_traindata
-        get, x_means, x_range, data_type = training_visualization(x_data, class_, y)
-        if have_w:
-            get_line: list = training_w(x_data, class_, y, w_list, b, x_means.copy())
+        get, x_means, x_range, data_type = training_visualization(
+            x_data, class_, y)
+        if w_list:
+            get_line: list = training_w(
+                x_data, class_, y, w_list, b, x_means.copy())
+        else:
+            get_line = []
         for i in range(len(get)):
-            if have_w:
+            if get_line:
                 tab.add(get[i].overlap(get_line[i]), f"{i}决策边界散点图")
             else:
                 tab.add(get[i], f"{i}决策边界散点图")
 
-        get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+        get = decision_boundary(
+            x_range,
+            x_means,
+            self.predict,
+            class_,
+            data_type)
         for i in range(len(get)):
             tab.add(get[i], f"{i}预测热力图")
 
         dic = {2: "离散", 1: "连续"}
-        tab.add(
-            make_tab(
-                class_heard
-                + [f"普适预测第{i}特征:{dic[data_type[i]]}" for i in range(len(x_means))],
-                [class_ + [f"{i}" for i in x_means]],
-            ),
-            "数据表",
-        )
+        tab.add(make_tab(class_heard +
+                         [f"普适预测第{i}特征:{dic[data_type[i]]}" for i in range(len(x_means))],
+                         [class_ + [f"{i}" for i in x_means]],), "数据表", )
 
-        if have_w:
-            des_to_csv(
-                save_dir, "系数表", w_list, [f"系数W[{i}]" for i in range(len(w_list[0]))]
-            )
-        if have_w:
+        if w_list:
+            des_to_csv(save_dir, "系数表", w_list, [
+                f"系数W[{i}]" for i in range(len(w_list[0]))])
+        if w_list:
             des_to_csv(save_dir, "截距表", [b], [f"截距{i}" for i in range(len(b))])
         des_to_csv(
             save_dir,
@@ -1872,15 +1956,17 @@ class SvrModel(StudyMachinebase):
         try:
             w_list = self.model.coef_.tolist()  # 未必有这个属性
             b = self.model.intercept_.tolist()
-            have_w = True
         except BaseException:
-            have_w = False
+            w_list = []  # 未必有这个属性
+            b = []
 
         get, x_means, x_range, data_type = regress_visualization(x_data, y)
-        if have_w:
+        if w_list:
             get_line = regress_w(x_data, w_list, b, x_means.copy())
+        else:
+            get_line = []
         for i in range(len(get)):
-            if have_w:
+            if get_line:
                 tab.add(get[i].overlap(get_line[i]), f"{i}预测类型图")
             else:
                 tab.add(get[i], f"{i}预测类型图")
@@ -1889,11 +1975,10 @@ class SvrModel(StudyMachinebase):
         for i in range(len(get)):
             tab.add(get[i], f"{i}预测热力图")
 
-        if have_w:
-            des_to_csv(
-                save_dir, "系数表", w_list, [f"系数W[{i}]" for i in range(len(w_list[0]))]
-            )
-        if have_w:
+        if w_list:
+            des_to_csv(save_dir, "系数表", w_list, [
+                f"系数W[{i}]" for i in range(len(w_list[0]))])
+        if w_list:
             des_to_csv(save_dir, "截距表", [b], [f"截距{i}" for i in range(len(b))])
         des_to_csv(
             save_dir,
@@ -1919,7 +2004,8 @@ class VarianceModel(Unsupervised):  # 无监督
         self, args_use, model, *args, **kwargs
     ):  # model表示当前选用的模型类型,Alpha针对正则化的参数
         super(VarianceModel, self).__init__(*args, **kwargs)
-        self.model = VarianceThreshold(threshold=(args_use["P"] * (1 - args_use["P"])))
+        self.model = VarianceThreshold(
+            threshold=(args_use["P"] * (1 - args_use["P"])))
         # 记录这两个是为了克隆
         self.threshold = args_use["P"]
         self.k = {"threshold": args_use["P"]}
@@ -1951,7 +2037,9 @@ class VarianceModel(Unsupervised):  # 无监督
 class SelectkbestModel(PrepBase):  # 有监督
     def __init__(self, args_use, model, *args, **kwargs):
         super(SelectkbestModel, self).__init__(*args, **kwargs)
-        self.model = SelectKBest(k=args_use["k"], score_func=args_use["score_func"])
+        self.model = SelectKBest(
+            k=args_use["k"],
+            score_func=args_use["score_func"])
         # 记录这两个是为了克隆
         self.k_ = args_use["k"]
         self.score_func = args_use["score_func"]
@@ -1961,7 +2049,7 @@ class SelectkbestModel(PrepBase):  # 有监督
     def data_visualization(self, save_dir, *args, **kwargs):
         tab = Tab()
         score = self.model.scores_.tolist()
-        support = self.model.get_support()
+        support: np.ndarray = self.model.get_support()
         y_data = self.y_traindata
         x_data = self.x_traindata
         if isinstance(x_data, np.ndarray):
@@ -2020,8 +2108,9 @@ class SelectFromModel(PrepBase):  # 有监督
 
         self.model = learner.Model
         self.Select_Model = SelectFromModel(
-            estimator=learner.Model, max_features=args_use["k"], prefit=learner.have_Fit
-        )
+            estimator=learner.Model,
+            max_features=args_use["k"],
+            prefit=learner.have_Fit)
         self.max_features = args_use["k"]
         self.estimator = learner.Model
         self.k = {
@@ -2053,7 +2142,7 @@ class SelectFromModel(PrepBase):  # 有监督
 
     def data_visualization(self, save_dir, *args, **kwargs):
         tab = Tab()
-        support = self.Select_Model.get_support()
+        support: np.ndarray = self.Select_Model.get_support()
         y_data = self.y_testdata
         x_data = self.x_testdata
         if isinstance(x_data, np.ndarray):
@@ -2189,7 +2278,8 @@ class LogscalerModel(PrepBase):  # 对数标准化
         y_data = self.y_testdata
         x_data = self.x_testdata
         conversion_control(y_data, x_data, tab)
-        tab.add(make_tab(heard=["最大对数值(自然对数)"], row=[[str(self.max_logx)]]), "数据表格")
+        tab.add(make_tab(heard=["最大对数值(自然对数)"],
+                         row=[[str(self.max_logx)]]), "数据表格")
 
         save = save_dir + r"/对数标准化.HTML"
         tab.render(save)  # 生成HTML
@@ -2236,7 +2326,8 @@ class DecimalscalerModel(PrepBase):  # 小数定标准化
 
     def fit_model(self, x_data, *args, **kwargs):
         if not self.have_predict:  # 不允许第二次训练
-            self.j = max([judging_digits(x_data.max()), judging_digits(x_data.min())])
+            self.j = max([judging_digits(x_data.max()),
+                          judging_digits(x_data.min())])
         self.have_fit = True
         return "None", "None"
 
@@ -2431,7 +2522,10 @@ class BinarizerModel(Unsupervised):  # 二值化
         heard = [f"特征:{i}" for i in range(len(x_data[0]))]
         tab.add(make_tab(heard, x_data.tolist()), f"原数据")
         tab.add(make_tab(heard, y_data.tolist()), f"编码数据")
-        tab.add(make_tab(heard, np.dstack((x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
+        tab.add(
+            make_tab(
+                heard, np.dstack(
+                    (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
         save = save_dir + r"/二值离散化.HTML"
         tab.render(save)  # 生成HTML
@@ -2444,7 +2538,7 @@ class DiscretizationModel(PrepBase):  # n值离散
         self.model = None
 
         range_ = args_use["split_range"]
-        if range_ == []:
+        if not range_:
             raise Exception
         elif len(range_) == 1:
             range_.append(range_[0])
@@ -2493,7 +2587,10 @@ class DiscretizationModel(PrepBase):  # n值离散
         heard = [f"特征:{i}" for i in range(len(x_data[0]))]
         tab.add(make_tab(heard, x_data.tolist()), f"原数据")
         tab.add(make_tab(heard, y_data.tolist()), f"编码数据")
-        tab.add(make_tab(heard, np.dstack((x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
+        tab.add(
+            make_tab(
+                heard, np.dstack(
+                    (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
         save = save_dir + r"/多值离散化.HTML"
         tab.render(save)  # 生成HTML
@@ -2541,7 +2638,10 @@ class LabelModel(PrepBase):  # 数字编码
         heard = [f"特征:{i}" for i in range(len(x_data[0]))]
         tab.add(make_tab(heard, x_data.tolist()), f"原数据")
         tab.add(make_tab(heard, y_data.tolist()), f"编码数据")
-        tab.add(make_tab(heard, np.dstack((x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
+        tab.add(
+            make_tab(
+                heard, np.dstack(
+                    (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
         save = save_dir + r"/数字编码.HTML"
         tab.render(save)  # 生成HTML
@@ -2612,10 +2712,12 @@ class OneHotEncoderModel(PrepBase):  # 独热编码
         heard = [f"特征:{i}" for i in range(len(x_data[0]))]
         tab.add(make_tab(heard, x_data.tolist()), f"原数据")
         tab.add(make_tab(heard, oh_data.tolist()), f"编码数据")
-        tab.add(make_tab(heard, np.dstack((oh_data, x_data)).tolist()), f"合成[原数据,编码]数据")
         tab.add(
-            make_tab([f"编码:{i}" for i in range(len(y_data[0]))], y_data.tolist()), f"数据"
-        )
+            make_tab(
+                heard, np.dstack(
+                    (oh_data, x_data)).tolist()), f"合成[原数据,编码]数据")
+        tab.add(make_tab([f"编码:{i}" for i in range(
+            len(y_data[0]))], y_data.tolist()), f"数据")
         save = save_dir + r"/独热编码.HTML"
         tab.render(save)  # 生成HTML
         return save,
@@ -2646,9 +2748,8 @@ class MissedModel(Unsupervised):  # 缺失数据补充
         x_data = self.x_testdata
         statistics = self.model.statistics_.tolist()
         conversion_control(y_data, x_data, tab)
-        tab.add(
-            make_tab([f"特征[{i}]" for i in range(len(statistics))], [statistics]), "填充值"
-        )
+        tab.add(make_tab([f"特征[{i}]" for i in range(
+            len(statistics))], [statistics]), "填充值")
         save = save_dir + r"/缺失数据填充.HTML"
         tab.render(save)  # 生成HTML
         return save,
@@ -2719,7 +2820,10 @@ class PcaModel(Unsupervised):
         )
 
         des_to_csv(save_dir, "成分重要性", importance, [x_data], [y_data])
-        des_to_csv(save_dir, "方量差", [var], [f"第[{i}]主成分" for i in range(len(var))])
+        des_to_csv(
+            save_dir, "方量差", [var], [
+                f"第[{i}]主成分" for i in range(
+                    len(var))])
 
         tab.add(c, "方量差柱状图")
         save = save_dir + r"/主成分分析.HTML"
@@ -2792,7 +2896,10 @@ class RpcaModel(Unsupervised):
         )
         tab.add(c, "方量差柱状图")
         des_to_csv(save_dir, "成分重要性", importance, [x_data], [y_data])
-        des_to_csv(save_dir, "方量差", [var], [f"第[{i}]主成分" for i in range(len(var))])
+        des_to_csv(
+            save_dir, "方量差", [var], [
+                f"第[{i}]主成分" for i in range(
+                    len(var))])
         save = save_dir + r"/RPCA(主成分分析).HTML"
         tab.render(save)  # 生成HTML
         return save,
@@ -2926,10 +3033,10 @@ class NmfModel(Unsupervised):
             )
             tab.add(c, name)
 
-        max_ = (
-            max(int(x_data.max()), int(wh_data.max()), int(difference_data.max())) + 1
-        )
-        min_ = min(int(x_data.min()), int(wh_data.min()), int(difference_data.min()))
+        max_ = (max(int(x_data.max()), int(wh_data.max()),
+                    int(difference_data.max())) + 1)
+        min_ = min(int(x_data.min()), int(wh_data.min()),
+                   int(difference_data.min()))
 
         make_heat_map(x_data, "原始数据热力图", max_, min_)
         make_heat_map(wh_data, "W * H数据热力图", max_, min_)
@@ -3042,7 +3149,8 @@ class MlpModel(StudyMachinebase):  # 神经网络(多层感知机)，有监督�
             tab.add(make_tab(x, data.transpose().tolist()), f"{name}:表格")
             des_to_csv(save_dir, f"{name}:表格", data.transpose().tolist(), x, y)
 
-        get, x_means, x_range, data_type = regress_visualization(x_data, y_data)
+        get, x_means, x_range, data_type = regress_visualization(
+            x_data, y_data)
         for i in range(len(get)):
             tab.add(get[i], f"{i}训练数据散点图")
 
@@ -3109,7 +3217,12 @@ class KmeansModel(UnsupervisedModel):
         for i in range(len(get)):
             tab.add(get[i], f"{i}数据散点图")
 
-        get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+        get = decision_boundary(
+            x_range,
+            x_means,
+            self.predict,
+            class_,
+            data_type)
         for i in range(len(get)):
             tab.add(get[i], f"{i}预测热力图")
 
@@ -3170,7 +3283,12 @@ class AgglomerativeModel(UnsupervisedModel):
         for i in range(len(get)):
             tab.add(get[i], f"{i}训练数据散点图")
 
-        get = decision_boundary(x_range, x_means, self.predict, class_, data_type)
+        get = decision_boundary(
+            x_range,
+            x_means,
+            self.predict,
+            class_,
+            data_type)
         for i in range(len(get)):
             tab.add(get[i], f"{i}预测热力图")
 
@@ -3205,12 +3323,16 @@ class AgglomerativeModel(UnsupervisedModel):
 class DbscanModel(UnsupervisedModel):
     def __init__(self, args_use, *args, **kwargs):
         super(DbscanModel, self).__init__(*args, **kwargs)
-        self.model = DBSCAN(eps=args_use["eps"], min_samples=args_use["min_samples"])
+        self.model = DBSCAN(
+            eps=args_use["eps"],
+            min_samples=args_use["min_samples"])
         # eps是距离(0.5)，min_samples(5)是簇与噪音分界线(每个簇最小元素数)
         # min_samples
         self.eps = args_use["eps"]
         self.min_samples = args_use["min_samples"]
-        self.k = {"min_samples": args_use["min_samples"], "eps": args_use["eps"]}
+        self.k = {
+            "min_samples": args_use["min_samples"],
+            "eps": args_use["eps"]}
         self.class_ = []
         self.model_Name = "DBSCAN"
 
@@ -3322,7 +3444,11 @@ class FastFourier(StudyMachinebase):  # 快速傅里叶变换
 
         tab.add(line("原始数据", y.tolist()), "原始数据")
         tab.add(line("双边振幅谱", breadth.tolist()), "双边振幅谱")
-        tab.add(line("双边振幅谱(归一化)", normalization_breadth.tolist()), "双边振幅谱(归一化)")
+        tab.add(
+            line(
+                "双边振幅谱(归一化)",
+                normalization_breadth.tolist()),
+            "双边振幅谱(归一化)")
         tab.add(
             line("单边相位谱", breadth[: int(n / 2)].tolist(), slice(0, int(n / 2))), "单边相位谱"
         )
@@ -3341,7 +3467,10 @@ class FastFourier(StudyMachinebase):  # 快速傅里叶变换
 
         tab.add(make_tab(self.frequency.tolist(), [breadth.tolist()]), "双边振幅谱")
         tab.add(make_tab(self.frequency.tolist(), [phase.tolist()]), "双边相位谱")
-        tab.add(make_tab(self.frequency.tolist(), [self.fourier.tolist()]), "快速傅里叶变换")
+        tab.add(
+            make_tab(
+                self.frequency.tolist(), [
+                    self.fourier.tolist()]), "快速傅里叶变换")
 
         save = save_dir + r"/快速傅里叶.HTML"
         tab.render(save)  # 生成HTML
@@ -3377,24 +3506,26 @@ class ReverseFastFourier(StudyMachinebase):  # 快速傅里叶变换
         y = self.y_testdata_real.copy()
         y_data = self.y_testdata.copy()
         n = self.sample_size
-        range_n = np.linspace(0, 1, n).tolist()
+        range_n: list = np.linspace(0, 1, n).tolist()
         phase = self.phase  # 相位range
         breadth = self.breadth  # 震幅range
 
         def line(name, value, s=slice(0, None)) -> Line:
             c = (
-                Line()
-                .add_xaxis(range_n[s])
-                .add_yaxis(
-                    "", value, **label_setting, symbol="none" if n >= 500 else None
-                )
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title=name),
+                Line() .add_xaxis(
+                    range_n[s]) .add_yaxis(
+                    "",
+                    value,
+                    **label_setting,
+                    symbol="none" if n >= 500 else None) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=name),
                     **global_not_legend,
-                    xaxis_opts=opts.AxisOpts(type_="value"),
-                    yaxis_opts=opts.AxisOpts(type_="value"),
-                )
-            )
+                    xaxis_opts=opts.AxisOpts(
+                        type_="value"),
+                    yaxis_opts=opts.AxisOpts(
+                        type_="value"),
+                ))
             return c
 
         tab.add(line("逆向傅里叶变换", y.tolist()), "逆向傅里叶变换[实数]")
@@ -3415,7 +3546,14 @@ class ReverseFastFourier(StudyMachinebase):  # 快速傅里叶变换
 
 
 class ReverseFastFourierTwonumpy(ReverseFastFourier):  # 2快速傅里叶变换
-    def fit_model(self, x_data, y_data=None, x_name="", add_func=None, *args, **kwargs):
+    def fit_model(
+            self,
+            x_data,
+            y_data=None,
+            x_name="",
+            add_func=None,
+            *args,
+            **kwargs):
         r = np.multiply(np.cos(x_data), y_data)
         j = np.multiply(np.sin(x_data), y_data) * 1j
         super(ReverseFastFourierTwonumpy, self).predict(
@@ -3449,7 +3587,12 @@ def FUNC({",".join(model.__code__.co_varnames)}):
         self.name = name
         self.func_str = str_
 
-    def fit_model(self, x_data: np.ndarray, y_data: np.ndarray, *args, **kwargs):
+    def fit_model(
+            self,
+            x_data: np.ndarray,
+            y_data: np.ndarray,
+            *args,
+            **kwargs):
         y_data = y_data.ravel()
         x_data = x_data.astype(np.float64)
         try:
@@ -3567,7 +3710,7 @@ class Table(TableFisrt):
         return super().render(path, *args, **kwargs)
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def make_list(first, end, num=35):
     n = num / (end - first)
     if n == 0:
@@ -3582,7 +3725,7 @@ def make_list(first, end, num=35):
     return re
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def list_filter(original_list, num=70):
     if len(original_list) <= num:
         return original_list
@@ -3591,7 +3734,7 @@ def list_filter(original_list, num=70):
     return re
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def prediction_boundary(x_range, x_means, predict_func, data_type):  # 绘制回归型x-x热力图
     # r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
     # a-特征x，b-特征x-1，c-其他特征
@@ -3621,7 +3764,8 @@ def prediction_boundary(x_range, x_means, predict_func, data_type):  # 绘制回
             data[:, j] = a
             data[:, i] = b
             y_data = predict_func(data)[0].tolist()
-            value = [[float(a[i]), float(b[i]), y_data[i]] for i in range(len(a))]
+            value = [[float(a[i]), float(b[i]), y_data[i]]
+                     for i in range(len(a))]
             c = (
                 HeatMap()
                 .add_xaxis(np.unique(a))
@@ -3646,7 +3790,7 @@ def prediction_boundary(x_range, x_means, predict_func, data_type):  # 绘制回
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def prediction_boundary_more(x_range, x_means, predict_func, data_type):
     # r是绘图大小列表,x_means是其余值,Predict_Func是预测方法回调
     # a-特征x，b-特征x-1，c-其他特征
@@ -3684,7 +3828,8 @@ def prediction_boundary_more(x_range, x_means, predict_func, data_type):
             .set_global_opts(
                 title_opts=opts.TitleOpts(title="预测热力图"),
                 **global_not_legend,
-                yaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),  # 'category'
+                yaxis_opts=opts.AxisOpts(
+                    is_scale=True, type_="category"),  # 'category'
                 xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                 visualmap_opts=opts.VisualMapOpts(
                     is_show=True,
@@ -3723,7 +3868,8 @@ def decision_boundary(
 
         a = np.array([i for i in a_list]).reshape(-1, 1)
         y_data = predict_func(a)[0].tolist()
-        value = [[0, float(a[i]), class_dict.get(y_data[i], -1)] for i in range(len(a))]
+        value = [[0, float(a[i]), class_dict.get(y_data[i], -1)]
+                 for i in range(len(a))]
         c = (
             HeatMap()
             .add_xaxis(["None"])
@@ -3732,7 +3878,8 @@ def decision_boundary(
             .set_global_opts(
                 title_opts=opts.TitleOpts(title="预测热力图"),
                 **global_not_legend,
-                yaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),  # 'category'
+                yaxis_opts=opts.AxisOpts(
+                    is_scale=True, type_="category"),  # 'category'
                 xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                 visualmap_opts=opts.VisualMapOpts(
                     is_show=True,
@@ -3783,7 +3930,8 @@ def decision_boundary(
             .set_global_opts(
                 title_opts=opts.TitleOpts(title="预测热力图"),
                 **global_not_legend,
-                yaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),  # 'category'
+                yaxis_opts=opts.AxisOpts(
+                    is_scale=True, type_="category"),  # 'category'
                 xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                 visualmap_opts=opts.VisualMapOpts(
                     is_show=True,
@@ -3876,7 +4024,7 @@ def decision_boundary_more(
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def see_tree(tree_file_dir):
     node_regex = re.compile(r'^([0-9]+) \[label="(.+)"\] ;$')  # 匹配节点正则表达式
     link_regex = re.compile("^([0-9]+) -> ([0-9]+) (.*);$")  # 匹配节点正则表达式
@@ -3930,34 +4078,35 @@ def see_tree(tree_file_dir):
     return c
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def make_tab(heard, row):
     return Table().add(headers=heard, rows=row)
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def coefficient_scatter_plot(w_heard, w):
     c = (
-        Scatter()
-        .add_xaxis(w_heard)
-        .add_yaxis("", w, **label_setting)
-        .set_global_opts(title_opts=opts.TitleOpts(title="系数w散点图"), **global_setting)
-    )
+        Scatter() .add_xaxis(w_heard) .add_yaxis(
+            "", w, **label_setting) .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="系数w散点图"), **global_setting))
     return c
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def coefficient_bar_plot(w_heard, w):
     c = (
-        Bar()
-        .add_xaxis(w_heard)
-        .add_yaxis("", abs(w).tolist(), **label_setting)
-        .set_global_opts(title_opts=opts.TitleOpts(title="系数w柱状图"), **global_setting)
-    )
+        Bar() .add_xaxis(w_heard) .add_yaxis(
+            "",
+            abs(w).tolist(),
+            **label_setting) .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="系数w柱状图"),
+            **global_setting))
     return c
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def is_continuous(data: np.array, f: float = 0.1):
     data = data.tolist()
     l: list = np.unique(data).tolist()
@@ -3968,7 +4117,7 @@ def is_continuous(data: np.array, f: float = 0.1):
         return False
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def quick_stats(x_data):
     statistics_assistant = CategoricalData()
     print(x_data)
@@ -3978,7 +4127,7 @@ def quick_stats(x_data):
     return statistics_assistant
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def training_visualization_more_no_center(x_data, class_list, y_data):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4030,7 +4179,7 @@ def training_visualization_more_no_center(x_data, class_list, y_data):
     return render_list, means, x_range, data_type
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def training_visualization_more(x_data, class_list, y_data, center):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4111,7 +4260,7 @@ def training_visualization_more(x_data, class_list, y_data, center):
     return render_list, means, x_range, data_type
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def training_visualization_center(x_data, class_data, y_data, center):
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4136,20 +4285,20 @@ def training_visualization_center(x_data, class_data, y_data, center):
             x_2 = x2[y_data == n_class].tolist()
             # x与散点图不同，这里是纵坐标
             c = (
-                Scatter()
-                .add_xaxis(x_2)
-                .add_yaxis(f"{n_class}", x_1, **label_setting)
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title=f"[{i-1}-{i}]训练数据散点图"),
+                Scatter() .add_xaxis(x_2) .add_yaxis(
+                    f"{n_class}",
+                    x_1,
+                    **label_setting) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"[{i-1}-{i}]训练数据散点图"),
                     **global_setting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
-                )
-            )
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
+                ))
             c.add_xaxis(x_2_new)
 
             # 添加簇中心
@@ -4158,25 +4307,23 @@ def training_visualization_center(x_data, class_data, y_data, center):
             except BaseException:
                 center_x_2 = [0]
             b = (
-                Scatter()
-                .add_xaxis(center_x_2)
-                .add_yaxis(
+                Scatter() .add_xaxis(center_x_2) .add_yaxis(
                     f"[{n_class}]中心",
-                    [center[class_num][i]],
+                    [
+                        center[class_num][i]],
                     **label_setting,
                     symbol="triangle",
-                )
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title="簇中心"),
+                ) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title="簇中心"),
                     **global_setting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
-                )
-            )
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
+                ))
             c.overlap(b)
 
             if base_render is None:
@@ -4188,7 +4335,7 @@ def training_visualization_center(x_data, class_data, y_data, center):
     return render_list, means, x_range, data_type
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def training_visualization(x_data, class_, y_data):  # 根据不同类别绘制x-x分类散点图
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4213,20 +4360,20 @@ def training_visualization(x_data, class_, y_data):  # 根据不同类别绘制x
             plot_x2 = x2[y_data == now_class].tolist()
             # x与散点图不同，这里是纵坐标
             c = (
-                Scatter()
-                .add_xaxis(plot_x2)
-                .add_yaxis(f"{now_class}", plot_x1, **label_setting)
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title="训练数据散点图"),
+                Scatter() .add_xaxis(plot_x2) .add_yaxis(
+                    f"{now_class}",
+                    plot_x1,
+                    **label_setting) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title="训练数据散点图"),
                     **global_setting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
-                )
-            )
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
+                ))
             c.add_xaxis(axis_x2)
             if render_list is None:
                 render_list = c
@@ -4237,7 +4384,7 @@ def training_visualization(x_data, class_, y_data):  # 根据不同类别绘制x
     return render_list, means, x_range, data_type
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def training_visualization_no_class(x_data):  # 根据绘制x-x分类散点图(无类别)
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4255,20 +4402,20 @@ def training_visualization_no_class(x_data):  # 根据绘制x-x分类散点图(�
         x2_only = np.unique(x2)
         # x与散点图不同，这里是纵坐标
         c = (
-            Scatter()
-            .add_xaxis(x2)
-            .add_yaxis("", x1.tolist(), **label_setting)
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title="训练数据散点图"),
+            Scatter() .add_xaxis(x2) .add_yaxis(
+                "",
+                x1.tolist(),
+                **label_setting) .set_global_opts(
+                title_opts=opts.TitleOpts(
+                    title="训练数据散点图"),
                 **global_not_legend,
                 yaxis_opts=opts.AxisOpts(
-                    type_="value" if x1_is_continuous else "category", is_scale=True
-                ),
+                    type_="value" if x1_is_continuous else "category",
+                    is_scale=True),
                 xaxis_opts=opts.AxisOpts(
-                    type_="value" if x2_is_continuous else "category", is_scale=True
-                ),
-            )
-        )
+                    type_="value" if x2_is_continuous else "category",
+                    is_scale=True),
+            ))
         c.add_xaxis(x2_only)
         render_list.append(c)
     means, x_range, data_type = statistics_assistant.get()
@@ -4316,28 +4463,25 @@ def training_w(
                 -(x2_only * w[i - 1]) / w[i]
                 + b
                 + (x_means[: i - 1] * w[: i - 1]).sum()
-                + (x_means[i + 1 :] * w[i + 1 :]).sum()
+                + (x_means[i + 1:] * w[i + 1:]).sum()
             )  # 假设除了两个特征意外，其余特征均为means列表的数值
             c = (
-                Line()
-                .add_xaxis(x2_only)
-                .add_yaxis(
+                Line() .add_xaxis(x2_only) .add_yaxis(
                     f"决策边界:{n_class}=>[{i}]",
                     y_data.tolist(),
                     is_smooth=True,
                     **label_setting,
-                )
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title=f"系数w曲线"),
+                ) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"系数w曲线"),
                     **global_setting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
-                )
-            )
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
+                ))
             if o_c is None:
                 o_c = c
             else:
@@ -4347,7 +4491,7 @@ def training_w(
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def regress_w(x_data, w_data: np.array, intercept_b, x_means: list):  # 针对回归问题(y-x图)
     x_data = x_data.transpose()
     if len(x_data) == 1:
@@ -4367,29 +4511,30 @@ def regress_w(x_data, w_data: np.array, intercept_b, x_means: list):  # 针对�
             x1_only * w_data[i]
             + intercept_b
             + (x_means[:i] * w_data[:i]).sum()
-            + (x_means[i + 1 :] * w_data[i + 1 :]).sum()
+            + (x_means[i + 1:] * w_data[i + 1:]).sum()
         )
         y_is_continuous = is_continuous(y_data)
         c = (
-            Line()
-            .add_xaxis(x1_only)
-            .add_yaxis(f"拟合结果=>[{i}]", y_data.tolist(), is_smooth=True, **label_setting)
-            .set_global_opts(
-                title_opts=opts.TitleOpts(title=f"系数w曲线"),
+            Line() .add_xaxis(x1_only) .add_yaxis(
+                f"拟合结果=>[{i}]",
+                y_data.tolist(),
+                is_smooth=True,
+                **label_setting) .set_global_opts(
+                title_opts=opts.TitleOpts(
+                    title=f"系数w曲线"),
                 **global_setting,
                 yaxis_opts=opts.AxisOpts(
-                    type_="value" if y_is_continuous else None, is_scale=True
-                ),
+                    type_="value" if y_is_continuous else None,
+                    is_scale=True),
                 xaxis_opts=opts.AxisOpts(
-                    type_="value" if x1_is_continuous else None, is_scale=True
-                ),
-            )
-        )
+                    type_="value" if x1_is_continuous else None,
+                    is_scale=True),
+            ))
         render_list.append(c)
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def regress_visualization(x_data, y_data):  # y-x数据图
     x_data = x_data.transpose()
     y_is_continuous = is_continuous(y_data)
@@ -4435,7 +4580,7 @@ def regress_visualization(x_data, y_data):  # y-x数据图
     return render_list, means, x_range, data_type
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def feature_visualization(x_data, data_name=""):  # x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4457,26 +4602,26 @@ def feature_visualization(x_data, data_name=""):  # x-x数据图
                 x2_is_continuous = False
             # x与散点图不同，这里是纵坐标
             c = (
-                Scatter()
-                .add_xaxis(x2)
-                .add_yaxis(data_name, x1, **label_setting)
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title=f"[{i}-{a}]数据散点图"),
+                Scatter() .add_xaxis(x2) .add_yaxis(
+                    data_name,
+                    x1,
+                    **label_setting) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"[{i}-{a}]数据散点图"),
                     **seeting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
-                )
-            )
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
+                ))
             c.add_xaxis(x2_only)
             render_list.append(c)
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def feature_visualization_format(x_data, data_name=""):  # x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4495,35 +4640,36 @@ def feature_visualization_format(x_data, data_name=""):  # x-x数据图
             x2_is_continuous = is_continuous(x2)
             x2_only = np.unique(x2)
             x1_list = x1.astype(np.str).tolist()
-            for i in range(len(x1_list)):
-                x1_list[i] = [x1_list[i], f"特征{i}"]
+            for j in range(len(x1_list)):
+                x1_list[j] = [x1_list[j], f"特征{j}"]
             if only:
                 x2_is_continuous = False
             # x与散点图不同，这里是纵坐标
             c = (
-                Scatter()
-                .add_xaxis(x2)
-                .add_yaxis(data_name, x1_list, **label_setting)
-                .set_global_opts(
-                    title_opts=opts.TitleOpts(title=f"[{i}-{a}]数据散点图"),
+                Scatter() .add_xaxis(x2) .add_yaxis(
+                    data_name,
+                    x1_list,
+                    **label_setting) .set_global_opts(
+                    title_opts=opts.TitleOpts(
+                        title=f"[{i}-{a}]数据散点图"),
                     **seeting,
                     yaxis_opts=opts.AxisOpts(
-                        type_="value" if x1_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x1_is_continuous else "category",
+                        is_scale=True),
                     xaxis_opts=opts.AxisOpts(
-                        type_="value" if x2_is_continuous else "category", is_scale=True
-                    ),
+                        type_="value" if x2_is_continuous else "category",
+                        is_scale=True),
                     tooltip_opts=opts.TooltipOpts(
-                        is_show=True, axis_pointer_type="cross", formatter="{c}"
-                    ),
-                )
-            )
+                        is_show=True,
+                        axis_pointer_type="cross",
+                        formatter="{c}"),
+                ))
             c.add_xaxis(x2_only)
             render_list.append(c)
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def discrete_feature_visualization(x_data, data_name=""):  # 必定离散x-x数据图
     seeting = global_setting if data_name else global_not_legend
     x_data = x_data.transpose()
@@ -4555,7 +4701,7 @@ def discrete_feature_visualization(x_data, data_name=""):  # 必定离散x-x数�
     return render_list
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def conversion_control(y_data, x_data, tab):  # 合并两x-x图
     if isinstance(x_data, np.ndarray) and isinstance(y_data, np.ndarray):
         get_x = feature_visualization(x_data, "原数据")  # 原来
@@ -4565,7 +4711,7 @@ def conversion_control(y_data, x_data, tab):  # 合并两x-x图
     return tab
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def conversion_separate(y_data, x_data, tab):  # 并列显示两x-x图
     if isinstance(x_data, np.ndarray) and isinstance(y_data, np.ndarray):
         get_x = feature_visualization(x_data, "原数据")  # 原来
@@ -4582,7 +4728,7 @@ def conversion_separate(y_data, x_data, tab):  # 并列显示两x-x图
     return tab
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def conversion_separate_format(y_data, tab):  # 并列显示两x-x图
     if isinstance(y_data, np.ndarray):
         get_y = feature_visualization_format(y_data, "转换数据")  # 转换
@@ -4591,7 +4737,7 @@ def conversion_separate_format(y_data, tab):  # 并列显示两x-x图
     return tab
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def conversion_separate_wh(w_array, h_array, tab):  # 并列显示两x-x图
     if isinstance(w_array, np.ndarray) and isinstance(w_array, np.ndarray):
         get_x = feature_visualization_format(w_array, "W矩阵数据")  # 原来
@@ -4610,7 +4756,7 @@ def conversion_separate_wh(w_array, h_array, tab):  # 并列显示两x-x图
     return tab
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def make_bar(name, value, tab):  # 绘制柱状图
     c = (
         Bar()
@@ -4621,7 +4767,7 @@ def make_bar(name, value, tab):  # 绘制柱状图
     tab.add(c, name)
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def judging_digits(num: (int, float)):  # 查看小数位数
     a = str(abs(num)).split(".")[0]
     if a == "":
@@ -4629,7 +4775,7 @@ def judging_digits(num: (int, float)):  # 查看小数位数
     return len(a)
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def num_str(num, accuracy):
     num = str(round(float(num), accuracy))
     if len(num.replace(".", "")) == accuracy:
@@ -4641,7 +4787,7 @@ def num_str(num, accuracy):
         return num + "0" * (accuracy - len(num) + 1)  # len(num)多算了一位小数点
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def des_to_csv(save_dir, name, data, columns=None, row=None):
     save_dir = save_dir + "/" + name + ".csv"
     print(columns)
@@ -4655,7 +4801,7 @@ def des_to_csv(save_dir, name, data, columns=None, row=None):
     return data
 
 
-@plugin_func_loading(get_path(r'template/machinelearning'))
+@plugin_func_loading(get_path(r"template/machinelearning"))
 def pack(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=basename(source_dir))
@@ -4679,7 +4825,9 @@ def set_global(
     new_dir_global = new  # 是否新建目录
 
 
-class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape, ):
+class MachineLearnerInit(
+    LearnerIO, Calculation, LearnerMerge, LearnerSplit, LearnerDimensions, LearnerShape, metaclass=ABCMeta
+):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.learner = {}  # 记录机器
@@ -4742,7 +4890,8 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
         }
         self.data_type = {}  # 记录机器的类型
 
-    def learner_parameters(self, parameters, data_type):  # 解析参数
+    @staticmethod
+    def learner_parameters(parameters, data_type):  # 解析参数
         original_parameter = {}
         target_parameter = {}
         # 输入数据
@@ -4756,7 +4905,9 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
             target_parameter["alpha"] = float(
                 original_parameter.get("alpha", 1.0)
             )  # L1和L2正则化用
-        target_parameter["C"] = float(original_parameter.get("C", 1.0))  # L1和L2正则化用
+        target_parameter["C"] = float(
+            original_parameter.get(
+                "C", 1.0))  # L1和L2正则化用
         if data_type in ("MLP", "MLP_class"):
             target_parameter["max_iter"] = int(
                 original_parameter.get("max_iter", 200)
@@ -4775,15 +4926,21 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
 
         if data_type in ("Tree", "Forest", "GradientTree"):
             target_parameter["criterion"] = (
-                "mse" if bool(original_parameter.get("is_MSE", True)) else "mae"
-            )  # 是否使用基尼不纯度
+                "mse" if bool(
+                    original_parameter.get(
+                        "is_MSE",
+                        True)) else "mae")  # 是否使用基尼不纯度
         else:
             target_parameter["criterion"] = (
-                "gini" if bool(original_parameter.get("is_Gini", True)) else "entropy"
-            )  # 是否使用基尼不纯度
+                "gini" if bool(
+                    original_parameter.get(
+                        "is_Gini",
+                        True)) else "entropy")  # 是否使用基尼不纯度
         target_parameter["splitter"] = (
-            "random" if bool(original_parameter.get("is_random", False)) else "best"
-        )  # 决策树节点是否随机选用最优
+            "random" if bool(
+                original_parameter.get(
+                    "is_random",
+                    False)) else "best")  # 决策树节点是否随机选用最优
         target_parameter["max_features"] = original_parameter.get(
             "max_features", None
         )  # 选用最多特征数
@@ -4794,7 +4951,9 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
             original_parameter.get("min_samples_split", 2)
         )  # 是否继续划分（容易造成过拟合）
 
-        target_parameter["P"] = float(original_parameter.get("min_samples_split", 0.8))
+        target_parameter["P"] = float(
+            original_parameter.get(
+                "min_samples_split", 0.8))
         target_parameter["k"] = original_parameter.get("k", 1)
         target_parameter["score_func"] = {
             "chi2": chi2,
@@ -4807,7 +4966,8 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
         target_parameter["feature_range"] = tuple(
             original_parameter.get("feature_range", (0, 1))
         )
-        target_parameter["norm"] = original_parameter.get("norm", "l2")  # 正则化的方式L1或者L2
+        target_parameter["norm"] = original_parameter.get(
+            "norm", "l2")  # 正则化的方式L1或者L2
 
         target_parameter["threshold"] = float(
             original_parameter.get("threshold", 0.0)
@@ -4817,12 +4977,17 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
             original_parameter.get("split_range", [0])
         )  # 二值化特征
 
-        target_parameter["ndim_up"] = bool(original_parameter.get("ndim_up", False))
-        target_parameter["miss_value"] = original_parameter.get("miss_value", np.nan)
-        target_parameter["fill_method"] = original_parameter.get("fill_method", "mean")
-        target_parameter["fill_value"] = original_parameter.get("fill_value", None)
+        target_parameter["ndim_up"] = bool(
+            original_parameter.get("ndim_up", False))
+        target_parameter["miss_value"] = original_parameter.get(
+            "miss_value", np.nan)
+        target_parameter["fill_method"] = original_parameter.get(
+            "fill_method", "mean")
+        target_parameter["fill_value"] = original_parameter.get(
+            "fill_value", None)
 
-        target_parameter["n_components"] = original_parameter.get("n_components", 1)
+        target_parameter["n_components"] = original_parameter.get(
+            "n_components", 1)
         target_parameter["kernel"] = original_parameter.get(
             "kernel", "rbf" if data_type in ("SVR", "SVC") else "linear"
         )
@@ -4835,7 +5000,8 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
         target_parameter["activation"] = str(
             original_parameter.get("activation", "relu")
         )
-        target_parameter["solver"] = str(original_parameter.get("solver", "adam"))
+        target_parameter["solver"] = str(
+            original_parameter.get("solver", "adam"))
         if data_type in ("k-means",):
             target_parameter["n_clusters"] = int(
                 original_parameter.get("n_clusters", 8)
@@ -4844,9 +5010,13 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
             target_parameter["n_clusters"] = int(
                 original_parameter.get("n_clusters", 2)
             )
-        target_parameter["eps"] = float(original_parameter.get("n_clusters", 0.5))
-        target_parameter["min_samples"] = int(original_parameter.get("n_clusters", 5))
-        target_parameter["white_PCA"] = bool(original_parameter.get("white_PCA", False))
+        target_parameter["eps"] = float(
+            original_parameter.get(
+                "n_clusters", 0.5))
+        target_parameter["min_samples"] = int(
+            original_parameter.get("n_clusters", 5))
+        target_parameter["white_PCA"] = bool(
+            original_parameter.get("white_PCA", False))
         return target_parameter
 
     def get_learner(self, name):
@@ -4857,7 +5027,7 @@ class MachineLearnerInit(Calculation, LearnerMerge, LearnerSplit, LearnerDimensi
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class MachineLearnerAdd(MachineLearnerInit):
+class MachineLearnerAdd(MachineLearnerInit, metaclass=ABCMeta):
     def add_learner(self, learner_str, parameters=""):
         get = self.learn_dict[learner_str]
         name = f"Le[{len(self.learner)}]{learner_str}"
@@ -4891,15 +5061,18 @@ class MachineLearnerAdd(MachineLearnerInit):
         name = f"Le[{len(self.learner)}]Predictive_HeatMap:{learner}"
         # 生成学习器
         args_use = self.learner_parameters(parameters, "Predictive_HeatMap")
-        self.learner[name] = PredictiveHeatmap(learner=model, args_use=args_use)
+        self.learner[name] = PredictiveHeatmap(
+            learner=model, args_use=args_use)
         self.data_type[name] = "Predictive_HeatMap"
 
     def add_predictive_heat_map_more(self, learner, parameters=""):
         model = self.get_learner(learner)
         name = f"Le[{len(self.learner)}]Predictive_HeatMap_More:{learner}"
         # 生成学习器
-        args_use = self.learner_parameters(parameters, "Predictive_HeatMap_More")
-        self.learner[name] = PredictiveHeatmapMore(learner=model, args_use=args_use)
+        args_use = self.learner_parameters(
+            parameters, "Predictive_HeatMap_More")
+        self.learner[name] = PredictiveHeatmapMore(
+            learner=model, args_use=args_use)
         self.data_type[name] = "Predictive_HeatMap_More"
 
     def add_view_data(self, learner, parameters=""):
@@ -4912,7 +5085,7 @@ class MachineLearnerAdd(MachineLearnerInit):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class MachineLearnerScore(MachineLearnerInit):
+class MachineLearnerScore(MachineLearnerInit, metaclass=ABCMeta):
     def score(self, name_x, name_y, learner):  # Score_Only表示仅评分 Fit_Simp 是普遍类操作
         model = self.get_learner(learner)
         x = self.get_sheet(name_x)
@@ -4934,7 +5107,10 @@ class MachineLearnerScore(MachineLearnerInit):
             new_dic = save_dir
         model = self.get_learner(learner)
         # 打包
-        func = [model.class_score, model.regression_score, model.clusters_score][func]
+        func = [
+            model.class_score,
+            model.regression_score,
+            model.clusters_score][func]
         save = func(new_dic, x, y)[0]
         if tar_global:
             pack(f"{new_dic}.tar.gz", new_dic)
@@ -4952,7 +5128,8 @@ class MachineLearnerScore(MachineLearnerInit):
         else:
             new_dic = save_dir
         model = self.get_learner(learner)
-        if (not (model.model is None) or not (model.model is list)) and clf_global:
+        if (not (model.model is None) or not (
+                model.model is list)) and clf_global:
             joblib.dump(model.model, new_dic + "/MODEL.model")  # 保存模型
         # 打包
         save = model.data_visualization(new_dic)[0]
@@ -4962,7 +5139,7 @@ class MachineLearnerScore(MachineLearnerInit):
 
 
 @plugin_class_loading(get_path(r"template/machinelearning"))
-class LearnerActions(MachineLearnerInit):
+class LearnerActions(MachineLearnerInit, metaclass=ABCMeta):
     def fit_model(self, x_name, y_name, learner, split=0.3, *args, **kwargs):
         x_data = self.get_sheet(x_name)
         y_data = self.get_sheet(y_name)
@@ -4974,6 +5151,7 @@ class LearnerActions(MachineLearnerInit):
     def predict(self, x_name, learner, **kwargs):
         x_data = self.get_sheet(x_name)
         model = self.get_learner(learner)
-        y_data, name = model.predict(x_data, x_name=x_name, add_func=self.add_form)
+        y_data, name = model.predict(
+            x_data, x_name=x_name, add_func=self.add_form)
         self.add_form(y_data, f"{x_name}:{name}")
         return y_data

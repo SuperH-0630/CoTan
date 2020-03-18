@@ -46,6 +46,7 @@ gui_height = 2
 row = 0
 column = 1
 
+
 class UIAPI:
     @staticmethod
     def dichotomy_gui():
@@ -362,7 +363,7 @@ class API(UIAPI):
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
             answer = func.calculation(API.get_x_value_gui())
-            if answer != []:
+            if answer:
                 API.output_prompt_gui("系统运算完毕")
             else:
                 API.output_prompt_gui("系统运算无结果")
@@ -396,7 +397,7 @@ class API(UIAPI):
                 get = func.derivative(i, accuracy)[0]
                 if get is not None:
                     answer.append(get)
-            if answer != []:
+            if answer:
                 API.output_prompt_gui("系统运算完毕")
             else:
                 API.output_prompt_gui("系统运算无结果")
