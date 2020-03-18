@@ -2,6 +2,7 @@ from __future__ import division  # 让/恢复为除法
 import random
 import tkinter
 import tkinter.messagebox
+import os
 
 import sympy
 from matplotlib import pyplot as plt
@@ -787,7 +788,7 @@ SCREEN["bg"] = bg_color
 SCREEN.title("CoTan函数工厂")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")
-FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
+FONT = (rf"Font{os.sep}ZKST.ttf", 11)  # 设置字体
 rcParams["font.family"] = "simhei"
 rcParams["axes.unicode_minus"] = False
 tkinter.Label(

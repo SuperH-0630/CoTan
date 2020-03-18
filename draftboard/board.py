@@ -40,7 +40,7 @@ mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '�
 SCREEN_X = 900
 SCREEN_Y = 700
 init_done = pygame.init()  # 初始化所有模块
-FONT = pygame.font.Font(r'Font\ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
+FONT = pygame.font.Font(fr'Font{os.sep}ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
 SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 创建屏幕
 SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
 SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口

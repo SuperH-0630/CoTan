@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from random import randint
 import re
 from os import getcwd
+import os
 
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
@@ -19,7 +20,7 @@ from pyecharts.globals import CurrentConfig
 from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
 from system import plugin_class_loading, get_path
 
-CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
+CurrentConfig.ONLINE_HOST = f"{getcwd()}{os.sep}assets{os.sep}"
 
 
 class FormBase(metaclass=ABCMeta):

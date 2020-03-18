@@ -666,7 +666,7 @@ class API(UIAPI):
     @staticmethod
     def new_render(c, name):
         if API.get_draw_as_well_gui():
-            c.render(f"{PATH}\\{name}.html")
+            c.render(fr"{PATH}{os.sep}{name}.html")
         API.update_render_box_gui()
 
     @staticmethod
@@ -970,7 +970,7 @@ class API(UIAPI):
     def show_report():
         if not API.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
             raise Exception
-        report_dir = f"{PATH}/$Show_Des_Sheet.html"
+        report_dir = f"{PATH}{os.sep}$Show_Des_Sheet.html"
         try:
             name = API.get_sheet_name_gui()
             if name is None:
@@ -1009,7 +1009,7 @@ class API(UIAPI):
     @staticmethod
     def show_one_sheet_html():
         global PATH, to_html_type
-        html_dir = f"{PATH}/$Show_Sheet.html"
+        html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         try:
             name = API.get_sheet_name_gui()
             if name is None:
@@ -1022,7 +1022,7 @@ class API(UIAPI):
     @staticmethod
     def show_sheet_html():
         global PATH, to_html_type
-        html_dir = f"{PATH}/$Show_Sheet.html"
+        html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         try:
             name = API.get_sheet_name_gui()
             if name is None:

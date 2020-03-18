@@ -1,4 +1,5 @@
 from os import path
+import os
 import math
 import random
 import tkinter
@@ -15,7 +16,7 @@ func_logger = []
 fig = None
 func_str_list = []
 prompt_num = 0
-FONT = (r"Font\ZKST.ttf", 11)  # 设置字体
+FONT = (fr"Font{os.sep}ZKST.ttf", 11)  # 设置字体
 SCREEN = tkinter.Tk()  # 设置屏幕
 bg_color = "#FFFAFA"  # 主颜色
 SCREEN["bg"] = bg_color

@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+
 from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor, factor_list, expand, collect, Add, \
     Mul, ratsimp, cancel, apart, together, radsimp, trigsimp, expand_trig, expand_mul, expand_multinomial, powdenest, \
     powsimp, expand_power_base, expand_power_exp, logcombine, expand_log, ceiling, expand_complex, expand_func, Eq, \
@@ -41,7 +42,7 @@ class AlgebraSymbolBase(AlgebraInit, metaclass=ABCMeta):
         pass
 
 
-@plugin_class_loading(get_path(r"template/algebraicfactory"))
+@plugin_class_loading(get_path(fr"template{os.sep}algebraicfactory"))
 class AlgebraSymbol(AlgebraSymbolBase):
     def del_symbol(self, x):
         del self.symbol_describe[x]

@@ -52,9 +52,9 @@ class PageParser(PageParserAutomation, PageParserBrowser, PageParserData, PagePa
                     value_box.append(f"{i} = {self.element_dict[i]}")
             update_func(func_name, success_code, value_box)  # 信息更新系统
 
-        update_log("start")
+        update_log("开始解析")
         for func_num in range(len(func_list)):
             func_name = func_list[func_num]
             update_log(func_name)
             status = self.func_dict[func_name](num=f"{func_num}", name="var")
-        update_log("Finish")
+        update_log("运行完成")

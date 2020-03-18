@@ -647,7 +647,7 @@ class API(UIAPI):
 
     @staticmethod
     def to_html_one():
-        html_dir = f"{PATH}/$Show_Sheet.html"
+        html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         try:
             name = API.get_data_name_gui()
             if name is None:
@@ -659,7 +659,7 @@ class API(UIAPI):
 
     @staticmethod
     def to_html():
-        html_dir = f"{PATH}/$Show_Sheet.html"
+        html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         try:
             name = API.get_data_name_gui()
             if name is None:

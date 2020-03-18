@@ -64,7 +64,7 @@ class Database(metaclass=ABCMeta):
 
 class CoTanDB(Database):
     def __init__(self, name):
-        self.dir = rf"{os.getcwd()}/Database_dir/{name}.cotanDB"  # 创建DB文件
+        self.dir = rf"{os.getcwd()}{os.sep}Database_dir{os.sep}{name}.cotanDB"  # 创建DB文件
         self.file = open(self.dir, "r+" if os.path.exists(self.dir) else "w+")
         self.id = 0
         self.name = name
@@ -94,7 +94,7 @@ class CoTanDB(Database):
         os.remove(self.dir)
 
     def out_file(self, out_dir):
-        with open(out_dir + fr"/{self.name}.contanDB", "w") as f:
+        with open(out_dir + fr"{os.sep}{self.name}.contanDB", "w") as f:
             with open(self.dir) as g:
                 f.write(g.read())
 
@@ -177,7 +177,7 @@ class Log(LogBase):
     def __init__(self, log_dir):
         self.log_dir = log_dir
         self.log_file = open(
-            log_dir + "/log.coTanLog",
+            log_dir + f"{os.sep}log.coTanLog",
             "r+" if os.path.exists(log_dir + "log.coTanLog") else "w+",
         )
 
@@ -315,8 +315,8 @@ class Urlbase(metaclass=ABCMeta):
     def __init__(self, dic=f"", dic_run=f""):
         Urlbase.url_count += 1
         self.save_dir = dic
-        dic += f"/url[{Urlbase.url_count}].cot_url"
-        dic_run += f"/url_run[{Urlbase.url_count}].cot_url"
+        dic += f"{os.sep}url[{Urlbase.url_count}].cot_url"
+        dic_run += f"{os.sep}url_run[{Urlbase.url_count}].cot_url"
         self.dir = dic
         self.dir_run = dic_run
         self.file = open(dic, "a")  # 写入url_history的文件
@@ -1284,7 +1284,7 @@ class PageParserDataSource(PageParserFunc):
             md5 = hashlib.md5()  # 应用MD5算法
             md5.update(f"{time.time()}_{self.url_text}".encode("utf-8"))
             name = md5.hexdigest()
-            save_dir = self.dir + "/" + name + ".cotan_source"
+            save_dir = self.dir + f"{os.sep}" + name + ".cotan_source"
             print(save_dir)
             with open(save_dir, "w") as f:
                 f.write(self.element_dict[element_value][0])
@@ -1380,9 +1380,9 @@ class PageParserTool(PageParserFunc):
             md5 = hashlib.md5()  # 应用MD5算法
             md5.update(f"{time.time()}_{self.url_text}".encode("utf-8"))
             name = md5.hexdigest()
-            with open(self.dir + "/" + name + ".png.CoTanURL", "w") as f:
+            with open(self.dir + f"{os.sep}" + name + ".png.CoTanURL", "w") as f:
                 f.write(self.url_text)
-            self.browser.save_screenshot(self.dir + "/" + name + ".png")
+            self.browser.save_screenshot(self.dir + f"{os.sep}" + name + ".png")
             sleep(1)
 
         self.add_func(f"Webpage_snapshot", action)  # 添加func

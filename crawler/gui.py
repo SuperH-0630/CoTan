@@ -548,7 +548,9 @@ class API(UIAPI):
             loader.stop()  # 把之前的停止
             while start_loader_stop:
                 if url.is_finish():
+                    API.update_run_status_gui('暂无URL', 'No status', [])
                     break
+                API.update_run_status_gui('呼叫浏览器...', 'No status', [])
                 loader.start_to_run(func_cookie=API.update_cookies_box_gui)
                 API.update_url_box_gui()
                 page_parser.element_interaction(API.update_run_status_gui)

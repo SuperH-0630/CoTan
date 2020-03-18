@@ -498,9 +498,10 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
     def make_dir(self, dir):
         if len(dir) == "":
             return dir
-        inside = "/"
-        if dir[0] == "/":
+        if dir[0].startswith(os.sep):
             inside = ""
+        else:
+            inside = os.sep
         return self.repo_dir + inside + dir
 
 

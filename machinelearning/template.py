@@ -4,6 +4,7 @@ import tarfile
 from abc import ABCMeta, abstractmethod
 from os import getcwd, mkdir
 from os.path import split as path_split, splitext, basename, exists
+import os
 
 from sklearn.svm import SVC, SVR  # SVC是svm分类，SVR是svm回归
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
@@ -41,7 +42,7 @@ from pyecharts.globals import CurrentConfig
 
 from system import plugin_class_loading, get_path, plugin_func_loading
 
-CurrentConfig.ONLINE_HOST = f"{getcwd()}/assets/"
+CurrentConfig.ONLINE_HOST = f"{getcwd()}{os.sep}assets{os.sep}"
 
 
 # 设置
@@ -536,7 +537,7 @@ class StudyMachinebase(Machinebase):
             save_dir, "评分", [
                 precision, recall, f1], class_list, [
                 "精确率", "召回率", "F1"])
-        save = save_dir + r"/分类模型评估.HTML"
+        save = save_dir + rf"{os.sep}分类模型评估.HTML"
         tab.render(save)
         return save,
 
@@ -557,7 +558,7 @@ class StudyMachinebase(Machinebase):
         tab.add(make_tab(["MSE", "MAE", "RMSE", "r2_Score"], [
             [mse, mae, rmse, r2_score]]), "评估数据", )
 
-        save = save_dir + r"/回归模型评估.HTML"
+        save = save_dir + rf"{os.sep}回归模型评估.HTML"
         tab.render(save)
         return save,
 
@@ -617,7 +618,7 @@ class StudyMachinebase(Machinebase):
                 bar_(cofe_array, f"{a}%-{a + n}%数据轮廓系数")
                 a += n
 
-        save = save_dir + r"/聚类模型评估.HTML"
+        save = save_dir + rf"{os.sep}聚类模型评估.HTML"
         tab.render(save)
         return save,
 
@@ -770,7 +771,7 @@ class DataAnalysis(ToPyebase):  # 数据分析
         cumulative_calculation(data, np.max, "累计最大值", tab)
         cumulative_calculation(data, np.min, "累计最小值", tab)
 
-        save = save_dir + r"/数据分析.HTML"
+        save = save_dir + rf"{os.sep}数据分析.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -822,7 +823,7 @@ class Corr(ToPyebase):  # 相关性和协方差
 
         des_to_csv(save_dir, f"相关性矩阵", corr)
         des_to_csv(save_dir, f"协方差矩阵", cov)
-        save = save_dir + r"/数据相关性.HTML"
+        save = save_dir + rf"{os.sep}数据相关性.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -927,7 +928,7 @@ class MatrixScatter(ToPyebase):  # 矩阵散点图
             c = Scatter()
         tab.add(c, "矩阵散点图")
 
-        save = save_dir + r"/矩阵散点图.HTML"
+        save = save_dir + rf"{os.sep}矩阵散点图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -938,15 +939,15 @@ class ClusterTree(ToPyebase):  # 聚类树状图
         x_data = self.x_traindata
         linkage_array = ward(x_data)  # self.y_traindata是结果
         dendrogram(linkage_array)
-        plt.savefig(save_dir + r"/Cluster_graph.png")
+        plt.savefig(save_dir + rf"{os.sep}Cluster_graph.png")
 
         image = Image()
-        image.add(src=save_dir + r"/Cluster_graph.png",).set_global_opts(
+        image.add(src=save_dir + rf"{os.sep}Cluster_graph.png",).set_global_opts(
             title_opts=opts.ComponentTitleOpts(title="聚类树状图")
         )
         tab.add(image, "聚类树状图")
 
-        save = save_dir + r"/聚类树状图.HTML"
+        save = save_dir + rf"{os.sep}聚类树状图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1031,7 +1032,7 @@ class ClassBar(ToPyebase):  # 类型柱状图
             tab.add(c, f"类型-[{num_i}]特征统计柱状图")
 
         # 未完成
-        save = save_dir + r"/特征统计.HTML"
+        save = save_dir + rf"{os.sep}特征统计.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1069,7 +1070,7 @@ class NumpyHeatMap(ToPyebase):  # Numpy矩阵绘制热力图
         tab.add(c, "矩阵热力图")
         tab.add(make_tab(x, data.transpose().tolist()), f"矩阵热力图:表格")
 
-        save = save_dir + r"/矩阵热力图.HTML"
+        save = save_dir + rf"{os.sep}矩阵热力图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1155,7 +1156,7 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
             c = Table().add(headers=heard, rows=[data])
             tab.add(c, "数据表")
 
-        save = save_dir + r"/预测热力图.HTML"
+        save = save_dir + rf"{os.sep}预测热力图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1193,7 +1194,7 @@ class NearFeatureScatterClassMore(ToPyebase):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, "数据表")
 
-        save = save_dir + r"/数据特征散点图(分类).HTML"
+        save = save_dir + rf"{os.sep}数据特征散点图(分类).HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1213,7 +1214,7 @@ class NearFeatureScatterMore(ToPyebase):
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, "数据表")
 
-        save = save_dir + r"/数据特征散点图.HTML"
+        save = save_dir + rf"{os.sep}数据特征散点图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1237,7 +1238,7 @@ class NearFeatureScatterClass(ToPyebase):  # 临近特征散点图：分类数�
         c = Table().add(headers=heard, rows=[data])
         tab.add(c, "数据表")
 
-        save = save_dir + r"/临近数据特征散点图(分类).HTML"
+        save = save_dir + rf"{os.sep}临近数据特征散点图(分类).HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1256,7 +1257,7 @@ class NearFeatureScatter(ToPyebase):  # 临近特征散点图：连续数据
         data = [f"{i}" for i in x_means]
         tab.add(make_tab(columns, [data]), "数据表")
 
-        save = save_dir + r"/临近数据特征散点图.HTML"
+        save = save_dir + rf"{os.sep}临近数据特征散点图.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1275,7 +1276,7 @@ class FeatureScatterYX(ToPyebase):  # y-x图
         data = [f"{i}" for i in x_means]
         tab.add(make_tab(columns, [data]), "数据表")
 
-        save = save_dir + r"/特征y-x图像.HTML"
+        save = save_dir + rf"{os.sep}特征y-x图像.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1347,7 +1348,7 @@ class LineModel(StudyMachinebase):
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
 
-        save = save_dir + r"/线性回归模型.HTML"
+        save = save_dir + rf"{os.sep}线性回归模型.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1417,7 +1418,7 @@ class LogisticregressionModel(StudyMachinebase):
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
 
-        save = save_dir + r"/逻辑回归.HTML"
+        save = save_dir + rf"{os.sep}逻辑回归.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1539,7 +1540,7 @@ class KnnModel(StudyMachinebase):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/K.HTML"
+        save = save_dir + rf"{os.sep}K.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1580,7 +1581,7 @@ class TreeModel(StudyMachinebase):
         tab = Tab()
         importance = self.model.feature_importances_.tolist()
 
-        with open(save_dir + r"\Tree_Gra.dot", "w") as f:
+        with open(save_dir + fr"{os.sep}Tree_Gra.dot", "w") as f:
             export_graphviz(self.model, out_file=f)
 
         make_bar("特征重要性", importance, tab)
@@ -1590,7 +1591,7 @@ class TreeModel(StudyMachinebase):
             [importance],
             [f"[{i}]特征" for i in range(len(importance))],
         )
-        tab.add(see_tree(save_dir + r"\Tree_Gra.dot"), "决策树可视化")
+        tab.add(see_tree(save_dir + fr"{os.sep}Tree_Gra.dot"), "决策树可视化")
 
         y = self.y_traindata
         x_data = self.x_traindata
@@ -1651,7 +1652,7 @@ class TreeModel(StudyMachinebase):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/决策树.HTML"
+        save = save_dir + rf"{os.sep}决策树.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1692,13 +1693,13 @@ class ForestModel(StudyMachinebase):
         tab = Tab()
         # 多个决策树可视化
         for i in range(len(self.model.estimators_)):
-            with open(save_dir + rf"\Tree_Gra[{i}].dot", "w") as f:
+            with open(save_dir + rf"{os.sep}Tree_Gra[{i}].dot", "w") as f:
                 export_graphviz(self.model.estimators_[i], out_file=f)
 
             tab.add(
                 see_tree(
                     save_dir +
-                    rf"\Tree_Gra[{i}].dot"),
+                    rf"{os.sep}Tree_Gra[{i}].dot"),
                 f"[{i}]决策树可视化")
 
         y = self.y_traindata
@@ -1747,7 +1748,7 @@ class ForestModel(StudyMachinebase):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/随机森林.HTML"
+        save = save_dir + rf"{os.sep}随机森林.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1791,13 +1792,13 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
         # 多个决策树可视化
         for a in range(len(self.model.estimators_)):
             for i in range(len(self.model.estimators_[a])):
-                with open(save_dir + rf"\Tree_Gra[{a},{i}].dot", "w") as f:
+                with open(save_dir + rf"{os.sep}Tree_Gra[{a},{i}].dot", "w") as f:
                     export_graphviz(self.model.estimators_[a][i], out_file=f)
 
                 tab.add(
                     see_tree(
                         save_dir +
-                        rf"\Tree_Gra[{a},{i}].dot"),
+                        rf"{os.sep}Tree_Gra[{a},{i}].dot"),
                     f"[{a},{i}]决策树可视化")
 
         y = self.y_traindata
@@ -1846,7 +1847,7 @@ class GradienttreeModel(StudyMachinebase):  # 继承Tree_Model主要是继承Des
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/梯度提升回归树.HTML"
+        save = save_dir + rf"{os.sep}梯度提升回归树.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1924,7 +1925,7 @@ class SvcModel(StudyMachinebase):
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
 
-        save = save_dir + r"/支持向量机分类.HTML"
+        save = save_dir + rf"{os.sep}支持向量机分类.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -1994,7 +1995,7 @@ class SvrModel(StudyMachinebase):
             ),
             "数据表",
         )
-        save = save_dir + r"/支持向量机回归.HTML"
+        save = save_dir + rf"{os.sep}支持向量机回归.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2029,7 +2030,7 @@ class VarianceModel(Unsupervised):  # 无监督
             )
         )
         tab.add(c, "数据标准差")
-        save = save_dir + r"/方差特征选择.HTML"
+        save = save_dir + rf"{os.sep}方差特征选择.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2095,7 +2096,7 @@ class SelectkbestModel(PrepBase):  # 有监督
         )
         tab.add(c, "单变量重要程度")
 
-        save = save_dir + r"/单一变量特征选择.HTML"
+        save = save_dir + rf"{os.sep}单一变量特征选择.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2184,7 +2185,7 @@ class SelectFromModel(PrepBase):  # 有监督
             except BaseException:
                 pass
 
-        save = save_dir + r"/模型特征选择.HTML"
+        save = save_dir + rf"{os.sep}模型特征选择.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2210,7 +2211,7 @@ class StandardizationModel(Unsupervised):  # z-score标准化 无监督
         make_bar("方差", means, tab)
         make_bar("Scale", scale, tab)
 
-        save = save_dir + r"/z-score标准化.HTML"
+        save = save_dir + rf"{os.sep}z-score标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2241,7 +2242,7 @@ class MinmaxscalerModel(Unsupervised):  # 离差标准化
             "数据表格",
         )
 
-        save = save_dir + r"/离差标准化.HTML"
+        save = save_dir + rf"{os.sep}离差标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2281,7 +2282,7 @@ class LogscalerModel(PrepBase):  # 对数标准化
         tab.add(make_tab(heard=["最大对数值(自然对数)"],
                          row=[[str(self.max_logx)]]), "数据表格")
 
-        save = save_dir + r"/对数标准化.HTML"
+        save = save_dir + rf"{os.sep}对数标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2311,7 +2312,7 @@ class AtanscalerModel(PrepBase):  # atan标准化
         x_data = self.x_testdata
         conversion_control(y_data, x_data, tab)
 
-        save = save_dir + r"/反正切函数标准化.HTML"
+        save = save_dir + rf"{os.sep}反正切函数标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2352,7 +2353,7 @@ class DecimalscalerModel(PrepBase):  # 小数定标准化
         conversion_control(y_data, x_data, tab)
         tab.add(make_tab(heard=["小数位数:j"], row=[[j]]), "数据表格")
 
-        save = save_dir + r"/小数定标标准化.HTML"
+        save = save_dir + rf"{os.sep}小数定标标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2399,7 +2400,7 @@ class MapzoomModel(PrepBase):  # 映射标准化
         conversion_control(y_data, x_data, tab)
         tab.add(make_tab(heard=["最大值", "最小值"], row=[[max_, min_]]), "数据表格")
 
-        save = save_dir + r"/映射标准化.HTML"
+        save = save_dir + rf"{os.sep}映射标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2429,7 +2430,7 @@ class SigmodscalerModel(PrepBase):  # sigmod变换
         x_data = self.x_testdata
         conversion_control(y_data, x_data, tab)
 
-        save = save_dir + r"/Sigmoid变换.HTML"
+        save = save_dir + rf"{os.sep}Sigmoid变换.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2476,7 +2477,7 @@ class FuzzyQuantizationModel(PrepBase):  # 模糊量化标准化
         conversion_control(y_data, x_data, tab)
         tab.add(make_tab(heard=["最大值", "最小值"], row=[[max_, min_]]), "数据表格")
 
-        save = save_dir + r"/模糊量化标准化.HTML"
+        save = save_dir + rf"{os.sep}模糊量化标准化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2495,7 +2496,7 @@ class RegularizationModel(Unsupervised):  # 正则化
         x_data = self.x_testdata.copy()
         conversion_control(y_data, x_data, tab)
 
-        save = save_dir + r"/正则化.HTML"
+        save = save_dir + rf"{os.sep}正则化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2527,7 +2528,7 @@ class BinarizerModel(Unsupervised):  # 二值化
                 heard, np.dstack(
                     (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
-        save = save_dir + r"/二值离散化.HTML"
+        save = save_dir + rf"{os.sep}二值离散化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2592,7 +2593,7 @@ class DiscretizationModel(PrepBase):  # n值离散
                 heard, np.dstack(
                     (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
-        save = save_dir + r"/多值离散化.HTML"
+        save = save_dir + rf"{os.sep}多值离散化.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2643,7 +2644,7 @@ class LabelModel(PrepBase):  # 数字编码
                 heard, np.dstack(
                     (x_data, y_data)).tolist()), f"合成[原数据,编码]数据")
 
-        save = save_dir + r"/数字编码.HTML"
+        save = save_dir + rf"{os.sep}数字编码.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2718,7 +2719,7 @@ class OneHotEncoderModel(PrepBase):  # 独热编码
                     (oh_data, x_data)).tolist()), f"合成[原数据,编码]数据")
         tab.add(make_tab([f"编码:{i}" for i in range(
             len(y_data[0]))], y_data.tolist()), f"数据")
-        save = save_dir + r"/独热编码.HTML"
+        save = save_dir + rf"{os.sep}独热编码.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2750,7 +2751,7 @@ class MissedModel(Unsupervised):  # 缺失数据补充
         conversion_control(y_data, x_data, tab)
         tab.add(make_tab([f"特征[{i}]" for i in range(
             len(statistics))], [statistics]), "填充值")
-        save = save_dir + r"/缺失数据填充.HTML"
+        save = save_dir + rf"{os.sep}缺失数据填充.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2826,7 +2827,7 @@ class PcaModel(Unsupervised):
                     len(var))])
 
         tab.add(c, "方量差柱状图")
-        save = save_dir + r"/主成分分析.HTML"
+        save = save_dir + rf"{os.sep}主成分分析.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2900,7 +2901,7 @@ class RpcaModel(Unsupervised):
             save_dir, "方量差", [var], [
                 f"第[{i}]主成分" for i in range(
                     len(var))])
-        save = save_dir + r"/RPCA(主成分分析).HTML"
+        save = save_dir + rf"{os.sep}RPCA(主成分分析).HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2932,7 +2933,7 @@ class KpcaModel(Unsupervised):
         y_data = self.y_testdata
         conversion_separate_format(y_data, tab)
 
-        save = save_dir + r"/KPCA(主成分分析).HTML"
+        save = save_dir + rf"{os.sep}KPCA(主成分分析).HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -2969,7 +2970,7 @@ class LdaModel(PrepBase):  # 有监督学习
         for i in range(len(get)):
             tab.add(get[i].overlap(get[i]), f"类别:{i}LDA映射曲线")
 
-        save = save_dir + r"/render.HTML"
+        save = save_dir + rf"{os.sep}render.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3046,7 +3047,7 @@ class NmfModel(Unsupervised):
         des_to_csv(save_dir, "系数矩阵", h_data)
         des_to_csv(save_dir, "系数*权重矩阵", wh_data)
 
-        save = save_dir + r"/非负矩阵分解.HTML"
+        save = save_dir + rf"{os.sep}非负矩阵分解.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3077,7 +3078,7 @@ class TsneModel(Unsupervised):
         y_data = self.y_testdata
         conversion_separate_format(y_data, tab)
 
-        save = save_dir + r"/T-SNE.HTML"
+        save = save_dir + rf"{os.sep}T-SNE.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3171,7 +3172,7 @@ class MlpModel(StudyMachinebase):  # 神经网络(多层感知机)，有监督�
 
         tab.add(make_tab(heard, [data]), "数据表")
 
-        save = save_dir + r"/多层感知机.HTML"
+        save = save_dir + rf"{os.sep}多层感知机.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3236,7 +3237,7 @@ class KmeansModel(UnsupervisedModel):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/k-means聚类.HTML"
+        save = save_dir + rf"{os.sep}k-means聚类.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3294,10 +3295,10 @@ class AgglomerativeModel(UnsupervisedModel):
 
         linkage_array = ward(self.x_traindata)  # self.y_traindata是结果
         dendrogram(linkage_array)
-        plt.savefig(save_dir + r"/Cluster_graph.png")
+        plt.savefig(save_dir + rf"{os.sep}Cluster_graph.png")
 
         image = Image()
-        image.add(src=save_dir + r"/Cluster_graph.png",).set_global_opts(
+        image.add(src=save_dir + rf"{os.sep}Cluster_graph.png",).set_global_opts(
             title_opts=opts.ComponentTitleOpts(title="聚类树状图")
         )
 
@@ -3314,7 +3315,7 @@ class AgglomerativeModel(UnsupervisedModel):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/层次聚类.HTML"
+        save = save_dir + rf"{os.sep}层次聚类.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3377,7 +3378,7 @@ class DbscanModel(UnsupervisedModel):
             [[f"{i}" for i in x_means]],
             [f"普适预测第{i}特征" for i in range(len(x_means))],
         )
-        save = save_dir + r"/密度聚类.HTML"
+        save = save_dir + rf"{os.sep}密度聚类.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3472,7 +3473,7 @@ class FastFourier(StudyMachinebase):  # 快速傅里叶变换
                 self.frequency.tolist(), [
                     self.fourier.tolist()]), "快速傅里叶变换")
 
-        save = save_dir + r"/快速傅里叶.HTML"
+        save = save_dir + rf"{os.sep}快速傅里叶.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3540,7 +3541,7 @@ class ReverseFastFourier(StudyMachinebase):  # 快速傅里叶变换
             line("单边相位谱", phase[: int(n / 2)].tolist(), slice(0, int(n / 2))), "单边相位谱"
         )
 
-        save = save_dir + r"/快速傅里叶.HTML"
+        save = save_dir + rf"{os.sep}快速傅里叶.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3649,7 +3650,7 @@ def FUNC({",".join(model.__code__.co_varnames)}):
             "拟合参数",
         )
 
-        save = save_dir + r"/曲线拟合.HTML"
+        save = save_dir + rf"{os.sep}曲线拟合.HTML"
         tab.render(save)  # 生成HTML
         return save,
 
@@ -3674,7 +3675,7 @@ class Tab(tab_First):
         if all_global:
             render_dir = path_split(path)[0]
             for i in self.element:
-                self.element[i].render(render_dir + "/" + i + ".html")
+                self.element[i].render(render_dir + os.sep + i + ".html")
         return super(Tab, self).render(path, template_name, *args, **kwargs)
 
 
@@ -3703,7 +3704,7 @@ class Table(TableFisrt):
             name = splitext(name)[0]
             try:
                 DataFrame(self.ROWS, columns=self.HEADERS).to_csv(
-                    save_dir + "/" + name + ".csv"
+                    save_dir + os.sep + name + ".csv"
                 )
             except BaseException:
                 pass
@@ -4789,7 +4790,7 @@ def num_str(num, accuracy):
 
 @plugin_func_loading(get_path(r"template/machinelearning"))
 def des_to_csv(save_dir, name, data, columns=None, row=None):
-    save_dir = save_dir + "/" + name + ".csv"
+    save_dir = save_dir + os.sep + name + ".csv"
     print(columns)
     print(row)
     print(data)
@@ -5096,7 +5097,7 @@ class MachineLearnerScore(MachineLearnerInit, metaclass=ABCMeta):
         x = self.get_sheet(name_x)
         y = self.get_sheet(name_y)
         if new_dir_global:
-            dic = save_dir + f"/{learner}分类评分[CoTan]"
+            dic = save_dir + f"{os.sep}{learner}分类评分[CoTan]"
             new_dic = dic
             a = 0
             while exists(new_dic):  # 直到他不存在 —— False
@@ -5118,7 +5119,7 @@ class MachineLearnerScore(MachineLearnerInit, metaclass=ABCMeta):
 
     def model_visualization(self, learner, save_dir):  # 显示参数
         if new_dir_global:
-            dic = save_dir + f"/{learner}数据[CoTan]"
+            dic = save_dir + f"{os.sep}{learner}数据[CoTan]"
             new_dic = dic
             a = 0
             while exists(new_dic):  # 直到他不存在 —— False
@@ -5130,7 +5131,7 @@ class MachineLearnerScore(MachineLearnerInit, metaclass=ABCMeta):
         model = self.get_learner(learner)
         if (not (model.model is None) or not (
                 model.model is list)) and clf_global:
-            joblib.dump(model.model, new_dic + "/MODEL.model")  # 保存模型
+            joblib.dump(model.model, new_dic + f"{os.sep}MODEL.model")  # 保存模型
         # 打包
         save = model.data_visualization(new_dic)[0]
         if tar_global:
