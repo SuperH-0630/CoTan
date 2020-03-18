@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from _tkinter import TclError
 import tkinter
 from tkinter import ttk
 import tkinter.font as tkfont
@@ -19,7 +20,7 @@ crawlef_start = None
 
 
 def progress_bar(func):
-    def progress_bar(*agrs, **kwargs):
+    def make_bar(*agrs, **kwargs):
         func(*agrs, **kwargs)
         progress_screen = tkinter.Toplevel()
         progress_screen.title('系统持续加载中...')
@@ -35,12 +36,12 @@ def progress_bar(func):
             try:
                 progress["value"] = i + 1
                 progress_screen.update()
-            except BaseException:
+            except TclError:
                 pass
             SCREEN.update()
             time.sleep(0.015)
         progress_screen.destroy()
-    return progress_bar
+    return make_bar
 
 
 def draftboard_main():
@@ -50,9 +51,7 @@ def draftboard_main():
 
 @progress_bar
 def draftboard_run():
-    global SCREEN, draftboard_start
-    draftboard_start = Process(target=draftboard_main)
-    draftboard_start.start()
+    Process(target=draftboard_main).start()
 
 
 def datascience_main():
@@ -62,35 +61,29 @@ def datascience_main():
 
 @progress_bar
 def datascience_run():
-    global SCREEN, datascience_start
-    datascience_start = Process(target=datascience_main)
-    datascience_start.start()
+    Process(target=datascience_main).start()
 
 
 def functionmapping_main():
     from funcsystem.map import function_mapping
+    print('函数测绘加载完毕...')
     function_mapping()
 
 
 @progress_bar
 def functionmapping_run():
-    global SCREEN, functionmapping_start
-    functionmapping_start = Process(target=functionmapping_main)
-    functionmapping_start.start()
+    Process(target=functionmapping_main).start()
 
 
 def functionfactory_main():
     from funcsystem.factory import function_factory_main
-    print('函数工厂加载完毕')
+    print('函数工厂加载完毕...')
     function_factory_main()
 
 
 @progress_bar
 def functionfactory_run():
-    global SCREEN, functionfactory_start
-    functionfactory_start = Process(target=functionfactory_main)
-    print('函数工厂加载完毕')
-    functionfactory_start.start()
+    Process(target=functionfactory_main).start()
 
 
 def algebraicfactory_main():
@@ -100,9 +93,7 @@ def algebraicfactory_main():
 
 @progress_bar
 def algebraicfactory_run():
-    global SCREEN, algebraicfactory_start
-    algebraicfactory_start = Process(target=algebraicfactory_main)
-    algebraicfactory_start.start()
+    Process(target=algebraicfactory_main).start()
 
 
 def machinelearner_main():
@@ -112,9 +103,7 @@ def machinelearner_main():
 
 @progress_bar
 def machinelearner_run():
-    global SCREEN, machinelearner_start
-    machinelearner_start = Process(target=machinelearner_main)
-    machinelearner_start.start()
+    Process(target=machinelearner_main).start()
 
 
 def git_main():
@@ -124,9 +113,7 @@ def git_main():
 
 @progress_bar
 def git_run():
-    global SCREEN, git_start
-    git_start = Process(target=git_main)
-    git_start.start()
+    Process(target=git_main).start()
 
 
 def crawler_main():
@@ -136,8 +123,7 @@ def crawler_main():
 
 @progress_bar
 def crawlef_run():
-    crawlef_start = Process(target=crawler_main)
-    crawlef_start.start()
+    Process(target=crawler_main).start()
 
 
 def system_main():
@@ -146,8 +132,7 @@ def system_main():
 
 
 def system_run():  # 不需要进度条
-    system_start = Process(target=system_main)
-    system_start.start()
+    Process(target=system_main).start()
 
 
 def cotan_main():

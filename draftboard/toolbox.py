@@ -126,11 +126,12 @@ class API:
         pen = pen_weight_input.get().replace(" ", "")
         try:
             pen = int(pen)
-            if UIAPI.askok_gui(f"是否设定大小为{pen}(系统默认大小为：2)"):
-                pen_weight = pen
-        except BaseException:
+        except ValueError:
             if UIAPI.askok_gui("设置失败，是否要切换到中笔吗"):
                 pen_weight = 2
+        else:
+            if UIAPI.askok_gui(f"是否设定大小为{pen}(系统默认大小为：2)"):
+                pen_weight = pen
 
     @staticmethod
     def switch_stroke():
@@ -180,6 +181,15 @@ class API:
         span_input_str = span_input.get().replace(" ", "")
         try:
             span_input_str = int(span_input_str)
+        except ValueError:
+            span = None
+            if tkinter.messagebox.askokcancel(
+                "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
+            ):
+                coordinate_system_drawing_method = 3
+            else:
+                coordinate_system_drawing_method = None
+        else:
             if tkinter.messagebox.askokcancel(
                 "提示", f"是否设定跨度为{span_input_str}(跨度代表坐标系一个单位大小的实际像素，系统默认大跨度为：120)"
             ):
@@ -188,14 +198,6 @@ class API:
             else:
                 coordinate_system_drawing_method = None
                 span = None
-        except BaseException:
-            span = None
-            if tkinter.messagebox.askokcancel(
-                "提示", "是否绘制大跨度的坐标系，确定后返回草图界面任一点三点开始绘制(点击取消可撤销未执行的清空)"
-            ):
-                coordinate_system_drawing_method = 3
-            else:
-                coordinate_system_drawing_method = None
 
     @staticmethod
     def empty():
@@ -217,7 +219,7 @@ class API:
 
 
 def tool_box():
-    global SCREEN, span_input  # 初始化屏幕
+    global SCREEN, span_input, pen_weight_input  # 初始化屏幕
     SCREEN = tkinter.Tk()  # 设置屏幕
     SCREEN["bg"] = bg_color
     SCREEN.title("Tool")

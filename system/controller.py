@@ -27,10 +27,9 @@ class Plugin:
         for name in self.dir_list:
             try:
                 plugin = os.listdir(f'{PATH}{os.sep}{name}')
-            except BaseException:
-                pass
-            else:
                 self.plugin_list += [f'{name}{os.sep}{i}' for i in plugin]
+            finally:
+                pass
         return self.plugin_list.copy()
 
     def get_plugin(self, index):

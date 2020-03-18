@@ -11,6 +11,7 @@ from matplotlib.animation import FuncAnimation
 
 from funcsystem.controller import ExpFunc as ExpFunc
 from newtkinter import asksaveasfilename
+from system import exception_catch
 
 func = None
 fig = None
@@ -50,6 +51,7 @@ column = 1
 
 class UIAPI:
     @staticmethod
+    @exception_catch()
     def dichotomy_gui():
         parameters = [100, 0.0001, 0.1, 0.5, False, True, 1000, 0.1, 0.1, False, None]
         for i in range(11):
@@ -59,11 +61,12 @@ class UIAPI:
                 else:
                     a = float(dicon_parameters[i].get())
                 parameters[i] = a
-            except BaseException:
+            finally:
                 pass
         return parameters
 
     @staticmethod
+    @exception_catch()
     def output_prompt_gui(news):
         global prompt_box, prompt_num, SCREEN
         prompt_num += 1
@@ -72,6 +75,7 @@ class UIAPI:
         SCREEN.update()
 
     @staticmethod
+    @exception_catch()
     def set_func_gui():
         new_func = func_exp.get().replace(" ", "")
         if new_func == "":
@@ -91,6 +95,7 @@ class UIAPI:
         # 参数的处理
         try:
             span_str = span_definition.get().replace(" ", "")
+            span = None
             if span_str[0] == "H":
                 domain = {
                     "Pi": sympy.pi,
@@ -110,14 +115,12 @@ class UIAPI:
                     "atan": sympy.atan,
                 }
                 span = eval(span_str[1:], domain)
-            else:
-                raise Exception
-        except BaseException:
-            span = None
+        finally:
+            pass
         for i in range(8):
             try:
                 default_value[i] = float(get[i].get())
-            except BaseException:
+            finally:
                 pass
         if span is not None:
             default_value[2] = span
@@ -127,7 +130,7 @@ class UIAPI:
             if style_str[0] not in point_style:
                 style_str[0] = "b"
             line_style_str = line_style.get(style_str[1], "-")
-        except BaseException:
+        except IndexError:
             style_str = ["", ""]
             style_str[0] = random.choice(point_style)
             line_style_str = "-"
@@ -139,63 +142,77 @@ class UIAPI:
         return [new_func, name, style]+default_value
 
     @staticmethod
+    @exception_catch()
     def get_y_value_gui():
         return y_value.get().split(",")
 
     @staticmethod
+    @exception_catch()
     def update_prediction_box_gui(answer):
         prediction_box.delete(0, tkinter.END)
         prediction_box.insert(tkinter.END, *answer)
 
     @staticmethod
+    @exception_catch()
     def get_projection_value_gui():
         return projection_value.get
 
     @staticmethod
+    @exception_catch()
     def get_proximity_accuracy_gui():
         return proximity_accuracy.get()
 
     @staticmethod
+    @exception_catch()
     def get_x_value_derivation_gui():
         return x_value_derivation.get().split(",")
 
     @staticmethod
+    @exception_catch()
     def get_y_value_symbol_gui():
         return y_value_symbol.get().split(",")
 
     @staticmethod
+    @exception_catch()
     def get_x_value_gui():
         return x_value.get().split(",")
 
     @staticmethod
+    @exception_catch()
     def update_result_box_gui(answer):
         result_box.delete(0, tkinter.END)  # 清空
         result_box.insert(tkinter.END, *answer)
 
     @staticmethod
+    @exception_catch()
     def get_y_value_gradient_gui():
         return y_value_gradient.get()
 
     @staticmethod
+    @exception_catch()
     def askokcancel_gui(message):
         return tkinter.messagebox.askokcancel("提示", message)
 
     @staticmethod
+    @exception_catch()
     def add_projection_box_gui(result):
         projection_box.insert(tkinter.END, result)
 
     @staticmethod
+    @exception_catch()
     def update_sheet_box_gui(sheet):
         sheet_box.delete(0, tkinter.END)
         sheet_box.insert(tkinter.END, *sheet)
 
     @staticmethod
+    @exception_catch()
     def get_save_dir_gui():
         return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
 
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def type_selection(sequence, type_=float, convert=True):  # Float筛选系统
         x = []
         for i in sequence:
@@ -208,6 +225,7 @@ class API(UIAPI):
         return x
 
     @staticmethod
+    @exception_catch()
     def save_to_csv():  # 导出CSV
         try:
             if not func.save_csv(API.get_save_dir_gui()):
@@ -215,16 +233,20 @@ class API(UIAPI):
             API.output_prompt_gui("CSV导出成功")
         except BaseException:
             API.output_prompt_gui("CSV导出失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def save_to_sheet():  # 生成表格
         try:
             API.update_sheet_box_gui(func.return_list())
             API.output_prompt_gui("表格创建成功")
         except BaseException:
             API.output_prompt_gui("无法创建表格")
+            raise
 
     @staticmethod
+    @exception_catch()
     def sympy_computing(exp_str) -> tuple:
         try:
             named_domain = {
@@ -246,15 +268,17 @@ class API(UIAPI):
             }
             answer = eval(exp_str, named_domain)
             return answer, True
-        except BaseException:
+        except (SyntaxError, ZeroDivisionError, NameError, TypeError, ValueError):
             return None, False
 
     @staticmethod
+    @exception_catch()
     def computing_gui():
-        accuracy, must = API.sympy_computing(prediction_accuracy.get())
-        return accuracy
+        accuracy_, must = API.sympy_computing(prediction_accuracy.get())
+        return accuracy_
 
     @staticmethod
+    @exception_catch()
     def confirmation_expression(c):
         get = API.sympy_computing(c)
         if not get[1]:
@@ -262,11 +286,12 @@ class API(UIAPI):
         return get[0]
 
     @staticmethod
+    @exception_catch()
     def check_center_of_symmetry():
-        accuracy = API.computing_gui()
+        accuracy_ = API.computing_gui()
         try:
             result = func.check_symmetry_center(
-                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy_
             )
             if result[0]:
                 API.add_projection_box_gui(result[1])
@@ -275,13 +300,15 @@ class API(UIAPI):
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def check_symmetry_axis():
-        accuracy = API.computing_gui()
+        accuracy_ = API.computing_gui()
         try:
             result = func.check_symmetry_axis(
-                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy_
             )
             if result[0]:
                 API.add_projection_box_gui(result[1])
@@ -290,13 +317,15 @@ class API(UIAPI):
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def check_periodic():
-        accuracy = API.computing_gui()
+        accuracy_ = API.computing_gui()
         try:
             result = func.check_periodic(
-                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy
+                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy_
             )
             if result[0]:
                 API.add_projection_box_gui(result[1])
@@ -305,13 +334,15 @@ class API(UIAPI):
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def check_monotonic():
-        accuracy = API.computing_gui()
+        accuracy_ = API.computing_gui()
         try:
             result = func.check_monotonic(
-                API.get_projection_value_gui(), API.output_prompt_gui, accuracy
+                API.get_projection_value_gui(), API.output_prompt_gui, accuracy_
             )
             if result[1]:
                 API.add_projection_box_gui(result[1])
@@ -320,8 +351,10 @@ class API(UIAPI):
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def clear_memory():
         try:
             if API.askokcancel_gui(f"确定删除{func}的记忆吗？"):
@@ -332,8 +365,10 @@ class API(UIAPI):
                 API.output_prompt_gui("删除取消")
         except BaseException:
             API.output_prompt_gui("删除失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def show_hidden_memory():  # 显示xy
         try:
             API.update_result_box_gui([])
@@ -341,8 +376,10 @@ class API(UIAPI):
             API.output_prompt_gui("已清空卡槽")
         except BaseException:
             API.output_prompt_gui("隐藏（显示）失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def gradient_method_calculation():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
@@ -358,8 +395,10 @@ class API(UIAPI):
                 API.output_prompt_gui("系统运算无结果")
         except BaseException:
             API.output_prompt_gui("系统运算失败，请注意参数设置")
+            raise
 
     @staticmethod
+    @exception_catch()
     def calculate():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
@@ -371,9 +410,11 @@ class API(UIAPI):
             API.update_result_box_gui(answer)
         except BaseException:
             API.output_prompt_gui("计算失败")
+            raise
             # raise
 
     @staticmethod
+    @exception_catch()
     def sympy_calculation_x():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
@@ -387,15 +428,17 @@ class API(UIAPI):
             API.update_result_box_gui(answer)
         except BaseException:
             API.output_prompt_gui("计算失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def function_differentiation():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
-            accuracy = API.get_proximity_accuracy_gui()
+            accuracy_ = API.get_proximity_accuracy_gui()
             answer = []
             for i in API.get_x_value_derivation_gui():
-                get = func.derivative(i, accuracy)[0]
+                get = func.derivative(i, accuracy_)[0]
                 if get is not None:
                     answer.append(get)
             if answer:
@@ -407,13 +450,14 @@ class API(UIAPI):
             API.output_prompt_gui("计算失败")
 
     @staticmethod
+    @exception_catch()
     def approximation():  # 逼近法
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
-            accuracy = API.get_proximity_accuracy_gui()
+            accuracy_ = API.get_proximity_accuracy_gui()
             answer = []
             for i in API.get_x_value_derivation_gui():
-                get = func.derivative(i, accuracy, True)[0]
+                get = func.derivative(i, accuracy_, True)[0]
                 if get is not None:
                     answer.append(get)
             if answer:
@@ -425,6 +469,7 @@ class API(UIAPI):
             API.output_prompt_gui("计算失败")
 
     @staticmethod
+    @exception_catch()
     def dichotomy():  # 二分法
         global dicon_parameters, func, result_box
         try:
@@ -432,10 +477,9 @@ class API(UIAPI):
             answer = []
             API.output_prompt_gui("系统运算中")
             for i in API.get_y_value_gui():
-                print(i)
                 try:
                     answer += func.dichotomy(float(i), *API.dichotomy_gui())[0]
-                except BaseException:
+                finally:
                     pass
             if answer:
                 API.output_prompt_gui("系统运算完成")
@@ -443,28 +487,30 @@ class API(UIAPI):
                 API.output_prompt_gui("系统运算无结果")
             API.update_result_box_gui(answer)
         except BaseException:
-            # raise
             API.output_prompt_gui("系统运算失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def property_prediction():
         try:
-            accuracy = API.computing_gui()
+            accuracy_ = API.computing_gui()
             API.output_prompt_gui("预测过程程序可能无响应")
-            answer = func.property_prediction(API.output_prompt_gui, True, accuracy)
+            answer = func.property_prediction(API.output_prompt_gui, True, accuracy_)
             API.update_prediction_box_gui(*answer)
             API.output_prompt_gui("性质预测完成")
         except IndexError:
             API.output_prompt_gui("性质预测失败")
 
     @staticmethod
+    @exception_catch()
     def function_drawing():
         global x_scale, start_x_plot, start_x_polt, span_x_plot, y_scale, start_y_plot, end_y_plot, span_y_plot
         global start_x_limit, end_x_limit, start_y_limit, end_y_limit
         global func, fig, show_point, show_best_value, show_text, plot_type, frame_rate
         try:
             draw_type = plot_type.curselection()[0]
-        except BaseException:
+        except IndexError:
             draw_type = 0
         # 画板创造
         API.output_prompt_gui("生成绘制取...")
@@ -501,7 +547,7 @@ class API(UIAPI):
                         exp_parameter[2] = int(plot_parameter[2])
                         exp_parameter[3] = int(plot_parameter[3])
                         exp_parameter[4] = int(plot_parameter[4])
-                    except BaseException:  # 迭代匹配直到出现错误
+                    finally:
                         pass
                     plot_parameter = exp_parameter
                     x_exp_scale = API.type_selection(
@@ -544,7 +590,7 @@ class API(UIAPI):
                         exp_parameter[2] = int(plot_parameter[2])
                         exp_parameter[3] = int(plot_parameter[3])
                         exp_parameter[4] = int(plot_parameter[4])
-                    except BaseException:  # 迭代匹配直到出现错误
+                    finally:
                         pass
                     plot_parameter = exp_parameter
                     y_exp_scale = API.type_selection(
@@ -570,6 +616,8 @@ class API(UIAPI):
                 y_major_locator = plt.MultipleLocator(2)
                 axis.yaxis.set_major_locator(y_major_locator)
             # 极限
+            _x_limit = [-10, 10]
+            _y_limit = [-10, 10]
             try:
                 x_limit = API.type_selection(
                     [start_x_limit.get(), end_x_limit.get()], type_=int, convert=False
@@ -579,15 +627,14 @@ class API(UIAPI):
                 )
                 try:
                     _x_limit = [x_limit[0], x_limit[1]]
-                except BaseException:
+                except IndexError:
                     _x_limit = [-10, 10]
                 try:
                     _y_limit = [y_limit[0], y_limit[1]]
-                except BaseException:
+                except IndexError:
                     _y_limit = _x_limit
-            except BaseException:
-                _x_limit = [-10, 10]
-                _y_limit = [-10, 10]
+            finally:
+                pass
             _x_limit.sort()
             _y_limit.sort()
             axis.set_xlim(_x_limit)
@@ -708,7 +755,7 @@ class API(UIAPI):
 
             try:  # 自定义帧率
                 frame = int(frame_rate.get())
-            except BaseException:
+            except ValueError:
                 frame = 100
             FuncAnimation(
                 fig,
@@ -744,20 +791,20 @@ class API(UIAPI):
                 return None
 
             def update(n):
-                get = func_cul_list[n - 1]
-                ln_list[0].set_text(get[2])
+                get_ = func_cul_list[n - 1]
+                ln_list[0].set_text(get_[2])
                 for i in range(max(m)):
                     try:
-                        x = get[0][i]
-                        y = get[1][i]
+                        x = get_[0][i]
+                        y = get_[1][i]
                         ln_list[i + 1].set_data(x, y)
-                    except BaseException:
+                    except IndexError:
                         ln_list[i + 1].set_data([], [])
                 return ln_list
 
             try:  # 自定义帧率
                 frame = int(frame_rate.get())
-            except BaseException:
+            except ValueError:
                 frame = 100
             FuncAnimation(
                 fig, update, frames=plot_x_len, init_func=_init, interval=frame, blit=False
@@ -767,6 +814,7 @@ class API(UIAPI):
         return True
 
     @staticmethod
+    @exception_catch()
     def set_function():
         global func
         default_value = API.set_func_gui()

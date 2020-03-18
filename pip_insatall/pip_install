@@ -1,19 +1,32 @@
 CoTan  pip install dependencies:
 
+# 图像处理
 Pillow==7.0.0
+# 草稿板
 pygame==1.9.6
+# 自动化网页依赖
 selenium==3.141.0
+# 网络爬虫
 requests==2.22.0
 bs4==0.0.1
 urllib3==1.24.3
+# git版本控制
 Gitpython==3.1.0
+# 矩阵
 numpy==1.18.1
+# 表格
 pandas==0.25.3
+# 输出表格信息（依赖于pandas）
 pandas-profiling==2.5.0
+# 稀疏矩阵、数据科学
 scipy==1.4.1
+# 符号数学
 sympy==1.5.1
+# 学术性绘图
 matplotlib
+# 美观性绘图
 pyecharts==1.7.0
+# 机器学习
 sklearn(sciket-learn==0.22.2.post1)==0.0
 pip==20.0.2
 

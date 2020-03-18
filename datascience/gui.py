@@ -8,6 +8,7 @@ from tkinter.scrolledtext import ScrolledText
 import chardet
 
 import datascience.controller
+from system import exception_catch
 
 render_dict = {}  # 保存了画图的List
 learn_dict = {}  # 保存数据处理
@@ -90,6 +91,7 @@ max_Visual_mapping #映射的最大值
 
 class UIAPI:
     @staticmethod
+    @exception_catch()
     def add_from_python_gui():
         file_dir = askopenfilename(
             title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
@@ -102,17 +104,19 @@ class UIAPI:
         return code, name
 
     @staticmethod
+    @exception_catch()
     def get_sheet_name_gui():  # 获得名字统一接口
         global sheet_list
         try:
             return sheet_list[sheet_box.curselection()[0]]
-        except BaseException:
+        except IndexError:
             try:
                 return sheet_list[0]
-            except BaseException:
+            except IndexError:
                 return None
 
     @staticmethod
+    @exception_catch()
     def update_sheet_box_gui():
         global SCREEN, sheet_box, sheet_list
         sheet_list = machine_controller.get_sheet_list()
@@ -120,6 +124,7 @@ class UIAPI:
         sheet_box.insert(tkinter.END, *sheet_list)
 
     @staticmethod
+    @exception_catch()
     def update_combo_box_gui():
         overlap_box.delete(0, tkinter.END)
         if base_image is not None:
@@ -128,6 +133,7 @@ class UIAPI:
             overlap_box.insert(tkinter.END, f"顶图: {top_image}")
 
     @staticmethod
+    @exception_catch()
     def add_csv_gui():
         file_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
         csv_sep = sep.get()
@@ -145,18 +151,21 @@ class UIAPI:
         return csv_encoding, csv_sep, file_dir, index, name, str_
 
     @staticmethod
+    @exception_catch()
     def to_csv_gui():
         save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
         csv_sep = sep.get()
         return csv_sep, save_dir
 
     @staticmethod
+    @exception_catch()
     def update_index_box_gui(index):
         global SCREEN, index_box
         index_box.delete(0, tkinter.END)
         index_box.insert(tkinter.END, *index)
 
     @staticmethod
+    @exception_catch()
     def vitables_gui(data, name):
         global bg_color, FONT1
         new_top = tkinter.Toplevel(bg=bg_color)
@@ -169,22 +178,26 @@ class UIAPI:
         new_top.resizable(width=False, height=False)
 
     @staticmethod
+    @exception_catch()
     def get_des_bool_gui():
         return bool(des_bool.get())
 
     @staticmethod
+    @exception_catch()
     def sort_by_column_gui():
         ascending = not bool(ascending_type.get())
         new = bool(ascending_new.get())
         return new, ascending
 
     @staticmethod
-    def add_baseline_gui(ascending_type, sort_by):
-        ascending = not bool(ascending_type.get())
-        value = int(sort_by.get())
+    @exception_catch()
+    def add_baseline_gui(ascending_type_, sort_by_):
+        ascending = not bool(ascending_type_.get())
+        value = int(sort_by_.get())
         return ascending, value
 
     @staticmethod
+    @exception_catch()
     def update_sort_box_gui():
         global stored_list, stored_box
         re = []
@@ -195,15 +208,18 @@ class UIAPI:
         stored_box.insert(tkinter.END, *re)
 
     @staticmethod
+    @exception_catch()
     def get_stored_box_index_gui():
         return stored_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def get_ascending_new_gui():
         new = bool(ascending_new.get())
         return new
 
     @staticmethod
+    @exception_catch()
     def slice_data_gui():
         def split_slice_core(slice_list, func_type):
             a = []
@@ -214,7 +230,7 @@ class UIAPI:
                 else:
                     try:
                         a.append(func_type(b))
-                    except BaseException:
+                    except ValueError:
                         a.append(None)
             if a[0] is not None and a[1] is None:
                 a[1] = a[0] + 1
@@ -224,60 +240,66 @@ class UIAPI:
         the_column_type = column_type.get()
         is_iloc = True
         if the_column_type == 0:  # 输入的列号
-            column = slice(*split_slice_core(column_clist, int))
+            column_ = slice(*split_slice_core(column_clist, int))
         elif the_column_type == 1:
             is_iloc = False
-            column = slice(*split_slice_core(column_clist, str))
+            column_ = slice(*split_slice_core(column_clist, str))
         else:
             get = column_clist[0].get().replace(" ", "").split(",")
-            column = []
+            column_ = []
             for i in get:
                 try:
-                    column.append(int(i))
-                except BaseException:
+                    column_.append(int(i))
+                except ValueError:
                     pass
         the_row_type = row_type.get()
         if the_row_type == 0:  # 输入的列号
-            row = slice(*split_slice_core(row_clist, int))
+            row_ = slice(*split_slice_core(row_clist, int))
         elif the_row_type == 1:
-            row = slice(*split_slice_core(row_clist, str))
+            row_ = slice(*split_slice_core(row_clist, str))
         else:
             get = row_clist[0].get().replace(" ", "").split(",")
-            row = []
+            row_ = []
             for i in get:
                 try:
-                    row.append(int(i))
-                except BaseException:
+                    row_.append(int(i))
+                except ValueError:
                     pass
         new = bool(slice_new.get())
-        return column, is_iloc, new, row
+        return column_, is_iloc, new, row_
 
     @staticmethod
+    @exception_catch()
     def del_data_gui():
-        column = column_clist[0].get().replace(" ", "").split(",")
-        row = row_clist[0].get().replace(" ", "").split(",")
+        column_ = column_clist[0].get().replace(" ", "").split(",")
+        row_ = row_clist[0].get().replace(" ", "").split(",")
         new = bool(slice_new.get())
-        return column, new, row
+        return column_, new, row_
 
     @staticmethod
+    @exception_catch()
     def get_clean_code_gui():
         exp = clean_code.get("0.0", tkinter.END)
         return exp
 
     @staticmethod
+    @exception_catch()
     def view_cleaning_script_gui():
         name = clean_list[API.get_clean_func_box_index_gui()]
         API.update_clean_code(machine_controller.get_clean_code(name))
 
     @staticmethod
+    @exception_catch()
     def get_clean_func_box_index_gui():
         return clean_func_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def show_dictionary_gui():
         tkinter.messagebox.showinfo("帮助字典", clean_help)
 
     @staticmethod
+    @exception_catch()
     def open_python_for_clean_gui():
         global clean_code
         file_dir = askopenfilename(
@@ -289,11 +311,13 @@ class UIAPI:
             clean_code.insert("0.0", get)
 
     @staticmethod
+    @exception_catch()
     def reset_clean_code_gui():
         global clean_code, clean_default_script
         API.update_clean_code(clean_default_script)
 
     @staticmethod
+    @exception_catch()
     def update_render_box_gui():
         global render_dict, render_box, machine_controller
         render_dict = machine_controller.get_all_render()
@@ -301,34 +325,37 @@ class UIAPI:
         render_box.insert(tkinter.END, *render_dict.keys())
 
     @staticmethod
+    @exception_catch()
     def get_draw_as_well_gui():
         return bool(draw_as_well.get())
 
     @staticmethod
+    @exception_catch()
     def render_box_index_gui():
         return render_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def rendering_one_gui():
         render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
         try:
-            if render_dir[-5:] != ".html":
-                raise Exception
-        except BaseException:
+            assert not render_dir.startswith(".html")
+        except AssertionError:
             render_dir += ".html"
         return render_dir
 
     @staticmethod
+    @exception_catch()
     def rendering_gui():
         render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
         try:
-            if render_dir[-5:] != ".html":
-                raise Exception
-        except BaseException:
+            assert not render_dir.startswith(".html")
+        except AssertionError:
             render_dir += ".html"
         return render_dir
 
     @staticmethod
+    @exception_catch()
     def set_dtype_gui():
         type_ = bool(dtype_func.get())
         name = API.get_sheet_name_gui()
@@ -340,6 +367,7 @@ class UIAPI:
         return column_list, dtype, name, type_, wrong
 
     @staticmethod
+    @exception_catch()
     def datetime_index_gui():
         is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
         save = bool(replace_type[0].get())
@@ -358,18 +386,21 @@ class UIAPI:
         return init, is_column, save
 
     @staticmethod
+    @exception_catch()
     def num_with_name_gui():
         is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
         save = bool(replace_type[0].get())
         return is_column, save
 
     @staticmethod
+    @exception_catch()
     def num_to_name_gui():
         is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
         save = bool(replace_type[0].get())
         return is_column, save
 
     @staticmethod
+    @exception_catch()
     def change_index_gui():
         is_column = bool(replace_index.get())  # 操作行名-False，操作列名-True
         iloc = int(replace_iloc.get())  # 替换的列号(行号)
@@ -378,6 +409,7 @@ class UIAPI:
         return drop, iloc, is_column, save
 
     @staticmethod
+    @exception_catch()
     def replace_index_func_gui():
         the_replace_dict = eval(replace_dict.get())
         is_column = bool(replace_index.get())  # 操作行-False，操作列-True
@@ -385,6 +417,7 @@ class UIAPI:
         return is_column, save, the_replace_dict
 
     @staticmethod
+    @exception_catch()
     def update_leaner_box_gui():
         global learn_dict, learner_box
         learn_dict = machine_controller.return_learner()
@@ -392,64 +425,68 @@ class UIAPI:
         learner_box.insert(tkinter.END, *learn_dict.keys())
 
     @staticmethod
+    @exception_catch()
     def get_data_split_gui():
         try:
             split = float(data_split.get())
-            if split < 0 or 1 < split:
-                raise Exception
-        except BaseException:
+            assert split < 0 or 1 < split
+        except (AssertionError, ValueError):
             split = 0.3
         return split
 
     @staticmethod
+    @exception_catch()
     def set_learner_gui():
         global chose_learner
         chose_learner.set(API.get_learner_name_gui(True))
 
     @staticmethod
+    @exception_catch()
     def get_learner_name_gui(learner_type=False):
         global learn_dict, learner_box, chose_learner
         if learner_type:
             try:
                 return list(learn_dict.keys())[learner_box.curselection()[0]]
-            except BaseException:
-                # raise
+            except IndexError:
                 try:
                     return list(learn_dict.keys)[0]
-                except BaseException:
+                except IndexError:
                     return None
         else:
-            try:
-                return chose_learner.get()
-            except BaseException:
-                return None
+            return chose_learner.get()
 
     @staticmethod
+    @exception_catch()
     def askokcancel_gui(messgae):
         return tkinter.messagebox.askokcancel("提示", messgae)
 
     @staticmethod
+    @exception_catch()
     def show_tips_gui():
         tkinter.messagebox.showinfo("使用提示", drawing_parameters)
 
     @staticmethod
+    @exception_catch()
     def show_sorry_gui():
         tkinter.messagebox.showinfo("非常抱歉", "高级别的机器学习请到机器学习板块深入研究...")
 
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def clear_rendering():
         machine_controller.clean_render()
         API.update_render_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_form():
         name = API.get_sheet_name_gui()
         machine_controller.del_sheet(name)
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_learner():
         learner = API.get_learner_name_gui(True)
         set_learne = API.get_learner_name_gui(False)  # 获取学习器Learner
@@ -458,6 +495,7 @@ class API(UIAPI):
         API.update_leaner_box_gui()
 
     @staticmethod
+    @exception_catch()
     def visual_learner():
         learner = API.get_learner_name_gui(True)
         data = machine_controller.visual_learner(
@@ -469,18 +507,19 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def get_learner_config():
         return learner_parameters.get("0.0", tkinter.END)
 
     @staticmethod
+    @exception_catch()
     def test_learner():
         name = API.get_sheet_name_gui()  # 表格数据
         learner = API.get_learner_name_gui()
         try:
             split = float(data_split.get())
-            if split < 0 or 1 < split:
-                raise Exception
-        except BaseException:
+            assert split < 0 or 1 < split
+        except (AssertionError, ValueError):
             split = 0.3
         socore = machine_controller.training_machine(
             name, learner, Score_Only=True, split=split
@@ -488,6 +527,7 @@ class API(UIAPI):
         tkinter.messagebox.showinfo("测试完成", f"针对测试数据评分结果为:{socore}")
 
     @staticmethod
+    @exception_catch()
     def predict_learner():
         name = API.get_sheet_name_gui()  # 表格数据
         learner = API.get_learner_name_gui()
@@ -497,6 +537,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def fit_learner():
         name = API.get_sheet_name_gui()  # 表格数据
         learner = API.get_learner_name_gui()
@@ -511,41 +552,50 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def add_knn_class():
         API.add_learner_core("Knn_class")
 
     @staticmethod
+    @exception_catch()
     def add_logistic_regression():
         API.add_learner_core("LogisticRegression")
 
     @staticmethod
+    @exception_catch()
     def add_lasso():
         API.add_learner_core("Lasso")
 
     @staticmethod
+    @exception_catch()
     def add_knn_regression():
         API.add_learner_core("Knn")
 
     @staticmethod
+    @exception_catch()
     def add_ridge():
         API.add_learner_core("Ridge")
 
     @staticmethod
+    @exception_catch()
     def add_generalized_linear():
         API.add_learner_core("Line")
 
     @staticmethod
+    @exception_catch()
     def add_learner_core(learner_type):  # 添加Lenear的核心
         machine_controller.add_learner(learner_type, parameters=API.get_learner_config())
         API.update_leaner_box_gui()
 
     @staticmethod
+    @exception_catch()
     def feature_extraction():
         name = API.get_sheet_name_gui()
         machine_controller.decision_tree_classifier(name)
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def replace_index_func():
         name = API.get_sheet_name_gui()
         is_column, save, the_replace_dict = API.replace_index_func_gui()
@@ -553,6 +603,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def change_index():
         name = API.get_sheet_name_gui()  # 名字
         drop, iloc, is_column, save = API.change_index_gui()
@@ -561,6 +612,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def num_to_name():
         name = API.get_sheet_name_gui()  # 名字
         is_column, save = API.num_to_name_gui()
@@ -569,6 +621,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def num_with_name():
         name = API.get_sheet_name_gui()  # 名字
         is_column, save = API.num_with_name_gui()
@@ -577,6 +630,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def datetime_index(is_date=True):
         name = API.get_sheet_name_gui()  # 名字
         init, is_column, save = API.datetime_index_gui()
@@ -587,14 +641,17 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def date_index():
         API.datetime_index(True)
 
     @staticmethod
+    @exception_catch()
     def time_index():
         API.datetime_index(False)
 
     @staticmethod
+    @exception_catch()
     def set_dtype():
         column_list, dtype, name, type_, wrong = API.set_dtype_gui()
         if type_:  # 软转换
@@ -606,6 +663,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def python_render():  # 导入绘制方法
         file_dir = askopenfilename(
             title="打开Python脚本", filetypes=[("Python", ".py"), ("TXT", ".txt")]
@@ -615,10 +673,12 @@ class API(UIAPI):
         API.new_render(machine_controller.custom_graph(code), "自定义图")
 
     @staticmethod
+    @exception_catch()
     def get_rendering_parameters():  # 获取画图的args
         return rendering_parameters.get("0.0", tkinter.END)
 
     @staticmethod
+    @exception_catch()
     def rendering():
         render_dir = API.rendering_gui()
         webbrowser.open(
@@ -627,6 +687,7 @@ class API(UIAPI):
         API.update_render_box_gui()
 
     @staticmethod
+    @exception_catch()
     def rendering_one():
         render_dir = API.rendering_one_gui()
         list(render_dict.values())[API.render_box_index_gui()].render(render_dir)
@@ -634,6 +695,7 @@ class API(UIAPI):
         API.update_render_box_gui()
 
     @staticmethod
+    @exception_catch()
     def make_overlap():
         global top_image, base_image
         if base_image is not None and top_image is not None:
@@ -646,40 +708,47 @@ class API(UIAPI):
         API.update_combo_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_basemap():
         global base_image
         base_image = list(render_dict.keys())[API.render_box_index_gui()]
         API.update_combo_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_top_image():
         global top_image
         top_image = list(render_dict.keys())[API.render_box_index_gui()]
         API.update_combo_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_rendering():
         key = list(render_dict.keys())[API.render_box_index_gui()]
         machine_controller.del_render(key)
         API.update_render_box_gui()
 
     @staticmethod
+    @exception_catch()
     def new_render(c, name):
         if API.get_draw_as_well_gui():
             c.render(fr"{PATH}{os.sep}{name}.html")
         API.update_render_box_gui()
 
     @staticmethod
+    @exception_catch()
     def to_geo():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_geo(name, API.get_rendering_parameters()), "Geo地图")
 
     @staticmethod
+    @exception_catch()
     def to_map():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_map(name, API.get_rendering_parameters()), "Map地图")
 
     @staticmethod
+    @exception_catch()
     def to_scattergeo():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -687,26 +756,31 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_treemap():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_tree_map(name, API.get_rendering_parameters()), "矩形树图")
 
     @staticmethod
+    @exception_catch()
     def to_tree():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_tree(name, API.get_rendering_parameters()), "树状图")
 
     @staticmethod
+    @exception_catch()
     def to_sankey():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_sankey(name, API.get_rendering_parameters()), "桑基图")
 
     @staticmethod
+    @exception_catch()
     def to_sunburst():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_sunburst(name, API.get_rendering_parameters()), "旭日图")
 
     @staticmethod
+    @exception_catch()
     def to_theme_river():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -714,26 +788,31 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_calendar():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_calendar(name, API.get_rendering_parameters()), "日历图")
 
     @staticmethod
+    @exception_catch()
     def to_gauge():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_gauge(name, API.get_rendering_parameters()), "仪表图")
 
     @staticmethod
+    @exception_catch()
     def to_liquid():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_liquid(name, API.get_rendering_parameters()), "水球图")
 
     @staticmethod
+    @exception_catch()
     def to_line3d():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_line3d(name, API.get_rendering_parameters()), "3D折线图")
 
     @staticmethod
+    @exception_catch()
     def to_scatter3d():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -741,11 +820,13 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_bar3d():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_bar3d(name, API.get_rendering_parameters()), "3D柱状图")
 
     @staticmethod
+    @exception_catch()
     def to_word_cloud():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -753,31 +834,37 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_radar():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_radar(name, API.get_rendering_parameters()), "雷达图")
 
     @staticmethod
+    @exception_catch()
     def to_polar():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_polar(name, API.get_rendering_parameters()), "极坐标图")
 
     @staticmethod
+    @exception_catch()
     def to_pie():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_pie(name, API.get_rendering_parameters()), "饼图")
 
     @staticmethod
+    @exception_catch()
     def to_parallel():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_parallel(name, API.get_rendering_parameters()), "多轴图")
 
     @staticmethod
+    @exception_catch()
     def to_graph():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_graph(name, API.get_rendering_parameters()), "关系图")
 
     @staticmethod
+    @exception_catch()
     def to_format_graph():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -785,21 +872,25 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_funnel():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_funnel(name, API.get_rendering_parameters()), "漏斗图")
 
     @staticmethod
+    @exception_catch()
     def to_heat_map():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_heatmap(name, API.get_rendering_parameters()), "热力图")
 
     @staticmethod
+    @exception_catch()
     def to_boxpolt():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_boxpolt(name, API.get_rendering_parameters()), "箱形图")
 
     @staticmethod
+    @exception_catch()
     def to_pictorialbar():
         name = API.get_sheet_name_gui()
         API.new_render(
@@ -807,31 +898,37 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def to_scatter():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_scatter(name, API.get_rendering_parameters()), "散点图")
 
     @staticmethod
+    @exception_catch()
     def to_line():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_line(name, API.get_rendering_parameters()), "折线图")
 
     @staticmethod
+    @exception_catch()
     def to_bar():
         name = API.get_sheet_name_gui()
         API.new_render(machine_controller.to_bar(name, API.get_rendering_parameters()), "柱状图")
 
     @staticmethod
-    def update_clean_code(clean_default_script):
+    @exception_catch()
+    def update_clean_code(clean_default_script_):
         clean_code.delete("0.0", tkinter.END)
-        clean_code.insert("0.0", clean_default_script)
+        clean_code.insert("0.0", clean_default_script_)
 
     @staticmethod
+    @exception_catch()
     def empty_cleaning_script():
         machine_controller.del_all_clean_func()
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def execute_cleaning_script():
         name = API.get_sheet_name_gui()
         data = machine_controller.data_clean(name)
@@ -840,24 +937,28 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_cleaning_script():
         name = clean_list[API.get_clean_func_box_index_gui()]
         machine_controller.del_clean_func(name)
         API.update_cleaning_script_box()
 
     @staticmethod
+    @exception_catch()
     def update_cleaning_script_box():
-        clean_list = machine_controller.get_clean_func()
+        clean_list_ = machine_controller.get_clean_func()
         clean_func_box.delete(0, tkinter.END)
-        clean_func_box.insert(tkinter.END, *clean_list)
+        clean_func_box.insert(tkinter.END, *clean_list_)
 
     @staticmethod
+    @exception_catch()
     def add_cleaning_script():
         exp = API.get_clean_code_gui()
         machine_controller.add_clean_func(exp)
         API.update_cleaning_script_box()
 
     @staticmethod
+    @exception_catch()
     def clean_nan_row():
         name = API.get_sheet_name_gui()
         data = machine_controller.del_nan(name, True)
@@ -866,6 +967,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def is_nan():
         name = API.get_sheet_name_gui()
         data = machine_controller.is_nan(name)
@@ -874,6 +976,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def to_bool():
         the_bool_exp = bool_exp.get()
         name = API.get_sheet_name_gui()
@@ -883,30 +986,37 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_data():
         name = API.get_sheet_name_gui()
-        column, new, row = API.del_data_gui()
+        column_, new, row_ = API.del_data_gui()
+        data = "None 你的操作不被允许"
         try:
-            data = machine_controller.del_slice(name, column, row, new)
+            data = machine_controller.del_slice(name, column_, row_, new)
         except BaseException:
-            data = "None 你的操作不被允许"
-        title = f"CoTan数据处理 表格:{name}"
-        API.vitables_gui(data, title)
-        API.update_sheet_box_gui()
+            raise
+        finally:
+            title = f"CoTan数据处理 表格:{name}"
+            API.vitables_gui(data, title)
+            API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def slice_data():
-        column, is_iloc, new, row = API.slice_data_gui()
+        column_, is_iloc, new, row_ = API.slice_data_gui()
         name = API.get_sheet_name_gui()
+        data = "None 你的操作不被允许"
         try:
-            data = machine_controller.get_slice(name, column, row, is_iloc, new)
+            data = machine_controller.get_slice(name, column_, row_, is_iloc, new)
         except BaseException:
-            data = "None 你的操作不被允许"
-        title = f"CoTan数据处理 表格:{name}"
-        API.vitables_gui(data, title)
-        API.update_sheet_box_gui()
+            raise
+        finally:
+            title = f"CoTan数据处理 表格:{name}"
+            API.vitables_gui(data, title)
+            API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def sample_data():
         name = API.get_sheet_name_gui()
         new = API.get_ascending_new_gui()
@@ -916,6 +1026,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def stored_value():
         name = API.get_sheet_name_gui()
         new = API.get_ascending_new_gui()
@@ -925,21 +1036,21 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_baseline():
         global stored_list, stored_box
         del stored_list[API.get_stored_box_index_gui()]
         API.update_sort_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_baseline():  # 按基准列排行
-        try:
-            ascending, value = API.add_baseline_gui(ascending_type, sort_by)
-            stored_list.append((value, ascending))
-        except BaseException:
-            pass
+        ascending, value = API.add_baseline_gui(ascending_type, sort_by)
+        stored_list.append((value, ascending))
         API.update_sort_box_gui()
 
     @staticmethod
+    @exception_catch()
     def sort_by_column():  # 行
         name = API.get_sheet_name_gui()
         new, ascending = API.sort_by_column_gui()
@@ -949,6 +1060,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def sort_by_tow():  # 行
         name = API.get_sheet_name_gui()
         new, ascending = API.sort_by_column_gui()
@@ -958,6 +1070,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def transpose():
         name = API.get_sheet_name_gui()
         new = API.get_ascending_new_gui()
@@ -967,20 +1080,17 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def show_report():
-        if not API.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)"):
-            raise Exception
+        assert API.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)")
         report_dir = f"{PATH}{os.sep}$Show_Des_Sheet.html"
-        try:
-            name = API.get_sheet_name_gui()
-            if name is None:
-                raise Exception
-            machine_controller.to_report(name, report_dir)
-            webbrowser.open(report_dir)
-        except BaseException:
-            pass
+        name = API.get_sheet_name_gui()
+        assert name is None
+        machine_controller.to_report(name, report_dir)
+        webbrowser.open(report_dir)
 
     @staticmethod
+    @exception_catch()
     def show_describe():
         describe = API.get_des_bool_gui()
         name = API.get_sheet_name_gui()
@@ -990,6 +1100,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def show_sheet():
         name = API.get_sheet_name_gui()
         title = f"CoTan数据处理 表格:{name}"
@@ -997,42 +1108,39 @@ class API(UIAPI):
         API.vitables_gui(data, title)
 
     @staticmethod
+    @exception_catch()
     def get_column():  # 列名(横行竖列，列名是上面的)
         name = API.get_sheet_name_gui()
         API.update_index_box_gui(machine_controller.get_column(name))
 
     @staticmethod
+    @exception_catch()
     def get_row():  # 行名(横行竖列，行名左)
         name = API.get_sheet_name_gui()
         API.update_index_box_gui(machine_controller.get_index(name))
 
     @staticmethod
+    @exception_catch()
     def show_one_sheet_html():
         global PATH, to_html_type
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
-        try:
-            name = API.get_sheet_name_gui()
-            if name is None:
-                raise Exception
-            machine_controller.render_html_one(name, html_dir)
-            webbrowser.open(html_dir)
-        except BaseException:
-            pass
+        name = API.get_sheet_name_gui()
+        assert name is None
+        machine_controller.render_html_one(name, html_dir)
+        webbrowser.open(html_dir)
 
     @staticmethod
+    @exception_catch()
     def show_sheet_html():
         global PATH, to_html_type
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
-        try:
-            name = API.get_sheet_name_gui()
-            if name is None:
-                raise Exception
-            machine_controller.render_html_all(name, html_dir, to_html_type.get())
-            webbrowser.open(html_dir)
-        except BaseException:
-            pass
+        name = API.get_sheet_name_gui()
+        assert name is None
+        machine_controller.render_html_all(name, html_dir, to_html_type.get())
+        webbrowser.open(html_dir)
 
     @staticmethod
+    @exception_catch()
     def to_csv():
         global SCREEN, sep, encoding, str_must, index_must
         csv_sep, save_dir = API.to_csv_gui()
@@ -1041,6 +1149,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_csv():
         global SCREEN, sep, encoding, str_must, index_must, sheet_name
         csv_encoding, csv_sep, file_dir, index, name, str_ = API.add_csv_gui()
@@ -1048,6 +1157,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_from_python():
         global SCREEN, sep, encoding, str_must, index_must
         code, name = API.add_from_python_gui()

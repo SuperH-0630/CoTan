@@ -70,7 +70,7 @@ def func_draw(func_list, pixel_accuracy=1000):
                 x /= pixel_accuracy
                 try:
                     y = func(x)
-                except BaseException:
+                except ValueError:
                     last_x = None
                     last_y = None
                     continue
@@ -322,7 +322,7 @@ def draw_main():
                         try:
                             bg_im = pygame.image.load(tool_set[9]).convert()  # 加载位图
                             SCREEN.blit(bg_im, (0, 0))  # 绘制位图
-                        except BaseException:
+                        finally:
                             pass
                     # 恢复参数
                     previous_x = None

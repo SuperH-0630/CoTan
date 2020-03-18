@@ -8,6 +8,7 @@ import webbrowser
 
 import machinelearning.controller
 import machinelearning.template
+from system import exception_catch
 
 calculation_list = []
 calculation_method = []
@@ -30,18 +31,21 @@ learn_dict = {}
 
 class UIAPI:
     @staticmethod
+    @exception_catch()
     def get_split_shape_list_gui():
         try:
             split_shape_list = eval(f"[{shape.get()}]", {})[0]
-        except BaseException:
+        except IndexError:
             split_shape_list = 2
         return split_shape_list
 
     @staticmethod
+    @exception_catch()
     def get_reval_type_gui():
         return processing_type.get()
 
     @staticmethod
+    @exception_catch()
     def update_sheet_box_gui():
         global SCREEN, sheet_box, sheet_list
         sheet_list = list(learner_controller.get_form().keys())
@@ -49,6 +53,7 @@ class UIAPI:
         sheet_box.insert(tkinter.END, *sheet_list)
 
     @staticmethod
+    @exception_catch()
     def creat_text_sheet_gui(data, name):
         global bg_color
         new_top = tkinter.Toplevel(bg=bg_color)
@@ -61,6 +66,7 @@ class UIAPI:
         new_top.resizable(width=False, height=False)
 
     @staticmethod
+    @exception_catch()
     def add_python_gui():
         python_dir = askopenfilename(
             title="选择载入的py", filetypes=[("Python", ".py"), ("Txt", ".txt")]
@@ -73,26 +79,25 @@ class UIAPI:
         return code, name
 
     @staticmethod
+    @exception_catch()
     def get_data_name_gui(get_from_box=True, is_x_data=True):  # 获得名字统一接口
         global sheet_list, sheet_box, x_data
         if get_from_box:
             try:
                 return sheet_list[sheet_box.curselection()[0]]
-            except BaseException:
+            except IndexError:
                 try:
                     return sheet_list[0]
-                except BaseException:
+                except IndexError:
                     return None
         else:
-            try:
-                if is_x_data:
-                    return x_data.get()
-                else:
-                    return y_data.get()
-            except BaseException:
-                return None
+            if is_x_data:
+                return x_data.get()
+            else:
+                return y_data.get()
 
     @staticmethod
+    @exception_catch()
     def add_csv_gui():
         csv_dir = askopenfilename(title="选择载入的CSV", filetypes=[("CSV", ".csv")])
         the_sep = sep.get()
@@ -109,6 +114,7 @@ class UIAPI:
         return csv_dir, name, the_encoding, must_str, the_sep
 
     @staticmethod
+    @exception_catch()
     def to_csv_gui():
         save_dir = asksaveasfilename(title="选择保存的CSV", filetypes=[("CSV", ".csv")])
         csv_sep = sep.get()
@@ -116,6 +122,7 @@ class UIAPI:
         return save_dir, name, csv_sep
 
     @staticmethod
+    @exception_catch()
     def update_leaner_gui():
         global learn_dict, learner_box
         learn_dict = learner_controller.return_learner()
@@ -123,73 +130,83 @@ class UIAPI:
         learner_box.insert(tkinter.END, *learn_dict.keys())
 
     @staticmethod
+    @exception_catch()
     def set_x_data_gui():
         global x_data
         x_data.set(API.get_data_name_gui())
 
     @staticmethod
+    @exception_catch()
     def set_y_data_gui():
         global y_data
         y_data.set(API.get_data_name_gui())
 
     @staticmethod
+    @exception_catch()
     def set_learner_gui():
         global learner_output
         learner_output.set(API.get_learner_gui(True))
 
     @staticmethod
+    @exception_catch()
     def get_learner_gui(return_box=False):
         global learn_dict, learner_box, learner_output
         if return_box:
             try:
                 return list(learn_dict.keys())[learner_box.curselection()[0]]
-            except BaseException:
+            except IndexError:
                 try:
                     return list(learn_dict.keys)[0]
-                except BaseException:
+                except IndexError:
                     return API.get_learner_gui(False)
         else:
-            try:
-                return learner_output.get()
-            except BaseException:
-                return None
+            return learner_output.get()
 
     @staticmethod
+    @exception_catch()
     def show_score_gui(message):
         tkinter.messagebox.showinfo("完成", message)
 
     @staticmethod
+    @exception_catch()
     def get_learner_parameters_gui():
         global learner_parameters
         return learner_parameters.get("0.0", tkinter.END)
 
     @staticmethod
+    @exception_catch()
     def get_merge_box_index_gui():
         return merge_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def update_merge_box_gui():
         global merge_list, merge_box
         merge_box.delete(0, tkinter.END)
         merge_box.insert(tkinter.END, *merge_list)
 
     @staticmethod
+    @exception_catch()
     def get_merge_split_type_gui():
         return processing_type.get()
 
     @staticmethod
+    @exception_catch()
     def get_shape_gui():
         return eval(f"[{shape.get()}]")[0]
 
     @staticmethod
+    @exception_catch()
     def global_settings_gui():
         return [bool(i.get()) for i in global_settings]
 
     @staticmethod
+    @exception_catch()
     def get_calculation_num_gui():
         return eval(value.get(), {})
 
     @staticmethod
+    @exception_catch()
     def update_calculation_box_gui():
         global calculation_list, calculation_method, calculation_box
         calculation_box.delete(0, tkinter.END)
@@ -204,24 +221,29 @@ class UIAPI:
         )
 
     @staticmethod
+    @exception_catch()
     def get_calculation_type_gui():
         return calculation_type.get()
 
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def add_reverse_fast_fourier2():  # 添加Lenear的核心
         API.add_leaner("[2]Reverse_Fast_Fourier")
 
     @staticmethod
+    @exception_catch()
     def add_reverse_fast_fourier():  # 添加Lenear的核心
         API.add_leaner("Reverse_Fast_Fourier")
 
     @staticmethod
+    @exception_catch()
     def add_fast_fourier():  # 添加Lenear的核心
         API.add_leaner("Fast_Fourier")
 
     @staticmethod
+    @exception_catch()
     def curve_fitting():
         file_dir = askopenfilename(title="导入参数")
         with open(file_dir, "r") as f:
@@ -229,18 +251,22 @@ class API(UIAPI):
             API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def show_clustering_score():
         API.show_score(2)
 
     @staticmethod
+    @exception_catch()
     def show_regression_score():
         API.show_score(1)
 
     @staticmethod
+    @exception_catch()
     def show_class_score():
         API.show_score(0)
 
     @staticmethod
+    @exception_catch()
     def show_score(func):
         learner = API.get_learner_gui(True)
         save_dir = askdirectory(title="选择保存位置")
@@ -256,6 +282,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def calculation():
         global calculation_list, calculation_method
         func = API.get_calculation_type_gui()
@@ -266,6 +293,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_calculation_core(num, type_):
         if len(calculation_list) == 2:
             del calculation_list[0]
@@ -274,17 +302,20 @@ class API(UIAPI):
         calculation_method.append(type_)
 
     @staticmethod
+    @exception_catch()
     def add_calculation_number():
         API.add_calculation_core(API.get_calculation_num_gui(), 0)
         API.update_calculation_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_calculation_object():
         name = API.get_data_name_gui()
         API.add_calculation_core(name, 1)
         API.update_calculation_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_leaner():
         learn = API.get_learner_gui(True)
         set_learne = API.get_learner_gui(False)  # 获取学习器Learner
@@ -293,31 +324,36 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def global_seeting():
         args = API.global_settings_gui()
         machinelearning.template.set_global(*args)
 
     @staticmethod
+    @exception_catch()
     def reshape():
         numpy_shape = API.get_shape_gui()
         learner_controller.reshape(API.get_data_name_gui(), numpy_shape)
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def transpose():
         try:
             func = API.get_shape_gui()
-        except BaseException:
+        except AssertionError:
             func = None
         learner_controller.transpose(API.get_data_name_gui(), func)
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_ndim():
         learner_controller.del_ndim(API.get_data_name_gui())
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def reval():
         global learner_controller
         reval_type = API.get_reval_type_gui()
@@ -325,12 +361,14 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def two_split():
         split_type = API.get_merge_split_type_gui()
         learner_controller.two_split(API.get_data_name_gui(), shape.get(), split_type)
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def split():
         global learner_controller, shape
         split_type = API.get_merge_split_type_gui()
@@ -339,6 +377,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def merge():
         if len(merge_list) < 1:
             return False
@@ -347,16 +386,19 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def merge_del():
         del merge_list[API.get_merge_box_index_gui()]
         API.update_merge_box_gui()
 
     @staticmethod
+    @exception_catch()
     def merge_add():
         merge_list.append(API.get_data_name_gui())
         API.update_merge_box_gui()
 
     @staticmethod
+    @exception_catch()
     def visualization_results():
         learner = API.get_learner_gui(True)
         save_dir = askdirectory(title="选择保存位置")
@@ -366,6 +408,7 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def score_learner():
         learner = API.get_learner_gui()
         score = learner_controller.score(
@@ -374,6 +417,7 @@ class API(UIAPI):
         API.show_score_gui(f"针对测试数据评分结果为:{score}")
 
     @staticmethod
+    @exception_catch()
     def predict_learner():
         learner = API.get_learner_gui()
         data = learner_controller.predict(API.get_data_name_gui(False, True), learner)
@@ -382,13 +426,13 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def fit_learner():
         learner = API.get_learner_gui()
         try:
             split = float(data_split.get())
-            if split < 0 or 1 < split:
-                raise Exception
-        except BaseException:
+            assert split < 0 or 1 < split
+        except (AssertionError, ValueError):
             split = 0.3
         socore = learner_controller.fit_model(
             API.get_data_name_gui(False, True),
@@ -403,18 +447,22 @@ class API(UIAPI):
         )
 
     @staticmethod
+    @exception_catch()
     def add_statistics():  # 添加Lenear的核心
         API.add_leaner("Statistics")
 
     @staticmethod
+    @exception_catch()
     def add_correlation():
         API.add_leaner("Correlation")
 
     @staticmethod
+    @exception_catch()
     def add_matrix_scatter():
         API.add_leaner("MatrixScatter")
 
     @staticmethod
+    @exception_catch()
     def add_view_data():
         learner_controller.add_view_data(
             API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
@@ -422,18 +470,22 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def add_cluster_tree():
         API.add_leaner("ClusterTree")
 
     @staticmethod
+    @exception_catch()
     def add_feature_y_x():
         API.add_leaner("FeatureY-X")
 
     @staticmethod
+    @exception_catch()
     def add_numpy_to_heatmap():
         API.add_leaner("HeatMap")
 
     @staticmethod
+    @exception_catch()
     def add_predictive_heatmap_more():  # 添加Lenear的核心
         learner_controller.add_predictive_heat_map_more(
             API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
@@ -441,6 +493,7 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def add_predictive_heatmap():  # 添加Lenear的核心
         learner_controller.add_predictive_heat_map(
             API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
@@ -448,190 +501,237 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def add_feature_scatter_class_all():
         API.add_leaner("FeatureScatterClass_all")
 
     @staticmethod
+    @exception_catch()
     def add_feature_scatter_all():
         API.add_leaner("FeatureScatter_all")
 
     @staticmethod
+    @exception_catch()
     def add_feature_scatter_class():
         API.add_leaner("FeatureScatterClass")
 
     @staticmethod
+    @exception_catch()
     def add_feature_scatter():
         API.add_leaner("FeatureScatter")
 
     @staticmethod
+    @exception_catch()
     def add_class_bar():
         API.add_leaner("ClassBar")
 
     @staticmethod
+    @exception_catch()
     def add_dbscan():
         API.add_leaner("DBSCAN")
 
     @staticmethod
+    @exception_catch()
     def add_agglomerative():
         API.add_leaner("Agglomerative")
 
     @staticmethod
+    @exception_catch()
     def add_k_means():
         API.add_leaner("k-means")
 
     @staticmethod
+    @exception_catch()
     def add_mlp_class():
         API.add_leaner("MLP_class")
 
     @staticmethod
+    @exception_catch()
     def add_mlp():
         API.add_leaner("MLP")
 
     @staticmethod
+    @exception_catch()
     def add_svr():
         API.add_leaner("SVR")
 
     @staticmethod
+    @exception_catch()
     def add_svc():
         API.add_leaner("SVC")
 
     @staticmethod
+    @exception_catch()
     def add_gradient_tree():
         API.add_leaner("GradientTree")
 
     @staticmethod
+    @exception_catch()
     def add_gradient_tree_class():
         API.add_leaner("GradientTree_class")
 
     @staticmethod
+    @exception_catch()
     def add_tsne():
         API.add_leaner("t-SNE")
 
     @staticmethod
+    @exception_catch()
     def add_nmf():
         API.add_leaner("NMF")
 
     @staticmethod
+    @exception_catch()
     def add_lda():
         API.add_leaner("LDA")
 
     @staticmethod
+    @exception_catch()
     def add_kpca():
         API.add_leaner("KPCA")
 
     @staticmethod
+    @exception_catch()
     def add_rpca():
         API.add_leaner("RPCA")
 
     @staticmethod
+    @exception_catch()
     def add_pca():
         API.add_leaner("PCA")
 
     @staticmethod
+    @exception_catch()
     def add_missed():
         API.add_leaner("Missed")
 
     @staticmethod
+    @exception_catch()
     def add_label():
         API.add_leaner("Label")
 
     @staticmethod
+    @exception_catch()
     def add_one_hot_encoder():
         API.add_leaner("OneHotEncoder")
 
     @staticmethod
+    @exception_catch()
     def add_discretization():
         API.add_leaner("Discretization")
 
     @staticmethod
+    @exception_catch()
     def add_binarizer():
         API.add_leaner("Binarizer")
 
     @staticmethod
+    @exception_catch()
     def add_regularization():
         API.add_leaner("Regularization")
 
     @staticmethod
+    @exception_catch()
     def add_fuzzy_quantization():
         API.add_leaner("Fuzzy_quantization")
 
     @staticmethod
+    @exception_catch()
     def add_mapzoom():
         API.add_leaner("Mapzoom")
 
     @staticmethod
+    @exception_catch()
     def add_sigmod_scaler():
         API.add_leaner("sigmodScaler")
 
     @staticmethod
+    @exception_catch()
     def add_decimal_scaler():
         API.add_leaner("decimalScaler")
 
     @staticmethod
+    @exception_catch()
     def add_atan_scaler():
         API.add_leaner("atanScaler")
 
     @staticmethod
+    @exception_catch()
     def add_log_scaler():
         API.add_leaner("LogScaler")
 
     @staticmethod
+    @exception_catch()
     def add_min_max_scaler():
         API.add_leaner("MinMaxScaler")
 
     @staticmethod
+    @exception_catch()
     def add_z_score():
         API.add_leaner("Z-Score")
 
     @staticmethod
+    @exception_catch()
     def add_forest():
         API.add_leaner("Forest")
 
     @staticmethod
+    @exception_catch()
     def add_forest_class():
         API.add_leaner("Forest_class")
 
     @staticmethod
+    @exception_catch()
     def add_tree_class():
         API.add_leaner("Tree_class")
 
     @staticmethod
+    @exception_catch()
     def add_tree():
         API.add_leaner("Tree")
 
     @staticmethod
+    @exception_catch()
     def add_select_k_best():
         API.add_leaner("SelectKBest")
 
     @staticmethod
+    @exception_catch()
     def add_knn_class():
         API.add_leaner("Knn_class")
 
     @staticmethod
+    @exception_catch()
     def add_logistic_regression():
         API.add_leaner("LogisticRegression")
 
     @staticmethod
+    @exception_catch()
     def add_lasso():
         API.add_leaner("Lasso")
 
     @staticmethod
+    @exception_catch()
     def add_variance():
         API.add_leaner("Variance")
 
     @staticmethod
+    @exception_catch()
     def add_knn():
         API.add_leaner("Knn")
 
     @staticmethod
+    @exception_catch()
     def add_ridge():
         API.add_leaner("Ridge")
 
     @staticmethod
+    @exception_catch()
     def add_line():
         API.add_leaner("Line")
 
     @staticmethod
+    @exception_catch()
     def add_select_from_model():  # 添加Lenear的核心
         learner_controller.add_select_from_model(
             API.get_learner_gui(), parameters=API.get_learner_parameters_gui()
@@ -639,6 +739,7 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def add_leaner(learner_type):  # 添加Lenear的核心
         learner_controller.add_learner(
             learner_type, parameters=API.get_learner_parameters_gui()
@@ -646,40 +747,37 @@ class API(UIAPI):
         API.update_leaner_gui()
 
     @staticmethod
+    @exception_catch()
     def to_html_one():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
-        try:
-            name = API.get_data_name_gui()
-            if name is None:
-                raise Exception
-            learner_controller.to_html_one(name, html_dir)
-            webbrowser.open(html_dir)
-        except BaseException:
-            pass
+        name = API.get_data_name_gui()
+        assert name is None
+        learner_controller.to_html_one(name, html_dir)
+        webbrowser.open(html_dir)
 
     @staticmethod
+    @exception_catch()
     def to_html():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
-        try:
-            name = API.get_data_name_gui()
-            if name is None:
-                raise Exception
-            learner_controller.to_html(name, html_dir, to_html_type.get())
-            webbrowser.open(html_dir)
-        except BaseException:
-            pass
+        name = API.get_data_name_gui()
+        assert name is None
+        learner_controller.to_html(name, html_dir, to_html_type.get())
+        webbrowser.open(html_dir)
 
     @staticmethod
+    @exception_catch()
     def to_csv():
         learner_controller.to_csv(*API.to_csv_gui())
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_csv():
         learner_controller.read_csv(*API.add_csv_gui())
         API.update_sheet_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_python():
         code, name = API.add_python_gui()
         learner_controller.add_python(code, name)

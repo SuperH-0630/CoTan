@@ -6,6 +6,7 @@ import threading
 import crawler.controller
 import crawler.template
 from newtkinter import askdirectory
+from system import exception_catch
 
 SCREEN = tkinter.Tk()
 database_list = []
@@ -71,7 +72,8 @@ database = None
 
 class UIAPI:
     @staticmethod
-    def get_db_index_gui(object_index):
+    @exception_catch()
+    def get_db_index_gui():
         try:
             index = eval(object_index.get(), {})
         except BaseException:
@@ -79,17 +81,19 @@ class UIAPI:
         return index
 
     @staticmethod
+    @exception_catch()
     def get_datadase_name_gui():
         global database_box, database_list
         try:
             return database_list[database_box.curselection()[0]]
-        except BaseException:
+        except IndexError:
             try:
                 return database_list[0]
-            except BaseException:
+            except IndexError:
                 return None
 
     @staticmethod
+    @exception_catch()
     def update_database_box_gui():
         global database_box, database_list
         database_list = database.return_database()
@@ -97,6 +101,7 @@ class UIAPI:
         database_box.insert(tkinter.END, *database_list)
 
     @staticmethod
+    @exception_catch()
     def update_run_status_gui(now_func, status, value_box):
         global now_running, status_output, variable_box
         now_running.set(now_func)
@@ -105,10 +110,12 @@ class UIAPI:
         variable_box.insert(0, *value_box)
 
     @staticmethod
+    @exception_catch()
     def get_attributes_box_index_gui():
         return attributes_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def add_attributes_gui():
         name = attributes_name.get()
         value = attributes_value.get()
@@ -118,6 +125,7 @@ class UIAPI:
         return name, value
 
     @staticmethod
+    @exception_catch()
     def update_attributes_box_gui():
         global attributes_box, attributes_dict
         show = []
@@ -127,20 +135,21 @@ class UIAPI:
         attributes_box.insert(tkinter.END, *show)
 
     @staticmethod
+    @exception_catch()
     def third_func_args_gui():  # 方法args统一转换(第三栏目)
         global is_special_keys, chains, drag_element, drag_element_index, run_time, operation_object, object_index
         global type_value
         try:
             index = int(object_index.get())
-        except BaseException:
+        except ValueError:
             index = 0
         try:
             index2 = int(drag_element_index.get())
-        except BaseException:
+        except ValueError:
             index2 = 0
         try:
             time = int(run_time.get())
-        except BaseException:
+        except ValueError:
             time = 1
         return dict(
             Chains=chains.get(),
@@ -154,6 +163,7 @@ class UIAPI:
         )
 
     @staticmethod
+    @exception_catch()
     def second_func_args_gui():  # 方法args统一转换(第二栏目)
         global cookies_name_input, new_cookies, element_name, attributes_dict, operation_object, object_index
         global find_text, text_regex, limit, is_recursive, find_path
@@ -179,15 +189,16 @@ class UIAPI:
         )
 
     @staticmethod
+    @exception_catch()
     def first_func_args_gui():  # 方法args统一转换(不支持Frame)
         global operation_object, object_index, send_text, password, select_object, js_code, wait_time
         try:
             time = int(wait_time.get())
-        except BaseException:
+        except ValueError:
             time = 2
         try:
             index = int(object_index.get())
-        except BaseException:
+        except ValueError:
             index = 0
         return dict(
             element_value=operation_object.get(),
@@ -201,28 +212,34 @@ class UIAPI:
         )
 
     @staticmethod
+    @exception_catch()
     def get_parser_func_box_index_gui():
         return parser_func_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def update_parser_func_box_gui():
         global parser_func_box, page_parser
         parser_func_box.delete(0, tkinter.END)
         parser_func_box.insert(tkinter.END, *page_parser.return_func(False)[::-1])
 
     @staticmethod
+    @exception_catch()
     def get_new_cookies_gui():
         return eval(new_cookies.get(), {})
 
     @staticmethod
+    @exception_catch()
     def get_cookies_fix_gui():
         return bool(cookies_fixed.get())
 
     @staticmethod
+    @exception_catch()
     def get_cookies_box_index_gui():
         return cookies_BOX.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def update_cookies_box_gui(cookies):
         global cookies_BOX, cookies_list
         if API.get_cookies_fix_gui():
@@ -231,20 +248,24 @@ class UIAPI:
             cookies_BOX.insert(0, *cookies)
 
     @staticmethod
+    @exception_catch()
     def get_filter_func_box_index_gui():
         return filter_func_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def update_filter_func_box_gui():
         global url, filter_func_box
         filter_func_box.delete(0, tkinter.END)
         filter_func_box.insert(tkinter.END, *url.return_filter_func())
 
     @staticmethod
+    @exception_catch()
     def get_url_box_index_gui():
         return url_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def get_url_parameter_gui():
         try:
             data = eval(requests_data.get(), {})
@@ -252,9 +273,9 @@ class UIAPI:
             data = {}
         try:
             the_time_out = int(time_out.get())
-        except BaseException:
+        except ValueError:
             the_time_out = 5
-        re = dict(
+        return_ = dict(
             func=mode_input.get(),
             UA=user_agent_input.get(),
             cookies=applied_cookies.get(),
@@ -263,14 +284,16 @@ class UIAPI:
         )
         name = ["no_js", "no_java", "no_plugins", "first_run", "head", "no_img", "new"]
         for i in range(len(name)):
-            re[name[i]] = bool(url_parameter[i].get())
-        return re
+            return_[name[i]] = bool(url_parameter[i].get())
+        return return_
 
     @staticmethod
+    @exception_catch()
     def get_new_url_name_gui():
         return url_input.get()
 
     @staticmethod
+    @exception_catch()
     def add_url_from_tag_gui():
         try:
             index = eval(object_index.get(), {})
@@ -285,14 +308,16 @@ class UIAPI:
         )
 
     @staticmethod
+    @exception_catch()
     def update_url_box_gui():
         global url, url_box
         url_box.delete(0, tkinter.END)
         url_box.insert(tkinter.END, *url.return_url())
 
     @staticmethod
+    @exception_catch()
     def to_database_gui():
-        index = API.get_db_index_gui(object_index)
+        index = API.get_db_index_gui()
         return dict(element_value=operation_object.get(),
                     index=index,
                     data=data_format.get(),
@@ -301,6 +326,7 @@ class UIAPI:
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def to_database(is_tag=True):
         global object_index, operation_object, data_format, page_parser
         if is_tag:
@@ -311,50 +337,58 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def close():
         name = API.get_datadase_name_gui()
         database.close(name)
         API.update_database_box_gui()
 
     @staticmethod
+    @exception_catch()
     def out():
         name = API.get_datadase_name_gui()
         database.out(name, save_dir)
         API.update_database_box_gui()
 
     @staticmethod
+    @exception_catch()
     def remove_database():
         name = API.get_datadase_name_gui()
         database.rm_database(name)
         API.update_database_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_database():
         name = database_name.get()
         database.add_database(name)
         API.update_database_box_gui()
 
     @staticmethod
+    @exception_catch()
     def clean_attributes():
         global attributes_dict
         attributes_dict = {}
         API.update_attributes_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_attributes():
         del attributes_dict[list(attributes_dict.keys())[API.get_attributes_box_index_gui()]]
         API.update_attributes_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_attributes():
         try:
             name, value = API.add_attributes_gui()
         except BaseException:
-            return False
+            raise
         attributes_dict[name] = value
         API.update_attributes_box_gui()
 
     @staticmethod
+    @exception_catch()
     def third_add_action_func(func):
         args = API.third_func_args_gui()
         func = {
@@ -376,6 +410,7 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def second_add_action_func(func):
         args = API.second_func_args_gui()
         func = {
@@ -401,6 +436,7 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def first_add_action_func(func):
         args = API.first_func_args_gui()
         func = {
@@ -433,18 +469,21 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_frame_func_father(is_main=True):
         search = None if is_main else ""
         page_parser.find_switch_to_frame(search, True)
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_frame_func_id():
         search = API.get_search_key()
         page_parser.find_switch_to_frame(search, True)
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_find_func(func):
         not_all = not (bool(search_all.get()))
         search = API.get_search_key()
@@ -465,28 +504,32 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def get_search_key():
         search = search_key.get()
         return search
 
     @staticmethod
+    @exception_catch()
     def del_parser_func():
         try:
             index = API.get_parser_func_box_index_gui()
             page_parser.del_func(index, True)
             API.update_parser_func_box_gui()
         except BaseException:
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def clean_parser_func():
         try:
             page_parser.tra_func()
             API.update_parser_func_box_gui()
         except BaseException:
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def update_cookies():
         cookies = API.get_new_cookies_gui()
         if API.get_cookies_fix_gui():
@@ -496,9 +539,10 @@ class API(UIAPI):
             loader.monitoring_update_cookies(name, cookies)
             API.set_cookies_fix()
         except BaseException:
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def add_cookies():
         cookies = API.get_new_cookies_gui()
         if API.get_cookies_fix_gui():
@@ -510,6 +554,7 @@ class API(UIAPI):
             raise
 
     @staticmethod
+    @exception_catch()
     def clean_cookies():
         if API.get_cookies_fix_gui():
             return False
@@ -517,13 +562,15 @@ class API(UIAPI):
             loader.monitoring_clear_cookier()
             API.set_cookies_fix()
         except BaseException:
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def set_cookies_fix(fix=0):
         cookies_fixed.set(fix)
 
     @staticmethod
+    @exception_catch()
     def del_cookies():
         if API.get_cookies_fix_gui():
             return False
@@ -532,15 +579,17 @@ class API(UIAPI):
             loader.monitoring_del_cookies(name)
             API.set_cookies_fix()
         except BaseException:
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def crawler_stop():
         global start_loader_stop
         start_loader_stop = False
         loader.stop()
 
     @staticmethod
+    @exception_catch()
     def crawler_run():
         def start_loader():
             global start_loader_stop
@@ -561,6 +610,7 @@ class API(UIAPI):
         API.update_url_box_gui()
 
     @staticmethod
+    @exception_catch()
     def crawler_run_one():
         def start_loader():
             global loader, page_parser
@@ -575,28 +625,33 @@ class API(UIAPI):
         new.start()
 
     @staticmethod
+    @exception_catch()
     def add_filter_func_https():
-        url.add_filter_func(lambda url: re.match(re.compile("^https://"), url), "HTTPS过滤")
+        url.add_filter_func(lambda the_url: re.match(re.compile("^https://"), the_url), "HTTPS过滤")
         API.update_filter_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_filter_func_www():
-        url.add_filter_func(lambda url: re.match(re.compile(r".*www\."), url), "www过滤")
+        url.add_filter_func(lambda the_url: re.match(re.compile(r".*www\."), the_url), "www过滤")
         API.update_filter_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_filter_func():
         index = API.get_filter_func_box_index_gui()
         url.del_filter_func(index)
         API.update_filter_func_box_gui()
 
     @staticmethod
+    @exception_catch()
     def del_url():
         index = API.get_url_box_index_gui()
         url.del_url(index)
         API.update_url_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_url():
         args = API.get_url_parameter_gui()
         new_url = API.get_new_url_name_gui()
@@ -606,6 +661,7 @@ class API(UIAPI):
         API.update_url_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_url_from_tag():
         page_parser.add_url(**API.add_url_from_tag_gui())
         API.update_parser_func_box_gui()

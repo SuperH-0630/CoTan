@@ -6,12 +6,8 @@ class SheetFunc(SheetMemory, SheetComputing, SheetDataPacket, SheetProperty, She
     def save_csv(self, file_dir):
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
-        try:
-            self.dataframe.to_csv(file_dir)
-        except BaseException:
-            return False
-        else:
-            return True
+        self.dataframe.to_csv(file_dir)
+        return True
 
     def return_list(self):
         # 最值和极值点设计
@@ -41,12 +37,8 @@ class ExpFunc(ExpMemory, ExpComputing, ExpCheck, ExpDataPacket, ExpProperty, Exp
     def save_csv(self, file_dir):
         if not self.have_data_packet:
             self.data_packet()  # 检查Cul的计算
-        try:
-            self.dataframe.to_csv(file_dir)
-        except BaseException:
-            return False
-        else:
-            return True
+        self.dataframe.to_csv(file_dir)
+        return True
 
     def return_list(self):  # 导出列表
         if not self.have_data_packet:

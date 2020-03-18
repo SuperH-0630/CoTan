@@ -5,11 +5,12 @@ import re as regular
 import threading
 import time
 from abc import ABCMeta, abstractmethod
+from time import sleep
+
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
-from time import sleep
-
+from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
 import requests
 
 from system import plugin_class_loading, get_path
@@ -38,6 +39,18 @@ keys_name_dict = {
     "right": Keys.RIGHT,
     "left": Keys.LEFT,
 }  # 键-值映射
+
+
+class PageParserError(Exception):
+    pass
+
+
+class UrlError(Exception):
+    pass
+
+
+class CookiesError(Exception):
+    pass
 
 
 class Database(metaclass=ABCMeta):
@@ -77,7 +90,7 @@ class CoTanDB(Database):
     def close(self):
         try:
             self.file.close()
-        except BaseException:
+        except IOError:
             pass
 
     def add_new(self, data):
@@ -144,7 +157,7 @@ class DatabaseController(AddDatabase, DatabaseControllerCustom):  # data base控
         try:
             self.database[name].close()
             del self.database[name]
-        except BaseException:
+        except IndexError:
             pass
 
     def close_all(self):  # 关闭所有数据表
@@ -457,6 +470,14 @@ class PagedownloaderBase(SeleniumBase, RequestsBase, metaclass=ABCMeta):
     def set_page_parser(self, parser):
         self.parser = parser
 
+    @abstractmethod
+    def monitoring_add_cookies(self, cookies):
+        pass
+
+    @abstractmethod
+    def monitoring_clear_cookier(self):
+        pass
+
 
 @plugin_class_loading(get_path(r'template/crawler'))
 class PageDownloaderRun(PagedownloaderBase, metaclass=ABCMeta):
@@ -468,7 +489,7 @@ class PageDownloaderRun(PagedownloaderBase, metaclass=ABCMeta):
         if self.last_mode is not None:
             try:
                 self.browser.quit()
-            except BaseException:
+            except InvalidSessionIdException:
                 pass
         self.last_mode = None
 
@@ -482,9 +503,10 @@ class PageDownloaderRun(PagedownloaderBase, metaclass=ABCMeta):
                 self.selenium_mode(func_cookie, url)
             else:  # requests模式
                 self.requests_mode(func_cookie, url)
-        except BaseException:  # 避免出现错误而无法设置last_mode，进而无法关闭driver
-            pass
-        self.last_mode = self.url_text.mode
+        except BaseException:
+            raise CookiesError
+        finally:
+            self.last_mode = self.url_text.mode
         self.parser.browser = self.browser
         self.parser.init(url)
         return self.browser
@@ -536,7 +558,7 @@ class PageDownloaderRequests(PageDownloaderRun, metaclass=ABCMeta):
     def requests_cookies(self, func_cookie):
         try:
             parameters = {"cookies": self.cookie_dict[self.url_text.cookies]}
-        except BaseException:
+        except KeyError:
             parameters = {}
             func_cookie([])
         else:
@@ -556,26 +578,26 @@ class PageDownloaderSelenium(PageDownloaderRun, metaclass=ABCMeta):
     def selenium_quit(self):
         try:
             self.browser.quit()
-        except BaseException:
+        except InvalidSessionIdException:
             pass
 
     def selenium_cookies(self):
         try:
             if not self.url_text.new:
-                raise Exception
+                raise UrlError
             cookies_list = self.cookie_dict_list[self.url_text.cookies]
-        except BaseException:
+        except (UrlError, KeyError):
             pass
         else:
             self.monitoring_clear_cookier()
             try:
                 for i in cookies_list:
                     self.monitoring_add_cookies(i)
-            except BaseException:
+            except WebDriverException:
                 pass
 
-    def start_selenium(self, quit=True):
-        if quit:
+    def start_selenium(self, quit_=True):
+        if quit_:
             self.selenium_quit()
         self.browser = webdriver.Chrome(chrome_options=self.url_text.options)
 
@@ -595,7 +617,7 @@ class PageDownloaderSelenium(PageDownloaderRun, metaclass=ABCMeta):
                     func_cookie(cookies)  # 与GUI通信显示cookie
                     self.cookie_dict[url] = cookies
                     time.sleep(0.5)
-                except BaseException:
+                except WebDriverException:
                     pass
 
         self.cookie_Thread = threading.Thread(target=update_cookie)
@@ -608,7 +630,7 @@ class PageDownloaderSelenium(PageDownloaderRun, metaclass=ABCMeta):
             self.start_selenium(False)
         try:
             self.selenium_run(url)
-        except BaseException:
+        except WebDriverException:
             self.start_selenium()
             self.selenium_run(url)
         self.selenium_cookies()
@@ -630,12 +652,12 @@ class PageParserBase:
 
     @staticmethod
     def add_base(func):  # 装饰器
-        def wrap(num=None, name=None, *args, **kwargs) -> bool:
+        def wrap(num=None, name=None, *args, **kwargs):
             try:
                 func(num=num, name=name, *args, **kwargs)
-                return True
-            except BaseException:
-                return False
+                return True, ''
+            except BaseException as e:
+                return False, str(e)
 
         return wrap
 
@@ -670,18 +692,18 @@ class PageParserFunc(PageParserBase):
 
 @plugin_class_loading(get_path(r'template/crawler'))
 class PageParserFind(PageParserFunc):
-    def find_id(self, id, not_all=False, **kwargs):
+    def find_id(self, id_, not_all=False, **kwargs):
         @self.add_base
         def find(num, name, *args, **kwargs):
-            nonlocal self, id
+            nonlocal self, id_
             if not_all:
                 self.element_dict[f"{name}[{num}]"] = [
-                    self.browser.find_element_by_id(id)
+                    self.browser.find_element_by_id(id_)
                 ]  # 返回必须是list
             else:
-                self.element_dict[f"{name}[{num}]"] = self.browser.find_elements_by_id(id)
+                self.element_dict[f"{name}[{num}]"] = self.browser.find_elements_by_id(id_)
 
-        self.add_func(f"find_ID:{id}", find)  # 添加func
+        self.add_func(f"find_ID:{id_}", find)  # 添加func
 
     def find_class(self, class_name, not_all=False, **kwargs):
         @self.add_base
@@ -1142,7 +1164,7 @@ class PageParserDataFindall(PageParserFunc):
             tag = str(tag).split(",")
         try:
             limit = int(limit)
-        except BaseException:
+        except ValueError:
             limit = None
 
         @self.add_base
@@ -1153,20 +1175,20 @@ class PageParserDataFindall(PageParserFunc):
             for bs in iter_list:
                 try:
                     re = bs.find_all(tag, attribute, limit=limit, recursive=recursive)
-                except BaseException:
+                except AttributeError:
                     try:
                         if str(bs.name) not in tag:
-                            raise Exception
+                            raise PageParserError
                         for agrs_name in attribute:
                             text = attribute[agrs_name]
                             if isinstance(text, str):
                                 if bs.attrs[agrs_name] != text:
-                                    raise Exception
+                                    raise PageParserError
                             else:  # 正则匹配
                                 if not regular.match(text, bs.attrs[agrs_name]):
-                                    raise Exception
+                                    raise PageParserError
                         re = [bs]
-                    except BaseException:
+                    except PageParserError:
                         re = []
                 paser_list += re
             self.element_dict[f"{name}[{num}]"] = paser_list
@@ -1184,7 +1206,7 @@ class PageParserDataFindall(PageParserFunc):
     ):  # 根据text定位
         try:
             limit = int(limit)
-        except BaseException:
+        except ValueError:
             limit = None
 
         @self.add_base
@@ -1195,16 +1217,16 @@ class PageParserDataFindall(PageParserFunc):
             for bs in iter_list:
                 try:
                     re = bs.find_all(text=text, limit=limit, recursive=recursive)
-                except BaseException:
+                except AttributeError:
                     try:
                         if isinstance(text, str):
                             if str(bs.string) != text:
-                                raise Exception
+                                raise PageParserError
                         else:
                             if not regular.match(text, str(bs.string)):
-                                raise Exception
+                                raise PageParserError
                         re = [bs]
-                    except BaseException:
+                    except PageParserError:
                         re = []
                 paser_list += re
             self.element_dict[f"{name}[{num}]"] = paser_list
@@ -1269,7 +1291,7 @@ class PageParserDataSource(PageParserFunc):
                     self.browser.page_source,
                     self.url_text,
                 ]
-            except BaseException:
+            except AttributeError:
                 self.element_dict[f"{name}[{num}]"] = [
                     self.browser.text,
                     self.url_text,
@@ -1327,7 +1349,7 @@ class PageParserDataSource(PageParserFunc):
                     else:
                         new_url = bs.attrs.get(url_name, "")
                     self.downloader.url.add_url(new_url, **url_args)
-                except BaseException:
+                except AttributeError:
                     pass
             update_func()  # 更新tkinter
 
@@ -1365,9 +1387,9 @@ class PageParserTool(PageParserFunc):
                 try:
                     re = eval(str(path), {"self": bs})
                     if re is None:
-                        raise Exception
+                        raise PageParserError
                     paser_list.append(re)
-                except BaseException:
+                finally:
                     pass
             self.element_dict[f"{name}[{num}]"] = paser_list
 

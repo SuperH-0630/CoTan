@@ -18,15 +18,12 @@ def to_bool(str_object, hope=False):
         true_list.append("")
     else:
         false_list.append("")
-    try:
-        str_object = str(str_object)
-        if str_object in false_list:
-            return False
-        elif str_object in true_list:
-            return True
-        else:
-            raise Exception
-    except BaseException:
+    str_object = str(str_object)
+    if str_object in false_list:
+        return False
+    elif str_object in true_list:
+        return True
+    else:
         return bool(str_object)
 
 
@@ -185,7 +182,7 @@ class SheetFuncInit(SheetFuncBase):
                 float_y = float(func[1][i])
                 float_x_list.append(float_x)
                 float_y_list.append(float_y)
-            except BaseException:
+            finally:
                 pass
         # 筛查重复
         x = []
@@ -267,7 +264,7 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
                             elif abs(y - last_y) >= 10 * self.span:
                                 balance = 3
                                 group_score += 5
-                        except BaseException:
+                        except TypeError:
                             balance = 4
                             group_score += 9
                         now_monotonic = 2
@@ -284,7 +281,7 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
                     self.classification_x[-1].append(now_x)
                     self.classification_y[-1].append(y)
                     last_y = y
-                except BaseException:
+                finally:
                     pass
         except (TypeError, IndexError, ValueError):
             pass
@@ -300,7 +297,7 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
                     try:
                         new_classification_x[-1] += self.classification_x[i]
                         new_classification_y[-1] += self.classification_y[i]
-                    except BaseException:  # 按道理不应该出现这个情况
+                    except IndexError:  # 按道理不应该出现这个情况
                         new_classification_x.append(self.classification_x[i])
                         new_classification_y.append(self.classification_y[i])
                 else:
@@ -363,7 +360,7 @@ class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
                 ):
                     result = [last_y, i]
                     break
-            except BaseException:
+            finally:
                 pass
             last_y = i
         if result is None:
@@ -372,7 +369,7 @@ class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
                     if abs(((i + last_y) / 2) - y_in) < 0.1:
                         result = [last_y, i]
                         break
-                except BaseException:
+                finally:
                     pass
                 last_y = i
         if result is None:
@@ -401,7 +398,7 @@ class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
                 if i not in self.memore_x:
                     self.memore_x.append(i)
                     self.memore_y.append(y)
-            except BaseException:  # 捕捉运算错误
+            except ValueError:  # 捕捉运算错误
                 continue
         self.memory_answer += answer
         self.best_value_core()
@@ -433,15 +430,15 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                     if flat is None:
                         flat = 0
                     elif flat == 1:
-                        raise Exception
+                        assert True
                 elif symmetry_y == -now_y:
                     if flat is None:
                         flat = 1
                     elif flat == 0:
-                        raise Exception
+                        assert True
                 else:
-                    raise Exception
-            except BaseException:
+                    assert True
+            except AssertionError:
                 flat = None
                 break
         return flat, [left_x, right_x]
@@ -554,7 +551,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                 possible_cycle_list.extend(
                     list(set(possible_cycle))
                 )  # 这里是extend不是append，相当于 +=
-            except BaseException:
+            finally:
                 pass
 
         possible_cycle = []  # a的可能列表
@@ -568,10 +565,11 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_cycle.append(i)
         try:
+            assert not possible_cycle
             possible_cycle.sort()
             output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
-        except BaseException:
+        except AssertionError:
             output_prompt("无周期")
             return None, []  # 无结果
 
@@ -595,7 +593,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                     if possible_symmetry_axis:
                         possible_symmetry_axis.append(a)
                 possible_symmetry_axis_list.extend(list(set(possible_symmetry_axis)))
-            except BaseException:
+            finally:
                 pass
 
         possible_symmetry_axis = []  # a的可能列表
@@ -609,10 +607,11 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_symmetry_axis.append(i)
         try:
+            assert possible_symmetry_axis
             possible_symmetry_axis.sort()  #
             output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
-        except BaseException:
+        except AssertionError:
             output_prompt("无对称轴")
             return None, []  # 无结果
 
@@ -631,7 +630,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                 y = self(start)
                 x = start
                 coordinate_points.append((x, y))
-            except BaseException:
+            finally:
                 pass
 
         possible_center_list = []
@@ -655,12 +654,11 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_center.append(i)
         try:
-            if max_count < 5:
-                raise Exception
+            assert max_count < 5 or not possible_center
             output_prompt("计算完毕")
             possible_center.sort()
             return possible_center[int(len(possible_center) / 2)], possible_center
-        except BaseException:
+        except AssertionError:
             output_prompt("无对称中心")
             return None, []  # 无结果
 
@@ -791,7 +789,7 @@ class ExpFuncInit(ExpFuncBase):
                     self.son_list.append(
                         ExpFuncSon(func, style, start, end, span, accuracy, a_start)
                     )
-                except BaseException:
+                finally:
                     pass  # 不应该出现
                 a_start += a_span
             # 这个是函数名字
@@ -854,7 +852,7 @@ class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
                             ):
                                 balance = 3
                                 group_score += 5
-                        except BaseException:
+                        except TypeError:
                             balance = 4
                             group_score += 9
                         now_monotonic = 2
@@ -894,7 +892,7 @@ class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
                     try:
                         new_classification_x[-1] += self.classification_x[i]
                         new_classification_y[-1] += self.classification_y[i]
-                    except BaseException:  # 按道理不应该出现这个情况
+                    except IndexError:  # 按道理不应该出现这个情况
                         new_classification_x.append(self.classification_x[i])
                         new_classification_y.append(self.classification_y[i])
                 else:
@@ -1017,7 +1015,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                 self.memore_y.append(y_value)
                 answer.append(f"y={y_value} -> x={x}")
             return answer, result_list
-        except BaseException:
+        except ValueError:
             return [], []
 
     def gradient_calculation(self, y_value, start, end, max_iter=100, accuracy=0.00001):
@@ -1025,12 +1023,12 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
             y_value = float(y_value)
             start = float(start)
             end = float(end)
-        except BaseException:
+        except ValueError:
             return "", None
         try:
             max_iter = int(max_iter)
             accuracy = float(accuracy)
-        except BaseException:
+        except ValueError:
             max_iter = 100
             accuracy = 0.00001
         left = start
@@ -1061,7 +1059,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                     actual_monotony = 1  # 增
                 else:
                     actual_monotony = 0  # 减
-            except BaseException:
+            except TypeError:
                 contraction_direction = 1
                 actual_monotony = future_monotony
             middle_history = middle_y
@@ -1120,7 +1118,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
             zero_minimum_distance = abs(float(zero_minimum_distance))
             expansion_depth = abs(int(expansion_depth))
             secondary_verification_effect = abs(float(secondary_verification_effect))
-        except BaseException:
+        except (ValueError, TypeError):
             allow_original_value = False
             allow_extended_calculations = True
             secondary_verification = False
@@ -1138,7 +1136,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
         y = self.y + self.memore_x
         try:
             y_value = float(y_value)
-        except BaseException:
+        except ValueError:
             return [], []
         try:
             if (
@@ -1149,7 +1147,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
             if allow_original_value and y_value in y:  # 如果已经计算过
                 num = y.index(y_value)
                 return x[num]
-        except BaseException:
+        finally:
             pass
         iter_interval = [[self.start, self.end]]  # 准备迭代的列表
         middle_list = []
@@ -1171,7 +1169,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                     middle = (left + right) / 2  # 计算c
                     try:
                         middle_y = self(middle) - y_value  # 计算c
-                    except BaseException:
+                    except TypeError:
                         if expansion_depth > 0:  # 尝试向两边扩张，前提是有deep余额（扩张限制）而且新去见大于cx
                             if abs(left - (middle - new_area_offset)) > expansion_limit:
                                 # 增加区间（新区间不包括c，增加了一个偏移kx）
@@ -1294,7 +1292,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                 if i not in self.memore_x:
                     self.memore_x.append(i)
                     self.memore_y.append(y)
-            except BaseException:  # 捕捉运算错误
+            except ValueError:  # 捕捉运算错误
                 continue
         self.best_value_core()
         self.dataframe = pandas.DataFrame(
@@ -1307,7 +1305,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
         derivatives = self.derivatives
         try:
             delta_x = abs(float(delta_x))
-        except BaseException:
+        except (TypeError, ValueError):
             delta_x = 0.1
         try:
             x_value = float(x_value)
@@ -1322,7 +1320,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                 delta_x = y2 - y1
                 derivative_num = delta_x / delta_x
                 derivative_method = "逼近法求值"
-        except BaseException:
+        except ValueError:
             return None, None
         answer = f"({derivative_method})x:{x_value} -> {derivative_num}"
         return answer, derivative_num
@@ -1366,15 +1364,15 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if flat is None:
                         flat = 0
                     elif flat == 1:
-                        raise Exception
+                        assert True
                 elif symmetry_y == -now_y:
                     if flat is None:
                         flat = 1
                     elif flat == 0:
-                        raise Exception
+                        assert True
                 else:
-                    raise Exception
-            except BaseException:
+                    assert True
+            except (AssertionError, ValueError, TypeError):
                 flat = None
                 break
         return flat, [a, b]
@@ -1444,7 +1442,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
     ):
         try:
             accuracy = float(accuracy)
-        except BaseException:
+        except ValueError:
             accuracy = None
         answer = []
         parity = self.parity()
@@ -1474,17 +1472,17 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             try:
                 for i in periodic[1][1:]:
                     answer.append(f"可能的最小正周期：{i}")
-            except BaseException:
+            finally:
                 pass
             try:
                 for i in symmetry_axis[1][1:]:
                     answer.append(f"可能的对称轴：{i}")
-            except BaseException:
+            finally:
                 pass
             try:
                 for i in symmetry_center[1][1:]:
                     answer.append(f"可能的对称中心：{i}")
-            except BaseException:
+            finally:
                 pass
 
         return answer
@@ -1517,7 +1515,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if a:
                         possible_cycle.append(round(a, self.accuracy))
                 possible_cycle_list.extend(list(set(possible_cycle)))  # 不是append
-            except BaseException:
+            finally:
                 pass
             start += span
 
@@ -1532,10 +1530,11 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_cycle.append(i)
         try:
+            assert not possible_cycle
             possible_cycle.sort()
             output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
-        except BaseException:
+        except AssertionError:
             output_prompt("无周期")
             return None, []  # 无结果
 
@@ -1564,7 +1563,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if a:
                         possible_symmetry_axis.append(round(a, self.accuracy))
                 possible_symmetry_axis_list.extend(list(set(possible_symmetry_axis)))
-            except BaseException:
+            finally:
                 pass
             start += span
 
@@ -1579,10 +1578,11 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif n_c == c:
                 possible_symmetry_axis.append(i)
         try:
+            assert not possible_symmetry_axis
             possible_symmetry_axis.sort()  #
             output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
-        except BaseException:
+        except AssertionError:
             output_prompt("无对称轴")
             return None, []  # 无结果
 
@@ -1604,7 +1604,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                 y = self(start)
                 x = start
                 coordinate_points.append((x, y))
-            except BaseException:
+            finally:
                 pass
             start += span
         possible_center_list = []
@@ -1628,12 +1628,11 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_center.append(i)
         try:
-            if max_count < 5:
-                raise Exception
+            assert max_count < 5 or not possible_center
             output_prompt("计算完毕")
             possible_center.sort()  #
             return possible_center[int(len(possible_center) / 2)], possible_center
-        except BaseException:
+        except AssertionError:
             output_prompt("无对称中心")
             return None, []  # 无结果
 
@@ -1649,7 +1648,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
             start = float(parameters[0])
             end = float(parameters[1])
             flat = int(parameters[2])  # 当前研究反围:0-增区间,1-减区间,2-不增不减
-        except BaseException:
+        except (IndexError, ValueError):
             return False, ""
         if start > end:
             start, end = end, start
@@ -1662,7 +1661,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
             try:
                 output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
-            except BaseException:
+            except (TypeError, ValueError):
                 start += span
                 continue
             if last_y is None:
@@ -1692,7 +1691,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
         result = True
         try:
             parameters = float(parameters)
-        except BaseException:
+        except ValueError:
             return False, ""
         start = self.start
         end = self.end
@@ -1707,7 +1706,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(start + parameters), self.accuracy)
                 if now_y != last_y:
                     result = False
-            except BaseException:
+            finally:
                 pass
             start += span
         result_key = {True: "是", False: "不是"}
@@ -1719,7 +1718,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
         result = True
         try:
             parameters = 2 * float(parameters)
-        except BaseException:
+        except (ValueError, TypeError):
             return False, ""
         start = self.start
         end = self.end
@@ -1734,7 +1733,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(parameters - start), self.accuracy)
                 if now_y != last_y:
                     result = False
-            except BaseException:
+            finally:
                 pass
             start += span
         result_key = {True: "是", False: "不是"}
@@ -1748,7 +1747,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
             parameters = []
             for i in parameters_input.split(","):
                 parameters.append(float(i))
-        except BaseException:
+        except ValueError:
             return False, ""
         start = self.start
         end = self.end
@@ -1763,7 +1762,7 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(2 * parameters[0] - start), self.accuracy)
                 if round((now_y + last_y) / 2, self.accuracy) != parameters[1]:
                     result = False
-            except BaseException:
+            finally:
                 pass
             start += span
         result_key = {True: "是", False: "不是"}
@@ -1896,7 +1895,7 @@ class ExpFuncSon:
                             ):
                                 balance = 3
                                 group_score += 5
-                        except BaseException:
+                        except (ValueError, TypeError):
                             balance = 4
                             group_score += 9
                         now_monotonic = 2
@@ -1916,7 +1915,7 @@ class ExpFuncSon:
                     self.classification_x[-1].append(accuracy_x)
                     self.classification_y[-1].append(now_y)
                     last_y = now_y
-                except BaseException:
+                except (ValueError, TypeError):
                     classification_reason.append(0)
                     self.classification_x.append([])
                     self.classification_y.append([])
@@ -1935,7 +1934,7 @@ class ExpFuncSon:
                     try:
                         new_classification_x[-1] += self.classification_x[i]
                         new_classification_y[-1] += self.classification_y[i]
-                    except BaseException:  # 按道理不应该出现这个情况
+                    except IndexError:  # 按道理不应该出现这个情况
                         new_classification_x.append(self.classification_x[i])
                         new_classification_y.append(self.classification_y[i])
                 else:

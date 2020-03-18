@@ -153,13 +153,10 @@ class GitCtrol:
         return self.get_git(name).clone(url)
 
     def after_clone(self, name):
-        try:
-            return self.get_git(name).after_clone()
-        except BaseException:
-            return None
+        return self.get_git(name).after_clone()
 
-    def make_dir(self, name, dir):
-        return self.get_git(name).make_dir(dir)
+    def make_dir(self, name, dir_):
+        return self.get_git(name).make_dir(dir_)
 
     def rename_branch(self, name, old_name, new_name):
         return self.get_git(name).rename_branch(old_name, new_name)

@@ -78,8 +78,8 @@ def add_plugin():
     except ConflictError:
         if askokcancel("提示", f"已经存在插件，是否需要尝试合并插件?\n[合并失败将产生不可逆的后果]"):
             plugin.merge_plugin(index, plugin_dir)
-    except BaseException:
-        showwarning("文件错误", "插件导入遇到了未知错误")
+    except BaseException as e:
+        showwarning("文件错误", f"插件导入遇到了未知错误:\n{e}")
     else:
         plugin_box.delete(0, tkinter.END)
         plugin_box.insert(0, *plugin_list)
@@ -89,21 +89,19 @@ def del_plugin():
     index = plugin_box.curselection()[0]
     try:
         plugin_list = plugin.del_plugin(index)
-    except BaseException:
-        pass
-    else:
         plugin_box.delete(0, tkinter.END)
         plugin_box.insert(0, *plugin_list)
+    finally:
+        pass
 
 
 def show_plugin():
     index = plugin_box.curselection()[0]
     try:
         code, name = plugin.show_plugin(index)
-    except BaseException:
-        pass
-    else:
         code_window(name)[0].insert(tkinter.END, code)
+    finally:
+        pass
 
 
 def system_main():

@@ -5,7 +5,7 @@ import tkinter.messagebox
 
 SCREEN = None  # 设置屏幕
 func_input = None
-help = None
+help_ = None
 button = None
 logger = None
 bg_color = "#FFFAFA"  # 主颜色
@@ -90,7 +90,7 @@ class UIAPI:
 
 
 def make_func():
-    global SCREEN, func_input, help, button, logger
+    global SCREEN, func_input, help_, button, logger
     SCREEN = tkinter.Toplevel(bg=bg_color)
     SCREEN.title("")
     SCREEN.resizable(width=False, height=False)
@@ -104,7 +104,7 @@ def make_func():
         bg=bg_color,
         fg=word_color,
     )
-    help = tkinter.Button(
+    help_ = tkinter.Button(
         SCREEN,
         text="帮助",
         command=UIAPI.get_help_gui,
@@ -116,6 +116,6 @@ def make_func():
     func_input = tkinter.Entry(SCREEN)
     func_input.pack(fill=tkinter.BOTH)
     button.pack()
-    help.pack()
+    help_.pack()
     logger = CustomFuncLogger()
     return logger

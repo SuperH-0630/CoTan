@@ -10,10 +10,12 @@ from tkinter.scrolledtext import ScrolledText
 
 import gitrepo.template
 from gitrepo import controller
+from system import exception_catch
 
 
 class UIAPI:
     @staticmethod
+    @exception_catch()
     def cli_gui(
             func,
             args,
@@ -31,14 +33,7 @@ class UIAPI:
         def save_to_txt():
             nonlocal data
             dic = asksaveasfilename(title="选择文件保存位置", filetypes=[("TXT", ".txt")])
-            try:
-                if dic == "":
-                    return False
-                if dic[-4] == ".txt":
-                    pass
-                else:
-                    raise Exception
-            except BaseException:
+            if not dic.endswith(".txt"):
                 dic += ".txt"
             with open(dic, "w", encoding="utf-8") as f:
                 f.write(data)
@@ -68,7 +63,7 @@ class UIAPI:
         def pipe():
             pass
 
-        def format():
+        def format_information():
             nonlocal text, out_data, data, format_flat
             text.clear()
             if format_flat:
@@ -83,7 +78,7 @@ class UIAPI:
 
         if show_screen:
             text, cli_screen, button_list = API.show_cli_gui(
-                save_to_txt, stop, keep, format, pipe, name=name
+                save_to_txt, stop, keep, format_information, pipe, name=name
             )  # [close,keep]
             update_button()
             if tip_text != "":
@@ -120,13 +115,11 @@ class UIAPI:
                     if show_screen:
                         try:
                             cli_screen.update()
-                        except BaseException:
+                        finally:
                             pass
-                    if time.time() - start >= break_time != 0:
-                        raise Exception
-                    elif break_time == 0 and start == 0:
-                        raise Exception
-                except BaseException:
+                    assert time.time() - start >= break_time != 0
+                    assert break_time == 0 and start == 0
+                except AssertionError:
                     start = 0
                     break
 
@@ -157,9 +150,9 @@ class UIAPI:
                     break
                 try:  # 如果界面被关掉了，会报错
                     cli_screen.title(f"{name} : 运行中")
-                except BaseException:
+                except tkinter.TclError:
                     text, cli_screen, button_list = API.show_cli_gui(
-                        save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                        save_to_txt, stop, keep, format_information, pipe, name=f"{name} : 运行中"
                     )
                     update_button()
                     text.insert(tkinter.END, out_data)
@@ -177,9 +170,9 @@ class UIAPI:
                 # 界面设置
                 try:  # 如果界面被关掉了，会报错
                     cli_screen.title(f"{name} : 运行中")
-                except BaseException:
+                except tkinter.TclError:
                     text, cli_screen, button_list = API.show_cli_gui(
-                        save_to_txt, stop, keep, format, pipe, name=f"{name} : 运行中"
+                        save_to_txt, stop, keep, format_information, pipe, name=f"{name} : 运行中"
                     )
                     update_button()
                     text.insert(tkinter.END, out_data)
@@ -188,7 +181,7 @@ class UIAPI:
                     if not is_threaded_refresh:
                         SCREEN.update()
                         cli_screen.update()
-                except BaseException:
+                except tkinter.TclError:
                     break
                 # 输出字符
                 try:
@@ -212,30 +205,28 @@ class UIAPI:
                         data += f"[END]"
                         break
                     elif command_thread.returncode is not None:
-                        raise Exception
-                except BaseException:
-                    try:
-                        if show_screen:
-                            text.insert(tkinter.END, "[ERROR]")
-                            out_data += f"[ERROR]"
-                            data += f"[ERROR]"
-                        raise Exception
-                    except BaseException:
-                        break
+                        assert True
+                except (tkinter.TclError, AssertionError):
+                    if show_screen:
+                        text.insert(tkinter.END, "[ERROR]")
+                        out_data += f"[ERROR]"
+                        data += f"[ERROR]"
+                    break
             try:  # 如果界面被关掉了，会报错
                 if show_screen:
                     cli_screen.title(f"{name} : 运行完毕")
-            except BaseException:
+            except tkinter.TclError:
                 pass
             command_thread.kill()
         try:
             button_list[0].config(state=tkinter.DISABLED)
             button_list[1].config(state=tkinter.DISABLED)
-        except BaseException:
+        except (AttributeError, NameError):
             pass
         return data
 
     @staticmethod
+    @exception_catch()
     def progress_bar_gui(*args, name="CoTan_Git >>> 运行中...", **kwargs):
         progress_screen = tkinter.Toplevel(bg=bg_color)
         progress_screen.title(name)
@@ -255,12 +246,14 @@ class UIAPI:
         progress_screen.destroy()
 
     @staticmethod
+    @exception_catch()
     def get_commit_id_gui():
         global commit
         the_commit = commit.get()
         return the_commit
 
     @staticmethod
+    @exception_catch()
     def show_cli_gui(
             out_func, close_func, keep_func, not_out, pipe_func, name="CoTan_Git >>> 命令行"
     ):
@@ -344,6 +337,7 @@ class UIAPI:
         return text, cli_screen, [close, keep]
 
     @staticmethod
+    @exception_catch()
     def repo_init_gui():
         new_dir = askdirectory(title="选择仓库地址")
         if new_dir == "":
@@ -351,17 +345,19 @@ class UIAPI:
         return new_dir
 
     @staticmethod
+    @exception_catch()
     def get_repo_name_gui():  # 获得名字统一接口
         global git, repo_list, repo_box
         try:
             return repo_list[repo_box.curselection()[0]]
-        except BaseException:
+        except IndexError:
             try:
                 return repo_list[0]
-            except BaseException:
+            except IndexError:
                 return None
 
     @staticmethod
+    @exception_catch()
     def update_repo_box_gui():
         global git, repo_list, repo_box
         repo_list = list(git.get_git_dict().keys())
@@ -369,12 +365,14 @@ class UIAPI:
         repo_box.insert(tkinter.END, *repo_list)
 
     @staticmethod
+    @exception_catch()
     def update_file_box_gui():
         global file_list, file_box
         file_box.delete(0, tkinter.END)
         file_box.insert(tkinter.END, *file_list)
 
     @staticmethod
+    @exception_catch()
     def update_git_file_last_gui():
         global last_name
         if last_name is None:
@@ -382,22 +380,25 @@ class UIAPI:
         API.update_git_file_gui(last_name)
 
     @staticmethod
+    @exception_catch()
     def update_git_file_select_gui():
         name = API.get_repo_name_gui()
         API.update_git_file_gui(name)
 
     @staticmethod
+    @exception_catch()
     def update_git_file_gui(name):
         global git, repo_dir, last_name
         dir_list = git.get_dir(name)
         try:  # 窗口可能已经关闭
             repo_dir.delete(0, tkinter.END)
             repo_dir.insert(tkinter.END, *dir_list)
-        except BaseException:
+        finally:
             pass
         last_name = name
 
     @staticmethod
+    @exception_catch()
     def add_file_list_gui():
         global file_list, file_box
         new_file = set(askopenfilenames(title=f"选择文件"))
@@ -406,6 +407,7 @@ class UIAPI:
         API.update_file_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_file_input_dir_gui():
         global file_dir
         new_dir = file_dir.get()
@@ -414,6 +416,7 @@ class UIAPI:
         API.update_file_box_gui()
 
     @staticmethod
+    @exception_catch()
     def add_file_by_git_gui():
         global file_dir
         new_dir = file_dir.get()
@@ -425,6 +428,7 @@ class UIAPI:
         API.update_file_box_gui()
 
     @staticmethod
+    @exception_catch()
     def diff_gui():
         branch = master.get()
         if branch == "":
@@ -432,6 +436,7 @@ class UIAPI:
         return branch
 
     @staticmethod
+    @exception_catch()
     def commit_file_gui():
         m = commit_message.get()
         if m.replace(" ", "") == "":
@@ -440,13 +445,15 @@ class UIAPI:
         return m
 
     @staticmethod
-    def log_gui(log_type):
-        graph = bool(log_type[0].get())
-        abbrev = bool(log_type[1].get())
-        pretty = bool(log_type[2].get())
+    @exception_catch()
+    def log_gui(log_type_):
+        graph = bool(log_type_[0].get())
+        abbrev = bool(log_type_[1].get())
+        pretty = bool(log_type_[2].get())
         return abbrev, graph, pretty
 
     @staticmethod
+    @exception_catch()
     def reset_head_gui():
         repo_head = head.get()
         if repo_head == "":
@@ -455,6 +462,7 @@ class UIAPI:
         return repo_head, the_reset_type
 
     @staticmethod
+    @exception_catch()
     def reset_file_gui():
         repo_head = head.get()
         if repo_head == "":
@@ -462,12 +470,14 @@ class UIAPI:
         return repo_head
 
     @staticmethod
+    @exception_catch()
     def add_new_branch_gui():
         name = API.get_branch_name_gui()
         origin = origin_branch.get()
         return name, origin
 
     @staticmethod
+    @exception_catch()
     def branch_merge_gui():
         message = commit_message.get()
         parameters_no_ff = not bool(no_fast_forward.get())  # 对于no_ff来说，True - 使用快速合并，所以要翻转
@@ -480,32 +490,38 @@ class UIAPI:
         return message, name, parameters_no_ff
 
     @staticmethod
+    @exception_catch()
     def get_branch_name_gui():
         return branch_name.get()
 
     @staticmethod
+    @exception_catch()
     def get_stash_gui():
         stash_num = stash_name.get()
         return stash_num
 
     @staticmethod
+    @exception_catch()
     def add_remote_gui():
         ssh = remote_ssh.get()
         name = remote_name.get()
         return name, ssh
 
     @staticmethod
+    @exception_catch()
     def del_remote_gui():
         name = remote_name.get()
         return name
 
     @staticmethod
+    @exception_catch()
     def bind_remote_branch_gui():
         remote = remote_branch.get()
         local = local_branch.get()
         return local, remote
 
     @staticmethod
+    @exception_catch()
     def pull_push_gui():
         branch = remote_branch.get()
         remote = remote_name.get()
@@ -516,10 +532,12 @@ class UIAPI:
         return allow, branch, local, parameters_f, parameters_u, remote
 
     @staticmethod
+    @exception_catch()
     def get_search_key_gui():
         return show_search_key.get()
 
     @staticmethod
+    @exception_catch()
     def add_tag_gui():
         global tag_name, commit, tag_message
         the_tag_name = tag_name.get()
@@ -528,6 +546,7 @@ class UIAPI:
         return the_tag_name, the_commit, the_tag_message
 
     @staticmethod
+    @exception_catch()
     def push_tag_gui():
         global tag_name
         the_tag_name = tag_name.get()
@@ -535,28 +554,33 @@ class UIAPI:
         return remoto, the_tag_name
 
     @staticmethod
+    @exception_catch()
     def get_remote_name_gui():
         remoto = remote_name.get()
         return remoto
 
     @staticmethod
+    @exception_catch()
     def del_remote_tag_gui():
         remoto = remote_name.get()
         tag = tag_name.get()
         return remoto, tag
 
     @staticmethod
+    @exception_catch()
     def del_remote_branch_gui():
         remote = remote_name.get()
         branch = remote_branch.get()
         return branch, remote
 
     @staticmethod
+    @exception_catch()
     def del_tag_gui():
         tag = tag_name.get()
         return tag
 
     @staticmethod
+    @exception_catch()
     def featch_remote_gui():
         branch = remote_branch.get()
         remote = remote_name.get()
@@ -564,6 +588,7 @@ class UIAPI:
         return branch, local, remote
 
     @staticmethod
+    @exception_catch()
     def get_customize_gui():
         command = customize_input.get()
         is_threaded_refresh = bool(threaded_refresh.get())
@@ -571,12 +596,14 @@ class UIAPI:
         return command, is_asynchronous_display, is_threaded_refresh
 
     @staticmethod
+    @exception_catch()
     def clone_git_gui():
         new_dir = askdirectory(title="选择仓库地址")
         name = git.clone_repo(new_dir)
         return name
 
     @staticmethod
+    @exception_catch()
     def branch_new_gui():
         new_name = branch_new_name.get()
         old_name = API.get_branch_name_gui()
@@ -585,31 +612,39 @@ class UIAPI:
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def branch_new():  # 克隆仓库
         new_name, old_name = API.branch_new_gui()
         API.cli_gui(git.rename_branch, (API.get_repo_name_gui(), old_name, new_name), show_screen=False)
         API.update_repo_box_gui()
 
     @staticmethod
+    @exception_catch()
     def clone_git():  # 克隆仓库
         name = API.clone_git_gui()
         API.clone_core(name, clone_repo.get())
         API.update_repo_box_gui()
 
     @staticmethod
+    @exception_catch()
     def clone_core(name, url):
-        API.cli_gui(
-            git.clone,
-            (name, url),
-            break_time=0,
-            tip_text=f"{url}:正在执行克隆操作",
-            is_threaded_refresh=True,
-            is_asynchronous_display=True,
-        )
-        git.after_clone(name)
-        API.update_git_file_last_gui()
+        try:
+            API.cli_gui(
+                git.clone,
+                (name, url),
+                break_time=0,
+                tip_text=f"{url}:正在执行克隆操作",
+                is_threaded_refresh=True,
+                is_asynchronous_display=True,
+            )
+            git.after_clone(name)
+        except BaseException:
+            raise
+        finally:
+            API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def customize():
         command, is_asynchronous_display, is_threaded_refresh = API.get_customize_gui()
         API.cli_gui(
@@ -623,6 +658,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def fetch_remote():
         branch, local, remote = API.featch_remote_gui()
         API.cli_gui(
@@ -636,12 +672,14 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def del_tag():
         tag = API.del_tag_gui()
         API.cli_gui(git.del_tag, (API.get_repo_name_gui(), tag))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def del_remote_branch():
         branch, remote = API.del_remote_branch_gui()
         API.cli_gui(
@@ -655,6 +693,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def del_remote_tag():
         remoto, tag = API.del_remote_tag_gui()
         API.cli_gui(
@@ -668,6 +707,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def push_all_tag():
         remoto = API.get_remote_name_gui()
         API.cli_gui(
@@ -681,6 +721,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def push_tag():
         remoto, the_tag_name = API.push_tag_gui()
         API.cli_gui(
@@ -694,6 +735,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def add_tag():
         the_tag_name, the_commit, the_tag_message = API.add_tag_gui()
         API.cli_gui(
@@ -702,6 +744,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def show_tag(type_):
         global git
         key = API.get_search_key_gui()
@@ -712,6 +755,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def pull_push_remote(type_):
         allow, branch, local, parameters_f, parameters_u, remote = API.pull_push_gui()
         API.cli_gui(
@@ -727,30 +771,35 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def bind_remote_branch():
         local, remote = API.bind_remote_branch_gui()
         API.cli_gui(git.bind_branch, (API.get_repo_name_gui(), local, remote))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def del_remote():
         name = API.del_remote_gui()
         API.cli_gui(git.del_remote, (API.get_repo_name_gui(), name))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def add_remote():
         name, ssh = API.add_remote_gui()
         API.cli_gui(git.remote_add, (API.get_repo_name_gui(), ssh, name))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def cherry_pick():
         the_commit = API.get_commit_id_gui()
         API.cli_gui(git.cherry_pick, (API.get_repo_name_gui(), the_commit))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def open_stash(type_):
         stash_num = API.get_stash_gui()
         if stash_num == "":
@@ -759,24 +808,28 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def branch_merge():
         message, name, parameters_no_ff = API.branch_merge_gui()
         API.cli_gui(git.merge_branch, (API.get_repo_name_gui(), name, parameters_no_ff, message))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def del_branch(type_):
         name = API.get_branch_name_gui()
         API.cli_gui(git.del_branch, (API.get_repo_name_gui(), name, type_))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def switch_branch():
         name = API.get_branch_name_gui()
         API.cli_gui(git.switch_branch, (API.get_repo_name_gui(), name), break_time=1, show_screen=False)
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def add_new_branch():
         name, origin = API.add_new_branch_gui()
         API.cli_gui(
@@ -785,6 +838,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def remove_file():
         if not file_list:
             return False
@@ -792,6 +846,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def checkout_file():  # 从暂存区、仓库返回文件
         if not file_list:
             return False
@@ -799,18 +854,21 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def reset_file():  # 使用reset回退文件
         repo_head = API.reset_file_gui()
         API.cli_gui(git.back_version_file, (API.get_repo_name_gui(), repo_head, file_list))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def reset_head():
         repo_head, the_reset_type = API.reset_head_gui()
         API.cli_gui(git.back_version, (API.get_repo_name_gui(), repo_head, the_reset_type))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def log():
         global git, log_type
         name = API.get_repo_name_gui()
@@ -819,6 +877,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def not_parameters_call(func):
         global git
         name = API.get_repo_name_gui()
@@ -826,18 +885,21 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def commit_file():
         name = API.get_repo_name_gui()
         API.cli_gui(git.commit_file, (name, API.commit_file_gui()))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def diff():
         branch = API.diff_gui()
         API.cli_gui(git.diff_file, (API.get_repo_name_gui(), branch))
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def remove_the_staging():
         global git
         dic = file_list
@@ -847,6 +909,7 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def add():
         dic = file_list
         if not dic:
@@ -855,24 +918,28 @@ class API(UIAPI):
         API.update_git_file_last_gui()
 
     @staticmethod
+    @exception_catch()
     def get_file_box_index():
         return file_box.curselection()
 
     @staticmethod
+    @exception_catch()
     def del_file():
         try:
             del file_list[API.get_file_box_index()]
             API.update_file_box_gui()
-        except BaseException:
+        finally:
             pass
 
     @staticmethod
+    @exception_catch()
     def clean_file():
         global file_list
         file_list = []
         API.update_file_box_gui()
 
     @staticmethod
+    @exception_catch()
     def repo_init():  # 创建仓库
         global git
         new_dir = API.repo_init_gui()

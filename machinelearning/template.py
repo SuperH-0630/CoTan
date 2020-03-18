@@ -150,10 +150,7 @@ class LearnerIO(LearnBase):
         if isinstance(name["get"], np.array):
             get = name["get"]
         else:
-            try:
-                get = np.array(name["get"])
-            except BaseException:
-                get = np.array([name["get"]])
+            get = np.array(name["get"])
         self.add_form(get, sheet_name)
         return get
 
@@ -200,15 +197,15 @@ class LearnerIO(LearnBase):
         if html_type == 0:
 
             class NewTab(TabBase):
-                def add(self, table, k, *f):
-                    self.tab.add(table, k)
+                def add(self, table_, k, *f):
+                    self.tab.add(table_, k)
 
             tab = NewTab(tab_First(page_title="CoTan:查看表格"))  # 一个Tab
         elif html_type == 1:
 
             class NewTab(TabBase):
-                def add(self, table, *k):
-                    self.tab.add(table)
+                def add(self, table_, *k):
+                    self.tab.add(table_)
 
             tab = NewTab(
                 Page(
@@ -217,8 +214,8 @@ class LearnerIO(LearnBase):
         else:
 
             class NewTab(TabBase):
-                def add(self, table, *k):
-                    self.tab.add(table)
+                def add(self, table_, *k):
+                    self.tab.add(table_)
 
             tab = NewTab(
                 Page(
@@ -269,8 +266,8 @@ class LearnerSplit(LearnBase, metaclass=ABCMeta):
             if split < 1:
                 split = int(split * len(sheet) if axis == 1 else len(sheet[0]))
             else:
-                raise Exception
-        except BaseException:
+                assert True
+        except (ValueError, AssertionError):
             split = int(split)
         if axis == 0:
             self.add_form(sheet[:, split:], f"{name[0]}分割")
@@ -371,10 +368,10 @@ class Machinebase(metaclass=ABCMeta):  # 学习器的基类
         return accuracy_score(y_really, y_predict)
 
     @staticmethod
-    def _macro(y_predict, y_really):
+    def _macro(y_predict, y_really, func_num=0):
         func = [recall_score, precision_score, f1_score]  # 召回率，精确率和f1
         class_ = np.unique(y_really).tolist()
-        result = func[func](y_really, y_predict, class_, average=None)
+        result = func[func_num](y_really, y_predict, class_, average=None)
         return result, class_
 
     @staticmethod
@@ -429,21 +426,19 @@ class StudyMachinebase(Machinebase):
     def fit_model(self, x_data, y_data, split=0.3, increment=True, **kwargs):
         y_data = y_data.ravel()
         try:
-            if self.x_traindata is None or not increment:
-                raise Exception
-            self.x_traindata = np.vstack(x_data, self.x_traindata)
-            self.y_traindata = np.vstack(y_data, self.y_traindata)
-        except BaseException:
+            assert self.x_traindata is None or not increment
+            self.x_traindata = np.vstack((x_data, self.x_traindata))
+            self.y_traindata = np.vstack((y_data, self.y_traindata))
+        except (AssertionError, ValueError):
             self.x_traindata = x_data.copy()
             self.y_traindata = y_data.copy()
         x_train, x_test, y_train, y_test = train_test_split(
             x_data, y_data, test_size=split
         )
         try:  # 增量式训练
-            if not increment:
-                raise Exception
+            assert not increment
             self.model.partial_fit(x_data, y_data)
-        except BaseException:
+        except (AssertionError, AttributeError):
             self.model.fit(self.x_traindata, self.y_traindata)
         train_score = self.model.score(x_train, y_train)
         test_score = self.model.score(x_test, y_test)
@@ -460,20 +455,20 @@ class StudyMachinebase(Machinebase):
 
         accuracy = self._accuracy(y_predict, y_really)
 
-        recall, class_list = self._macro(y_predict, y_really)
-        precision, class_list = self._macro(y_predict, y_really)
-        f1, class_list = self._macro(y_predict, y_really)
+        recall, class_list = self._macro(y_predict, y_really, 0)
+        precision, class_list = self._macro(y_predict, y_really, 1)
+        f1, class_list = self._macro(y_predict, y_really, 2)
 
-        confusion_matrix, class_list = self._confusion_matrix(
+        confusion_matrix_, class_list = self._confusion_matrix(
             y_predict, y_really)
         kappa = self._kappa_score(y_predict, y_really)
         class_list: list
         tab = Tab()
 
-        def gauge_base(name: str, value: float) -> Gauge:
+        def gauge_base(name: str, value_: float) -> Gauge:
             c = (
                 Gauge()
-                .add("", [(name, round(value * 100, 2))], min_=0, max_=100)
+                .add("", [(name, round(value_ * 100, 2))], min_=0, max_=100)
                 .set_global_opts(title_opts=opts.TitleOpts(title=name))
             )
             return c
@@ -481,11 +476,11 @@ class StudyMachinebase(Machinebase):
         tab.add(gauge_base("准确率", accuracy), "准确率")
         tab.add(gauge_base("kappa", kappa), "kappa")
 
-        def bar_base(name, value) -> Bar:
+        def bar_base(name, value_) -> Bar:
             c = (
                 Bar()
                 .add_xaxis(class_list)
-                .add_yaxis(name, value, **label_setting)
+                .add_yaxis(name, value_, **label_setting)
                 .set_global_opts(
                     title_opts=opts.TitleOpts(title=name), **global_setting
                 )
@@ -496,14 +491,14 @@ class StudyMachinebase(Machinebase):
         tab.add(bar_base("召回率", recall.tolist()), "召回率")
         tab.add(bar_base("F1", f1.tolist()), "F1")
 
-        def heatmap_base(name, value, max_, min_, show) -> HeatMap:
+        def heatmap_base(name, value_, max_, min_, show) -> HeatMap:
             c = (
                 HeatMap()
                 .add_xaxis(class_list)
                 .add_yaxis(
                     name,
                     class_list,
-                    value,
+                    value_,
                     label_opts=opts.LabelOpts(is_show=show, position="inside"),
                 )
                 .set_global_opts(
@@ -517,7 +512,7 @@ class StudyMachinebase(Machinebase):
             return c
 
         value = [
-            [class_list[i], class_list[j], float(confusion_matrix[i, j])]
+            [class_list[i], class_list[j], float(confusion_matrix_[i, j])]
             for i in range(len(class_list))
             for j in range(len(class_list))
         ]
@@ -525,14 +520,14 @@ class StudyMachinebase(Machinebase):
             heatmap_base(
                 "混淆矩阵",
                 value,
-                float(confusion_matrix.max()),
-                float(confusion_matrix.min()),
+                float(confusion_matrix_.max()),
+                float(confusion_matrix_.min()),
                 len(class_list) < 7,
             ),
             "混淆矩阵",
         )
 
-        des_to_csv(save_dir, "混淆矩阵", confusion_matrix, class_list, class_list)
+        des_to_csv(save_dir, "混淆矩阵", confusion_matrix_, class_list, class_list)
         des_to_csv(
             save_dir, "评分", [
                 precision, recall, f1], class_list, [
@@ -552,11 +547,11 @@ class StudyMachinebase(Machinebase):
 
         mse = self._mse(y_predict, y_really)
         mae = self._mae(y_predict, y_really)
-        r2_score = self._r2_score(y_predict, y_really)
+        r2_score_ = self._r2_score(y_predict, y_really)
         rmse = self._rmse(y_predict, y_really)
 
         tab.add(make_tab(["MSE", "MAE", "RMSE", "r2_Score"], [
-            [mse, mae, rmse, r2_score]]), "评估数据", )
+            [mse, mae, rmse, r2_score_]]), "评估数据", )
 
         save = save_dir + rf"{os.sep}回归模型评估.HTML"
         tab.render(save)
@@ -594,9 +589,9 @@ class StudyMachinebase(Machinebase):
 
         tab.add(gauge_base("平均轮廓系数", coefficient), "平均轮廓系数")
 
-        def bar_(coefficient_array, name="数据轮廓系数"):
-            xaxis = [f"数据{i}" for i in range(len(coefficient_array))]
-            value = coefficient_array.tolist()
+        def bar_(coefficient_array_, name="数据轮廓系数"):
+            xaxis = [f"数据{i}" for i in range(len(coefficient_array_))]
+            value = coefficient_array_.tolist()
             tab.add(bar_base(name, value, xaxis), name)
 
         n = 20
@@ -642,18 +637,16 @@ class PrepBase(StudyMachinebase):  # 不允许第二次训练
         if not self.have_predict:  # 不允许第二次训练
             y_data = y_data.ravel()
             try:
-                if self.x_traindata is None or not increment:
-                    raise Exception
-                self.x_traindata = np.vstack(x_data, self.x_traindata)
-                self.y_traindata = np.vstack(y_data, self.y_traindata)
-            except BaseException:
+                assert self.x_traindata is None or not increment
+                self.x_traindata = np.vstack((x_data, self.x_traindata))
+                self.y_traindata = np.vstack((y_data, self.y_traindata))
+            except (AssertionError, ValueError):
                 self.x_traindata = x_data.copy()
                 self.y_traindata = y_data.copy()
             try:  # 增量式训练
-                if not increment:
-                    raise Exception
+                assert not increment
                 self.model.partial_fit(x_data, y_data)
-            except BaseException:
+            except (AssertionError, AttributeError):
                 self.model.fit(self.x_traindata, self.y_traindata)
         self.have_fit = True
         return "None", "None"
@@ -674,16 +667,14 @@ class Unsupervised(PrepBase):  # 无监督，不允许第二次训练
         if not self.have_predict:  # 不允许第二次训练
             self.y_traindata = None
             try:
-                if self.x_traindata is None or not increment:
-                    raise Exception
-                self.x_traindata = np.vstack(x_data, self.x_traindata)
-            except BaseException:
+                assert self.x_traindata is None or not increment
+                self.x_traindata = np.vstack((x_data, self.x_traindata))
+            except (AssertionError, ValueError):
                 self.x_traindata = x_data.copy()
             try:  # 增量式训练
-                if not increment:
-                    raise Exception
+                assert not increment
                 self.model.partial_fit(x_data)
-            except BaseException:
+            except (AssertionError, AttributeError):
                 self.model.fit(self.x_traindata, self.y_traindata)
         self.have_fit = True
         return "None", "None"
@@ -693,16 +684,15 @@ class UnsupervisedModel(PrepBase):  # 无监督
     def fit_model(self, x_data, increment=True, *args, **kwargs):
         self.y_traindata = None
         try:
-            if self.x_traindata is None or not increment:
-                raise Exception
-            self.x_traindata = np.vstack(x_data, self.x_traindata)
-        except BaseException:
+            assert self.x_traindata is None or not increment
+            self.x_traindata = np.vstack((x_data, self.x_traindata))
+        except (AssertionError, ValueError):
             self.x_traindata = x_data.copy()
         try:  # 增量式训练
             if not increment:
                 raise Exception
             self.model.partial_fit(x_data)
-        except BaseException:
+        except (AssertionError, AttributeError):
             self.model.fit(self.x_traindata, self.y_traindata)
         self.have_fit = True
         return "None", "None"
@@ -784,13 +774,13 @@ class Corr(ToPyebase):  # 相关性和协方差
         corr: np.ndarray = data.corr().to_numpy()  # 相关性
         cov: np.ndarray = data.cov().to_numpy()  # 协方差
 
-        def heat_map(data, name: str, max_, min_):
-            x = [f"特征[{i}]" for i in range(len(data))]
-            y = [f"特征[{i}]" for i in range(len(data[0]))]
+        def heat_map(data_, name: str, max_, min_):
+            x = [f"特征[{i}]" for i in range(len(data_))]
+            y = [f"特征[{i}]" for i in range(len(data_[0]))]
             value = [
-                (f"特征[{i}]", f"特征[{j}]", float(data[i][j]))
-                for i in range(len(data))
-                for j in range(len(data[i]))
+                (f"特征[{i}]", f"特征[{j}]", float(data_[i][j]))
+                for i in range(len(data_))
+                for j in range(len(data_[i]))
             ]
             c = (
                 HeatMap()
@@ -856,14 +846,14 @@ class ViewData(ToPyebase):  # 绘制预测型热力图
             x_testdata = self.x_testdata
             if x_testdata is not None:
                 add_func(x_testdata, f"{x_name}:x测试数据")
-        except BaseException:
+        finally:
             pass
 
         try:
             y_testdata = self.y_testdata.copy()
             if y_testdata is not None:
                 add_func(y_testdata, f"{x_name}:y测试数据")
-        except BaseException:
+        finally:
             pass
 
         self.have_fit = True
@@ -978,10 +968,9 @@ class ClassBar(ToPyebase):  # 类型柱状图
                         f"({iter_num})[{round(start, 2)}-"
                         f"{round((start + n) if (start + n) <= end or not iter_num == 9 else end, 2)}]")
                     try:
-                        if iter_num == 9:
-                            raise Exception  # 执行到第10次时，直接获取剩下的所有
+                        assert iter_num == 9  # 执行到第10次时，直接获取剩下的所有
                         s = (start <= i) == (i < end)  # 布尔索引
-                    except BaseException:  # 因为start + n有超出end的风险
+                    except AssertionError:  # 因为start + n有超出end的风险
                         s = (start <= i) == (i <= end)  # 布尔索引
                     # n_data = i[s]  # 取得现在的特征数据
 
@@ -1100,7 +1089,7 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
     def fit_model(self, x_data, *args, **kwargs):
         try:
             self.means = x_data.ravel()
-        except BaseException:
+        finally:
             pass
         self.have_fit = True
         return "None", "None"
@@ -1130,7 +1119,7 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
                     if g == np.nan:
                         raise Exception
                     x_means[i] = g
-                except BaseException:
+                finally:
                     pass
             get = decision_boundary_func(
                 x_range, x_means, self.learner.predict, class_, data_type
@@ -1142,7 +1131,7 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
             data = class_ + [f"{i}" for i in x_means]
             c = Table().add(headers=heard, rows=[data])
             tab.add(c, "数据表")
-        except BaseException:
+        except AttributeError:
             get, x_means, x_range, data_type = regress_visualization(x_data, y)
 
             get = prediction_boundary_func(
@@ -1440,9 +1429,9 @@ class CategoricalData:  # 数据统计助手
                 self.x_means.append(np.mean(x1))
                 self.add_range(x1)
             else:
-                raise Exception
+                assert True
             return x1_con
-        except BaseException:  # 找出出现次数最多的元素
+        except TypeError:  # 找出出现次数最多的元素
             new = np.unique(x1)  # 去除相同的元素
             count_list = []
             for i in new:
@@ -1454,14 +1443,13 @@ class CategoricalData:  # 数据统计助手
 
     def add_range(self, x1: np.array, range_=True):
         try:
-            if not range_:
-                raise Exception
+            assert not range_
             min_ = int(x1.min()) - 1
             max_ = int(x1.max()) + 1
             # 不需要复制列表
             self.x_range.append([min_, max_])
             self.data_type.append(1)
-        except BaseException:
+        except AssertionError:
             self.x_range.append(list(set(x1.tolist())))  # 去除多余元素
             self.data_type.append(2)
 
@@ -1877,7 +1865,7 @@ class SvcModel(StudyMachinebase):
         try:
             w_list = self.model.coef_.tolist()  # 未必有这个属性
             b = self.model.intercept_.tolist()
-        except BaseException:
+        except AttributeError:
             w_list = []  # 未必有这个属性
             b = []
 
@@ -1957,7 +1945,7 @@ class SvrModel(StudyMachinebase):
         try:
             w_list = self.model.coef_.tolist()  # 未必有这个属性
             b = self.model.intercept_.tolist()
-        except BaseException:
+        except AttributeError:
             w_list = []  # 未必有这个属性
             b = []
 
@@ -2156,7 +2144,7 @@ class SelectFromModel(PrepBase):  # 有监督
             for i in range(len(get)):
                 tab.add(get[i], f"[{i}]保留数据x-x散点图")
 
-        def make_bar(score):
+        def make_bar_(score):
             choose = []
             un_choose = []
             for i in range(len(score)):
@@ -2178,11 +2166,11 @@ class SelectFromModel(PrepBase):  # 有监督
             tab.add(c, "单变量重要程度")
 
         try:
-            make_bar(self.model.coef_)
-        except BaseException:
+            make_bar_(self.model.coef_)
+        except AttributeError:
             try:
-                make_bar(self.model.feature_importances_)
-            except BaseException:
+                make_bar_(self.model.feature_importances_)
+            finally:
                 pass
 
         save = save_dir + rf"{os.sep}模型特征选择.HTML"
@@ -2204,12 +2192,12 @@ class StandardizationModel(Unsupervised):  # z-score标准化 无监督
         x_data = self.x_testdata
         var = self.model.var_.tolist()
         means = self.model.mean_.tolist()
-        scale = self.model.scale_.tolist()
+        scale_ = self.model.scale_.tolist()
         conversion_control(y_data, x_data, tab)
 
         make_bar("标准差", var, tab)
         make_bar("方差", means, tab)
-        make_bar("Scale", scale, tab)
+        make_bar("Scale", scale_, tab)
 
         save = save_dir + rf"{os.sep}z-score标准化.HTML"
         tab.render(save)  # 生成HTML
@@ -2228,11 +2216,11 @@ class MinmaxscalerModel(Unsupervised):  # 离差标准化
         tab = Tab()
         y_data = self.y_testdata
         x_data = self.x_testdata
-        scale = self.model.scale_.tolist()
+        scale_ = self.model.scale_.tolist()
         max_ = self.model.data_max_.tolist()
         min_ = self.model.data_min_.tolist()
         conversion_control(y_data, x_data, tab)
-        make_bar("Scale", scale, tab)
+        make_bar("Scale", scale_, tab)
         tab.add(
             make_tab(
                 heard=[f"[{i}]特征最大值" for i in range(len(max_))]
@@ -2264,7 +2252,7 @@ class LogscalerModel(PrepBase):  # 对数标准化
     def predict(self, x_data, *args, **kwargs):
         try:
             max_logx = self.max_logx
-        except BaseException:
+        except AttributeError:
             self.have_fit = False
             self.fit_model(x_data)
             max_logx = self.max_logx
@@ -2336,7 +2324,7 @@ class DecimalscalerModel(PrepBase):  # 小数定标准化
         self.x_testdata = x_data.copy()
         try:
             j = self.j
-        except BaseException:
+        except AttributeError:
             self.have_fit = False
             self.fit_model(x_data)
             j = self.j
@@ -2379,7 +2367,7 @@ class MapzoomModel(PrepBase):  # 映射标准化
         try:
             max_ = self.max_
             min_ = self.min_
-        except BaseException:
+        except AttributeError:
             self.have_fit = False
             self.fit_model(x_data)
             max_ = self.max_
@@ -2456,7 +2444,7 @@ class FuzzyQuantizationModel(PrepBase):  # 模糊量化标准化
         try:
             max_ = self.max_
             min_ = self.max_
-        except BaseException:
+        except AttributeError:
             self.have_fit = False
             self.fit_model(x_data)
             max_ = self.max_
@@ -2562,7 +2550,7 @@ class DiscretizationModel(PrepBase):  # n值离散
         for i in range(len(range_)):
             try:
                 t = float(range_[i])
-            except BaseException:
+            except ValueError:
                 continue
             if o_t is None:  # 第一个参数
                 bool_list.append(x_predict <= t)
@@ -3007,7 +2995,7 @@ class NmfModel(Unsupervised):
         wh_data = np.matmul(y_data, h_data)
         difference_data = x_data - wh_data
 
-        def make_heat_map(data, name, max_, min_):
+        def make_heat_map(data, name, data_max, data_min):
             x = [f"数据[{i}]" for i in range(len(data))]  # 主成分
             y = [f"特征[{i}]" for i in range(len(data[0]))]  # 主成分
             value = [
@@ -3028,7 +3016,7 @@ class NmfModel(Unsupervised):
                     ),  # 'category'
                     xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                     visualmap_opts=opts.VisualMapOpts(
-                        is_show=True, max_=max_, min_=min_, pos_right="3%"
+                        is_show=True, max_=data_max, min_=data_min, pos_right="3%"
                     ),
                 )  # 显示
             )
@@ -3118,13 +3106,13 @@ class MlpModel(StudyMachinebase):  # 神经网络(多层感知机)，有监督�
         class_ = self.model.classes_
         n_layers_ = self.model.n_layers_
 
-        def make_heat_map(data, name):
-            x = [f"特征(节点)[{i}]" for i in range(len(data))]
-            y = [f"节点[{i}]" for i in range(len(data[0]))]
+        def make_heat_map(data_, name):
+            x = [f"特征(节点)[{i}]" for i in range(len(data_))]
+            y = [f"节点[{i}]" for i in range(len(data_[0]))]
             value = [
-                (f"特征(节点)[{i}]", f"节点[{j}]", float(data[i][j]))
-                for i in range(len(data))
-                for j in range(len(data[i]))
+                (f"特征(节点)[{i}]", f"节点[{j}]", float(data_[i][j]))
+                for i in range(len(data_))
+                for j in range(len(data_[i]))
             ]
 
             c = (
@@ -3140,15 +3128,15 @@ class MlpModel(StudyMachinebase):  # 神经网络(多层感知机)，有监督�
                     xaxis_opts=opts.AxisOpts(is_scale=True, type_="category"),
                     visualmap_opts=opts.VisualMapOpts(
                         is_show=True,
-                        max_=float(data.max()),
-                        min_=float(data.min()),
+                        max_=float(data_.max()),
+                        min_=float(data_.min()),
                         pos_right="3%",
                     ),
                 )  # 显示
             )
             tab.add(c, name)
-            tab.add(make_tab(x, data.transpose().tolist()), f"{name}:表格")
-            des_to_csv(save_dir, f"{name}:表格", data.transpose().tolist(), x, y)
+            tab.add(make_tab(x, data_.transpose().tolist()), f"{name}:表格")
+            des_to_csv(save_dir, f"{name}:表格", data_.transpose().tolist(), x, y)
 
         get, x_means, x_range, data_type = regress_visualization(
             x_data, y_data)
@@ -3189,10 +3177,10 @@ class KmeansModel(UnsupervisedModel):
         self.model_Name = "k-means"
 
     def fit_model(self, x_data, *args, **kwargs):
-        re = super().fit_model(x_data, *args, **kwargs)
+        return_ = super().fit_model(x_data, *args, **kwargs)
         self.class_ = list(set(self.model.labels_.tolist()))
         self.have_fit = True
-        return re
+        return return_
 
     def predict(self, x_data, *args, **kwargs):
         self.x_testdata = x_data.copy()
@@ -3256,10 +3244,10 @@ class AgglomerativeModel(UnsupervisedModel):
         self.model_Name = "Agglomerative"
 
     def fit_model(self, x_data, *args, **kwargs):
-        re = super().fit_model(x_data, *args, **kwargs)
+        return_ = super().fit_model(x_data, *args, **kwargs)
         self.class_ = list(set(self.model.labels_.tolist()))
         self.have_fit = True
-        return re
+        return return_
 
     def predict(self, x_data, *args, **kwargs):
         self.x_testdata = x_data.copy()
@@ -3338,10 +3326,10 @@ class DbscanModel(UnsupervisedModel):
         self.model_Name = "DBSCAN"
 
     def fit_model(self, x_data, *args, **kwargs):
-        re = super().fit_model(x_data, *args, **kwargs)
+        return_ = super().fit_model(x_data, *args, **kwargs)
         self.class_ = list(set(self.model.labels_.tolist()))
         self.have_fit = True
-        return re
+        return return_
 
     def predict(self, x_data, *args, **kwargs):
         self.x_testdata = x_data.copy()
@@ -3397,10 +3385,9 @@ class FastFourier(StudyMachinebase):  # 快速傅里叶变换
     def fit_model(self, y_data, *args, **kwargs):
         y_data = y_data.ravel()  # 扯平为一维数组
         try:
-            if self.y_traindata is None:
-                raise Exception
-            self.y_traindata = np.hstack(y_data, self.x_traindata)
-        except BaseException:
+            assert self.y_traindata is None
+            self.y_traindata = np.hstack((y_data, self.x_traindata))
+        except (AssertionError, ValueError):
             self.y_traindata = y_data.copy()
         fourier = fft(y_data)
         self.sample_size = len(y_data)
@@ -3597,11 +3584,10 @@ def FUNC({",".join(model.__code__.co_varnames)}):
         y_data = y_data.ravel()
         x_data = x_data.astype(np.float64)
         try:
-            if self.x_traindata is None:
-                raise Exception
-            self.x_traindata = np.vstack(x_data, self.x_traindata)
-            self.y_traindata = np.vstack(y_data, self.y_traindata)
-        except BaseException:
+            assert self.x_traindata is None
+            self.x_traindata = np.vstack((x_data, self.x_traindata))
+            self.y_traindata = np.vstack((y_data, self.y_traindata))
+        except (AssertionError, ValueError):
             self.x_traindata = x_data.copy()
             self.y_traindata = y_data.copy()
         self.fit_data = optimize.curve_fit(
@@ -3706,7 +3692,7 @@ class Table(TableFisrt):
                 DataFrame(self.ROWS, columns=self.HEADERS).to_csv(
                     save_dir + os.sep + name + ".csv"
                 )
-            except BaseException:
+            finally:
                 pass
         return super().render(path, *args, **kwargs)
 
@@ -3716,14 +3702,14 @@ def make_list(first, end, num=35):
     n = num / (end - first)
     if n == 0:
         n = 1
-    re = []
+    return_ = []
     n_first = first * n
     n_end = end * n
     while n_first <= n_end:
         cul = n_first / n
-        re.append(round(cul, 2))
+        return_.append(round(cul, 2))
         n_first += 1
-    return re
+    return return_
 
 
 @plugin_func_loading(get_path(r"template/machinelearning"))
@@ -3731,8 +3717,8 @@ def list_filter(original_list, num=70):
     if len(original_list) <= num:
         return original_list
     n = int(num / len(original_list))
-    re = original_list[::n]
-    return re
+    return_ = original_list[::n]
+    return return_
 
 
 @plugin_func_loading(get_path(r"template/machinelearning"))
@@ -4039,7 +4025,7 @@ def see_tree(tree_file_dir):
                 if regex_result[0] != "":
                     try:
                         v = float(regex_result[0])
-                    except BaseException:
+                    except ValueError:
                         v = 0
                     node_dict[regex_result[0]] = {
                         "name": regex_result[1].replace("\\n", "\n"),
@@ -4047,13 +4033,13 @@ def see_tree(tree_file_dir):
                         "children": [],
                     }
                     continue
-            except BaseException:
+            finally:
                 pass
             try:
                 regex_result = re.findall(link_regex, i)[0]
                 if regex_result[0] != "" and regex_result[1] != "":
                     link_list.append((regex_result[0], regex_result[1]))
-            except BaseException:
+            finally:
                 pass
 
     father_list = []  # 已经有父亲的list
@@ -4063,7 +4049,7 @@ def see_tree(tree_file_dir):
         try:
             node_dict[father]["children"].append(node_dict[son])
             father_list.append(son)
-        except BaseException:
+        finally:
             pass
 
     father = list(set(node_dict.keys()) - set(father_list))
@@ -4111,11 +4097,7 @@ def coefficient_bar_plot(w_heard, w):
 def is_continuous(data: np.array, f: float = 0.1):
     data = data.tolist()
     l: list = np.unique(data).tolist()
-    try:
-        re = len(l) / len(data) >= f or len(data) <= 3
-        return re
-    except BaseException:
-        return False
+    return len(l) / len(data) >= f or len(data) <= 3
 
 
 @plugin_func_loading(get_path(r"template/machinelearning"))
@@ -4226,7 +4208,7 @@ def training_visualization_more(x_data, class_list, y_data, center):
                 # 添加簇中心
                 try:
                     center_x2 = [center[class_num][a]]
-                except BaseException:
+                except IndexError:
                     center_x2 = [0]
                 b = (
                     Scatter()
@@ -4305,7 +4287,7 @@ def training_visualization_center(x_data, class_data, y_data, center):
             # 添加簇中心
             try:
                 center_x_2 = [center[class_num][i - 1]]
-            except BaseException:
+            except IndexError:
                 center_x_2 = [0]
             b = (
                 Scatter() .add_xaxis(center_x_2) .add_yaxis(
@@ -4548,7 +4530,7 @@ def regress_visualization(x_data, y_data):  # y-x数据图
             min_=int(y_data.min()),
             pos_right="3%",
         )
-    except BaseException:
+    except ValueError:
         visualmap_opts = None
         y_is_continuous = False
     for i in range(len(x_data)):
@@ -4811,7 +4793,7 @@ def pack(output_filename, source_dir):
 
 def set_global(
     more=more_global,
-    all=all_global,
+    all_=all_global,
     csv=csv_global,
     clf=clf_global,
     tar=tar_global,
@@ -4819,7 +4801,7 @@ def set_global(
 ):
     global more_global, all_global, csv_global, clf_global, tar_global, new_dir_global
     more_global = more  # 是否使用全部特征绘图
-    all_global = all  # 是否导出charts
+    all_global = all_  # 是否导出charts
     csv_global = csv  # 是否导出CSV
     clf_global = clf  # 是否导出模型
     tar_global = tar  # 是否打包tar

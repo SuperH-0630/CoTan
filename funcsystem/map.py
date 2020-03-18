@@ -11,6 +11,7 @@ from matplotlib import rcParams
 
 from funcsystem.controller import SheetFunc, ExpFunc
 from newtkinter import askopenfilename, asksaveasfilename
+from system import exception_catch
 
 func_logger = []
 fig = None
@@ -53,10 +54,12 @@ gui_height = 2
 
 class UIAPI:
     @staticmethod
+    @exception_catch()
     def get_save_dir_gui():
         return asksaveasfilename(title="选择导出位置", filetypes=[("CSV", ".csv")])
 
     @staticmethod
+    @exception_catch()
     def output_prompt_gui(news):
         global prompt_box, prompt_num
         prompt_num += 1
@@ -65,39 +68,47 @@ class UIAPI:
         SCREEN.update()
 
     @staticmethod
+    @exception_catch()
     def get_y_value_gradient_gui():
         parameters = y_value_gradient.get().split("#")  # 拆解输入
         return parameters
 
     @staticmethod
+    @exception_catch()
     def dichotomy_gui():
         y = y_value.get().split(",")  # 拆解输入
         parameters = dicon_parameters.get().split("#")  # 拆解输入
         return parameters, y
 
     @staticmethod
+    @exception_catch()
     def get_func_exp_box_index_gui():
         return func_exp_box.curselection()[0]
 
     @staticmethod
+    @exception_catch()
     def get_x_value_gui():
         return x_value.get().split(",")
 
     @staticmethod
+    @exception_catch()
     def update_property_box_gui(answer):
         property_box.delete(0, tkinter.END)
         property_box.insert(tkinter.END, *answer)
 
     @staticmethod
+    @exception_catch()
     def update_result_box_gui(answer):
         result_box.delete(0, tkinter.END)
         result_box.insert(tkinter.END, *answer)
 
     @staticmethod
+    @exception_catch()
     def get_func_logger_gui():
         return func_logger[func_exp_box.curselection()[0]]
 
     @staticmethod
+    @exception_catch()
     def add_func_gui():
         get = func_exp.get().replace(" ", "")
         definition = definition_domain.get().split(",")
@@ -109,7 +120,7 @@ class UIAPI:
             if style_str[0] not in point_style:
                 style_str[0] = "b"
             line_style_str = line_style.get(style_str[1], "-")
-        except BaseException:
+        except IndexError:
             style_str = ["", ""]
             style_str[0] = random.choice(point_style)
             line_style_str = "-"
@@ -135,16 +146,18 @@ class UIAPI:
                     "atan": math.atan,
                 }
                 definition[2] = eval(span_str[1:], named_domain)
-        except BaseException:
+        finally:
             pass
         return get, [name, style] + definition
 
     @staticmethod
+    @exception_catch()
     def update_func_exp_box_gui():
         func_exp_box.delete(0, tkinter.END)
         func_exp_box.insert(tkinter.END, *func_logger)
 
     @staticmethod
+    @exception_catch()
     def read_csv_gui():
         file = askopenfilename(title="载入表格", filetypes=[("CSV", ".csv")])
         style_str = func_style.get().split("#")
@@ -152,7 +165,7 @@ class UIAPI:
             if style_str[0] not in point_style:
                 style_str[0] = "b"
             line_style_str = line_style.get(style_str[1], "-")
-        except BaseException:
+        except IndexError:
             style_str = ["", ""]
             style_str[0] = random.choice(point_style)
             line_style_str = "-"
@@ -166,6 +179,7 @@ class UIAPI:
 
 class API(UIAPI):
     @staticmethod
+    @exception_catch()
     def type_selection(iter_object, si=float, no_zero=True):  # Float筛选系统
         x = []
         for i in iter_object:
@@ -178,6 +192,7 @@ class API(UIAPI):
         return x
 
     @staticmethod
+    @exception_catch()
     def plot_func():
         global func_logger, definition_domain, fig, x_limit, y_limit, y_axis, x_axis
         # 画板创造
@@ -203,7 +218,7 @@ class API(UIAPI):
                     exp_parameter[2] = int(plot_parameter[2])
                     exp_parameter[3] = int(plot_parameter[3])
                     exp_parameter[4] = int(plot_parameter[4])
-                except BaseException:  # 迭代匹配直到出现错误
+                finally:
                     pass
                 plot_parameter = exp_parameter
                 x_exp_scale = API.type_selection(
@@ -240,7 +255,7 @@ class API(UIAPI):
                     exp_parameter[2] = int(plot_parameter[2])
                     exp_parameter[3] = int(plot_parameter[3])
                     exp_parameter[4] = int(plot_parameter[4])
-                except BaseException:  # 迭代匹配直到出现错误
+                finally:
                     pass
                 plot_parameter = exp_parameter
                 y_exp_scale = API.type_selection(
@@ -266,20 +281,21 @@ class API(UIAPI):
             y_major_locator = plt.MultipleLocator(2)
             axis.yaxis.set_major_locator(y_major_locator)
         # 极限
+        _x_limit = [-10, 10]
+        _y_limit = [-10, 10]
         try:
             _x_limit = API.type_selection(x_limit.get().split(","), si=int, no_zero=False)
             _y_limit = API.type_selection(y_limit.get().split(","), si=int, no_zero=False)
             try:
                 _x_limit = [_x_limit[0], _x_limit[1]]
-            except BaseException:
+            except IndexError:
                 _x_limit = [-10, 10]
             try:
                 _y_limit = [_y_limit[0], _y_limit[1]]
-            except BaseException:
+            except IndexError:
                 _y_limit = _x_limit
-        except BaseException:
-            _x_limit = [-10, 10]
-            _y_limit = [-10, 10]
+        finally:
+            pass
         _x_limit.sort()
         _y_limit.sort()
         plt.xlim(_x_limit)
@@ -366,6 +382,7 @@ class API(UIAPI):
         return True
 
     @staticmethod
+    @exception_catch()
     def add_from_csv():  # 添加函数
         file, name, style = API.read_csv_gui()
         try:
@@ -376,8 +393,10 @@ class API(UIAPI):
             API.output_prompt_gui("读取完毕")
         except BaseException:
             API.output_prompt_gui("读取失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def add_func():  # 添加函数
         get, definition = API.add_func_gui()
         if get and get not in func_str_list:
@@ -389,6 +408,7 @@ class API(UIAPI):
             API.output_prompt_gui("函数生成失败")
 
     @staticmethod
+    @exception_catch()
     def clean_func_box():  # 添加函数
         global func_logger, func_str_list
         if API.show_askokcancel("是否清空所有函数？)"):
@@ -398,6 +418,7 @@ class API(UIAPI):
             API.output_prompt_gui("函数清空完毕")
 
     @staticmethod
+    @exception_catch()
     def func_to_sheet_gui():  # 显示xy
         try:
             func = API.get_func_logger_gui()
@@ -406,13 +427,15 @@ class API(UIAPI):
             API.output_prompt_gui("表格创建成功")
         except BaseException:
             API.output_prompt_gui("无法创建表格")
-            pass
+            raise
 
     @staticmethod
+    @exception_catch()
     def show_askokcancel(message):
         return tkinter.messagebox.askokcancel("提示", message)
 
     @staticmethod
+    @exception_catch()
     def clean_func_memory():
         global x_value, func_exp_box, func_logger
         try:
@@ -424,8 +447,10 @@ class API(UIAPI):
                 API.output_prompt_gui("删除取消")
         except BaseException:
             API.output_prompt_gui("删除失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def hide_memory():  # 显示xy
         global func_logger, result_box
         try:
@@ -434,8 +459,10 @@ class API(UIAPI):
             API.output_prompt_gui("已清空卡槽")
         except BaseException:
             API.output_prompt_gui("隐藏（显示）失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def show_memory():  # 显示xy
         global func_logger, result_box
         try:
@@ -446,8 +473,10 @@ class API(UIAPI):
             API.output_prompt_gui("输出完成")
         except BaseException:
             API.output_prompt_gui("操作失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def property_prediction():
         try:
             API.output_prompt_gui("预测过程程序可能无响应")
@@ -458,6 +487,7 @@ class API(UIAPI):
             API.output_prompt_gui("性质预测失败")
 
     @staticmethod
+    @exception_catch()
     def calculate():
         global func_logger, result_box, x_value
         try:
@@ -469,6 +499,7 @@ class API(UIAPI):
             API.output_prompt_gui("计算失败")
 
     @staticmethod
+    @exception_catch()
     def func_to_csv():  # 导出CSV
         global csv_list
         try:
@@ -476,8 +507,10 @@ class API(UIAPI):
             API.output_prompt_gui("CSV导出成功")
         except BaseException:
             API.output_prompt_gui("CSV导出失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def del_func():  # 删除函数
         global func_logger, func_str_list, func_exp_box
         del_index = API.get_func_exp_box_index_gui()
@@ -487,6 +520,7 @@ class API(UIAPI):
         API.output_prompt_gui("函数删除完毕")
 
     @staticmethod
+    @exception_catch()
     def dichotomy():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
@@ -502,8 +536,10 @@ class API(UIAPI):
             API.update_result_box_gui(answer)
         except BaseException:
             API.output_prompt_gui("系统运算失败")
+            raise
 
     @staticmethod
+    @exception_catch()
     def gradient_method_calculation():
         try:
             API.output_prompt_gui("计算过程程序可能无响应")
@@ -516,8 +552,10 @@ class API(UIAPI):
             API.update_result_box_gui(answer)
         except BaseException:
             API.output_prompt_gui("系统运算失败，请注意参数设置")
+            raise
 
     @staticmethod
+    @exception_catch()
     def func_differentiation():
         global func_logger, func_exp_box, property_box, func_str_list, func_name, line_style, point_style, func_style
         try:
@@ -543,6 +581,7 @@ class API(UIAPI):
                 raise Exception
         except BaseException:
             API.output_prompt_gui("导函数创建失败")
+            raise
 
 
 def function_mapping():

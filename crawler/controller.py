@@ -40,7 +40,7 @@ class PageParser(PageParserAutomation, PageParserBrowser, PageParserData, PagePa
             elif status is None:
                 success_code = "No status"
             else:
-                success_code = "Wrong to run"
+                success_code = f"Wrong to run: {e} "
             self.log.write(
                 f"last:[{success_code}];now:[{func_name}];url:{self.url_text} [END]"
             )
@@ -48,7 +48,7 @@ class PageParser(PageParserAutomation, PageParserBrowser, PageParserData, PagePa
             for i in self.element_dict:
                 try:
                     value_box.append(f"{i}[{len(i)}] = {self.element_dict[i]}")
-                except BaseException:
+                except TypeError:
                     value_box.append(f"{i} = {self.element_dict[i]}")
             update_func(func_name, success_code, value_box)  # 信息更新系统
 
@@ -56,5 +56,5 @@ class PageParser(PageParserAutomation, PageParserBrowser, PageParserData, PagePa
         for func_num in range(len(func_list)):
             func_name = func_list[func_num]
             update_log(func_name)
-            status = self.func_dict[func_name](num=f"{func_num}", name="var")
+            status, e = self.func_dict[func_name](num=f"{func_num}", name="var")
         update_log("运行完成")

@@ -37,8 +37,8 @@ class GitBase(metaclass=ABCMeta):
         code = ""
         for _ in range(8):  # 八位随机数
             code += passwd[random.randint(0, len(passwd) - 1)]  # 时间戳+8位随机数
-        stop_key = (str(time()) + code).replace(".", "")
-        return stop_key
+        stop_key_ = (str(time()) + code).replace(".", "")
+        return stop_key_
 
     def get_flie_list(self, file_list, is_file=True, pat=" "):
         if file_list == ".":
@@ -70,9 +70,9 @@ class ViewClasses(GitBase, metaclass=ABCMeta):
             f"echo 删除... && {git_path} rm {file}", cwd=self.repo_dir, **sys_seeting
         )
 
-    def dir_list(self, all=True):
+    def dir_list(self, all_=True):
         listfile = []
-        if all:
+        if all_:
             listfile += [
                 f'[当前分支] {self.repo.active_branch} 工作区{"不" if self.repo.is_dirty() else ""}干净 -> {self.name}'
             ]
@@ -250,10 +250,7 @@ class RemoveClass(GitBase, metaclass=ABCMeta):
 
     def del_branch_remote(self, remote, remote_branch):
         remote_split = remote.split("/")
-        try:
-            remote_name = remote_split[0]  # 获取主机名 1）
-        except BaseException:
-            remote_name = ""  # 没有主机名 1）
+        remote_name = remote_split[0]  # 获取主机名 1）
         branch_split = remote_branch.split("/")
         if len(branch_split) >= 2 and remote_name == "":
             remote_name = branch_split[0]  # 2)
@@ -384,11 +381,8 @@ class RemoteClasses(GitBase, metaclass=ABCMeta):
         # 3) 如果local为空，用HEAD填充
         # 4) 如果以上后，主机名仍为空，则local和分支均为空
 
-        split = remote.split("/")
-        try:
-            remote_name = split[0]  # 获取主机名 1）
-        except BaseException:
-            remote_name = ""  # 没有主机名 1）
+        split_ = remote.split("/")
+        remote_name = split_[0]  # 获取主机名 1）
 
         branch_split = remote_branch.split("/")
         if len(branch_split) >= 2 and remote_name == "":
@@ -432,11 +426,8 @@ class RemoteClasses(GitBase, metaclass=ABCMeta):
         # 3) 如果local为空，用HEAD填充
         # 4) 如果以上后，主机名仍为空，则local和分支均为空
 
-        split = remote.split("/")
-        try:
-            remote_name = split[0]  # 获取主机名 1）
-        except BaseException:
-            remote_name = ""  # 没有主机名 1）
+        split_ = remote.split("/")
+        remote_name = split_[0]  # 获取主机名 1）
 
         branch_split = remote_branch.split("/")
         if len(branch_split) >= 2 and remote_name == "":
@@ -475,11 +466,11 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
         try:
             if exists(repo_dir + r"/.git"):  # 是否为git 仓库
                 pass
-            elif repo_dir[-4:] == ".git":
+            elif repo_dir.endswith(".git"):
                 repo_dir = repo_dir[:-5]  # -5,得把/去掉
             else:
-                raise Exception
-        except BaseException:
+                assert True
+        except (AssertionError, IndexError):
             subprocess.Popen(
                 f"{git_path} init", cwd=self.repo_dir, **sys_seeting
             ).wait()
@@ -495,14 +486,14 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
             **sys_seeting,
         )
 
-    def make_dir(self, dir):
-        if len(dir) == "":
-            return dir
-        if dir[0].startswith(os.sep):
+    def make_dir(self, dir_):
+        if len(dir_) == "":
+            return dir_
+        if dir_[0].startswith(os.sep):
             inside = ""
         else:
             inside = os.sep
-        return self.repo_dir + inside + dir
+        return self.repo_dir + inside + dir_
 
 
 @plugin_class_loading(get_path(r'template/gitrepo'))

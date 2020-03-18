@@ -1,12 +1,38 @@
 from abc import ABCMeta, abstractmethod
+import os
 
 from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor, factor_list, expand, collect, Add, \
     Mul, ratsimp, cancel, apart, together, radsimp, trigsimp, expand_trig, expand_mul, expand_multinomial, powdenest, \
     powsimp, expand_power_base, expand_power_exp, logcombine, expand_log, ceiling, expand_complex, expand_func, Eq, \
     Symbol, solve, true, false, plot
 from sympy.plotting import plot3d
+from sympy.core.sympify import SympifyError
 
 from system import plugin_class_loading, get_path, plugin_func_loading
+
+
+class DictNameError(Exception):
+    pass
+
+
+class SymbolError(Exception):
+    pass
+
+
+class ExpError(Exception):
+    pass
+
+
+class FormatError(Exception):
+    pass
+
+
+class SplitError(Exception):
+    pass
+
+
+class MergeError(Exception):
+    pass
 
 
 class AlgebraInit:
@@ -21,10 +47,13 @@ class AlgebraInit:
         self.out_status = new
 
     def get_expression(self, name, exp_str=False):
-        if exp_str:
-            return self.algebra_dict_view[name]
-        else:
-            return self.algebra_dict[name]
+        try:
+            if exp_str:
+                return self.algebra_dict_view[name]
+            else:
+                return self.algebra_dict[name]
+        except KeyError:
+            raise DictNameError
 
 
 class AlgebraSymbolBase(AlgebraInit, metaclass=ABCMeta):
@@ -94,17 +123,20 @@ class AlgebraSymbol(AlgebraSymbolBase):
                 k["integer"] = True
             try:  # 避免CIR不是list而是None
                 k[is_complex[0]] = is_complex[1]
-            except BaseException:
+            except IndexError:
                 pass
             try:  # 避免NZ不是list而是None
                 k[is_natural[0]] = is_natural[1]
-            except BaseException:
+            except (TypeError, IndexError):
                 pass
-        except BaseException:
+        except (TypeError, IndexError):
             pass
         new_name = self.symbol_dict.copy()
         new_name.update({"k": k})
-        exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
+        try:
+            exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
+        except BaseException:
+            raise SymbolError
         self.symbol_describe[name] = describe
         return True
 
@@ -185,17 +217,14 @@ class AlgebraFormat(AlgebraExpBase, metaclass=ABCMeta):
             elif name == "Rational":
                 self.format_rational(f, result_str)
             elif len(args) < 1:
-                raise Exception
+                raise FormatError
             else:  # 增添逗号
                 result_str = self.format_func(args, name, result_str)
             return result_str
-        except BaseException:
+        except FormatError:
             a = str(f)
-            try:
-                if a[0] == "-":
-                    a = f"({a})"
-            except BaseException:
-                pass
+            if a.startswith('-'):
+                a = f"({a})"
             result_str.append(["A", a])
             return result_str
 
@@ -248,8 +277,8 @@ class AlgebraFormat(AlgebraExpBase, metaclass=ABCMeta):
                 b = self.formula_export(f.func(args[0], -args[1]))
                 result_str.append(["D", a, b])
             else:
-                raise Exception
-        except BaseException:
+                raise FormatError
+        except FormatError:
             a = self.formula_export(args[0])
             b = self.formula_export(args[1])
             result_str.append(["B", a, b])
@@ -265,7 +294,7 @@ class AlgebraPrint(AlgebraExpBase, metaclass=ABCMeta):
             name = e.func.__name__
             args = e.args
             if args == ():
-                raise Exception
+                raise FormatError
             if name == "log":
                 name = "ln"
             str_print += f"({q}){name}\n"
@@ -276,7 +305,7 @@ class AlgebraPrint(AlgebraExpBase, metaclass=ABCMeta):
                     i, level + n, first=False, q=q + 1
                 )
             return str_print
-        except BaseException:
+        except FormatError:
             return str_print + f"({q}){str(e)}\n"
 
     def print_expression_str(self, e, level=0, first=True):  # 直接打印
@@ -292,7 +321,7 @@ class AlgebraSplit(AlgebraExpBase, metaclass=ABCMeta):
             args = exp.args
             if name not in name_list or args == ():
                 if name_list != ["All"]:
-                    raise Exception
+                    raise SplitError
                 else:
                     deep = 1
             if deep == 1:
@@ -307,7 +336,7 @@ class AlgebraSplit(AlgebraExpBase, metaclass=ABCMeta):
                 return re
             else:
                 return args
-        except BaseException:
+        except SplitError:
             return [exp]
 
 
@@ -315,7 +344,7 @@ class AlgebraSplit(AlgebraExpBase, metaclass=ABCMeta):
 class AlgebraMerge(AlgebraExpBase, metaclass=ABCMeta):
     def merge_func_core(self, name_list, func):
         if len(name_list) < 2:
-            return None
+            raise MergeError('长度小于2')
         st = name_list[0]
         for n in name_list[1:]:
             st = func(st, n)
@@ -328,25 +357,22 @@ class AlgebraBase(AlgebraSymbol, AlgebraFormat, AlgebraPrint, AlgebraSplit, Alge
     def simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
         if func is None:
             func = count_ops
+        self.out_status("正在标准化")
         try:
-            self.out_status("正在标准化")
             return simplify(alg, ratio=radio, func=func, rational=rat, inverse=inv)
-        except BaseException:
-            return None
+        except SympifyError:
+            raise ExpError('表达式化简错误')
 
     def creat_num(self, num, num_type):
-        try:
-            if num_type == 0:  # 浮点数
-                return Float(num)
-            elif num_type == 1:  # 整数
-                return Integer(num)
-            elif num_type == 2:  # 有理数
-                n = num.split("/")
-                return Rational(n[0], n[1])
-            else:
-                return sympify(num, locals=self.symbol_dict)
-        except BaseException:
-            return Integer(1)
+        if num_type == 0:  # 浮点数
+            return Float(num)
+        elif num_type == 1:  # 整数
+            return Integer(num)
+        elif num_type == 2:  # 有理数
+            n = num.split("/")
+            return Rational(n[0], n[1])
+        else:
+            return sympify(num, locals=self.symbol_dict)
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
@@ -356,14 +382,13 @@ class AlgebraVisualization(AlgebraBase):
             name = name.replace(" ", "")
             try:
                 exec(f"{name}=5", {})  # 检查name是否符合标准
-            except BaseException:
+            except SyntaxError:
                 name = f"F{str(len(self.algebra_dict))}"
             eval(f"{alg}", self.symbol_dict)  # 检查
             self.algebra_dict[name] = sympify(alg, locals=self.symbol_dict)
             self.algebra_dict_view[name] = str(alg)
-            return True
-        except BaseException:
-            return False
+        except BaseException as e:
+            raise ExpError(str(e))
 
     def del_expression(self, name):
         del self.algebra_dict[name]
@@ -391,14 +416,14 @@ class AlgebraPolynomialSplit(AlgebraBase):
                 try:
                     if return_num:
                         if return_one:
-                            raise Exception
+                            raise SplitError
                         else:
                             if i == 1:
                                 continue
                     else:
                         Float(i)
                         continue  # 排除数字
-                except BaseException:
+                except SplitError:
                     pass
                 useful_exp.append(i)
         return useful_exp, factor_exp
@@ -423,16 +448,16 @@ class AlgebraPolynomialSplit(AlgebraBase):
         if func_name == [""]:
             try:
                 return alg.args, alg
-            except BaseException:
+            except AttributeError:
                 return None, alg
         get = self.split_func_core(alg, deep, func_name)
         re = []
         if not return_all:
             for i in get:
                 try:
-                    if i.args != ():
+                    if not i.args:
                         re.append(i)
-                except BaseException:
+                except AttributeError:
                     pass
             return re, alg
         return get, alg
@@ -445,7 +470,7 @@ class AlgebraPolynomialMerge(AlgebraBase):
         for n in name_list:
             try:
                 exp.append(self.get_expression(n))
-            except BaseException:
+            except DictNameError:
                 pass
         return self.merge_func_core(exp, Add)
 
@@ -454,7 +479,7 @@ class AlgebraPolynomialMerge(AlgebraBase):
         for n in name_list:
             try:
                 exp.append(self.get_expression(n))
-            except BaseException:
+            except DictNameError:
                 pass
         return self.merge_func_core(exp, Mul)
 
@@ -464,7 +489,7 @@ class AlgebraPolynomialMerge(AlgebraBase):
         for n in name_list:
             try:
                 name.append(self.get_expression(n))
-            except BaseException:
+            except DictNameError:
                 pass
         return self.merge_func_core(name, func)
 
@@ -701,7 +726,7 @@ class Simultaneous(AlgebraBase):
                 v_alg = self.get_expression(simultaneous_dict[i])  # 获得代数式
                 get = self.symbol_dict[i]  # 处理符号
                 sympy_dict[get] = v_alg
-            except BaseException:
+            except (DictNameError, KeyError):
                 pass
         return alg.subs(sympy_dict)
 
@@ -713,7 +738,7 @@ class Simultaneous(AlgebraBase):
                 v_alg = self.get_expression(i)  # 获得代数式
                 get = self.symbol_dict[simultaneous_dict[i]]  # 处理符号
                 sympy_dict[v_alg] = get
-            except BaseException:
+            except (DictNameError, KeyError):
                 pass
         return alg.subs(sympy_dict)
 
@@ -724,7 +749,7 @@ class Simultaneous(AlgebraBase):
             try:
                 get = self.symbol_dict[i]  # 处理符号
                 sympy_dict[get] = simultaneous_dict[i]
-            except BaseException:
+            except (DictNameError, KeyError):
                 pass
         return alg.subs(sympy_dict)
 
@@ -856,5 +881,5 @@ def interpreter(word: str):
     try:
         results = book[word]
         return f"{results}({word})"
-    except BaseException:
+    except KeyError:
         return word
