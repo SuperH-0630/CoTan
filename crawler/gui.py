@@ -2,12 +2,14 @@ import os
 import re
 import tkinter
 import threading
+import logging
 
 import crawler.controller
 import crawler.template
 from newtkinter import askdirectory
-from system import exception_catch
+from system import exception_catch, basicConfig
 
+logging.basicConfig(**basicConfig)
 SCREEN = tkinter.Tk()
 database_list = []
 attributes_dict = {}
@@ -76,7 +78,8 @@ class UIAPI:
     def get_db_index_gui():
         try:
             index = eval(object_index.get(), {})
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             index = slice(None, None)
         return index
 
@@ -169,11 +172,13 @@ class UIAPI:
         global find_text, text_regex, limit, is_recursive, find_path
         try:
             index = eval(object_index.get(), {})
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             index = slice(None, None)
         try:
             cookies = eval(new_cookies.get(), {})
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             cookies = {}
         return dict(
             element_value=operation_object.get(),
@@ -269,7 +274,8 @@ class UIAPI:
     def get_url_parameter_gui():
         try:
             data = eval(requests_data.get(), {})
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             data = {}
         try:
             the_time_out = int(time_out.get())
@@ -297,7 +303,8 @@ class UIAPI:
     def add_url_from_tag_gui():
         try:
             index = eval(object_index.get(), {})
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             index = slice(None, None)
         return dict(
             element_value=operation_object.get(),

@@ -3,11 +3,14 @@ import tkinter
 import tkinter.messagebox
 from abc import ABCMeta, abstractmethod
 import tkinter.messagebox
+import logging
 
 import pandas
 import sympy
 
-from system import plugin_class_loading, get_path, plugin_func_loading
+from system import plugin_class_loading, get_path, plugin_func_loading, basicConfig
+
+logging.basicConfig(**basicConfig)
 
 
 @plugin_func_loading(get_path(r'template/funcsystem'))
@@ -182,8 +185,8 @@ class SheetFuncInit(SheetFuncBase):
                 float_y = float(func[1][i])
                 float_x_list.append(float_x)
                 float_y_list.append(float_y)
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         # 筛查重复
         x = []
         y = []
@@ -281,8 +284,8 @@ class SheetDataPacket(SheetFuncInit, metaclass=ABCMeta):
                     self.classification_x[-1].append(now_x)
                     self.classification_y[-1].append(y)
                     last_y = y
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         except (TypeError, IndexError, ValueError):
             pass
         classification_reason.append(99)
@@ -360,8 +363,8 @@ class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
                 ):
                     result = [last_y, i]
                     break
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             last_y = i
         if result is None:
             for i in y_list:
@@ -369,8 +372,8 @@ class SheetComputing(SheetFuncInit, metaclass=ABCMeta):
                     if abs(((i + last_y) / 2) - y_in) < 0.1:
                         result = [last_y, i]
                         break
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
                 last_y = i
         if result is None:
             return [], []
@@ -551,8 +554,8 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                 possible_cycle_list.extend(
                     list(set(possible_cycle))
                 )  # 这里是extend不是append，相当于 +=
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         possible_cycle = []  # a的可能列表
         max_count = 0
@@ -593,8 +596,8 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                     if possible_symmetry_axis:
                         possible_symmetry_axis.append(a)
                 possible_symmetry_axis_list.extend(list(set(possible_symmetry_axis)))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         possible_symmetry_axis = []  # a的可能列表
         max_count = 0
@@ -630,8 +633,8 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                 y = self(start)
                 x = start
                 coordinate_points.append((x, y))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         possible_center_list = []
         output_prompt("正在预测对称中心")
@@ -770,7 +773,8 @@ class ExpFuncInit(ExpFuncBase):
         # 函数求导
         try:
             self.derivatives = sympy.diff(self.func, self.symbol_x)
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             self.derivatives = None
 
         # 儿子函数
@@ -789,8 +793,8 @@ class ExpFuncInit(ExpFuncBase):
                     self.son_list.append(
                         ExpFuncSon(func, style, start, end, span, accuracy, a_start)
                     )
-                finally:
-                    pass  # 不应该出现
+                except BaseException as e:
+                    logging.warning(str(e))  # 不应该出现
                 a_start += a_span
             # 这个是函数名字
             self.func_name = (
@@ -873,7 +877,8 @@ class ExpDataPacket(ExpFuncInit, metaclass=ABCMeta):
                     self.classification_x[-1].append(accuracy_x)
                     self.classification_y[-1].append(now_y)
                     last_y = now_y
-                except BaseException:
+                except BaseException as e:
+                    logging.debug(str(e))
                     classification_reason.append(0)
                     self.classification_x.append([])
                     self.classification_y.append([])
@@ -1147,8 +1152,8 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
             if allow_original_value and y_value in y:  # 如果已经计算过
                 num = y.index(y_value)
                 return x[num]
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
         iter_interval = [[self.start, self.end]]  # 准备迭代的列表
         middle_list = []
         middle_list_deviation = []
@@ -1261,7 +1266,8 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                         ):
                             middle = None
                         break
-                except BaseException:
+                except BaseException as e:
+                    logging.debug(str(e))
                     break
             else:  # 证明没有break
                 no_break = True
@@ -1472,18 +1478,18 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             try:
                 for i in periodic[1][1:]:
                     answer.append(f"可能的最小正周期：{i}")
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             try:
                 for i in symmetry_axis[1][1:]:
                     answer.append(f"可能的对称轴：{i}")
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             try:
                 for i in symmetry_center[1][1:]:
                     answer.append(f"可能的对称中心：{i}")
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         return answer
 
@@ -1515,8 +1521,8 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if a:
                         possible_cycle.append(round(a, self.accuracy))
                 possible_cycle_list.extend(list(set(possible_cycle)))  # 不是append
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
 
         possible_cycle = []  # a的可能列表
@@ -1563,8 +1569,8 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if a:
                         possible_symmetry_axis.append(round(a, self.accuracy))
                 possible_symmetry_axis_list.extend(list(set(possible_symmetry_axis)))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
 
         possible_symmetry_axis = []  # a的可能列表
@@ -1604,8 +1610,8 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                 y = self(start)
                 x = start
                 coordinate_points.append((x, y))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
         possible_center_list = []
 
@@ -1706,8 +1712,8 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(start + parameters), self.accuracy)
                 if now_y != last_y:
                     result = False
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
         result_key = {True: "是", False: "不是"}
         return result, f"{self}的周期{result_key[result]}{parameters}"
@@ -1733,8 +1739,8 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(parameters - start), self.accuracy)
                 if now_y != last_y:
                     result = False
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
         result_key = {True: "是", False: "不是"}
         return result, f"{self}的对称轴{result_key[result]}{parameters}"
@@ -1762,8 +1768,8 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 last_y = round(self(2 * parameters[0] - start), self.accuracy)
                 if round((now_y + last_y) / 2, self.accuracy) != parameters[1]:
                     result = False
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             start += span
         result_key = {True: "是", False: "不是"}
         return result, f"{self}的对称中心{result_key[result]}{parameters}"

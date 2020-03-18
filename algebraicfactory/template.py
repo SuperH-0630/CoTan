@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import os
+import logging
 
 from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor, factor_list, expand, collect, Add, \
     Mul, ratsimp, cancel, apart, together, radsimp, trigsimp, expand_trig, expand_mul, expand_multinomial, powdenest, \
@@ -8,7 +9,9 @@ from sympy import simplify, count_ops, Float, Integer, Rational, sympify, factor
 from sympy.plotting import plot3d
 from sympy.core.sympify import SympifyError
 
-from system import plugin_class_loading, get_path, plugin_func_loading
+from system import plugin_class_loading, get_path, plugin_func_loading, basicConfig
+
+logging.basicConfig(**basicConfig)
 
 
 class DictNameError(Exception):
@@ -45,6 +48,7 @@ class AlgebraInit:
         self.algebra_dict_view = {}  # 门面(str)
         self.symbol_describe = {}  # 描述文件
         self.out_status = new
+        logging.info('AlgebraInit init')
 
     def get_expression(self, name, exp_str=False):
         try:
@@ -136,6 +140,7 @@ class AlgebraSymbol(AlgebraSymbolBase):
         try:
             exec(f"self.symbol_dict['{name}'] = Symbol('{name}', **k)", new_name)  # 创建一个Symbols
         except BaseException:
+            logging.error(f"add_symbol exec self.symbol_dict['{name}'] = Symbol('{name}', **k)")
             raise SymbolError
         self.symbol_describe[name] = describe
         return True
@@ -698,7 +703,8 @@ class General(AlgebraMath, metaclass=ABCMeta):
         alg = self.get_expression(name)
         try:
             return collect(alg, x)
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             return ceiling(alg)
 
 

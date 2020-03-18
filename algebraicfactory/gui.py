@@ -5,6 +5,7 @@ import tkinter.font as tkfont
 from algebraicfactory.controller import AlgebraPolynomial
 from system import exception_catch
 
+
 algebra_list = []
 variable_list = []
 SCREEN = tkinter.Tk()
@@ -91,7 +92,7 @@ class UIAPI:
         if all_ == 0:
             return True, False
         elif all_ == 1:
-            raise, False
+            return False, False
         else:
             return True, True
 

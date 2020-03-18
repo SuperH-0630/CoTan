@@ -3,6 +3,7 @@ import random
 import tkinter
 import tkinter.messagebox
 import os
+import logging
 
 import sympy
 from matplotlib import pyplot as plt
@@ -11,8 +12,9 @@ from matplotlib.animation import FuncAnimation
 
 from funcsystem.controller import ExpFunc as ExpFunc
 from newtkinter import asksaveasfilename
-from system import exception_catch
+from system import exception_catch, basicConfig
 
+logging.basicConfig(**basicConfig)
 func = None
 fig = None
 prompt_num = 0
@@ -61,8 +63,8 @@ class UIAPI:
                 else:
                     a = float(dicon_parameters[i].get())
                 parameters[i] = a
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         return parameters
 
     @staticmethod
@@ -93,9 +95,9 @@ class UIAPI:
             span_a,
         ]
         # 参数的处理
+        span = None
         try:
             span_str = span_definition.get().replace(" ", "")
-            span = None
             if span_str[0] == "H":
                 domain = {
                     "Pi": sympy.pi,
@@ -115,13 +117,13 @@ class UIAPI:
                     "atan": sympy.atan,
                 }
                 span = eval(span_str[1:], domain)
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
         for i in range(8):
             try:
                 default_value[i] = float(get[i].get())
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if span is not None:
             default_value[2] = span
         # View的处理
@@ -479,8 +481,8 @@ class API(UIAPI):
             for i in API.get_y_value_gui():
                 try:
                     answer += func.dichotomy(float(i), *API.dichotomy_gui())[0]
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
             if answer:
                 API.output_prompt_gui("系统运算完成")
             else:
@@ -547,8 +549,8 @@ class API(UIAPI):
                         exp_parameter[2] = int(plot_parameter[2])
                         exp_parameter[3] = int(plot_parameter[3])
                         exp_parameter[4] = int(plot_parameter[4])
-                    finally:
-                        pass
+                    except BaseException as e:
+                        logging.warning(str(e))
                     plot_parameter = exp_parameter
                     x_exp_scale = API.type_selection(
                         ExpFunc(
@@ -570,7 +572,8 @@ class API(UIAPI):
                 else:  # 输入纯数字
                     x_exp_scale = API.type_selection(x_scale.get().split(","))
                     axis.set_xticks(x_exp_scale)
-            except BaseException:
+            except BaseException as e:
+                logging.debug(str(e))
                 x_major_locator = plt.MultipleLocator(2)
                 axis.xaxis.set_major_locator(x_major_locator)
             # 检测y
@@ -590,8 +593,8 @@ class API(UIAPI):
                         exp_parameter[2] = int(plot_parameter[2])
                         exp_parameter[3] = int(plot_parameter[3])
                         exp_parameter[4] = int(plot_parameter[4])
-                    finally:
-                        pass
+                    except BaseException as e:
+                        logging.warning(str(e))
                     plot_parameter = exp_parameter
                     y_exp_scale = API.type_selection(
                         ExpFunc(
@@ -612,7 +615,8 @@ class API(UIAPI):
                 else:
                     y_exp_scale = API.type_selection(y_scale.get().split(","))
                     axis.set_yticks(y_exp_scale)
-            except BaseException:
+            except BaseException as e:
+                logging.debug(str(e))
                 y_major_locator = plt.MultipleLocator(2)
                 axis.yaxis.set_major_locator(y_major_locator)
             # 极限
@@ -633,8 +637,8 @@ class API(UIAPI):
                     _y_limit = [y_limit[0], y_limit[1]]
                 except IndexError:
                     _y_limit = _x_limit
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             _x_limit.sort()
             _y_limit.sort()
             axis.set_xlim(_x_limit)

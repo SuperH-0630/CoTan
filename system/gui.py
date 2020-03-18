@@ -3,10 +3,10 @@ from newtkinter import askopenfilename
 from tkinter.messagebox import showwarning, askokcancel
 from tkinter.scrolledtext import ScrolledText
 
-from system.controller import Plugin, NamingError, ConflictError
+from system.controller import Systemctl, NamingError, ConflictError
 
 SCREEN = tkinter.Tk()
-plugin = Plugin()
+systemctl = Systemctl()
 SCREEN.title("插件管理")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry(f"+10+10")
@@ -51,12 +51,12 @@ def code_window(name):
 
 def get_dir():
     plugin_dir_box.delete(0, tkinter.END)
-    plugin_dir_box.insert(0, *plugin.get_dir())
+    plugin_dir_box.insert(0, *systemctl.get_dir())
 
 
 def get_all_plugin():
     plugin_box.delete(0, tkinter.END)
-    plugin_box.insert(0, *plugin.get_all_plugin())
+    plugin_box.insert(0, *systemctl.get_all_plugin())
 
 
 def get_plugin():
@@ -65,19 +65,19 @@ def get_plugin():
     except IndexError:
         return False
     plugin_box.delete(0, tkinter.END)
-    plugin_box.insert(0, *plugin.get_plugin(index))
+    plugin_box.insert(0, *systemctl.get_plugin(index))
 
 
 def add_plugin():
     index = plugin_dir_box.curselection()[0]
     plugin_dir = askopenfilename(title="选择插件文件", filetypes=[("Python", ".py")])
     try:
-        plugin_list = plugin.add_plugin(index, plugin_dir)
+        plugin_list = systemctl.add_plugin(index, plugin_dir)
     except NamingError:
         showwarning("文件错误", "插件命名错误，命名规则:\ntemplate_[类\\方法名].py")
     except ConflictError:
         if askokcancel("提示", f"已经存在插件，是否需要尝试合并插件?\n[合并失败将产生不可逆的后果]"):
-            plugin.merge_plugin(index, plugin_dir)
+            systemctl.merge_plugin(index, plugin_dir)
     except BaseException as e:
         showwarning("文件错误", f"插件导入遇到了未知错误:\n{e}")
     else:
@@ -88,7 +88,7 @@ def add_plugin():
 def del_plugin():
     index = plugin_box.curselection()[0]
     try:
-        plugin_list = plugin.del_plugin(index)
+        plugin_list = systemctl.del_plugin(index)
         plugin_box.delete(0, tkinter.END)
         plugin_box.insert(0, *plugin_list)
     finally:
@@ -98,8 +98,16 @@ def del_plugin():
 def show_plugin():
     index = plugin_box.curselection()[0]
     try:
-        code, name = plugin.show_plugin(index)
+        code, name = systemctl.show_plugin(index)
         code_window(name)[0].insert(tkinter.END, code)
+    finally:
+        pass
+
+
+def show_log():
+    try:
+        log = systemctl.show_log()
+        code_window('日志信息')[0].insert(tkinter.END, log)
     finally:
         pass
 
@@ -223,4 +231,28 @@ row += 5
         width=gui_width,
         height=gui_height,
     ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
+)
+(
+    tkinter.Label(
+        SCREEN,
+        text="【日志管理】",
+        bg=bg_color,
+        fg=word_color,
+        font=FONT,
+        width=gui_width * 3,
+        height=gui_height,
+    ).grid(column=column, row=row, columnspan=3)
+)
+row += 1
+(
+    tkinter.Button(
+        SCREEN,
+        bg=botton_color,
+        fg=word_color,
+        command=show_log,
+        text="查看日记",
+        font=FONT,
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column, columnspan=3, row=row, sticky=tkinter.E + tkinter.W)
 )

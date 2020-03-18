@@ -2,6 +2,7 @@ import time
 import threading
 import tkinter
 import os
+import logging
 
 import tkinter.messagebox
 from tkinter import ttk
@@ -10,7 +11,9 @@ from tkinter.scrolledtext import ScrolledText
 
 import gitrepo.template
 from gitrepo import controller
-from system import exception_catch
+from system import exception_catch, basicConfig
+
+logging.basicConfig(**basicConfig)
 
 
 class UIAPI:
@@ -115,8 +118,8 @@ class UIAPI:
                     if show_screen:
                         try:
                             cli_screen.update()
-                        finally:
-                            pass
+                        except BaseException as e:
+                            logging.warning(str(e))
                     assert time.time() - start >= break_time != 0
                     assert break_time == 0 and start == 0
                 except AssertionError:
@@ -393,8 +396,8 @@ class UIAPI:
         try:  # 窗口可能已经关闭
             repo_dir.delete(0, tkinter.END)
             repo_dir.insert(tkinter.END, *dir_list)
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
         last_name = name
 
     @staticmethod
@@ -928,8 +931,8 @@ class API(UIAPI):
         try:
             del file_list[API.get_file_box_index()]
             API.update_file_box_gui()
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
 
     @staticmethod
     @exception_catch()

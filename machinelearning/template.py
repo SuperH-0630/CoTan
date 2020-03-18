@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 from os import getcwd, mkdir
 from os.path import split as path_split, splitext, basename, exists
 import os
+import logging
 
 from sklearn.svm import SVC, SVR  # SVC是svm分类，SVR是svm回归
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
@@ -40,8 +41,9 @@ from pyecharts import options as opts
 from pyecharts.components import Image
 from pyecharts.globals import CurrentConfig
 
-from system import plugin_class_loading, get_path, plugin_func_loading
+from system import plugin_class_loading, get_path, plugin_func_loading, basicConfig
 
+logging.basicConfig(**basicConfig)
 CurrentConfig.ONLINE_HOST = f"{getcwd()}{os.sep}assets{os.sep}"
 
 
@@ -846,15 +848,15 @@ class ViewData(ToPyebase):  # 绘制预测型热力图
             x_testdata = self.x_testdata
             if x_testdata is not None:
                 add_func(x_testdata, f"{x_name}:x测试数据")
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
 
         try:
             y_testdata = self.y_testdata.copy()
             if y_testdata is not None:
                 add_func(y_testdata, f"{x_name}:y测试数据")
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
 
         self.have_fit = True
         if y_traindata is None:
@@ -1089,8 +1091,8 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
     def fit_model(self, x_data, *args, **kwargs):
         try:
             self.means = x_data.ravel()
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
         self.have_fit = True
         return "None", "None"
 
@@ -1119,8 +1121,8 @@ class PredictiveHeatmapBase(ToPyebase):  # 绘制预测型热力图
                     if g == np.nan:
                         raise Exception
                     x_means[i] = g
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
             get = decision_boundary_func(
                 x_range, x_means, self.learner.predict, class_, data_type
             )
@@ -2125,7 +2127,8 @@ class SelectFromModel(PrepBase):  # 有监督
             self.y_testdata = x_predict.copy()
             self.have_predict = True
             return x_predict, "模型特征工程"
-        except BaseException:
+        except BaseException as e:
+            logging.debug(str(e))
             self.have_predict = True
             return np.array([]), "无结果工程"
 
@@ -2170,8 +2173,8 @@ class SelectFromModel(PrepBase):  # 有监督
         except AttributeError:
             try:
                 make_bar_(self.model.feature_importances_)
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         save = save_dir + rf"{os.sep}模型特征选择.HTML"
         tab.render(save)  # 生成HTML
@@ -3692,8 +3695,8 @@ class Table(TableFisrt):
                 DataFrame(self.ROWS, columns=self.HEADERS).to_csv(
                     save_dir + os.sep + name + ".csv"
                 )
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         return super().render(path, *args, **kwargs)
 
 
@@ -4033,14 +4036,14 @@ def see_tree(tree_file_dir):
                         "children": [],
                     }
                     continue
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
             try:
                 regex_result = re.findall(link_regex, i)[0]
                 if regex_result[0] != "" and regex_result[1] != "":
                     link_list.append((regex_result[0], regex_result[1]))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
     father_list = []  # 已经有父亲的list
     for i in link_list:
@@ -4049,8 +4052,8 @@ def see_tree(tree_file_dir):
         try:
             node_dict[father]["children"].append(node_dict[son])
             father_list.append(son)
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
 
     father = list(set(node_dict.keys()) - set(father_list))
 

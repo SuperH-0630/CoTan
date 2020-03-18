@@ -6,6 +6,7 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 from time import sleep
+import logging
 
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -13,7 +14,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
 import requests
 
-from system import plugin_class_loading, get_path
+from system import plugin_class_loading, get_path, basicConfig
+
+logging.basicConfig(**basicConfig)
 
 keys_name_dict = {
     "ctrl": Keys.CONTROL,
@@ -1389,8 +1392,8 @@ class PageParserTool(PageParserFunc):
                     if re is None:
                         raise PageParserError
                     paser_list.append(re)
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
             self.element_dict[f"{name}[{num}]"] = paser_list
 
         self.add_func(f"get>{path}:{element_value}[{index}]", action)  # 添加func

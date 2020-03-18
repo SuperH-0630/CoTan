@@ -3,8 +3,9 @@ import logging
 
 PATH = os.getcwd()
 LOG_DIR = rf'{PATH}{os.sep}Log{os.sep}log_system.log'
-LOG_FORMAT = '%(asctime)s - %(pathname)s - [%(lineno)d]%(funcName)s  %(message)s'
-logging.basicConfig(filename=LOG_DIR, level=logging.DEBUG, format=LOG_FORMAT)
+LOG_FORMAT = '%(asctime)s - %(pathname)s - %(levelname)s  [%(lineno)d]%(funcName)s  %(message)s'
+basicConfig = dict(filename=LOG_DIR, level=logging.DEBUG, format=LOG_FORMAT)
+logging.basicConfig(**basicConfig)
 
 
 class NoPluginError(Exception):
@@ -25,6 +26,7 @@ def plugin_class_loading(template_path):
                 with open(template, 'r') as f:
                     namespace = {'base': base}
                     exec(f.read().replace('base = None', ''), namespace)
+                logging.info(f'{base.__name__} use plugin success')
                 return namespace[name]
             else:
                 raise NoPluginError
@@ -44,9 +46,11 @@ def exception_catch(*args_catch, **kwargs_catch):
     def catch(func):
         def adorner(*args, **kwargs):
             try:
-                func()
+                return_ = func(*args, **kwargs)
+                logging.debug(f'run  {func.__name__} args:{args}  kwargs:{kwargs} return:{return_}')
+                return return_
             except BaseException as e:
-                logging.error(str(e))
+                logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}')
                 assert func.__name__.endswith('_gui'), str(e)
         return adorner
     return catch

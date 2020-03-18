@@ -3,6 +3,7 @@ from random import randint
 import re
 from os import getcwd
 import os
+import logging
 
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
@@ -18,8 +19,9 @@ import pandas_profiling as pp
 
 from pyecharts.globals import CurrentConfig
 from pyecharts.globals import GeoType  # 地图推荐使用GeoType而不是str
-from system import plugin_class_loading, get_path
+from system import plugin_class_loading, get_path, basicConfig
 
+logging.basicConfig(**basicConfig)
 CurrentConfig.ONLINE_HOST = f"{getcwd()}{os.sep}assets{os.sep}"
 
 
@@ -441,14 +443,14 @@ class SheetSlice(FormBase, metaclass=ABCMeta):
         for i in column:
             try:
                 new_sheet = new_sheet.drop(column_list[int(i)], axis=1)
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         row_list = new_sheet.index.values
         for i in row:
             try:
                 new_sheet = new_sheet.drop(row_list[int(i)])
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if new:
             self.add_sheet(new_sheet, f"{name}:删减")
         return new_sheet
@@ -480,8 +482,8 @@ class DatacleaningFunc(FormBase, metaclass=ABCMeta):
         try:
             del self.clean_func[key]
             del self.clean_func_code[key]
-        finally:
-            pass
+        except BaseException as e:
+            logging.warning(str(e))
 
     def del_all_clean_func(self):
         self.clean_func = {}
@@ -539,8 +541,8 @@ class DatacleaningFunc(FormBase, metaclass=ABCMeta):
                             else:
                                 # 第一个是行名，然后是列名
                                 exec(f"get.iloc[{row},{column}] = {d}", {"get": get})
-                    finally:
-                        pass
+                    except BaseException as e:
+                        logging.warning(str(e))
         self.add_sheet(get, f"{name}:清洗")
         return get
 
@@ -552,8 +554,8 @@ class SheetDtype(FormBase, metaclass=ABCMeta):
         for i in range(len(column)):
             try:
                 column[i] = int(column[i])
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
 
         if dtype != "":
             func_dic = {
@@ -580,8 +582,8 @@ class SheetDtype(FormBase, metaclass=ABCMeta):
         for i in range(len(column)):
             try:
                 column[i] = int(column[i])
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         func_dic = {
             "Int": int,
             "Float": float,
@@ -987,8 +989,8 @@ class AxisPlot(Render):
                 )  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
@@ -1019,8 +1021,8 @@ class AxisPlot(Render):
                 )  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
@@ -1057,8 +1059,8 @@ class AxisPlot(Render):
                 )  # i[0]是名字，i是tuple，其中i[1]是data
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
@@ -1095,8 +1097,8 @@ class AxisPlot(Render):
                 )
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(int, q))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
@@ -1120,8 +1122,8 @@ class AxisPlot(Render):
                 c.add_yaxis(f"{name}_{i[0]}", [q], **self.yaxis_label(args))
                 # q不需要float，因为应多不同的type他会自动变更，但是y是用来比较大小
                 y += list(map(float, q))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         if not y:
             args["show_Visual_mapping"] = False  # 关闭视觉映射
             y = [0, 100]
@@ -1186,10 +1188,10 @@ class GeneralPlot(Render):
                         link.append(
                             {"source": f"{i[0]}", "target": n[0], "value": float(n[1])}
                         )
-                    finally:
-                        pass
-            finally:
-                pass
+                    except BaseException as e:
+                        logging.warning(str(e))
+            except BaseException as e:
+                logging.warning(str(e))
         if not link:
             for i in nodes:
                 for j in nodes:
@@ -1246,8 +1248,8 @@ class GeneralPlot(Render):
                 try:
                     v = float(eval(f"get.iloc[{y},{x}]", {"get": get}))  # 取得value
                     link.append({"source": y_n, "target": x_n, "value": v})
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         c = (
             Graph(**self.init_setting(args))
             .add(
@@ -1301,8 +1303,8 @@ class GeneralPlot(Render):
                     link.append({"source": y_n, "target": x_n, "value": v})
                     target[y_n].add(x_n)
                     source[x_n].add(y_n)
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         c = (
             Sankey()
             .add(
@@ -1347,8 +1349,8 @@ class GeneralPlot(Render):
         for i in get.iterrows():  # 按行迭代
             try:
                 data.append([f"{i[0]}", float(i[1].tolist()[0])])
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         args = self.parsing_parameters(text)
         c = (
             Pie(**self.init_setting(args))
@@ -1374,8 +1376,8 @@ class GeneralPlot(Render):
             try:
                 q = i[1].tolist()
                 data.append((float(q[0]), float(q[1]) / convert))
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         c = (
             Polar(**self.init_setting(args))
             .add(f"{name}", data, type_="scatter", **self.yaxis_label(args))
@@ -1401,8 +1403,8 @@ class GeneralPlot(Render):
                     f = float(q[a])
                     max_list[a].append(f)
                     add.append(f)
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
             data.append([f"{i[0]}", [add]])  # add是包含在一个list中的
 
         for i in range(len(max_list)):  # 计算x_list
@@ -1458,8 +1460,8 @@ class GeneralPlot(Render):
                 try:
                     data[a].append([date, q[a]])
                     y.append(float(q[a]))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         if not y:
             y = [0, 100]
@@ -1491,8 +1493,8 @@ class GeneralPlot(Render):
                 try:
                     data.append([date, q[a], x_name[a]])
                     y.append(float(q[a]))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         if not y:
             y = [0, 100]
@@ -1718,8 +1720,8 @@ class GeographyPlot(Render):
                     v = float(q[a])
                     y.append(v)
                     data[a].append((map_, v))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         args["show_Visual_mapping"] = True  # 必须视觉映射
         if not y:
@@ -1826,8 +1828,8 @@ class GeographyPlot(Render):
                             color="#1E90FF" if args["is_Dark"] else "#0000FF",
                         )
                     m.append(v)
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         if not m:
             m = [0, 100]
         c.set_series_opts(label_opts=opts.LabelOpts(is_show=False))  # 不显示
@@ -1848,8 +1850,8 @@ class WordPlot(Render):
         for i in get.iterrows():  # 按行迭代
             try:
                 data.append([str(i[0]), float(i[1].tolist()[0])])
-            finally:
-                pass
+            except BaseException as e:
+                logging.warning(str(e))
         args = self.parsing_parameters(text)
         c = (
             WordCloud(**self.init_setting(args))
@@ -1914,8 +1916,8 @@ class SolidPlot(Render):
                     v = eval(f"get.iloc[{r},{c}]", {"get": get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         if not q:
             q = [0, 100]
@@ -1952,8 +1954,8 @@ class SolidPlot(Render):
                     v = eval(f"get.iloc[{r},{c}]", {"get": get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         if not q:
             q = [0, 100]
@@ -1988,8 +1990,8 @@ class SolidPlot(Render):
                     v = eval(f"get.iloc[{r},{c}]", {"get": get})  # 先行后列
                     value_list.append([c, r, v])
                     q.append(float(v))
-                finally:
-                    pass
+                except BaseException as e:
+                    logging.warning(str(e))
         args = self.parsing_parameters(text)
         if not q:
             q = [0, 100]

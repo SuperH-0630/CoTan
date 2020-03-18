@@ -1,5 +1,6 @@
 import os
 import shutil
+from system import LOG_DIR
 
 PATH = os.getcwd() + rf'{os.sep}template'
 
@@ -12,7 +13,7 @@ class ConflictError(BaseException):
     pass
 
 
-class Plugin:
+class Systemctl:
     def __init__(self):
         self.dir_list = []
         self.plugin_list = []
@@ -66,3 +67,8 @@ class Plugin:
         with open(f'{PATH}{os.sep}{self.plugin_list[index]}') as f:
             code = f.read() + '\n[END]'
         return code, self.plugin_list[index]
+
+    def show_log(self):
+        with open(LOG_DIR) as f:
+            log = f.read()
+        return log

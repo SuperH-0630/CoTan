@@ -402,7 +402,6 @@ class RemoteClasses(GitBase, metaclass=ABCMeta):
                     branch = f"{local}"  # 要去掉冒号
             else:
                 if remote_branch != "HEAD":
-                    # git push <远程主机名> <本地分支名>:<远程分支名>
                     branch = f"{remote_branch}:{local}"
                 else:
                     branch = f"{remote_branch}"

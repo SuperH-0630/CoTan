@@ -1,10 +1,14 @@
 import time
 import os
+import logging
 
 import pygame
 from pygame.locals import *
 
 from draftboard.toolbox import tool_box
+from system import basicConfig
+
+logging.basicConfig(**basicConfig)
 
 # 定义一些变量
 pen_color = [0, 0, 0]  # 画笔颜色
@@ -322,8 +326,8 @@ def draw_main():
                         try:
                             bg_im = pygame.image.load(tool_set[9]).convert()  # 加载位图
                             SCREEN.blit(bg_im, (0, 0))  # 绘制位图
-                        finally:
-                            pass
+                        except BaseException as e:
+                            logging.warning(str(e))
                     # 恢复参数
                     previous_x = None
                     previous_y = None
