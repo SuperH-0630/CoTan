@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, freeze_support
 import threading
 from _tkinter import TclError
 import tkinter
@@ -697,4 +697,5 @@ def cotan_main():
 
 
 if __name__ == "__main__":
+    freeze_support()
     cotan_main()
