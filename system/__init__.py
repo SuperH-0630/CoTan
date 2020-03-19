@@ -35,7 +35,7 @@ def plugin_class_loading(template_path):
                 return namespace[name]
             else:
                 raise NoPluginError
-        except NoPluginError as e:
+        except NoPluginError:
             # logging.info(str(e) + 'no plugin')
             return base
         except BaseException as e:
@@ -63,8 +63,8 @@ def exception_catch(*args_catch, **kwargs_catch):
 
 class QueueController:
     def __init__(self):
-        self.in_queue: Queue
-        self.out_queue: Queue
+        self.in_queue = None
+        self.out_queue = None
         self.run = True
         self.var_dict = {}
         self.stop = None
