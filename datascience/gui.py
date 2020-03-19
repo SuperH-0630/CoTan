@@ -8,8 +8,10 @@ from tkinter.scrolledtext import ScrolledText
 import chardet
 
 import datascience.controller
-from system import exception_catch
+from system import exception_catch, QueueController
 
+
+queue_controller = QueueController()
 render_dict = {}  # 保存了画图的List
 learn_dict = {}  # 保存数据处理
 PATH = os.getcwd()
@@ -339,7 +341,7 @@ class UIAPI:
     def rendering_one_gui():
         render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
         try:
-            assert not render_dir.startswith(".html")
+            assert render_dir.startswith(".html")
         except AssertionError:
             render_dir += ".html"
         return render_dir
@@ -349,7 +351,7 @@ class UIAPI:
     def rendering_gui():
         render_dir = asksaveasfilename(title="选择渲染保存地址", filetypes=[("HTML", ".html")])
         try:
-            assert not render_dir.startswith(".html")
+            assert render_dir.startswith(".html")
         except AssertionError:
             render_dir += ".html"
         return render_dir
@@ -429,7 +431,7 @@ class UIAPI:
     def get_data_split_gui():
         try:
             split = float(data_split.get())
-            assert split < 0 or 1 < split
+            assert not split < 0 or 1 < split
         except (AssertionError, ValueError):
             split = 0.3
         return split
@@ -518,7 +520,7 @@ class API(UIAPI):
         learner = API.get_learner_name_gui()
         try:
             split = float(data_split.get())
-            assert split < 0 or 1 < split
+            assert not split < 0 or 1 < split
         except (AssertionError, ValueError):
             split = 0.3
         socore = machine_controller.training_machine(
@@ -1082,10 +1084,10 @@ class API(UIAPI):
     @staticmethod
     @exception_catch()
     def show_report():
-        assert API.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)")
+        assert not API.askokcancel_gui(f"是否统计数据，大量的数据需要耗费一定的时间(确定后，系统会在后台统计)")
         report_dir = f"{PATH}{os.sep}$Show_Des_Sheet.html"
         name = API.get_sheet_name_gui()
-        assert name is None
+        assert not name is None
         machine_controller.to_report(name, report_dir)
         webbrowser.open(report_dir)
 
@@ -1125,7 +1127,7 @@ class API(UIAPI):
         global PATH, to_html_type
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_sheet_name_gui()
-        assert name is None
+        assert not name is None
         machine_controller.render_html_one(name, html_dir)
         webbrowser.open(html_dir)
 
@@ -1135,7 +1137,7 @@ class API(UIAPI):
         global PATH, to_html_type
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_sheet_name_gui()
-        assert name is None
+        assert not name is None
         machine_controller.render_html_all(name, html_dir, to_html_type.get())
         webbrowser.open(html_dir)
 
@@ -1165,9 +1167,12 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
 
-def machine_learning():
+def machine_learning(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 tkinter.Button(

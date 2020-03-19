@@ -12,8 +12,9 @@ from matplotlib.animation import FuncAnimation
 
 from funcsystem.controller import ExpFunc as ExpFunc
 from newtkinter import asksaveasfilename
-from system import exception_catch, basicConfig
+from system import exception_catch, basicConfig, QueueController
 
+queue_controller = QueueController()
 logging.basicConfig(**basicConfig)
 func = None
 fig = None
@@ -831,9 +832,12 @@ class API(UIAPI):
             raise
 
 
-def function_factory_main():  # H_S-默认函数GF-关闭时询问返回函数
+def function_factory_main(in_queue, out_queue):  # H_S-默认函数GF-关闭时询问返回函数
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 SCREEN["bg"] = bg_color

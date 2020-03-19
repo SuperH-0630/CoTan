@@ -433,14 +433,14 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
                     if flat is None:
                         flat = 0
                     elif flat == 1:
-                        assert True
+                        assert False
                 elif symmetry_y == -now_y:
                     if flat is None:
                         flat = 1
                     elif flat == 0:
-                        assert True
+                        assert False
                 else:
-                    assert True
+                    assert False
             except AssertionError:
                 flat = None
                 break
@@ -568,7 +568,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_cycle.append(i)
         try:
-            assert not possible_cycle
+            assert possible_cycle
             possible_cycle.sort()
             output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
@@ -610,7 +610,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_symmetry_axis.append(i)
         try:
-            assert possible_symmetry_axis
+            assert not possible_symmetry_axis
             possible_symmetry_axis.sort()  #
             output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
@@ -657,7 +657,7 @@ class SheetProperty(SheetFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_center.append(i)
         try:
-            assert max_count < 5 or not possible_center
+            assert not max_count < 5 or not possible_center
             output_prompt("计算完毕")
             possible_center.sort()
             return possible_center[int(len(possible_center) / 2)], possible_center
@@ -1370,14 +1370,14 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
                     if flat is None:
                         flat = 0
                     elif flat == 1:
-                        assert True
+                        assert False
                 elif symmetry_y == -now_y:
                     if flat is None:
                         flat = 1
                     elif flat == 0:
-                        assert True
+                        assert False
                 else:
-                    assert True
+                    assert False
             except (AssertionError, ValueError, TypeError):
                 flat = None
                 break
@@ -1536,7 +1536,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_cycle.append(i)
         try:
-            assert not possible_cycle
+            assert possible_cycle
             possible_cycle.sort()
             output_prompt("计算完毕")
             return possible_cycle[0], possible_cycle
@@ -1584,7 +1584,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif n_c == c:
                 possible_symmetry_axis.append(i)
         try:
-            assert not possible_symmetry_axis
+            assert possible_symmetry_axis
             possible_symmetry_axis.sort()  #
             output_prompt("计算完毕")
             return possible_symmetry_axis[0], possible_symmetry_axis
@@ -1634,7 +1634,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             elif count == max_count:
                 possible_center.append(i)
         try:
-            assert max_count < 5 or not possible_center
+            assert not max_count < 5 or not possible_center
             output_prompt("计算完毕")
             possible_center.sort()  #
             return possible_center[int(len(possible_center) / 2)], possible_center

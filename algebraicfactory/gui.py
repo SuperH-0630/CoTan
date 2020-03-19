@@ -3,9 +3,10 @@ import tkinter.messagebox
 import tkinter.font as tkfont
 
 from algebraicfactory.controller import AlgebraPolynomial
-from system import exception_catch
+from system import exception_catch, QueueController
 
 
+queue_controller = QueueController()
 algebra_list = []
 variable_list = []
 SCREEN = tkinter.Tk()
@@ -1758,9 +1759,12 @@ class API(UIAPI):
         API.update_symbol_algebraic_box_gui()
 
 
-def algebraic_factory_main():
+def algebraic_factory_main(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 algebra_controller = AlgebraPolynomial(API.output_prompt_gui)

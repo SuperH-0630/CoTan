@@ -5,11 +5,16 @@ import tkinter.messagebox
 from newtkinter import askopenfilename, asksaveasfilename, askdirectory
 import chardet
 import webbrowser
+from multiprocessing import Queue
+import threading
 
 import machinelearning.controller
 import machinelearning.template
-from system import exception_catch
+from system import exception_catch, QueueController
 
+queue_controller = QueueController()
+input_queue: Queue
+output_queue: Queue
 calculation_list = []
 calculation_method = []
 PATH = os.getcwd()
@@ -431,7 +436,7 @@ class API(UIAPI):
         learner = API.get_learner_gui()
         try:
             split = float(data_split.get())
-            assert split < 0 or 1 < split
+            assert not split < 0 or 1 < split
         except (AssertionError, ValueError):
             split = 0.3
         socore = learner_controller.fit_model(
@@ -751,7 +756,7 @@ class API(UIAPI):
     def to_html_one():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_data_name_gui()
-        assert name is None
+        assert not name is None
         learner_controller.to_html_one(name, html_dir)
         webbrowser.open(html_dir)
 
@@ -760,7 +765,7 @@ class API(UIAPI):
     def to_html():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_data_name_gui()
-        assert name is None
+        assert not name is None
         learner_controller.to_html(name, html_dir, to_html_type.get())
         webbrowser.open(html_dir)
 
@@ -784,9 +789,12 @@ class API(UIAPI):
         API.update_sheet_box_gui()
 
 
-def machine_learning():
+def machine_learning(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 SCREEN.title("CoTan机器学习")

@@ -12,8 +12,9 @@ from matplotlib import rcParams
 
 from funcsystem.controller import SheetFunc, ExpFunc
 from newtkinter import askopenfilename, asksaveasfilename
-from system import exception_catch, basicConfig
+from system import exception_catch, basicConfig, QueueController
 
+queue_controller = QueueController()
 logging.basicConfig(**basicConfig)
 func_logger = []
 fig = None
@@ -588,9 +589,12 @@ class API(UIAPI):
             raise
 
 
-def function_mapping():
+def function_mapping(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 SCREEN.title("CoTan函数测绘")

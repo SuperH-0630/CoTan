@@ -7,8 +7,10 @@ import logging
 import crawler.controller
 import crawler.template
 from newtkinter import askdirectory
-from system import exception_catch, basicConfig
+from system import exception_catch, basicConfig, QueueController
 
+
+queue_controller = QueueController()
 logging.basicConfig(**basicConfig)
 SCREEN = tkinter.Tk()
 database_list = []
@@ -674,13 +676,20 @@ class API(UIAPI):
         API.update_parser_func_box_gui()
 
 
-def crawler_main():
+def crawler_main(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
+
+    def before_stop():
+        loader.stop()
+        database.close_all()
+        url.close()
+        loader.close()
+
+    queue_controller.set_before_stop(before_stop)
     SCREEN.mainloop()
-    loader.stop()
-    database.close_all()
-    url.close()
-    loader.close()
+    queue_controller.stop_process()
 
 
 SCREEN.title("CoTan自动化网页")

@@ -1413,8 +1413,7 @@ class PageParserTool(PageParserFunc):
         self.add_func(f"Webpage_snapshot", action)  # 添加func
 
 
-class PageParserData(PageParserDatabase, PageParserDatabase, PageParserDataSource, PageParserDataFindall,
-                     PageParserTool):
+class PageParserData(PageParserDatabase, PageParserDataSource, PageParserDataFindall,PageParserTool):
     pass
 
 

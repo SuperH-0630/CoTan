@@ -1656,7 +1656,7 @@ class RelationshipPlot(Render):
                             data.append([])
                             a = -1
                         else:
-                            assert True
+                            assert False
                     except (AssertionError, ValueError):
                         data_type[a] = GeoType.LINES  # 当前变为Line
                 data[a].append((map_, v))
@@ -1806,7 +1806,7 @@ class GeographyPlot(Render):
                                 type_=GeoType.EFFECT_SCATTER,
                                 color="#1E90FF" if args["is_Dark"] else "#0000FF",
                             )
-                            assert True  # continue
+                            assert False  # continue
                     except (ValueError, TypeError, AssertionError):
                         continue
                 try:

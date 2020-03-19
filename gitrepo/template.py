@@ -468,7 +468,7 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
             elif repo_dir.endswith(".git"):
                 repo_dir = repo_dir[:-5]  # -5,得把/去掉
             else:
-                assert True
+                assert False
         except (AssertionError, IndexError):
             subprocess.Popen(
                 f"{git_path} init", cwd=self.repo_dir, **sys_seeting

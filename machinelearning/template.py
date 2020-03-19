@@ -268,7 +268,7 @@ class LearnerSplit(LearnBase, metaclass=ABCMeta):
             if split < 1:
                 split = int(split * len(sheet) if axis == 1 else len(sheet[0]))
             else:
-                assert True
+                assert False
         except (ValueError, AssertionError):
             split = int(split)
         if axis == 0:
@@ -428,7 +428,7 @@ class StudyMachinebase(Machinebase):
     def fit_model(self, x_data, y_data, split=0.3, increment=True, **kwargs):
         y_data = y_data.ravel()
         try:
-            assert self.x_traindata is None or not increment
+            assert not self.x_traindata is None or not increment
             self.x_traindata = np.vstack((x_data, self.x_traindata))
             self.y_traindata = np.vstack((y_data, self.y_traindata))
         except (AssertionError, ValueError):
@@ -438,7 +438,7 @@ class StudyMachinebase(Machinebase):
             x_data, y_data, test_size=split
         )
         try:  # 增量式训练
-            assert not increment
+            assert increment
             self.model.partial_fit(x_data, y_data)
         except (AssertionError, AttributeError):
             self.model.fit(self.x_traindata, self.y_traindata)
@@ -639,14 +639,14 @@ class PrepBase(StudyMachinebase):  # 不允许第二次训练
         if not self.have_predict:  # 不允许第二次训练
             y_data = y_data.ravel()
             try:
-                assert self.x_traindata is None or not increment
+                assert not self.x_traindata is None or not increment
                 self.x_traindata = np.vstack((x_data, self.x_traindata))
                 self.y_traindata = np.vstack((y_data, self.y_traindata))
             except (AssertionError, ValueError):
                 self.x_traindata = x_data.copy()
                 self.y_traindata = y_data.copy()
             try:  # 增量式训练
-                assert not increment
+                assert increment
                 self.model.partial_fit(x_data, y_data)
             except (AssertionError, AttributeError):
                 self.model.fit(self.x_traindata, self.y_traindata)
@@ -669,12 +669,12 @@ class Unsupervised(PrepBase):  # 无监督，不允许第二次训练
         if not self.have_predict:  # 不允许第二次训练
             self.y_traindata = None
             try:
-                assert self.x_traindata is None or not increment
+                assert not self.x_traindata is None or not increment
                 self.x_traindata = np.vstack((x_data, self.x_traindata))
             except (AssertionError, ValueError):
                 self.x_traindata = x_data.copy()
             try:  # 增量式训练
-                assert not increment
+                assert increment
                 self.model.partial_fit(x_data)
             except (AssertionError, AttributeError):
                 self.model.fit(self.x_traindata, self.y_traindata)
@@ -686,7 +686,7 @@ class UnsupervisedModel(PrepBase):  # 无监督
     def fit_model(self, x_data, increment=True, *args, **kwargs):
         self.y_traindata = None
         try:
-            assert self.x_traindata is None or not increment
+            assert not self.x_traindata is None or not increment
             self.x_traindata = np.vstack((x_data, self.x_traindata))
         except (AssertionError, ValueError):
             self.x_traindata = x_data.copy()
@@ -970,7 +970,7 @@ class ClassBar(ToPyebase):  # 类型柱状图
                         f"({iter_num})[{round(start, 2)}-"
                         f"{round((start + n) if (start + n) <= end or not iter_num == 9 else end, 2)}]")
                     try:
-                        assert iter_num == 9  # 执行到第10次时，直接获取剩下的所有
+                        assert not iter_num == 9  # 执行到第10次时，直接获取剩下的所有
                         s = (start <= i) == (i < end)  # 布尔索引
                     except AssertionError:  # 因为start + n有超出end的风险
                         s = (start <= i) == (i <= end)  # 布尔索引
@@ -1431,7 +1431,7 @@ class CategoricalData:  # 数据统计助手
                 self.x_means.append(np.mean(x1))
                 self.add_range(x1)
             else:
-                assert True
+                assert False
             return x1_con
         except TypeError:  # 找出出现次数最多的元素
             new = np.unique(x1)  # 去除相同的元素
@@ -1445,7 +1445,7 @@ class CategoricalData:  # 数据统计助手
 
     def add_range(self, x1: np.array, range_=True):
         try:
-            assert not range_
+            assert range_
             min_ = int(x1.min()) - 1
             max_ = int(x1.max()) + 1
             # 不需要复制列表
@@ -3388,7 +3388,7 @@ class FastFourier(StudyMachinebase):  # 快速傅里叶变换
     def fit_model(self, y_data, *args, **kwargs):
         y_data = y_data.ravel()  # 扯平为一维数组
         try:
-            assert self.y_traindata is None
+            assert not self.y_traindata is None
             self.y_traindata = np.hstack((y_data, self.x_traindata))
         except (AssertionError, ValueError):
             self.y_traindata = y_data.copy()
@@ -3587,7 +3587,7 @@ def FUNC({",".join(model.__code__.co_varnames)}):
         y_data = y_data.ravel()
         x_data = x_data.astype(np.float64)
         try:
-            assert self.x_traindata is None
+            assert not self.x_traindata is None
             self.x_traindata = np.vstack((x_data, self.x_traindata))
             self.y_traindata = np.vstack((y_data, self.y_traindata))
         except (AssertionError, ValueError):

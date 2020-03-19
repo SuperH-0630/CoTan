@@ -1,8 +1,9 @@
 import time
-import threading
 import tkinter
 import os
 import logging
+from sys import exit
+import threading
 
 import tkinter.messagebox
 from tkinter import ttk
@@ -11,8 +12,9 @@ from tkinter.scrolledtext import ScrolledText
 
 import gitrepo.template
 from gitrepo import controller
-from system import exception_catch, basicConfig
+from system import exception_catch, basicConfig, QueueController
 
+queue_controller = QueueController()
 logging.basicConfig(**basicConfig)
 
 
@@ -120,8 +122,8 @@ class UIAPI:
                             cli_screen.update()
                         except BaseException as e:
                             logging.warning(str(e))
-                    assert time.time() - start >= break_time != 0
-                    assert break_time == 0 and start == 0
+                    assert not time.time() - start >= break_time != 0
+                    assert not break_time == 0 and start == 0
                 except AssertionError:
                     start = 0
                     break
@@ -208,7 +210,7 @@ class UIAPI:
                         data += f"[END]"
                         break
                     elif command_thread.returncode is not None:
-                        assert True
+                        assert False
                 except (tkinter.TclError, AssertionError):
                     if show_screen:
                         text.insert(tkinter.END, "[ERROR]")
@@ -950,9 +952,19 @@ class API(UIAPI):
         API.update_repo_box_gui()
 
 
-def git_main():
-    global SCREEN, git, PATH, bg_color, buttom_color, word_color, repo_list, last_name, file_list, FONT
+def git_main(in_queue, out_queue):
+    global SCREEN, queue_controller
+    queue_controller.set_queue(in_queue, out_queue)
+
+    class Stop:
+        def __call__(self, *args, **kwargs):
+            exit(0)
+
+    stop = Stop()
+    queue_controller.set_before_stop(stop)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 file_list = []

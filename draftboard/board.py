@@ -6,8 +6,9 @@ import pygame
 from pygame.locals import *
 
 from draftboard.toolbox import tool_box
-from system import basicConfig
+from system import basicConfig, QueueController
 
+queue_controller = QueueController()
 logging.basicConfig(**basicConfig)
 
 # 定义一些变量
@@ -244,13 +245,14 @@ def top_draw():
     SCREEN.blit(model_tip, (0, SCREEN_Y - 16))
 
 
-def draw_main():
+def draw_main(in_queue, out_queue):
     global previous_x, previous_y, pen_color, pen_weight, coordinate_system_drawing_method
     global coordinate_click_point, record_origin_x
     global record_origin_y, span, line
     global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir
     global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips
-
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     flat = True  # 循环条件（不是全局）
     while flat:
         top_draw()
@@ -726,6 +728,7 @@ def draw_main():
                     line = []
                     rect = []
                     poly = []
+    queue_controller.stop_process()
 
 # 快捷键操作指南
 # d-不用点击左键画线（再次点击关闭）

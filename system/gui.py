@@ -2,9 +2,12 @@ import tkinter
 from newtkinter import askopenfilename
 from tkinter.messagebox import showwarning, askokcancel
 from tkinter.scrolledtext import ScrolledText
+import webbrowser
 
 from system.controller import Systemctl, NamingError, ConflictError
+from system import QueueController
 
+queue_controller = QueueController()
 SCREEN = tkinter.Tk()
 systemctl = Systemctl()
 SCREEN.title("插件管理")
@@ -112,9 +115,12 @@ def show_log():
         pass
 
 
-def system_main():
+def system_main(in_queue, out_queue):
     global SCREEN
+    queue_controller.set_queue(in_queue, out_queue)
+    queue_controller()
     SCREEN.mainloop()
+    queue_controller.stop_process()
 
 
 (
@@ -249,7 +255,7 @@ row += 1
         SCREEN,
         bg=botton_color,
         fg=word_color,
-        command=show_log,
+        command=lambda: webbrowser.open(r'E:\SongZihuan\PyProject\CoTan\Log\log_system.log'),
         text="查看日记",
         font=FONT,
         width=gui_width,
