@@ -9,6 +9,7 @@ import time
 import os
 import tkinter.messagebox
 import webbrowser
+import random
 
 from newtkinter import DragWindow, center_windows
 
@@ -26,6 +27,9 @@ crawlef_start = None
 title_color = '#F0FFFF'
 button_color = '#FFFFFF'
 button_cursor = 'tcross'
+pic_list = os.listdir(f'{os.getcwd()}{os.sep}Pic')
+del pic_list[pic_list.index('favicon.ico')]
+pic_list = random.sample(pic_list, 10)
 
 
 class QueueController:
@@ -388,7 +392,6 @@ def cotan_main():
     font1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
     font2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
     font3 = tkfont.Font(family='Comic Sans MS', size=10)
-    font4 = tkfont.Font(family='Comic Sans MS', size=50, weight=tkfont.BOLD)
     SCREEN.title('')
     SCREEN.resizable(width=False, height=False)
     SCREEN.geometry(f'1200x800+30+30')
@@ -404,8 +407,9 @@ def cotan_main():
         width=1000,
         height=800,
         highlightthickness=0)
-    bg_image = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}night.jpg'))
-    canvas.create_image(500, 400, image=bg_image)
+    pic = pic_list[int(str(time.time()).split()[0][-1])]
+    bg_image = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}{pic}'))
+    canvas.create_image(400, 400, image=bg_image)
     canvas.grid(column=1, row=0, sticky=tkinter.S + tkinter.N, rowspan=20)
     SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
     # 标题
@@ -705,7 +709,7 @@ def cotan_main():
         row=20,
         sticky=tkinter.W +
         tkinter.E)
-    canvas.create_text(450, 740, text='Welcome to CoTan', font=font4, fill='#FFFFE0')
+    # canvas.create_text(450, 740, text='Welcome to CoTan', font=font4, fill='#FFFFE0')
     SCREEN.protocol("WM_DELETE_WINDOW", close)
     SCREEN.mainloop()
 
