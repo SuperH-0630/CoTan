@@ -614,6 +614,11 @@ class UIAPI:
         old_name = API.get_branch_name_gui()
         return new_name, old_name
 
+    @staticmethod
+    @exception_catch()
+    def get_file_box_index_gui():
+        return file_box.curselection()[0]
+
 
 class API(UIAPI):
     @staticmethod
@@ -924,17 +929,9 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
-    def get_file_box_index():
-        return file_box.curselection()
-
-    @staticmethod
-    @exception_catch()
     def del_file():
-        try:
-            del file_list[API.get_file_box_index()]
-            API.update_file_box_gui()
-        except BaseException as e:
-            logging.warning(str(e))
+        del file_list[API.get_file_box_index_gui()]
+        API.update_file_box_gui()
 
     @staticmethod
     @exception_catch()
@@ -981,7 +978,7 @@ FONT = ("黑体", 11)  # 设置字体
 SCREEN.title("CoTan仓库管理器")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
-
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 gui_width = 13  # 标准宽度
 gui_height = 2
 row = 0

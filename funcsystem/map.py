@@ -597,9 +597,10 @@ def function_mapping(in_queue, out_queue):
     queue_controller.stop_process()
 
 
-SCREEN.title("CoTan函数测绘")
+SCREEN.title("CoTan函数实验室")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry(f"+10+10")
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 rcParams["font.family"] = "simhei"
 rcParams["axes.unicode_minus"] = False
 tkinter.Label(
@@ -709,10 +710,10 @@ func_exp_box.grid(
     rowspan=rowspan,
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
-a_y += rowspan
-tkinter.Label(
-    SCREEN, font=FONT, text="", width=gui_width, height=1, bg=bg_color, fg=word_color
-).grid(column=0, row=a_y)
+# a_y += rowspan
+# tkinter.Label(
+#     SCREEN, font=FONT, text="", width=gui_width, height=1, bg=bg_color, fg=word_color
+# ).grid(column=0, row=a_y)
 
 tkinter.Label(SCREEN, font=FONT, text="", width=1, bg=bg_color, fg=word_color).grid(
     column=4, row=0

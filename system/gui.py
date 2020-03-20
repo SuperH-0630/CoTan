@@ -1,8 +1,9 @@
 import tkinter
 from newtkinter import askopenfilename
-from tkinter.messagebox import showwarning, askokcancel
+from tkinter.messagebox import showwarning, askokcancel, showinfo
 from tkinter.scrolledtext import ScrolledText
 import webbrowser
+import os
 
 from system.controller import Systemctl, NamingError, ConflictError
 from system import QueueController
@@ -10,9 +11,10 @@ from system import QueueController
 queue_controller = QueueController()
 SCREEN = tkinter.Tk()
 systemctl = Systemctl()
-SCREEN.title("插件管理")
+SCREEN.title("系统管理")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry(f"+10+10")
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 bg_color = "#FFFAFA"  # 主颜色
 SCREEN["bg"] = bg_color
 botton_color = "#FFFAFA"  # 按钮颜色
@@ -121,6 +123,14 @@ def system_main(in_queue, out_queue):
     queue_controller()
     SCREEN.mainloop()
     queue_controller.stop_process()
+
+
+def show_about():
+    showinfo("关于", '''
+关于CoTan:
+CoTan是由SuperHuan于2020年开始开发的开源科学计算系统。
+关于CoTan的更多信息请访问CoTan社区
+''')
 
 
 (
@@ -256,9 +266,21 @@ row += 1
         bg=botton_color,
         fg=word_color,
         command=lambda: webbrowser.open(r'E:\SongZihuan\PyProject\CoTan\Log\log_system.log'),
-        text="查看日记",
+        text="查看日志",
         font=FONT,
         width=gui_width,
         height=gui_height,
-    ).grid(column=column, columnspan=3, row=row, sticky=tkinter.E + tkinter.W)
+    ).grid(column=column, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
+)
+(
+    tkinter.Button(
+        SCREEN,
+        bg=botton_color,
+        fg=word_color,
+        command=show_about,
+        text="关于CoTan",
+        font=FONT,
+        width=gui_width,
+        height=gui_height,
+    ).grid(column=column+2, row=row, sticky=tkinter.E + tkinter.W)
 )

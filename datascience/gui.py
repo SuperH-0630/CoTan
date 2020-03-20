@@ -27,6 +27,7 @@ FONT1 = ("黑体", 13)
 SCREEN.title("CoTan数据处理")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 gui_width = 13  # 标准宽度
 gui_height = 2
 row = 0
@@ -286,12 +287,6 @@ class UIAPI:
 
     @staticmethod
     @exception_catch()
-    def view_cleaning_script_gui():
-        name = clean_list[API.get_clean_func_box_index_gui()]
-        API.update_clean_code(machine_controller.get_clean_code(name))
-
-    @staticmethod
-    @exception_catch()
     def get_clean_func_box_index_gui():
         return clean_func_box.curselection()[0]
 
@@ -316,7 +311,7 @@ class UIAPI:
     @exception_catch()
     def reset_clean_code_gui():
         global clean_code, clean_default_script
-        API.update_clean_code(clean_default_script)
+        API.update_clean_code_gui(clean_default_script)
 
     @staticmethod
     @exception_catch()
@@ -367,6 +362,12 @@ class UIAPI:
         dtype = dtype_input.get()
         wrong = dtype_wrong.get()
         return column_list, dtype, name, type_, wrong
+
+    @staticmethod
+    @exception_catch()
+    def update_clean_code_gui(clean_default_script_):
+        clean_code.delete("0.0", tkinter.END)
+        clean_code.insert("0.0", clean_default_script_)
 
     @staticmethod
     @exception_catch()
@@ -474,6 +475,12 @@ class UIAPI:
 
 
 class API(UIAPI):
+    @staticmethod
+    @exception_catch()
+    def view_cleaning_script():
+        name = clean_list[API.get_clean_func_box_index_gui()]
+        API.update_clean_code_gui(machine_controller.get_clean_code(name))
+
     @staticmethod
     @exception_catch()
     def clear_rendering():
@@ -919,15 +926,9 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
-    def update_clean_code(clean_default_script_):
-        clean_code.delete("0.0", tkinter.END)
-        clean_code.insert("0.0", clean_default_script_)
-
-    @staticmethod
-    @exception_catch()
     def empty_cleaning_script():
         machine_controller.del_all_clean_func()
-        API.update_sheet_box_gui()
+        API.update_cleaning_script_box()
 
     @staticmethod
     @exception_catch()
@@ -948,13 +949,21 @@ class API(UIAPI):
     @staticmethod
     @exception_catch()
     def update_cleaning_script_box():
-        clean_list_ = machine_controller.get_clean_func()
+        global clean_list
+        clean_list = machine_controller.get_clean_func()
         clean_func_box.delete(0, tkinter.END)
-        clean_func_box.insert(tkinter.END, *clean_list_)
+        clean_func_box.insert(tkinter.END, *clean_list)
 
     @staticmethod
     @exception_catch()
     def add_cleaning_script():
+        exp = API.get_clean_code_gui()
+        machine_controller.add_clean_func(exp)
+        API.update_cleaning_script_box()
+
+    @staticmethod
+    @exception_catch()
+    def clean_cleaning_script():
         exp = API.get_clean_code_gui()
         machine_controller.add_clean_func(exp)
         API.update_cleaning_script_box()
@@ -1824,7 +1833,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="查看执行方法",
-    command=API.view_cleaning_script_gui,
+    command=API.view_cleaning_script,
     font=FONT,
     width=gui_width,
     height=gui_height,

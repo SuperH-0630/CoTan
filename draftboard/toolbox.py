@@ -1,3 +1,4 @@
+import os
 from tkinter.colorchooser import askcolor
 from newtkinter import asksaveasfilename, askopenfilename
 import tkinter.messagebox
@@ -225,6 +226,7 @@ def tool_box():
     SCREEN.title("Tool")
     SCREEN.resizable(width=False, height=False)
     SCREEN.geometry(f"+10+10")
+    SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
     tkinter.Button(
         SCREEN,
         text="选择颜色",

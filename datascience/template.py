@@ -479,11 +479,8 @@ class DatacleaningFunc(FormBase, metaclass=ABCMeta):
         return list(self.clean_func.keys())
 
     def del_clean_func(self, key):
-        try:
-            del self.clean_func[key]
-            del self.clean_func_code[key]
-        except BaseException as e:
-            logging.warning(str(e))
+        del self.clean_func[key]
+        del self.clean_func_code[key]
 
     def del_all_clean_func(self):
         self.clean_func = {}

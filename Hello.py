@@ -12,7 +12,9 @@ import webbrowser
 
 from newtkinter import DragWindow
 
+img = None
 SCREEN = None
+queue_screen = None
 draftboard_start = None
 datascience_start = None
 functionmapping_start = None
@@ -305,11 +307,18 @@ def system_run():  # 不需要进度条
 
 
 def queuer():
-    global title_color, button_color, button_cursor
+    global title_color, button_color, button_cursor, queue_screen
+    try:
+        queue_screen.destroy()
+    except (AttributeError, TclError):
+        pass
     queue_screen = tkinter.Toplevel()
+
     queue_screen.title('通信管理器')
     queue_screen.resizable(width=False, height=False)
     queue_screen.geometry(f'+30+30')
+    # queue_screen.wm_iconbitmap(bitmap=f'Pic{os.sep}favicon.ico')
+    img = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}favicon.ico'))
     font = ("黑体", 11)  # 设置字体
 
     def sent():
@@ -371,7 +380,7 @@ def close():
 
 
 def cotan_main():
-    global SCREEN, title_color, button_color, button_cursor
+    global SCREEN, title_color, button_color, button_cursor, img
     SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
     font1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
     font2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
@@ -391,13 +400,16 @@ def cotan_main():
         width=1000,
         height=800,
         highlightthickness=0)
-    bg_image = ImageTk.PhotoImage(Image.open('Pic/Night2.jpg'))
+    bg_image = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}night.jpg'))
     canvas.create_image(500, 400, image=bg_image)
     canvas.grid(column=1, row=0, sticky=tkinter.S + tkinter.N, rowspan=20)
+    # img = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}favicon.ico'))
+    # SCREEN.tk.call('wm', 'iconphoto', SCREEN._w, img)
+    SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
     # 标题
     tkinter.Label(
         frame,
-        text='CoTan~科学计算',
+        text='CoTan~科学计算系统',
         width=20,
         bg='#FFFFFF',
         font=font1).grid(
@@ -406,7 +418,7 @@ def cotan_main():
         sticky=tkinter.N)  # 设置说明
     tkinter.Label(
         frame,
-        text='CoTan学术',
+        text='CoTan工具',
         bg=title_color,
         font=font2).grid(
         column=0,
@@ -415,12 +427,12 @@ def cotan_main():
         tkinter.E)
     tkinter.Button(
         frame,
-        text='CoTan社区',
+        text='CoTan草稿板',
         cursor=button_cursor,
         height=2,
         font=font3,
         bg=button_color,
-        command=to_website,
+        command=draftboard_run,
         activebackground=title_color,
         bd=0,
         justify=tkinter.LEFT).grid(
@@ -431,9 +443,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='寄忆草稿板',
+        text='自动化网页',
         cursor=button_cursor,
-        command=draftboard_run,
+        command=crawlef_run,
         height=2,
         font=font3,
         bg=button_color,
@@ -447,9 +459,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='自动化网页',
+        text='Git仓库控制器',
         cursor=button_cursor,
-        command=crawlef_run,
+        command=git_run,
         height=1,
         font=font3,
         bg=button_color,
@@ -463,9 +475,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='Git仓库控制器',
+        text='CoTan社区',
         cursor=button_cursor,
-        command=git_run,
+        command=to_website,
         height=1,
         font=font3,
         bg=button_color,
@@ -490,9 +502,9 @@ def cotan_main():
         tkinter.E)
     tkinter.Button(
         frame,
-        text='函数测绘',
+        text='代数工厂',
         cursor=button_cursor,
-        command=functionmapping_run,
+        command=algebraicfactory_run,
         height=2,
         font=font3,
         bg=button_color,
@@ -506,9 +518,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='函数工厂',
+        text='机器学习',
         cursor=button_cursor,
-        command=functionfactory_run,
+        command=machinelearner_run,
         height=2,
         font=font3,
         bg=button_color,
@@ -522,9 +534,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='代数工厂',
+        text='数据科学',
         cursor=button_cursor,
-        command=algebraicfactory_run,
+        command=datascience_run,
         height=2,
         font=font3,
         bg=button_color,
@@ -538,9 +550,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='数据科学',
+        text='函数工厂',
         cursor=button_cursor,
-        command=datascience_run,
+        command=functionfactory_run,
         height=1,
         font=font3,
         bg=button_color,
@@ -554,9 +566,9 @@ def cotan_main():
         tkinter.W)
     tkinter.Button(
         frame,
-        text='机器学习',
+        text='函数实验室',
         cursor=button_cursor,
-        command=machinelearner_run,
+        command=functionmapping_run,
         height=1,
         font=font3,
         bg=button_color,
@@ -691,7 +703,7 @@ def cotan_main():
         row=20,
         sticky=tkinter.W +
         tkinter.E)
-    canvas.create_text(500, 750, text='CoTan~别来无恙', font=font4, fill='#FFFFE0')
+    canvas.create_text(450, 740, text='Welcome to CoTan', font=font4, fill='#FFFFE0')
     SCREEN.protocol("WM_DELETE_WINDOW", close)
     SCREEN.mainloop()
 

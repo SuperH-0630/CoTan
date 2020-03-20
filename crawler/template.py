@@ -399,6 +399,9 @@ class UrlAdd(Urlbase, metaclass=ABCMeta):
     def del_filter_func(self, index):  # 删除过滤函数
         del self.filter[list(self.filter.keys())[index]]
 
+    def clean_filter_func(self):
+        self.filter = {}
+
     def return_filter_func(self):
         return list(self.filter.keys())
 
@@ -418,14 +421,14 @@ class UrlReturn(Urlbase, metaclass=ABCMeta):
     def is_finish(self):
         return len(self.url_list) == 0
 
-    def add_url(self, url, func, data=None, **kwargs):  # 添加url
+    def add_url(self, url, func, data=None, must=False, **kwargs):  # 添加url
         if func == "":
             func = "get"
         if func == "get":
             url_ = url
         else:
             url_ = url + str(data)
-        if url_ not in self.url_history and self.filter_func(url, func=func):  # 1.url不存在历史，2.url满足筛选条件
+        if must or (url_ not in self.url_history and self.filter_func(url, func=func)):  # 1.url不存在历史，2.url满足筛选条件
             if func == "get":
                 self.url_list.append(
                     UrlPage(url=url, **kwargs, down_load_dir=self.dir)
@@ -1413,7 +1416,7 @@ class PageParserTool(PageParserFunc):
         self.add_func(f"Webpage_snapshot", action)  # 添加func
 
 
-class PageParserData(PageParserDatabase, PageParserDataSource, PageParserDataFindall,PageParserTool):
+class PageParserData(PageParserDatabase, PageParserDataSource, PageParserDataFindall, PageParserTool):
     pass
 
 

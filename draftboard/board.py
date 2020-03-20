@@ -49,6 +49,7 @@ FONT = pygame.font.Font(fr'Font{os.sep}ZKST.ttf', 16)  # 设置字体(Linux下�
 SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 创建屏幕
 SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
 SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
+pygame.display.set_icon(pygame.image.load(f'Pic{os.sep}favicon.ico'))
 
 
 def func_draw(func_list, pixel_accuracy=1000):

@@ -6,7 +6,7 @@ import logging
 
 import crawler.controller
 import crawler.template
-from newtkinter import askdirectory
+from newtkinter import askdirectory, askopenfilename
 from system import exception_catch, basicConfig, QueueController
 
 
@@ -332,6 +332,15 @@ class UIAPI:
                     data=data_format.get(),
                     dataBase_name=API.get_datadase_name_gui(),)
 
+    @staticmethod
+    @exception_catch()
+    def add_filter_from_python_gui():
+        file_dir = askopenfilename(title='python文件')
+        file_name = os.path.split(file_dir)[-1]
+        with open(file_dir, 'r') as f:
+            code = f.read()
+        return code, file_name
+
 
 class API(UIAPI):
     @staticmethod
@@ -641,6 +650,17 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
+    def add_filter_from_python():
+        name_space = {}
+        code_str, file_name = API.add_filter_from_python_gui()
+        exec(code_str, name_space)
+        code = name_space.get('filter')
+        assert hasattr(code, '__call__'), 'filter not callable'
+        url.add_filter_func(code, file_name)
+        API.update_filter_func_box_gui()
+
+    @staticmethod
+    @exception_catch()
     def add_filter_func_www():
         url.add_filter_func(lambda the_url: re.match(re.compile(r".*www\."), the_url), "www过滤")
         API.update_filter_func_box_gui()
@@ -654,6 +674,12 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
+    def clean_filter_func():
+        url.clean_filter_func()
+        API.update_filter_func_box_gui()
+
+    @staticmethod
+    @exception_catch()
     def del_url():
         index = API.get_url_box_index_gui()
         url.del_url(index)
@@ -661,12 +687,12 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
-    def add_url():
+    def add_url(must=False):
         args = API.get_url_parameter_gui()
         new_url = API.get_new_url_name_gui()
         if new_url == "":
             return
-        url.add_url(new_url, **args)
+        url.add_url(new_url, must=must, **args)
         API.update_url_box_gui()
 
     @staticmethod
@@ -695,6 +721,7 @@ def crawler_main(in_queue, out_queue):
 SCREEN.title("CoTan自动化网页")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 gui_width = 13  # 标准宽度
 gui_height = 2
 row = 0
@@ -704,7 +731,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="添加url对象",
-    command=API.add_url,
+    command=lambda: API.add_url(False),
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -723,7 +750,8 @@ tkinter.Button(
     SCREEN,
     bg=buttom_bg_color,
     fg=word_color,
-    text="应用过滤机制",
+    command=lambda: API.add_url(True),
+    text="强制添加",
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -890,7 +918,7 @@ tkinter.Button(
     bg=buttom_bg_color,
     fg=word_color,
     text="自定义过滤器",
-    command=API.add_filter_func_https,
+    command=API.add_filter_from_python,
     font=FONT,
     width=gui_width,
     height=gui_height,
@@ -901,6 +929,7 @@ tkinter.Button(
     fg=word_color,
     text="清空过滤器",
     font=FONT,
+    command=API.clean_filter_func,
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)

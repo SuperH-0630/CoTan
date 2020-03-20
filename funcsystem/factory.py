@@ -844,6 +844,7 @@ SCREEN["bg"] = bg_color
 SCREEN.title("CoTan函数工厂")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 FONT = (rf"Font{os.sep}ZKST.ttf", 11)  # 设置字体
 rcParams["font.family"] = "simhei"
 rcParams["axes.unicode_minus"] = False
@@ -1072,12 +1073,12 @@ prediction_accuracy.grid(
 
 row += 1
 # 显示函数的xy
-prediction_box = tkinter.Listbox(SCREEN, width=gui_width * 3)  # 暂时不启用多选
+prediction_box = tkinter.Listbox(SCREEN, width=gui_width * 3, height=gui_height*5)  # 暂时不启用多选
 prediction_box.grid(
     column=column,
     row=row,
     columnspan=3,
-    rowspan=9,
+    rowspan=5,
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
 
@@ -1359,13 +1360,12 @@ plot_type.insert(
 row += 3
 # 显示函数的xy
 prompt_box = tkinter.Listbox(
-    SCREEN, width=gui_width * 3, height=gui_height * 2
-)  # 暂时不启用多选
+    SCREEN, width=gui_width * 3, height=gui_height*1)  # 暂时不启用多选
 prompt_box.grid(
     column=column,
     row=row,
     columnspan=3,
-    rowspan=2,
+    rowspan=1,
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
 
@@ -1473,11 +1473,6 @@ for i in range(4):
     tkinter.Entry(
         SCREEN, width=gui_width * 2, textvariable=gradient_parameters[-1]
     ).grid(column=column + 1, row=row, columnspan=2, sticky=tkinter.E + tkinter.W)
-
-row += 1
-tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, height=1).grid(
-    column=1, row=row
-)  # 底部
 
 column += 3
 tkinter.Label(SCREEN, text="", bg=bg_color, fg=word_color, font=FONT, width=1).grid(
@@ -1678,7 +1673,7 @@ tkinter.Button(
 row += 1
 # 显示函数的xy
 projection_box = tkinter.Listbox(
-    SCREEN, width=gui_width * 3, height=gui_height * 5
+    SCREEN, width=gui_width * 3, height=gui_height*6
 )  # 暂时不启用多选
 projection_box.grid(
     column=column,

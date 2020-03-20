@@ -6,7 +6,6 @@ from newtkinter import askopenfilename, asksaveasfilename, askdirectory
 import chardet
 import webbrowser
 from multiprocessing import Queue
-import threading
 
 import machinelearning.controller
 import machinelearning.template
@@ -35,6 +34,15 @@ learn_dict = {}
 
 
 class UIAPI:
+    @staticmethod
+    @exception_catch()
+    def add_learner_from_python_gui():
+        file_dir = askopenfilename(title='python文件')
+        file_name = os.path.split(file_dir)[-1]
+        with open(file_dir, 'r') as f:
+            code = f.read()
+        return code, file_name
+
     @staticmethod
     @exception_catch()
     def get_split_shape_list_gui():
@@ -232,6 +240,18 @@ class UIAPI:
 
 
 class API(UIAPI):
+    @staticmethod
+    @exception_catch()
+    def add_learner_from_python():  # 添加Lenear的核心
+        code_str, name = API.add_learner_from_python_gui()
+        code_str = code_str.replace('base = None', '')
+        code_str = code_str.replace('study_base = None', '')
+        name_space = {'base': machinelearning.template.LearnBase,
+                      'study_base': machinelearning.template.StudyMachinebase}
+        exec(code_str, name_space)
+        learner_controller.add_learner_from_python(name_space.get('learner'), name)
+        API.update_leaner_gui()
+
     @staticmethod
     @exception_catch()
     def add_reverse_fast_fourier2():  # 添加Lenear的核心
@@ -756,16 +776,24 @@ class API(UIAPI):
     def to_html_one():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_data_name_gui()
-        assert not name is None
+        assert name is not None
         learner_controller.to_html_one(name, html_dir)
         webbrowser.open(html_dir)
+
+    @staticmethod
+    @exception_catch()
+    def del_sheet():
+        name = API.get_data_name_gui()
+        assert name is not None
+        learner_controller.del_sheet(name)
+        API.update_sheet_box_gui()
 
     @staticmethod
     @exception_catch()
     def to_html():
         html_dir = f"{PATH}{os.sep}$Show_Sheet.html"
         name = API.get_data_name_gui()
-        assert not name is None
+        assert name is not None
         learner_controller.to_html(name, html_dir, to_html_type.get())
         webbrowser.open(html_dir)
 
@@ -800,6 +828,7 @@ def machine_learning(in_queue, out_queue):
 SCREEN.title("CoTan机器学习")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 tkinter.Button(
     SCREEN,
     bg=botton_color,
@@ -865,6 +894,7 @@ tkinter.Button(
     fg=word_color,
     text="删除表格",
     font=FONT,
+    command=API.del_sheet,
     width=gui_width,
     height=gui_height,
 ).grid(
@@ -1241,6 +1271,7 @@ tkinter.Button(
     fg=word_color,
     text="导入学习器",
     font=FONT,
+    command=API.add_learner_from_python,
     width=gui_width,
     height=gui_height,
 ).grid(

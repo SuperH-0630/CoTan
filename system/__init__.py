@@ -3,7 +3,6 @@ import logging
 from multiprocessing import Queue
 import time
 import threading
-from sys import exit
 
 
 PATH = os.getcwd()
@@ -52,10 +51,11 @@ def exception_catch(*args_catch, **kwargs_catch):
         def adorner(*args, **kwargs):
             try:
                 return_ = func(*args, **kwargs)
-                logging.debug(f'run  {func.__name__} args:{args}  kwargs:{kwargs} return:{return_}')
+                logging.debug(f'run  {func.__name__} args:{args}  kwargs:{kwargs} return:{return_}'
+                              .replace('\n', '\\n'))
                 return return_
             except BaseException as e:
-                logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}')
+                logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}'.replace('\n', '\\n'))
                 assert not func.__name__.endswith('_gui'), str(e)
         return adorner
     return catch

@@ -1,6 +1,7 @@
 import tkinter
 import tkinter.messagebox
 import tkinter.font as tkfont
+import os
 
 from algebraicfactory.controller import AlgebraPolynomial
 from system import exception_catch, QueueController
@@ -20,6 +21,7 @@ FONT3 = tkfont.Font(family="Fixdsys", size=11)
 SCREEN.title("CoTan代数工厂")
 SCREEN.resizable(width=False, height=False)
 SCREEN.geometry("+10+10")  # 设置所在位置
+SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
 option_list = []
 value_algebra_dict = {}  # Sub替换字典
 left_value = None  # 选定的Sub符号

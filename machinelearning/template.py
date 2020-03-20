@@ -121,6 +121,9 @@ class LearnerIO(LearnBase):
         name = f"{name}[{len(self.numpy_dict)}]"
         self.numpy_dict[name] = data
 
+    def del_sheet(self, name):
+        del self.numpy_dict[name]
+
     def read_csv(
             self,
             file_dir,
@@ -5022,6 +5025,12 @@ class MachineLearnerAdd(MachineLearnerInit, metaclass=ABCMeta):
         # 生成学习器
         self.learner[name] = get(model=learner_str, args_use=args_use)
         self.data_type[name] = learner_str
+
+    def add_learner_from_python(self, learner, name):
+        name = f"Le[{len(self.learner)}]{name}"
+        # 生成学习器
+        self.learner[name] = learner
+        self.data_type[name] = 'from_python'
 
     def add_curve_fitting(self, learner):
         named_domain = {}
