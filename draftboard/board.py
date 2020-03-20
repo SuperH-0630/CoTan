@@ -44,12 +44,19 @@ mode = {1: '绘制坐标系', 2: '绘制直线(g)', 3: '填充矩形(f)', 4: '�
         15: '填充椭圆形(e)', 16: '线条椭圆形(r)', 0: 'None'}  # 快捷键名字
 SCREEN_X = 900
 SCREEN_Y = 700
-init_done = pygame.init()  # 初始化所有模块
-FONT = pygame.font.Font(fr'Font{os.sep}ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
-SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 创建屏幕
-SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
-SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
-pygame.display.set_icon(pygame.image.load(f'Pic{os.sep}favicon.ico'))
+init_done = None
+FONT = None
+SCREEN = None
+SCREEN_CAPTION = None
+
+def start_gui():
+    global init_done, FONT, SCREEN, SCREEN_CAPTION
+    init_done = pygame.init()  # 初始化所有模块
+    FONT = pygame.font.Font(fr'Font{os.sep}ZKST.ttf', 16)  # 设置字体(Linux下应该用\而不是/)
+    SCREEN = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0)  # 创建屏幕
+    SCREEN_CAPTION = pygame.display.set_caption('CoTan草稿板')  # 定义标题（后期加上定义Logo）
+    SCREEN.fill([255, 255, 255])  # 默认用白色填充窗口
+    pygame.display.set_icon(pygame.image.load(f'Pic{os.sep}favicon.ico'))
 
 
 def func_draw(func_list, pixel_accuracy=1000):
@@ -252,6 +259,7 @@ def draw_main(in_queue, out_queue):
     global record_origin_y, span, line
     global continuous_draw, middle_key, rect, poly, SCREEN, SCREEN_CAPTION, init_done, previous_x, previous_y, save_dir
     global increasing_color, subtraction_color, bottom_tip, FONT, SCREEN_X, SCREEN_Y, tips
+    start_gui()
     queue_controller.set_queue(in_queue, out_queue)
     queue_controller()
     flat = True  # 循环条件（不是全局）

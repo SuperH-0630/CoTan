@@ -174,7 +174,7 @@ def draftboard_main(in_queue, out_queue):
     out_queue.put(str(os.getpid()))
     from draftboard import draw_main
     out_queue.put('start')
-    time.sleep(0.5)
+    # 不需要等待
     draw_main(in_queue, out_queue)
 
 
