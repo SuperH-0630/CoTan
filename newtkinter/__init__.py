@@ -2,16 +2,26 @@ import tkinter as tk
 from tkinter import filedialog
 
 
+def center_windows(screen, w, h):
+    ws = screen.winfo_screenwidth()
+    hs = screen.winfo_screenheight()
+    # 计算 x, y 位置
+    x = (ws/2) - (w/2) + 1
+    y = (hs/2) - (h/2) + 1
+    screen.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+
 class DragWindow(tk.Tk):
     root_x, root_y, abs_x, abs_y = 0, 0, 0, 0
     width, height = None, None
 
-    def __init__(self, alpha=0.97, width=None, height=None):
+    def __init__(self, alpha=1, width=None, height=None, drag=False):
         super().__init__()
         self.width, self.height = width, height
         self.wm_attributes("-alpha", alpha)  # 透明度
-        self.bind("<B1-Motion>", self._on_move)
-        self.bind("<ButtonPress-1>", self._on_tap)
+        if drag:
+            self.bind("<B1-Motion>", self._on_move)
+            self.bind("<ButtonPress-1>", self._on_tap)
 
     def set_display_postion(self, offset_x, offset_y):
         self.geometry("+%s+%s" % (offset_x, offset_y))

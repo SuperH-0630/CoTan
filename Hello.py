@@ -10,7 +10,7 @@ import os
 import tkinter.messagebox
 import webbrowser
 
-from newtkinter import DragWindow
+from newtkinter import DragWindow, center_windows
 
 img = None
 SCREEN = None
@@ -384,7 +384,7 @@ def close():
 
 def cotan_main():
     global SCREEN, title_color, button_color, button_cursor, img
-    SCREEN = DragWindow(alpha=0.97, width=1200, height=800)
+    SCREEN = DragWindow(width=1200, height=800)
     font1 = tkfont.Font(family='Comic Sans MS', size=20, weight=tkfont.BOLD)
     font2 = tkfont.Font(family='Comic Sans MS', size=16, weight=tkfont.BOLD)
     font3 = tkfont.Font(family='Comic Sans MS', size=10)
@@ -392,6 +392,7 @@ def cotan_main():
     SCREEN.title('')
     SCREEN.resizable(width=False, height=False)
     SCREEN.geometry(f'1200x800+30+30')
+    center_windows(SCREEN, 1200, 800)
     # 渲染白色
     frame = tkinter.Frame(SCREEN, width=1200, height=800, bg='#FFFFFF')
     frame.pack()
