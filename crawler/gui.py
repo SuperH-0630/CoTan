@@ -704,6 +704,12 @@ class API(UIAPI):
 
 def crawler_main(in_queue, out_queue):
     global SCREEN
+    SCREEN.update()  # 要预先update一下，否则会卡住
+    save_dir = askdirectory(title="选择项目位置", must=True)  # 项目位置
+    url = crawler.controller.Url(save_dir, save_dir)  # url管理器
+    loader = crawler.controller.PageDownloader(url, save_dir)  # 页面下载器
+    page_parser = crawler.controller.PageParser(loader)  # 页面解析器
+    database = crawler.template.data_base  # 数据库
     queue_controller.set_queue(in_queue, out_queue)
     queue_controller()
 
@@ -2345,9 +2351,3 @@ tkinter.Button(
     width=gui_width,
     height=gui_height,
 ).grid(column=column + 2, row=row, sticky=tkinter.E + tkinter.W)
-SCREEN.update()  # 要预先update一下，否则会卡住
-save_dir = askdirectory(title="选择项目位置", must=True)  # 项目位置
-url = crawler.controller.Url(save_dir, save_dir)  # url管理器
-loader = crawler.controller.PageDownloader(url, save_dir)  # 页面下载器
-page_parser = crawler.controller.PageParser(loader)  # 页面解析器
-database = crawler.template.data_base  # 数据库

@@ -591,6 +591,7 @@ class API(UIAPI):
 
 def function_mapping(in_queue, out_queue):
     global SCREEN
+    API.output_prompt_gui("加载完毕")
     queue_controller.set_queue(in_queue, out_queue)
     queue_controller()
     SCREEN.mainloop()
@@ -1014,5 +1015,3 @@ sheet_box.grid(
     rowspan=rowspan + 4,
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
-
-API.output_prompt_gui("加载完成，欢迎使用!")

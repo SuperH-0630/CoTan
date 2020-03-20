@@ -1763,6 +1763,7 @@ class API(UIAPI):
 
 def algebraic_factory_main(in_queue, out_queue):
     global SCREEN
+    API.output_prompt_gui("加载完成")
     queue_controller.set_queue(in_queue, out_queue)
     queue_controller()
     SCREEN.mainloop()
@@ -3682,5 +3683,3 @@ prompt_box.grid(
     rowspan=3,
     sticky=tkinter.E + tkinter.W + tkinter.S + tkinter.N,
 )
-
-API.output_prompt_gui("加载完成")

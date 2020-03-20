@@ -834,6 +834,7 @@ class API(UIAPI):
 
 def function_factory_main(in_queue, out_queue):  # H_S-默认函数GF-关闭时询问返回函数
     global SCREEN
+    API.output_prompt_gui("加载完毕")
     queue_controller.set_queue(in_queue, out_queue)
     queue_controller()
     SCREEN.mainloop()
@@ -1721,5 +1722,3 @@ sheet_box.grid(
     rowspan=17,
     sticky=tkinter.S + tkinter.N + tkinter.E + tkinter.W,
 )
-
-API.output_prompt_gui("加载完毕")

@@ -150,10 +150,14 @@ def progress_bar(func):
             SCREEN.update()
             time.sleep(0.015)
         try:
-            progress_screen.title(out_queue.get())
-            progress["value"] = a
-            progress_screen.update()
-            time.sleep(0.5)
+            out_queue.get()
+            t = 0.3
+            for di in range(10):
+                t -= 0.03
+                progress_screen.title(f'检查({round(t,3)})...')
+                progress["value"] = i + di
+                progress_screen.update()
+                time.sleep(0.03)
             progress_screen.destroy()
         except TclError:
             pass
@@ -317,8 +321,6 @@ def queuer():
     queue_screen.title('通信管理器')
     queue_screen.resizable(width=False, height=False)
     queue_screen.geometry(f'+30+30')
-    # queue_screen.wm_iconbitmap(bitmap=f'Pic{os.sep}favicon.ico')
-    img = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}favicon.ico'))
     font = ("黑体", 11)  # 设置字体
 
     def sent():
@@ -368,7 +370,8 @@ def queuer():
 
 def to_website():
     SCREEN.update()
-    webbrowser.open('https://cotan.songzh.website/')
+    t = threading.Thread(target=webbrowser.open, args=('https://cotan.songzh.website/',))
+    t.start()
 
 
 def close():
@@ -403,8 +406,6 @@ def cotan_main():
     bg_image = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}night.jpg'))
     canvas.create_image(500, 400, image=bg_image)
     canvas.grid(column=1, row=0, sticky=tkinter.S + tkinter.N, rowspan=20)
-    # img = ImageTk.PhotoImage(Image.open(f'Pic{os.sep}favicon.ico'))
-    # SCREEN.tk.call('wm', 'iconphoto', SCREEN._w, img)
     SCREEN.iconbitmap(bitmap=f'Pic{os.sep}favicon.ico', default=f'Pic{os.sep}favicon.ico')
     # 标题
     tkinter.Label(
