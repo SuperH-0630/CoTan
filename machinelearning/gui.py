@@ -428,6 +428,7 @@ class API(UIAPI):
         learner = API.get_learner_gui(True)
         save_dir = askdirectory(title="选择保存位置")
         data = learner_controller.model_visualization(learner, save_dir)
+        print('A')
         webbrowser.open(data[0])
         webbrowser.open(data[1])  # 还可以打开文件管理器
         API.update_sheet_box_gui()

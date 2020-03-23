@@ -105,13 +105,16 @@ class QueueController:
             in_queue.put(self.var_dict.get(var_name))
         elif value.startswith('put_eval '):
             in_queue.put(eval(value[8:]), name_space)
-        elif value.startswith('file ') and value.startswith('.py'):
+        elif value.startswith('put_file ') and value.startswith('.py'):
             try:
                 with open(value[4:], 'r') as f:
                     code_file = f.read()
                 new_name_space = name_space
                 exec(code_file, new_name_space)
-                in_queue.put(new_name_space.copy())
+                dict_index = f'var_{len(self.var_dict)}'
+                in_queue.put(list(new_name_space.keys()))
+                self.var_dict[dict_index] = new_name_space.copy()
+                self.var_from[dict_index] = 'self'
             except BaseException as e:
                 in_queue.put(str(e))
         else:

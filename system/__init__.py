@@ -57,6 +57,7 @@ def exception_catch(*args_catch, **kwargs_catch):
             except BaseException as e:
                 logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}'.replace('\n', '\\n'))
                 assert not func.__name__.endswith('_gui'), str(e)
+                raise
         return adorner
     return catch
 

@@ -21,7 +21,7 @@ gui_width = 20
 gui_height = 3
 span = None
 bg_color = "#FFFAFA"  # 主颜色
-botton_color = "#FFFAFA"  # 按钮颜色
+bottom_color = "#FFFAFA"  # 按钮颜色
 word_color = "#000000"  # 文字颜色
 help_doc = """
 *快捷键：
