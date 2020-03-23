@@ -3,6 +3,7 @@ import logging
 from multiprocessing import Queue
 import time
 import threading
+import traceback
 
 
 PATH = os.getcwd()
@@ -55,9 +56,9 @@ def exception_catch(*args_catch, **kwargs_catch):
                               .replace('\n', '\\n'))
                 return return_
             except BaseException as e:
-                logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}'.replace('\n', '\\n'))
+                back = '\n[ERROR]' + traceback.format_exc().replace('\n', '\n[ERROR]')
+                logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}'.replace('\n', '\\n') + back)
                 assert not func.__name__.endswith('_gui'), str(e)
-                raise
         return adorner
     return catch
 
