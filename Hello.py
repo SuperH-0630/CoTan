@@ -2,7 +2,7 @@ from multiprocessing import Process, Queue, freeze_support
 import threading
 from _tkinter import TclError
 import tkinter
-from tkinter import ttk
+# from tkinter import ttk
 import tkinter.font as tkfont
 from PIL import ImageTk, Image
 import time
@@ -10,9 +10,11 @@ import os
 import tkinter.messagebox
 import webbrowser
 import random
+import flask
 
 from newtkinter import DragWindow, center_windows
 
+app = flask.Flask(__name__, static_url_path='')
 img = None
 SCREEN = None
 queue_screen = None
@@ -84,6 +86,7 @@ class QueueController:
 
     def add_queue(self, inqueue, outqueue, name):
         self.stop()
+        time.sleep(0.5)
         self.in_dict[name] = inqueue
         self.out_dict[name] = outqueue
         self.queue_list = list(self.in_dict.keys())
@@ -125,52 +128,15 @@ queue_controller = QueueController()
 
 
 def progress_bar(func):
-    def make_bar(*agrs, **kwargs):
-        SCREEN.update()
-        in_queue: Queue
-        out_queue: Queue
+    def run(*agrs, **kwargs):
         in_queue, out_queue = func(*agrs, **kwargs)
         pid = out_queue.get()
         name = func.__name__
         queue_controller.add_queue(in_queue, out_queue, f'{name}_{pid}')
-        progress_screen = tkinter.Toplevel()
-        progress_screen.title('系统持续加载中...')
-        progress_screen.geometry("+10+10")  # 设置所在位置
-        progress = ttk.Progressbar(
-            progress_screen, orient="horizontal", length=300, mode="determinate"
-        )
-        progress.pack()
-        progress_screen.resizable(width=False, height=False)
-        progress["maximum"] = 10
-        progress["value"] = 0
-        i = 0
-        a = 10
-        while out_queue.empty():
-            i += 1
-            a += 1
-            try:
-                progress["value"] = i
-                progress["maximum"] = a
-                progress_screen.update()
-            except TclError:
-                pass
-            SCREEN.update()
-            time.sleep(0.015)
-        try:
-            out_queue.get()
-            t = 0.3
-            for di in range(10):
-                t -= 0.03
-                progress_screen.title(f'检查({round(t,3)})...')
-                progress["value"] = i + di
-                progress_screen.update()
-                time.sleep(0.03)
-            progress_screen.destroy()
-        except TclError:
-            pass
         queue_controller()
-
-    return make_bar
+        time.sleep(1)
+        return 'run success'
+    return run
 
 
 def draftboard_main(in_queue, out_queue):
@@ -179,6 +145,16 @@ def draftboard_main(in_queue, out_queue):
     out_queue.put('start')
     # 不需要等待
     draw_main(in_queue, out_queue)
+
+
+@app.route('/')
+def hello():
+    return app.send_static_file('Hello.html')
+
+
+@app.route('/draftboard')
+def draftboard():
+    return draftboard_run()
 
 
 @progress_bar
@@ -197,6 +173,11 @@ def datascience_main(in_queue, out_queue):
     machine_learning(in_queue, out_queue)
 
 
+@app.route('/datascience')
+def datascience():
+    return datascience_run()
+
+
 @progress_bar
 def datascience_run():
     in_queue = Queue(10)
@@ -211,6 +192,11 @@ def functionmapping_main(in_queue, out_queue):
     out_queue.put('start')
     time.sleep(0.5)
     function_mapping(in_queue, out_queue)
+
+
+@app.route('/functionmapping')
+def functionmapping():
+    return functionmapping_run()
 
 
 @progress_bar
@@ -229,6 +215,11 @@ def functionfactory_main(in_queue, out_queue):
     function_factory_main(in_queue, out_queue)
 
 
+@app.route('/functionfactory')
+def functionfactory():
+    return functionfactory_run()
+
+
 @progress_bar
 def functionfactory_run():
     in_queue = Queue(10)
@@ -243,6 +234,11 @@ def algebraicfactory_main(in_queue, out_queue):
     out_queue.put('start')
     time.sleep(0.5)
     algebraic_factory_main(in_queue, out_queue)
+
+
+@app.route('/algebraicfactory')
+def algebraicfactory():
+    return algebraicfactory_run()
 
 
 @progress_bar
@@ -261,6 +257,11 @@ def machinelearner_main(in_queue, out_queue):
     machine_learning(in_queue, out_queue)
 
 
+@app.route('/machinelearner')
+def machinelearner():
+    return machinelearner_run()
+
+
 @progress_bar
 def machinelearner_run():
     in_queue = Queue(10)
@@ -275,6 +276,11 @@ def git_main(in_queue, out_queue):
     out_queue.put('start')
     time.sleep(0.5)
     git_main(in_queue, out_queue)
+
+
+@app.route('/git')
+def git():
+    return git_run()
 
 
 @progress_bar
@@ -293,8 +299,13 @@ def crawler_main(in_queue, out_queue):
     crawler_main(in_queue, out_queue)
 
 
+@app.route('/crawler')
+def crawler():
+    return crawler_run()
+
+
 @progress_bar
-def crawlef_run():
+def crawler_run():
     in_queue = Queue(10)
     out_queue = Queue(10)
     Process(target=crawler_main, args=(in_queue, out_queue)).start()
@@ -307,6 +318,11 @@ def system_main(in_queue, out_queue):
     out_queue.put('start')
     time.sleep(0.5)
     system_main(in_queue, out_queue)
+
+
+@app.route('/system')
+def system():
+    return system_run()
 
 
 @progress_bar
@@ -454,7 +470,7 @@ def cotan_main():
         frame,
         text='自动化网页',
         cursor=button_cursor,
-        command=crawlef_run,
+        command=crawler_run,
         height=2,
         font=font3,
         bg=button_color,
@@ -719,4 +735,4 @@ def cotan_main():
 
 if __name__ == "__main__":
     freeze_support()
-    cotan_main()
+    app.run()

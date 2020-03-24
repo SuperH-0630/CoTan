@@ -58,7 +58,7 @@ def exception_catch(*args_catch, **kwargs_catch):
             except BaseException as e:
                 back = '\n[ERROR]' + traceback.format_exc().replace('\n', '\n[ERROR]')
                 logging.error(f'{e}  {func.__name__} args:{args}  kwargs:{kwargs}'.replace('\n', '\\n') + back)
-                assert not func.__name__.endswith('_gui'), str(e)
+                assert not func.__name__.endswith('_gui'), str(e)  # gui程序的错误重新丢回去
         return adorner
     return catch
 
