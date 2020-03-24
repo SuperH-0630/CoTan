@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
     <head>
-        <link rel="stylesheet" type="text/css" href="hello.css">
+        <link rel="stylesheet" type="text/css" href="Communication.css">
         <meta charset="UTF-8">
         <title>Hello</title>
     </head>
@@ -11,85 +11,97 @@
         </script>
         <canvas id="canvas" class="bg_canvas"></canvas>
         <div class="screen" id="screen">
-            <script>
+            <div class="nothing"></div>
+            <div class="form" id="form">
+                <div>
+                    <label for="sentfunc" class="font" id="sentfunc_labe">选定发送方式:</label>
+                    <select id="sentfunc" class="font">
+                        <option value="done ">执行python</option>
+                        <option value="get_var ">获取变量</option>
+                        <option value="get var_* ">获取所有变量</option>
+                        <option value="get * ">获取通信变量</option>
+                        <option value="get_eval ">返回代码</option>
+                        <option value="put_var ">发送变量</option>
+                        <option value="put_eval ">发送代码</option>
+                        <option value="file ">发送文件</option>
+                    </select>
+                    <input type="file" id="get_file" style="display:none;"/>
+                    <label for="message" class="font">输入发送对象:</label>
+                    <input id="message" class="font text" type="text">
+                    <button class="font button" onclick="sent()">发送消息</button>
+                    <button class="font button" onclick="document.getElementById('get_file').click()">选择文件</button>
+                    <script>
+                            let the_file = document.getElementById("get_file");
+                            the_file.addEventListener("change",function () {
+                            let message_input = document.getElementById("message");
+                            message_input.value = message_input.value + the_file.value;
+                        });
+                    </script>
+                </div>
+                <div class="nothing"></div>
+                <div>
+                    <label for="prosser_list"></label>
+                    <select id="prosser_list" class="font box" size=30>
+                    </select>
+                    <label for="var_list"></label>
+                    <select id="var_list" class="font box" size=30>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <script>
+            function sent() {
+                let sentbox = document.getElementById("sentfunc");
+                let the_prosser_list = document.getElementById("prosser_list");
+                let first = sentbox.options[sentbox.selectedIndex].value;
+                let index = String(the_prosser_list.options[the_prosser_list.selectedIndex].value);
+                let message = first + document.getElementById("message").value;
                 let xhr = new XMLHttpRequest();
                 xhr.onloadend = function () {
-                    let screen_div = document.getElementById('screen');
-                    screen_div.style.backgroundImage = 'url("Pic/match.png")';
                     };
-                xhr.open('get', host + "img", true);
+                xhr.open('get', host + "sent?message=" + message + '&index=' + index, true);
                 xhr.send();
-            </script>
-            <div id='cotanTitle' class="cotan_title">
-            </div>
-            <div id="method" class="mode">
-                <h1 class="mode">CoTan<br>科学计算系统</h1>
-                <h2 class="mode">CoTan工具</h2>
-                <script>
-                    function start(mode_url){
-                        current_circle.add();
+                }
+            function update(is_must) {
+                console.log('1');
+                function get_update(is_must){
                         let xhr = new XMLHttpRequest();
                         xhr.onloadend = function () {
-                            console.log('run');
                             if (xhr.status === 200) {
-                                current_circle.remove();
+                                let json = JSON.parse(xhr.responseText);
+                                console.log(json['status']);
+                                if (json['status'] === 'YES'){
+                                    let p_box = document.getElementById("prosser_list");
+                                    let var_box = document.getElementById("var_list");
+                                    p_box.innerHTML='';
+                                    var_box.innerHTML='';
+                                    for (i of json['queue']){
+                                        let y=document.createElement('option');
+                                        y.text=String(i);
+                                        y.value=String(i);
+                                        p_box.add(y, null)
+                                    }
+                                    for (i of json['var']){
+                                        let y=document.createElement('option');
+                                        y.text=String(i);
+                                        y.value=String(i);
+                                        var_box.add(y, null)
+                                    }
+                                    console.log(json['queue']);
+                                    console.log(json['var']);
+                                }
                             }};
-                        xhr.open('get',host + mode_url,true);
+                        let must = '?must=' + is_must;
+                        xhr.open('get',host + "update" + must,true);
+                        console.log(must);
                         xhr.send();
                     }
-                </script>
-                <button type="button" id="board" class="button white big" onclick="start('draftboard')">CoTan草稿板</button>
-                <div class="nothing"></div>
-                <button type="button" id="selenium" class="button white big" onclick="start('crawler')">自动化网页</button>
+                get_update(is_must)
+            }
+            update('must');
+            let t_update = window.setInterval("update('No')",1000);
 
-                <div class="nothing"></div>
-                <button type="button" id="git" class="button white small" onclick="start('git')">git仓库控制器</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="website" class="button white small" onclick="window.open('https://cotan.songzh.website');">CoTan社区</button>
-
-                <h2 class="mode">数学系统</h2>
-
-                <button type="button" id="alg" class="button white big" onclick="start('algebraicfactory')">代数工厂</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="machine" class="button white big" onclick="start('machinelearner')">机器学习</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="data" class="button white big" onclick="start('datascience')">数据科学</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="func" class="button white small" onclick="start('functionfactory')">函数工厂</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="geometric" class="button white small" onclick="start('functionmapping')">函数实验室</button>
-
-                <h2 class="mode">物化系统</h2>
-
-                <button type="button" id="physical" class="button white big">几何车间</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="chemistry" class="button white big">物理车间</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="laboratory" class="button white small">化学车间</button>
-
-                <h2 class="mode">系统工具</h2>
-
-                <button type="button" id="plugin" class="button white small" onclick="start('system')">系统管理</button>
-
-                <div class="nothing"></div>
-                <button type="button" id="process" class="button white small"  onclick="window.open(host + '/communication');">通信管理器</button>
-            </div>
-            <script>
-                let screen_width = 1200;
-                let screen_height = 800;
-                console.log(screen_height);
-                document.getElementById("cotanTitle").style.width = String(screen_width -
-                    document.getElementById("method").offsetWidth - 1) + 'px';
-
-                // 背景系统
-                class Circle {
+            class Circle {
                     constructor(x, y) {
                         this.x = x;
                         this.y = y;
@@ -167,21 +179,7 @@
                         this.r = 8;
                         this.R = 30;
                         this.rad = 0;
-                        this.circle = [];
-                    }
-
-                    add() {
-                        console.log('add');
-                        document.getElementsByTagName('title').item(0).innerHTML = 'loading...';
-                        this.circle.push('rgba(204, 204, 204, 0.8)');
-                    }
-
-                    remove() {
-                        console.log('remove');
-                        this.circle.shift();
-                        if (this.circle.length === 0){
-                            document.getElementsByTagName('title').item(0).innerHTML = 'Hello';
-                        }
+                        this.circle = ['rgba(204, 204, 204,0.9)'];
                     }
 
                     drawLine(ctx, _circle) {
@@ -273,8 +271,6 @@
                     current_circle.y = null;
 
                 };
-
-            </script>
-        </div>
+        </script>
     </body>
 </html>

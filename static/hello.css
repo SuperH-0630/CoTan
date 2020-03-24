@@ -1,10 +1,5 @@
 /*h style*/
 
-body{
-    /*background: url("Pic/boat.png");*/
-    /*position: relative;*/
-}
-
 canvas.bg_canvas{
     background: #000000;
     display: block;
@@ -35,7 +30,7 @@ div.progressbar{
 }
 
 div.screen{
-    background: url("Pic/boat.png") repeat;
+    /*background: url("Pic/boat.png") repeat;*/
     width:1200px;
     height:800px;
     position:absolute;
