@@ -1,0 +1,54 @@
+div.screen{
+    background: #ffffff;
+    width:1200px;
+    height:800px;
+    position:absolute;
+    left:50%;
+    top:50%;
+    margin:-400px 0 0 -600px;
+    z-index:10;
+}
+
+canvas.bg_canvas{
+    background: #000000;
+    display: block;
+    width: 99%;
+    height: 99%;
+    position:absolute;
+    z-index: 1;}
+
+.font{
+    font-size: 20px;
+}
+
+div.nothing{
+    height: 5px;
+    width: 0;
+}
+
+div.form{
+    text-align:center;
+}
+input.text{
+    width: 520px;
+}
+
+#sentfunc{
+    width: 180px;
+}
+
+button.button{
+    width: 100px;
+}
+
+#queue_list{
+    width: 500px;
+}
+
+#var_list{
+    width: 690px;
+}
+
+select.box{
+    height: 750px;
+}

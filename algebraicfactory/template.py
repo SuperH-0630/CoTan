@@ -359,7 +359,7 @@ class AlgebraMerge(AlgebraExpBase, metaclass=ABCMeta):
 @plugin_class_loading(get_path(r"template/algebraicfactory"))
 class AlgebraBase(AlgebraSymbol, AlgebraFormat, AlgebraPrint, AlgebraSplit, AlgebraMerge):
 
-    def simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
+    def the_simplify(self, alg, radio=1.7, func=None, rat=True, inv=False):  # 函数简化
         if func is None:
             func = count_ops
         self.out_status("正在标准化")
@@ -804,7 +804,7 @@ class Digitization(AlgebraBase):
 class AlgebraSimplify(AlgebraBase):
     def simplify(self, name, ratdio=1.7, func=None, rat=True, inv=False):
         alg = self.get_expression(name)
-        self.simplify(alg, ratdio, func, rat, inv)
+        return self.the_simplify(alg, ratdio, func, rat, inv)
 
 
 @plugin_class_loading(get_path(r"template/algebraicfactory"))

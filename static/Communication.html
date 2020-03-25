@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <link rel="stylesheet" type="text/css" href="Communication.css">
+        <meta charset="UTF-8">
+        <title>Hello</title>
+        <script src="gui.js"></script>
+        <script src="requests.js"></script>
+    </head>
+    <body>
+        <script>
+            let host = 'http://127.0.0.1:5000/'
+        </script>
+        <canvas id="canvas" class="bg_canvas"></canvas>
+        <div class="screen" id="screen">
+            <div class="nothing"></div>
+            <div class="form" id="form">
+                <div>
+                    <label for="sentfunc" class="font" id="sentfunc_labe">选定发送方式:</label>
+                    <select id="sentfunc" class="font">
+                        <option value="done ">执行python</option>
+                        <option value="get_var ">获取变量</option>
+                        <option value="get var_* ">获取所有变量</option>
+                        <option value="get * ">获取通信变量</option>
+                        <option value="get_eval ">返回代码</option>
+                        <option value="put_var ">发送变量</option>
+                        <option value="put_eval ">发送代码</option>
+                        <option value="file ">发送文件</option>
+                    </select>
+                    <input type="file" id="get_file" style="display:none;"/>
+                    <label for="message" class="font">输入发送对象:</label>
+                    <input id="message" class="font text" type="text">
+                    <button class="font button" onclick="sent()">发送消息</button>
+                    <button class="font button" onclick="document.getElementById('get_file').click()">选择文件</button>
+                    <script>
+                            let the_file = document.getElementById("get_file");
+                            the_file.addEventListener("change",function () {
+                            let message_input = document.getElementById("message");
+                            message_input.value = message_input.value + the_file.value;
+                        });
+                    </script>
+                </div>
+                <div class="nothing"></div>
+                <div>
+                    <label for="queue_list"></label>
+                    <select id="queue_list" class="font box" size=30>
+                    </select>
+                    <label for="var_list"></label>
+                    <select id="var_list" class="font box" size=30>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <script>
+            function sent() {
+                let sent_box = document.getElementById("sentfunc");
+                let queue_list = document.getElementById("queue_list");
+                let index = String(queue_list.options[queue_list.selectedIndex].value);
+                let message = sent_box.options[sent_box.selectedIndex].value + document.getElementById("message").value;
+                let sent_func = function () {};  // Nothing
+                request_get(sent_func, "sent?message=" + message + '&index=' + index);
+            }
+                function get_update(is_must) {
+                    update_func = function () {
+                        if (xhr.status === 200) {
+                            let json = JSON.parse(xhr.responseText);
+                            if (json['status'] === 'YES') {
+                                let p_box = document.getElementById("queue_list");
+                                let var_box = document.getElementById("var_list");
+                                update_box(p_box, json['queue']);
+                                update_box(var_box, json['var']);
+                                p_box.innerHTML = '';
+                            }
+                        }
+                    };
+                    request_get(update_func, "update" + '?must=' + is_must);
+                }
+
+                get_update('must');  // 第一次通信，必须获取
+                window.setInterval("get_update('No')", 1000);
+        </script>
+        <script src="bg.js"></script>
+    </body>
+</html>

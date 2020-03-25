@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <link rel="stylesheet" type="text/css" href="Map.css">
+        <meta charset="UTF-8">
+        <title>Hello</title>
+        <script src="gui.js"></script>
+        <script src="requests.js"></script>
+    </head>
+    <body>
+        <script>
+            let host = 'http://127.0.0.1:5000/'
+        </script>
+        <canvas id="canvas" class="bg_canvas"></canvas>
+        <div class="screen" id="screen">
+            <div class="nothing"></div>
+            <div class="form" id="form">
+                <div class="horizontal">
+                    <label for="func_exp" class='tips'>函数表达式</label>
+                    <input id="func_exp">
+                    <br>
+                    <label for="definition_domain" class='tips'>函数定义域</label>
+                    <input id="definition_domain">
+                    <br>
+                    <label for="func_name" class='tips'>函数符号</label>
+                    <input id="func_name">
+                    <br>
+                    <label for="func_style" class='tips'>函数绘图样式</label>
+                    <input id="func_style">
+                    <div>
+                    <button>添加新函数</button>
+                    <button>删除选择函数</button>
+                    <button>清除所有函数</button>
+                    </div>
+                    <div class='select'>
+                        <label for="func_box" class='no_label'></label>
+                        <select id="func_box" class="font box" style='height: 700px' size=20>
+                        </select>
+                    </div>
+                </div>
+                <div class="horizontal">
+                        <label for="x_value" class='tips'>计算(y)</label>
+                        <input id="x_value">
+                        <br>
+                        <label for="y_value" class='tips'>二分法计算(x)</label>
+                        <input id="y_value">
+                        <br>
+                        <label for="dicon_parameters" class='tips'>二分法参数</label>
+                        <input id="dicon_parameters">
+                        <br>
+                        <label for="y_value_gradient" class='tips'>梯度法计算(x)</label>
+                        <input id="y_value_gradient">
+                        <div>
+                        <button>计算</button>
+                        <button>二分法计算</button>
+                        <button>梯度法计算</button>
+                        </div>
+                        <div>
+                        <button>查看记忆</button>
+                        <button>隐藏记忆</button>
+                        <button>清空记忆</button>
+                        </div>
+                        <div class='select'>
+                            <label for="result_box" class='no_label'></label>
+                            <select id="result_box" class="font box"  style='height: 300px' size=20>
+                        </select>
+                        <label for="x_axis" class='tips'>x轴刻度</label>
+                        <input id="x_axis">
+                        <br>
+                        <label for="y_axis" class='tips'>y轴刻度</label>
+                        <input id="y_axis">
+                        <br>
+                        <label for="x_limit" class='tips'>x轴极限</label>
+                        <input id="x_limit">
+                        <br>
+                        <label for="y_limit" class='tips'>y轴极限</label>
+                        <input id="y_limit">
+                        <div>
+                        <button>绘制函数</button>
+                        <button>计算性质</button>
+                        <button>函数求导</button>
+                        </div>
+                        <div class='select'>
+                            <label for="prediction_box" class='no_label'></label>
+                            <select id="prediction_box" class="font box"  style='height: 150px' size=20>
+                            </select>
+                        </div>
+                        <div class='select'>
+                            <label for="new_box" class='no_label'></label>
+                            <select id="new_box" class="font box"  style='height: 100px' size=20>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+                <div class="horizontal">
+                    <div>
+                        <button>导入表格</button>
+                        <button>生成表格</button>
+                        <button>导出表格</button>
+                    </div>
+                    <div class='select'>
+                        <label for="sheet_box" class='no_label'></label>
+                        <select id="sheet_box" class="font box"  style='height: 791px' size=20>
+                        </select>
+                        </div>
+            </div>
+            </div>
+	    </div>
+        <script src="bg.js"></script>
+    </body>
+</html>

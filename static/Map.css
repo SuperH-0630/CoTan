@@ -1,0 +1,56 @@
+div.screen{
+    background: #ffffff;
+    width:962px;
+    height:824px;
+    position:absolute;
+    left:50%;
+    top:50%;
+    margin:-412px 0 0 -481px;
+    z-index:10;
+}
+
+canvas.bg_canvas{
+    background: #000000;
+    display: block;
+    width: 99%;
+    height: 99%;
+    position:absolute;
+    z-index: 1;}
+
+label.no_label{
+    width: 0;
+}
+
+label{
+    display:inline-block;
+    width: 100px;
+    }
+
+label{
+    display:inline-block;
+    width: 100px;
+    }
+
+input{
+    width: 200px;
+    }
+
+button{
+    width: 100px;
+    height: 30px;
+    }
+
+div.horizontal{
+    float:left;
+    width: 320px;
+    text-align:center;
+}
+
+select{
+    width: 309px;
+}
+
+div.select{
+    width: 320px;
+    text-align:center;
+}

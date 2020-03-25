@@ -1272,7 +1272,7 @@ class API(UIAPI):
 
     @staticmethod
     @exception_catch()
-    def standardization():
+    def simplify_standardization():
         inverse, name, radio, rat = API.get_standardization_gui()
         try:
             get = algebra_controller.simplify(name, radio, rat=rat, inv=inverse)
@@ -3016,7 +3016,7 @@ tkinter.Button(
     bg=buttom_color,
     fg=word_color,
     text="化简标准化",
-    command=standardization,
+    command=API.simplify_standardization,
     font=FONT,
     width=gui_width,
     height=gui_height,
