@@ -151,14 +151,14 @@ class UIAPI:
 
     @staticmethod
     @exception_catch()
-    def update_prediction_box_gui(answer):
+    def update_prediction_box_gui(*answer):
         prediction_box.delete(0, tkinter.END)
         prediction_box.insert(tkinter.END, *answer)
 
     @staticmethod
     @exception_catch()
     def get_projection_value_gui():
-        return projection_value.get
+        return projection_value.get()
 
     @staticmethod
     @exception_catch()
@@ -293,13 +293,12 @@ class API(UIAPI):
     def check_center_of_symmetry():
         accuracy_ = API.computing_gui()
         try:
-            result = func.check_symmetry_center(
-                API.confirmation_expression(API.get_projection_value_gui()), API.output_prompt_gui, accuracy_
-            )
+            result = func.check_symmetry_center(API.get_projection_value_gui(), API.output_prompt_gui, accuracy_)
             if result[0]:
                 API.add_projection_box_gui(result[1])
                 API.output_prompt_gui("预测完成")
             else:
+                API.add_projection_box_gui(result[1])
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
@@ -317,10 +316,11 @@ class API(UIAPI):
                 API.add_projection_box_gui(result[1])
                 API.output_prompt_gui("预测完成")
             else:
+                API.add_projection_box_gui(result[1])
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
-            raise
+            raise  # 给log捕捉
 
     @staticmethod
     @exception_catch()
@@ -334,6 +334,7 @@ class API(UIAPI):
                 API.add_projection_box_gui(result[1])
                 API.output_prompt_gui("预测完成")
             else:
+                API.add_projection_box_gui(result[1])
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
@@ -351,6 +352,7 @@ class API(UIAPI):
                 API.add_projection_box_gui(result[1])
                 API.output_prompt_gui("预测完成")
             else:
+                API.add_projection_box_gui(result[1])
                 raise Exception
         except BaseException:
             API.output_prompt_gui("预测失败")
@@ -762,7 +764,7 @@ class API(UIAPI):
                 frame = int(frame_rate.get())
             except ValueError:
                 frame = 100
-            FuncAnimation(
+            ani = FuncAnimation(
                 fig,
                 update,
                 frames=plot_x_len,
@@ -796,12 +798,15 @@ class API(UIAPI):
                 return None
 
             def update(n):
+                print('A')
                 get_ = func_cul_list[n - 1]
                 ln_list[0].set_text(get_[2])
                 for i in range(max(m)):
                     try:
                         x = get_[0][i]
                         y = get_[1][i]
+                        print(x)
+                        print(y)
                         ln_list[i + 1].set_data(x, y)
                     except IndexError:
                         ln_list[i + 1].set_data([], [])
@@ -811,9 +816,9 @@ class API(UIAPI):
                 frame = int(frame_rate.get())
             except ValueError:
                 frame = 100
-            FuncAnimation(
+            ani = FuncAnimation(
                 fig, update, frames=plot_x_len, init_func=_init, interval=frame, blit=False
-            )  # 动态绘图
+            )  # 动态绘图（请不要去除ani = ，原因不清楚）
         API.output_prompt_gui("绘制完毕")
         plt.show()  # 显示图像
         return True

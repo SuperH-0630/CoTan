@@ -800,6 +800,7 @@ class ExpFuncInit(ExpFuncBase):
             self.func_name = (
                 f"{name}:y={func} a={a_default}({a_start},{a_end},{a_span})"
             )
+            print(self.son_list)
         else:
             self.son_list = []
             self.func_name = f"{name}:y={func} a={a_default})"  # 这个是函数名字
@@ -1125,7 +1126,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
             secondary_verification_effect = abs(float(secondary_verification_effect))
         except (ValueError, TypeError):
             allow_original_value = False
-            allow_extended_calculations = True
+            allow_extended_calculations = False
             secondary_verification = False
             max_iter = 100
             accuracy = 0.0001
@@ -1151,7 +1152,7 @@ class ExpComputing(ExpFuncInit, metaclass=ABCMeta):
                 return [], []  # 返回空值
             if allow_original_value and y_value in y:  # 如果已经计算过
                 num = y.index(y_value)
-                return x[num]
+                return [f"(误差)y={y_value} -> x={x[num]}"], [x[num]]
         except BaseException as e:
             logging.warning(str(e))
         iter_interval = [[self.start, self.end]]  # 准备迭代的列表
@@ -1448,7 +1449,7 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
     ):
         try:
             accuracy = float(accuracy)
-        except ValueError:
+        except TypeError:
             accuracy = None
         answer = []
         parity = self.parity()
@@ -1509,9 +1510,8 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
         while start <= end:
             try:
                 y = self(start)
-                x_list = self.dichotomy(y)[1]
+                x_list = self.sympy_calculation(y)[1]
                 output_prompt("迭代运算...")
-                # print(x_list)
                 possible_cycle = []
                 for o_x in x_list:
                     a = round(abs(o_x - start), self.accuracy)
@@ -1524,7 +1524,6 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
             except BaseException as e:
                 logging.warning(str(e))
             start += span
-
         possible_cycle = []  # a的可能列表
         max_count = 0
         output_prompt("正在筛选结果")
@@ -1559,20 +1558,16 @@ class ExpProperty(ExpFuncInit, metaclass=ABCMeta):
         output_prompt("正在预测对称轴")
         while start <= end:
             try:
-                y = self(start)
-                x_list = self.dichotomy(y)[1]
+                y = round(self(start), 1)
+                x_list = self.sympy_calculation(y)[1]
                 output_prompt("迭代运算...")
-                # print(x_list)
-                possible_symmetry_axis = []
-                for o_x in x_list:
-                    a = (o_x + start) / 2
-                    if a:
-                        possible_symmetry_axis.append(round(a, self.accuracy))
-                possible_symmetry_axis_list.extend(list(set(possible_symmetry_axis)))
+                print(len(x_list))
+                if (len(x_list) % 2) == 0:
+                    possible_symmetry_axis_list.append(round((x_list[0] + x_list[-1])/2, self.accuracy))
             except BaseException as e:
                 logging.warning(str(e))
             start += span
-
+        print(possible_symmetry_axis_list)
         possible_symmetry_axis = []  # a的可能列表
         c = 0
         output_prompt("正在筛选结果")
@@ -1671,6 +1666,8 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 start += span
                 continue
             if last_y is None:
+                last_y = now_y
+                start += span
                 continue
             if flat == 0 and last_y > now_y:  # 增区间，o_y不小于y
                 result = False
@@ -1710,8 +1707,12 @@ class ExpCheck(ExpFuncInit, metaclass=ABCMeta):
                 output_prompt("迭代运算...")
                 now_y = round(self(start), self.accuracy)
                 last_y = round(self(start + parameters), self.accuracy)
-                if now_y != last_y:
+                if abs(now_y - last_y) > (10 ** -self.accuracy + 10 ** (-self.accuracy - 1)):
+                    print(now_y, last_y)
+                    print(abs(now_y - last_y))
+                    print(10 ** -self.accuracy)
                     result = False
+                    break
             except BaseException as e:
                 logging.warning(str(e))
             start += span

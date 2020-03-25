@@ -18,7 +18,7 @@ class Logger:
         self.custom_function_index = 18
     
     def __call__(self, *args, **kwargs):
-        for i in self.func_dict:
+        for i in self.custom_loger:
             self.func_dict[i] = self.custom_loger[i]()
         return self.func_dict
 

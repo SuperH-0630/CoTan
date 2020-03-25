@@ -122,8 +122,8 @@ class UIAPI:
                             cli_screen.update()
                         except BaseException as e:
                             logging.warning(str(e))
-                    assert not time.time() - start >= break_time != 0
-                    assert not break_time == 0 and start == 0
+                    assert not time.time() - start >= break_time or break_time == 0
+                    assert not (break_time == 0 and start == 0)
                 except AssertionError:
                     start = 0
                     break
@@ -194,6 +194,8 @@ class UIAPI:
                     i = command_thread.stdout.readline()
                     bool_text = i.replace(" ", "").replace("\n", "")
                     if bool_text != "":
+                        print(stop_key)
+                        print(bool_text)
                         if stop and bool_text == stop_key:
                             start = 0
                         else:

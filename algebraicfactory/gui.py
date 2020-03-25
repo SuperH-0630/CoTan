@@ -332,7 +332,7 @@ class UIAPI:
     @staticmethod
     @exception_catch()
     def equation_solution_set_gui():
-        return equation_solution_set[equation_solution_box.curselection()[0]][1]
+        return equation_solution_set[equation_solution_box.curselection()[0]]
 
     @staticmethod
     @exception_catch()
@@ -975,9 +975,7 @@ class API(UIAPI):
     @staticmethod
     @exception_catch()
     def add_to_algebraic_box():
-        get = API.equation_solution_set_gui()[
-            1
-        ]  # [1]取结果
+        get = API.equation_solution_set_gui()[1]
         API.apply_algebraic_tips(get, f"联立结果为:{get},是否应用？")
 
     @staticmethod
@@ -1630,8 +1628,7 @@ class API(UIAPI):
                 )
                 alg_str = API.application(alg_str, new_alg)
 
-            if not algebra_controller.add_expression(name, alg_str):
-                raise Exception
+            algebra_controller.add_expression(name, alg_str)
 
             API.update_symbol_algebraic_box_gui()
             API.output_prompt_gui("代数式新增成功")

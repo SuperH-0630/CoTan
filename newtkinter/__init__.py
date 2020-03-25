@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
-
+import os
 
 def center_windows(screen, w, h):
     ws = screen.winfo_screenwidth()
@@ -63,7 +63,7 @@ def askopenfilename(title, must=False, **parameters):
                 raise NameError
             continue
         break
-    return name
+    return name.replace('/', os.sep)
 
 
 def asksaveasfilename(title, **parameters):
@@ -72,8 +72,8 @@ def asksaveasfilename(title, **parameters):
         raise NameError
     end = parameters.get('filetypes', [('', '')])[0][0]
     if name.endswith(end):
-        return name
-    return name + end
+        return name.replace('/', os.sep)
+    return name.replace('/', os.sep) + end
 
 
 def askdirectory(title, must=False, **parameters):
@@ -84,4 +84,4 @@ def askdirectory(title, must=False, **parameters):
                 raise NameError
             continue
         break
-    return name
+    return name.replace('/', os.sep)

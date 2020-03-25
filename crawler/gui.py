@@ -703,7 +703,7 @@ class API(UIAPI):
 
 
 def crawler_main(in_queue, out_queue):
-    global SCREEN
+    global SCREEN, save_dir, url, loader, page_parser, database
     SCREEN.update()  # 要预先update一下，否则会卡住
     save_dir = askdirectory(title="选择项目位置", must=True)  # 项目位置
     url = crawler.controller.Url(save_dir, save_dir)  # url管理器

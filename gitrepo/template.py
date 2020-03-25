@@ -34,11 +34,12 @@ class GitBase(metaclass=ABCMeta):
 
     @staticmethod
     def make_stop_key():  # 生成一个随机stopKey
+        global stop_key
         code = ""
         for _ in range(8):  # 八位随机数
             code += passwd[random.randint(0, len(passwd) - 1)]  # 时间戳+8位随机数
-        stop_key_ = (str(time()) + code).replace(".", "")
-        return stop_key_
+        stop_key = (str(time()) + code).replace(".", "")
+        return stop_key
 
     def get_flie_list(self, file_list, is_file=True, pat=" "):
         if file_list == ".":
@@ -461,9 +462,10 @@ class RemoteClasses(GitBase, metaclass=ABCMeta):
 class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses, RemoteClasses):  # git的基类
 
     def init(self, repo_dir):
+        print(repo_dir)
         self.url = None
         try:
-            if exists(repo_dir + r"/.git"):  # 是否为git 仓库
+            if exists(repo_dir + rf"{os.sep}.git"):  # 是否为git 仓库
                 pass
             elif repo_dir.endswith(".git"):
                 repo_dir = repo_dir[:-5]  # -5,得把/去掉
@@ -471,7 +473,7 @@ class GitRepo(ViewClasses, NewClasses, RemoveClass, BackClasses, ParallelClasses
                 assert False
         except (AssertionError, IndexError):
             subprocess.Popen(
-                f"{git_path} init", cwd=self.repo_dir, **sys_seeting
+                f"{git_path} init", cwd=repo_dir, **sys_seeting
             ).wait()
         self.repo_dir = repo_dir  # 仓库地址(末尾不带/)
         self.repo = Repo(repo_dir)  # 读取一个仓库
